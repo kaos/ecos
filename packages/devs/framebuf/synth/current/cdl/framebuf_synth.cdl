@@ -1,0 +1,256 @@
+# ====================================================================
+#
+#      framebuf_synth.cdl
+#
+#      Framebuffer device driver for the synthetic target.
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):     bartv
+# Date:          2005-10-24
+#
+#####DESCRIPTIONEND####
+#========================================================================
+
+cdl_package CYGPKG_DEVS_FRAMEBUF_SYNTH {
+    display		"Synthetic Target Framebuffer device driver"
+    parent		CYGPKG_IO_FRAMEBUF
+    active_if		CYGPKG_IO_FRAMEBUF
+    hardware
+    include_files
+
+    description "
+        This package provides a framebuffer device driver for the
+        synthetic target."
+
+    for { set _fb 0 } { $_fb < 4 } { incr _fb } {
+        cdl_component CYGPKG_DEVS_FRAMEBUF_SYNTH_FB$_fb {
+            display	"Provide framebuffer device fb$_fb"
+            description "
+                The synthetic target framebuffer driver can provide up to
+                four framebuffer devices, named fb0 to fb3. Each device's
+                width, height, depth, and colour format can be controlled.
+                This option enables device fb$_fb"
+
+            flavor		    bool
+            default_value	[expr $_fb ? 0 : 1]
+            implements		CYGINT_IO_FRAMEBUF_DEVICES
+            implements		CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_DOUBLE_BUFFER
+            requires		is_substr(CYGDAT_IO_FRAMEBUF_DEVICES, \" fb[set _fb] \")
+
+            cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_WIDTH {
+                display		"fb$_fb width"
+                flavor 		data
+                default_value	320
+                legal_values	16 to 4096
+            }
+
+            cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_HEIGHT {
+                display		"fb$_fb height"
+                flavor 		data
+                default_value	240
+                legal_values	16 to 4096
+            }
+
+            cdl_option CYGDAT_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_FORMAT {
+                display		"fb$_fb format"
+                flavor		data
+                if { 0 } {
+                    legal_values	{ "1BPP_BE_PAL888"  "1BPP_LE_PAL888"
+                        "2BPP_BE_PAL888"  "2BPP_LE_PAL888"
+                        "4BPP_BE_PAL888"  "4BPP_LE_PAL888"
+                        "8BPP_PAL888"     "8BPP_TRUE_332"
+                        "16BPP_TRUE_565"  "16BPP_TRUE_555"
+                        "32BPP_TRUE_0888"
+                    }
+                } else {
+                    legal_values	{
+                        "8BPP_PAL888"     "8BPP_TRUE_332"
+                        "16BPP_TRUE_565"  "16BPP_TRUE_555"
+                        "32BPP_TRUE_0888"
+                    }
+                }
+                default_value	{ "8BPP_PAL888" }
+                if { 0 } {
+                    description "
+                        Each synthetic target framebuffer device can be configured
+                        to emulate a particular format. This consists of three fields:
+                        depth, endianness, and colour. The depth is in bits per pixel
+                        and can be 1bpp, 2bpp, 4bpp, 8bpp, 16bpp or 32bpp. The endianness
+                        is only relevant for 1bpp, 2bpp and 4bpp devices and affects how
+                        pixels are organized within each byte. Colour can be either
+                        paletted or true colour. 1bpp, 2bpp and 4bpp implies paletted, and
+                        16bpp and 32bpp implies true colour. 8bpp can be either paletted
+                        or true colour. For 1bpp the default palette is monochrome with
+                        colour 0 == black. For 2bpp the default palette is greyscale with
+                        colour 0 == black. For 4bpp the default palette is EGA. For 8bpp
+                        the default palette is VGA. The application can change these
+                        default palettes as required to match the hardware being emulated."
+                } else {
+                    description "
+                        Each synthetic target framebuffer device can be configured
+                        to emulate a particular format. This consists of two fields:
+                        depth and colour. The depth is in bits per pixel and can be
+                        8bpp, 16bpp or 32bpp. Colour can be either paletted or true colour.
+                        16bpp and 32bpp implies true colour. 8bpp can be either paletted
+                        or true colour. For 8bpp the default palette is VGA. The application
+                        can change these default palettes as required to match the hardware being emulated."
+                }
+            }
+
+            cdl_component CYGIMP_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_VIEWPORT {
+                display		    "fb$_fb provides viewport support"
+                default_value	0
+                implements	    CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_VIEWPORT
+                description "
+                    Optionally framebuffer device $_fb can support a viewport.
+                    In other words only a subset of the framebuffer, the viewport,
+                    is actually visible on the display and application code can
+                    move this viewport."
+
+                cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_VIEWPORT_WIDTH {
+                    display		    "fb$_fb viewport width"
+                    flavor		    data
+                    default_value	CYGNUM_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_WIDTH
+                    legal_values	16 to CYGNUM_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_WIDTH
+                }
+
+                cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_VIEWPORT_HEIGHT {
+                    display		    "fb$_fb viewport height"
+                    flavor		    data
+                    default_value	CYGNUM_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_HEIGHT
+                    legal_values	16 to CYGNUM_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_HEIGHT
+                }
+            }
+
+            cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB[set _fb]_PAGE_FLIPPING {
+                display		    "fb$_fb supports page flipping"
+                flavor		    booldata
+                default_value	0
+                legal_values	2 3 4
+                description "
+                    Optionally framebuffer device $_fb can support page flipping.
+                    The device supports between two and four pages, only one
+                    of which is visible on the display. This allows code to
+                    update one page without disturbing what is currently visible."
+            }
+        }
+
+        # Eliminate any framebuffer devices that are no longer enabled.
+        requires (CYGPKG_DEVS_FRAMEBUF_SYNTH_FB$_fb || !is_substr(CYGDAT_IO_FRAMEBUF_DEVICES, \" fb[set _fb] \"))
+    }
+
+    cdl_component CYGPKG_DEVS_FRAMEBUF_SYNTH_FUNCTIONALITY {
+        display		"Functionality supported by the enabled framebuffer(s)"
+        flavor		none
+        description "
+            The generic framebuffer code needs configure-time information about
+            functionality of the enabled framebuffer or framebuffers. Usually
+            all this information is fixed by the hardware, but the synthetic
+            target framebuffer support is more flexible than real hardware. To
+            cope with this some dummy options are needed."
+
+        active_if { CYGPKG_DEVS_FRAMEBUF_SYNTH_FB0 ||
+            CYGPKG_DEVS_FRAMEBUF_SYNTH_FB1 ||
+            CYGPKG_DEVS_FRAMEBUF_SYNTH_FB2 ||
+            CYGPKG_DEVS_FRAMEBUF_SYNTH_FB3 }
+        make -priority=1 {
+            $(PREFIX)/include/cyg/io/framebufs/synth_fb.h :	\
+                $(REPOSITORY)/$(PACKAGE)/src/gen_synthfb.tcl 	\
+                $(PREFIX)/include/pkgconf/devs_framebuf_synth.h
+            sh $< $(PREFIX)
+        }
+        compile synthfb.c
+        compile -library=libextras.a synthfb_init.cxx
+
+        cdl_option CYGHWR_DEVS_FRAMEBUF_SYNTH_FUNCTIONALITY_32BPP {
+            display	"One or more of the enabled framebuffer devices has a depth of 32bpp"
+            calculated  { is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB0_FORMAT, "32BPP") ||
+                is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB1_FORMAT, "32BPP") ||
+                is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB2_FORMAT, "32BPP") ||
+                is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB3_FORMAT, "32BPP") }
+            implements	CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_32BPP
+        }
+        
+        cdl_option CYGHWR_DEVS_FRAMEBUF_SYNTH_FUNCTIONALITY_PALETTED {
+            display	"One or more of the enabled framebuffer devices uses a paletted display"
+            calculated  { is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB0_FORMAT, "PAL") ||
+                is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB1_FORMAT, "PAL") ||
+                is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB2_FORMAT, "PAL") ||
+                is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB3_FORMAT, "PAL") }
+            implements CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_PALETTE
+            implements CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_WRITEABLE_PALETTE
+        }
+
+        cdl_option CYGHWR_DEVS_FRAMEBUF_SYNTH_TRUE_COLOUR {
+            display	"One or more of the enabled framebuffer devices uses a true colour display"
+            calculated  { is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB0_FORMAT, "TRUE") ||
+                is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB1_FORMAT, "TRUE") ||
+                is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB2_FORMAT, "TRUE") ||
+                is_substr(CYGDAT_DEVS_FRAMEBUF_SYNTH_FB3_FORMAT, "TRUE") }
+            implements CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_TRUE_COLOUR
+        }
+    }
+
+    cdl_component CYGPKG_DEVS_FRAMEBUF_SYNTH_OPTIONS {
+        display "Framebuffer build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building the synthetic
+            target framebuffer device driver."
+
+        cdl_option CYGPKG_DEVS_FRAMEBUF_SYNTH_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for building
+                the synthetic target framebuffer device driver. These flags
+                are used in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_DEVS_FRAMEBUF_SYNTH_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for building
+                the synthetic target framebuffer device driver. These flags
+                are removed from the set of global flags if present."
+        }
+    }
+}

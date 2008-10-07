@@ -1,0 +1,85 @@
+cdl_configuration eCos {
+    package CYGPKG_IO_FRAMEBUF ;
+};
+
+cdl_component CYGPKG_DEVS_FRAMEBUF_SYNTH_FB0 {
+    user_value 1
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB0_WIDTH {
+    user_value 320
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB0_HEIGHT {
+    user_value 240
+};
+
+cdl_option CYGDAT_DEVS_FRAMEBUF_SYNTH_FB0_FORMAT {
+    user_value 32BPP_TRUE_0888
+};
+
+cdl_component CYGPKG_DEVS_FRAMEBUF_SYNTH_FB1 {
+    user_value 1
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB1_WIDTH {
+    user_value 320
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB1_HEIGHT {
+    user_value 240
+};
+
+cdl_option CYGDAT_DEVS_FRAMEBUF_SYNTH_FB1_FORMAT {
+    user_value 16BPP_TRUE_555
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB1_PAGE_FLIPPING {
+    user_value 1 2
+};
+
+cdl_component CYGPKG_DEVS_FRAMEBUF_SYNTH_FB2 {
+    user_value 1
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB2_WIDTH {
+    user_value 320
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB2_HEIGHT {
+    user_value 240
+};
+
+cdl_option CYGDAT_DEVS_FRAMEBUF_SYNTH_FB2_FORMAT {
+    user_value 16BPP_TRUE_565
+};
+
+cdl_component CYGIMP_DEVS_FRAMEBUF_SYNTH_FB2_VIEWPORT {
+    user_value 1
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB2_VIEWPORT_WIDTH {
+    user_value 160
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB2_VIEWPORT_HEIGHT {
+    user_value 120
+};
+
+cdl_component CYGPKG_DEVS_FRAMEBUF_SYNTH_FB3 {
+    user_value 1
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB3_WIDTH {
+    user_value 320
+};
+
+cdl_option CYGNUM_DEVS_FRAMEBUF_SYNTH_FB3_HEIGHT {
+    user_value 240
+};
+
+cdl_option CYGDAT_DEVS_FRAMEBUF_SYNTH_FB3_FORMAT {
+    user_value 8BPP_PAL888
+};
+
+

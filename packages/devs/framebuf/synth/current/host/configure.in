@@ -1,0 +1,91 @@
+dnl Process this file with autoconf to produce a configure script.
+dnl ====================================================================
+dnl
+dnl     configure.in
+dnl
+dnl     configure script for eCos synthetic target framebuffer
+dnl	host-side support
+dnl
+dnl ====================================================================
+dnl####ECOSGPLCOPYRIGHTBEGIN####
+dnl -------------------------------------------
+dnl This file is part of eCos, the Embedded Configurable Operating System.
+dnl Copyright (C) 2008 Free Software Foundation, Inc.
+dnl
+dnl eCos is free software; you can redistribute it and/or modify it under
+dnl the terms of the GNU General Public License as published by the Free
+dnl Software Foundation; either version 2 or (at your option) any later version.
+dnl
+dnl eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+dnl WARRANTY; without even the implied warranty of MERCHANTABILITY or
+dnl FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+dnl for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License along
+dnl with eCos; if not, write to the Free Software Foundation, Inc.,
+dnl 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+dnl
+dnl As a special exception, if other files instantiate templates or use macros
+dnl or inline functions from this file, or you compile this file and link it
+dnl with other works to produce a work based on this file, this file does not
+dnl by itself cause the resulting work to be covered by the GNU General Public
+dnl License. However the source code for this file must still be made available
+dnl in accordance with section (3) of the GNU General Public License.
+dnl
+dnl This exception does not invalidate any other reasons why a work based on
+dnl this file might be covered by the GNU General Public License.
+dnl -------------------------------------------
+dnl####ECOSGPLCOPYRIGHTEND####
+dnl ====================================================================
+dnl#####DESCRIPTIONBEGIN####
+dnl
+dnl Author(s):	bartv
+dnl Contact(s):	bartv
+dnl Date:	2005/10/28
+dnl Version:	0.01
+dnl
+dnl####DESCRIPTIONEND####
+dnl ====================================================================
+
+
+AC_INIT(framebuf.c)
+
+dnl Pick up the support files from the top-level acsupport directory.
+AC_CONFIG_AUX_DIR(../../../../../../acsupport)
+
+dnl The current version of the synthetic target is implemented only for
+dnl x86 Linux platforms, so a test is appropriate here. However
+dnl it is not a good idea for the configure script to report an error:
+dnl that would prevent any top-level configury working for other
+dnl platforms. Instead an automake conditional is used to suppress adding
+dnl targets to the build. Unfortunately it is still necessary to
+dnl perform most of the tests or you run into problems with e.g.
+dnl automake's dependency handling.
+
+ECOS_CHECK_BUILD_ne_SRC
+AC_CANONICAL_HOST
+AM_INIT_AUTOMAKE(eCos_synthetic_target_framebuf,0.1,0)
+AM_MAINTAINER_MODE
+AC_PROG_CC
+AC_PROG_CXX
+AC_OBJEXT
+AC_EXEEXT
+ECOS_PROG_MSVC
+ECOS_PROG_STANDARD_COMPILER_FLAGS
+ECOS_PACKAGE_DIRS
+
+case "${host}" in
+    i[[34567]]86-*-linux-gnu* ) SUPPORTED="yes";;
+    * ) SUPPORTED="no"
+esac
+if test "${SUPPORTED}" = "no" ; then
+    AC_MSG_WARN([Synthetic target framebuffer support is only available on x86 Linux hosts])
+fi   
+
+AM_CONDITIONAL(SUPPORTED, test "${SUPPORTED}" = "yes")
+
+dnl There is no real need for a config.h file at this time, since the code
+dnl is specific to x86 Linux. This may change in future.
+dnl AM_CONFIG_HEADER(config.h:config.h.in)
+
+AC_OUTPUT(Makefile:Makefile.in)

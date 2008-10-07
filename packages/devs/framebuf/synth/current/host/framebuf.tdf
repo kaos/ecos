@@ -1,0 +1,37 @@
+# Target definition file fragment for framebuffer devices.
+#
+# The main support available is for controlled creation
+# of the Tk frames in which the eCos framebuffer data will
+# be displayed. By default the main framebuf.tcl script will
+# create the 
+
+proc my_framebuf_create_frame { id magnification depth little_endian width height viewport_width viewport_height stride number_pages format} {
+
+    toplevel 		.ecosfb$id
+    wm title 		.ecosfb$id	"eCos FB[set id]: $width*$height*\#depth"
+    wm iconbitmap	.ecosfb$id	$framebuf::image_framebuf_icon
+    wm iconmask		.ecosfb$id	$framebuf::image_framebufmask_icon
+    wm protocol		.ecosfb$id	""
+
+    frame .ecosfb$id.frame -container 1 -height [expr $magnification * $viewport_height] -width [expr $magnification * $viewport_width]
+    pack  .ecosfb$id.frame -side top -expand 0
+
+    return .ecosfb$id.frame
+}
+
+synth_device framebuf {
+
+    # Customize how the eCos framebuffer appears on the X display.
+    # The argument should be a function which takes a long list of
+    # arguments, as above, and returns a Tk frame id. Spawning the
+    # C program is still the responsibility of the main framebuf.tcl
+    # script.
+    create_frame_proc	my_framebuf_create_frame
+
+    # Optional magnification for all four permitted framebuffer
+    # devices. Magnification can be 1, 2, 3 or 4
+    # fb0_magnification 2
+    # fb1_magnification 4
+    # fb2_magnification 3
+    # fb4_magnification 1
+}

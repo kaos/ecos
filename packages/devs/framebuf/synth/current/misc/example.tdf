@@ -1,0 +1,42 @@
+# An example framebuffer create function. This is for use with the
+# synthetic target framebuffer example program which uses four
+# devices:
+#
+#  fb0: 320x240 32bpp true 0888
+#  fb1: 320x240 16bpp true 555 with two pages
+#  fb2: 320x240 16bpp true 565 with a viewport of 160x120
+#  fb3: 320x240 8bpp  pal  888
+#
+# These are all created in a single toplevel .synth_framebufs, one above the other,
+# with labels in between.
+proc my_framebuf_create_frame { fb_id magnification depth little_endian width height viewport_width viewport_height stride number_pages format } {
+    if { ![winfo exists .synth_framebufs] } {
+        toplevel    .synth_framebufs
+        wm title    .synth_framebufs "Synthetic target framebuffers"
+        wm protocol .synth_framebufs WM_DELETE_WINDOW {}
+        wm geometry .synth_framebufs +1000+0
+
+        label .synth_framebufs.fb0_label -text "FB0 320x240 32bpp true 0888"
+        frame .synth_framebufs.fb0 -container 1 -height 240 -width 320
+        label .synth_framebufs.fb1_label -text "FB1 320x240 16bpp true 0555 two pages"
+        frame .synth_framebufs.fb1 -container 1 -height 240 -width 320
+        label .synth_framebufs.fb2_label -text "FB2 320x240 16bpp true 0565\nviewport 160x120 magnified *2"
+        frame .synth_framebufs.fb2 -container 1 -height 240 -width 320
+        label .synth_framebufs.fb3_label -text "FB3 320x240  8bpp paletted 888"
+        frame .synth_framebufs.fb3 -container 1 -height 240 -width 320
+        pack .synth_framebufs.fb0_label -side top -expand 1 -anchor w -fill x
+        pack .synth_framebufs.fb0       -side top -expand 0 -anchor w
+        pack .synth_framebufs.fb1_label -side top -expand 1 -anchor w -fill x
+        pack .synth_framebufs.fb1       -side top -expand 0 -anchor w
+        pack .synth_framebufs.fb2_label -side top -expand 1 -anchor w -fill x
+        pack .synth_framebufs.fb2       -side top -expand 0 -anchor w
+        pack .synth_framebufs.fb3_label -side top -expand 1 -anchor w -fill x
+        pack .synth_framebufs.fb3       -side top -expand 0 -anchor w
+    }
+    return .synth_framebufs.fb$fb_id
+}
+
+synth_device framebuf {
+    fb2_magnification   2
+    create_frame_proc   my_framebuf_create_frame
+}

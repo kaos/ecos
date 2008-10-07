@@ -1,0 +1,239 @@
+<!-- DOCTYPE refentry  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     synth_framebuf.sgml                                         -->
+<!--                                                                 -->
+<!--     Synthetic target frame buffer device                        -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2008 Free Software Foundation, Inc.               -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Contact(s):  bartv                                              -->
+<!-- Date:        2008/10/07                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<part id="devs-framebuf-synth-ref">
+  <title>Synthetic Target Framebuffer Device</title>
+
+<refentry id="devs-framebuf-synth">
+  <refmeta>
+    <refentrytitle>Synthetic Target Framebuffer Device</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Synthetic Target Framebuffer Device</refname>
+    <refpurpose>Emulate framebuffer hardware in the synthetic target</refpurpose> 
+  </refnamediv>
+
+  <refsect1 id="devs-framebuf-synth-overview"><title>Overview</title>
+    <para>
+This package <varname>CYGPKG_DEVS_FRAMEBUF_SYNTH</varname> provides a
+framebuffer device driver for the eCos synthetic target.
+    </para>
+    <informalfigure PgWide=1>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="synthfb.png" Scalefit=1 Align="Center">
+        </imageobject>
+      </mediaobject>
+    </informalfigure>
+    <para>
+The driver supports up to four framebuffer devices
+<varname>fb0</varname>, <varname>fb1</varname>, <varname>fb2</varname>
+and <varname>fb3</varname>. The width, height, depth, and display
+format of each framebuffer can be controlled via configuration
+options. It is also possible to set a viewport for each device and to
+enable page flipping.
+    </para>
+    <para>
+To use the framebuffer support the eCos application must run inside an
+X session, not from the console, and it must be started with
+<parameter>--io</parameter> to enable the I/O auxiliary. The I/O
+auxiliary will start a separate instance of a host-side utility
+<application>framebuf</application> for each target-side framebuffer
+device. The <application>framebuf</application> utility can access the
+eCos framebuffer data via a shared memory region and draw it to the
+screen using X library calls. It needs the X server to run with a
+TrueColor visual and a display of depth of 24 or 32 bits per pixel.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-framebuf-synth-install"><title>Installation</title>
+    <para>
+The synthetic target framebuffer driver depends on host-side support
+which must be built and installed. The relevant code resides in the
+<filename class="directory">host</filename> subdirectory of the
+synthetic target framebuffer package, and building it involves the
+standard <command>configure</command>, <command>make</command> and
+<command>make install</command> steps. This will build and install a
+utility program <application>framebuf</application> that does the
+actual drawing of the eCos framebuffer contents to the host-side X
+display. It will also install a Tcl script and some support files.
+<application>framebuf</application> is an X11 application so can only
+be built on Linux systems with the appropriate X11 development package
+or packages.
+    </para>
+    <para>
+There are two main ways of building the host-side software. It is
+possible to build both the generic host-side software and all
+package-specific host-side software, including the framebuffer
+support, in a single build tree. This involves using the
+<command>configure</command> script at the toplevel of the eCos
+repository. For more information on this, see the
+<filename>README.host</filename> file at the top of the repository.
+Note that if you have an existing build tree which does not include
+the synthetic target framebuffer support then it will be necessary to
+rerun the toplevel configure script: the search for appropriate
+packages happens at configure time.
+    </para>
+    <para>
+The alternative is to build just the host-side for this package.
+This requires a separate build directory, building directly in the
+source tree is disallowed. The <command>configure</command> options
+are much the same as for a build from the toplevel, and the
+<filename>README.host</filename> file can be consulted for more
+details. It is essential that the framebuffer support be configured with
+the same <option>--prefix</option> option as other eCos host-side
+software, especially the I/O auxiliary provided by the architectural
+synthetic target HAL package, otherwise the I/O auxiliary will be
+unable to locate the framebuffer support.
+    </para>
+  </refsect1>
+  
+  <refsect1 id="devs-framebuf-synth-config"><title>Configuration</title>
+    <para>
+The package is loaded automatically when creating a configuration for
+the synthetic target. However it is inactive unless the generic
+framebuffer support <varname>CYGPKG_IO_FRAMEBUF</varname> is also
+added to the configuration, for example by <computeroutput>ecosconfig
+add framebuf</computeroutput>.
+    </para>
+    <para>
+By default the package enables a single framebuffer device
+<varname>fb0</varname> with a corresponding
+<structname>cyg_fb</structname> data structure
+<varname>cyg_synth_fb0</varname>. The default settings for this device
+are 320 by 240 pixels, a depth of 8 bits per pixel, a paletted
+display, no viewport support, and no page flipping. All of these
+settings can be changed by configuration options inside the CDL
+component <varname>CYGPKG_DEVS_FRAMEBUF_SYNTH_FB0</varname>. The
+supported display formats are: 8 bpp paletted; 8bpp true colour 332;
+16bpp true 565; 16bpp true 555; and 32bpp 0888. This allows the
+synthetic target to match the actual display capabilities of the
+hardware that is being emulated. If the actual hardware has more than
+one framebuffer device then this can be emulated by enabling
+additional components
+<varname>CYGPKG_DEVS_FRAMEBUF_SYNTH_FB1</varname> &hellip;, and
+setting the appropriate options.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-framebuf-synth-customization"><title>Customization</title>
+    <para>
+In addition to the target-side configurability it is possible to
+customize the host-side behaviour. For example, the default behaviour
+is for <varname>fb0</varname> to be drawn inside the I/O auxiliary's
+main window, if it is not too large. <varname>fb1</varname>,
+<varname>fb2</varname> and <varname>fb3</varname> will be drawn inside
+separate toplevel windows, as will <varname>fb0</varname> if that has
+been configured too large for embedding in the main window. This
+behaviour can be changed by providing a custom Tcl/Tk procedure that
+creates the containing frame for the framebuffer device.
+    </para>
+    <para>
+Customization involves adding a <structname>synth_device</structname>
+<varname>framebuf</varname> section to the <filename>.tdf</filename>
+target definition file, usually <filename>default.tdf</filename> or
+<filename>~/.ecos/synth/default.tdf</filename>.
+    </para>
+    <programlisting width=72>
+proc my_framebuf_create_frame { &hellip } {
+    &hellip;
+}
+
+synth_device framebuf {
+    fb2_magnification   2
+    create_frame_proc   my_framebuf_create_frame
+}
+    </programlisting>
+    <para>
+The pixel size on the host display may be rather smaller than on the
+final hardware, causing a serious mismatch between the application's
+appearance when using synthetic target emulation and when using real
+hardware. To reduce this problem the host-side can magnify the
+target-side framebuffer devices. In the example above each target-side
+pixel in device <varname>fb2</varname> will be drawn using 2*2 pixels
+on the host side. Valid magnifications are 1, 2, 3 and 4. With a
+magnification of 4 an eCos framebuffer device of 320*240 pixels will
+be drawn in an X window of 1280*960 pixels.
+    </para>
+    <para>
+The <parameter>create_frame_proc</parameter> entry can be used to
+specify a custom Tcl/Tk procedure that will create the containing Tk
+frames for the host-side displays. This procedure can be written for a
+specific configuration, but it is supplied with all the parameters
+associated with the framebuffer device so can be more generic. An
+example is supplied in the package's <filename
+class="directory">misc</filename> subdirectory:
+    </para>
+    <orderedlist>
+      <listitem><para>
+Create a configuration for the synthetic target with the default
+template.
+      </para></listitem>
+      <listitem><para>
+Import the <filename>example.ecm</filename> configuration fragment
+from the <filename class="directory">misc</filename> subdirectory.
+This will add the generic framebuffer support package, enable all four
+framebuffer devices, and configure each device. Build the resulting
+configuration.
+      </para></listitem>
+      <listitem><para>
+Compile the <filename>example.c</filename> program and link it against
+the eCos configuration.
+      </para></listitem>
+      <listitem><para>
+Incorporate the <filename>example.tdf</filename> fragment into the
+appropriate target definition file, typically
+<filename>default.tdf</filename> or
+<filename>~/.ecos/synth/default.tdf</filename>.
+      </para></listitem>
+      <listitem><para>
+Run the example executable. The four framebuffer devices should get
+instantiated in a separate window in a single column.
+<varname>FB0</varname> just contains a static display.
+<varname>FB1</varname> supports two pages, one with vertical stripes
+and one with horizontal stripes, and the two pages are flipped at
+regular intervals. <varname>FB2</varname> has a static display similar
+to <varname>FB0</varname>, but is drawn in a viewport of only 160x120
+pixels. However <filename>example.tdf</filename> magnifies this by 2
+so it appears the same size as the other devices. The application
+moves the viewport around the underlying framebuffer device.
+<varname>FB3</varname> is also a static display, a simple set of
+vertical stripes. However this framebuffer is paletted and the palette
+is changed at regular intervals, causing apparent movement.
+      </para></listitem>
+    </orderedlist>
+  </refsect1>
+
+</refentry>
+</part>
