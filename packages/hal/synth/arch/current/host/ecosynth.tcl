@@ -327,6 +327,12 @@ proc exit { { code 0 } } {
         # about them anyway.
         catch { eval $handler [list]}
     }
+    # When running in GUI mode, some versions of Tk on top of some versions
+    # of X have problems shutting down cleanly and may report an X error.
+    # It is not understood exactly what is going on. This close causes the
+    # error to be ignored silently. Since we are exiting anyway, that is
+    # good enough.
+    close stderr
     _hook_real_exit $code
 }
 
@@ -1322,8 +1328,7 @@ namespace eval synth {
     
     proc _handle_exit_request { } {
         if { !$synth::ecos_running } {
-            after idle destroy .
-            return
+            exit 0
         }
         # Setting this flag causes ecosynth to exit immediately once
         # the application terminates.
@@ -3099,11 +3104,7 @@ namespace eval synth {
         # Depending on command-line arguments and whether or not the GUI is present,
         # the auxiliary should now exit
         if { $synth::flag_immediate_exit } {
-            if { $synth::flag_gui } {
-                after idle destroy .
-            } else {
-                exit 0
-            }
+            exit 0
         } elseif { !$synth::flag_gui } {
             synth::report "eCos application has exited: I/O auxiliary still running in the background.\n"
         }

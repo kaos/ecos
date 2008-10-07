@@ -1,3 +1,8 @@
+2008-10-07  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/ecosynth.tcl: another attempt to fix the X problems when
+	shutting down.
+
 2008-08-28  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/configure: regenerate after update of Tcl macro
