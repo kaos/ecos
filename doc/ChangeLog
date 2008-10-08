@@ -1,3 +1,8 @@
+2008-10-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* sgml/doclist: added generic framebuffer and synthetic target
+	framebuffer driver documentation.
+
 2008-08-08  Nick Garnett  <nickg@ecoscentric.com>
 
 	* sgml/doclist: Added ADC documentation.

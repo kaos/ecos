@@ -10,6 +10,7 @@ io/spi/current/doc/spi.sgml
 io/i2c/current/doc/i2c.sgml
 io/can/current/doc/can.sgml
 io/adc/current/doc/adc.sgml
+io/framebuf/current/doc/framebuf.sgml
 compat/posix/current/doc/posix.sgml
 compat/uitron/current/doc/uitron.sgml
 net/common/current/doc/tcpip.sgml
@@ -46,3 +47,4 @@ devs/eth/synth/ecosynth/current/doc/syntheth.sgml
 devs/watchdog/synth/current/doc/synth_watchdog.sgml
 devs/wallclock/dallas/ds1307/current/doc/ds1307.sgml
 devs/disk/generic/mmc/current/doc/disk_mmc.sgml
+devs/framebuf/synth/current/doc/synth_framebuf.sgml
