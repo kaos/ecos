@@ -211,7 +211,8 @@ flash_hwr_init(void){
     goto out;
 
   if (((chipID1r & AT91_DBG_C1R_ARCH_MASK) != AT91_DBG_C1R_ARCH_AT91SAM7Sxx) &&
-      ((chipID1r & AT91_DBG_C1R_ARCH_MASK) != AT91_DBG_C1R_ARCH_AT91SAM7Xxx))
+      ((chipID1r & AT91_DBG_C1R_ARCH_MASK) != AT91_DBG_C1R_ARCH_AT91SAM7Xxx) &&
+      ((chipID1r & AT91_DBG_C1R_ARCH_MASK) != AT91_DBG_C1R_ARCH_AT91SAM7XC))
     goto out;
   
   if ((chipID1r & AT91_DBG_C1R_FLASH_MASK) == AT91_DBG_C1R_FLASH_0K)
