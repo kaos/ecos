@@ -184,10 +184,10 @@ cyg_spi_at91_bus_init(void)
    //       in order to achieve better chip select control 
    //       in between transactions.
 
-   // Put SPI MISO, MOIS and SPCK pins into peripheral mode
+   // Put SPI MISO, MOSI and SPCK pins into peripheral mode
    HAL_ARM_AT91_PIO_CFG(AT91_SPI_SPCK);
    HAL_ARM_AT91_PIO_CFG(AT91_SPI_MISO);
-   HAL_ARM_AT91_PIO_CFG(AT91_SPI_MOIS);
+   HAL_ARM_AT91_PIO_CFG(AT91_SPI_MOSI);
    spi_at91_init_bus(&cyg_spi_at91_bus0);
 #endif
 #ifdef CYGHWR_DEVS_SPI_ARM_AT91_BUS1
@@ -197,7 +197,7 @@ cyg_spi_at91_bus_init(void)
    //       in order to achieve better chip select control 
    //       in between transactions.
 
-   // Put SPI MISO, MOIS and SPCK pins into peripheral mode
+   // Put SPI MISO, MOSI and SPCK pins into peripheral mode
    HAL_ARM_AT91_PIO_CFG(AT91_SPI1_SPCK);
    HAL_ARM_AT91_PIO_CFG(AT91_SPI1_MISO);
    HAL_ARM_AT91_PIO_CFG(AT91_SPI1_MOSI);
@@ -242,6 +242,7 @@ static void spi_at91_init_bus(cyg_spi_at91_bus_t * spi_bus)
        if(spi_bus->cs_en[ctr])
        {
           HAL_ARM_AT91_GPIO_CFG_DIRECTION(spi_bus->cs_gpio[ctr],AT91_PIN_OUT);
+          HAL_ARM_AT91_GPIO_SET(spi_bus->cs_gpio[ctr]);
        }
     }
     // Call upper layer bus init
@@ -254,7 +255,7 @@ spi_at91_ISR(cyg_vector_t vector, cyg_addrword_t data)
     cyg_uint32 stat;
     cyg_spi_at91_bus_t * spi_bus = (cyg_spi_at91_bus_t *)data;
     // Read the status register and disable
-    // the SPI int events that have occoured
+    // the SPI int events that have occurred
     
     HAL_READ_UINT32(spi_bus->base+AT91_SPI_SR,   stat);
     HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_IDR, stat);
@@ -272,7 +273,7 @@ spi_at91_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     cyg_uint32 stat;
     
     // Read the status register and 
-    // check for transfer completition
+    // check for transfer completion
     
     HAL_READ_UINT32(spi_bus->base+AT91_SPI_SR, stat);
 
@@ -298,7 +299,9 @@ spi_at91_calc_scbr(cyg_spi_at91_device_t *dev)
     
     // Calculate SCBR from baud rate
     
-    scbr = CYGNUM_HAL_ARM_AT91_CLOCK_SPEED / (2*dev->cl_brate);
+    scbr = CYGNUM_HAL_ARM_AT91_CLOCK_SPEED / dev->cl_brate;
+    if ((2*(CYGNUM_HAL_ARM_AT91_CLOCK_SPEED % dev->cl_brate)) >= dev->cl_brate)
+        scbr++;
 
     if (scbr < 2)
     {
@@ -310,7 +313,7 @@ spi_at91_calc_scbr(cyg_spi_at91_device_t *dev)
     {
         dev->cl_div32 = 1;
         
-        scbr = CYGNUM_HAL_ARM_AT91_CLOCK_SPEED / (64*dev->cl_brate);
+        scbr = CYGNUM_HAL_ARM_AT91_CLOCK_SPEED / (32*dev->cl_brate);
 
         if (scbr < 2) 
         {
@@ -427,7 +430,7 @@ spi_at91_transfer(cyg_spi_at91_device_t *dev,
             // Unmask the SPI int
             cyg_drv_interrupt_unmask(spi_bus->interrupt_number);
         
-            // Wait for its completition
+            // Wait for its completion
             cyg_drv_dsr_lock();
             {
                 while (!spi_bus->transfer_end)
@@ -540,7 +543,7 @@ spi_at91_transaction_begin(cyg_spi_device *dev)
     HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_CR, AT91_SPI_CR_SPIEN);
     
     /* As we are using this driver only in master mode with NPCS0 
-       configured as GPIO instead of a peripheral pin, it is neccessary 
+       configured as GPIO instead of a peripheral pin, it is necessary 
        for the Mode Failure detection to be switched off as this will
        cause havoc with the driver */ 
 

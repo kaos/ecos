@@ -1,3 +1,8 @@
+2008-10-19  Igor B. Poretsky <poretsky@mlbox.ru>
+	
+	* src/spi_at91.c: Typo fixes from var_io.h.  Correctly calculate
+	  the board rate. Before it was two times too fast.
+
 2006-09-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/spi_at91.c (spi_at91_transaction_begin): Don't use #ifdef
