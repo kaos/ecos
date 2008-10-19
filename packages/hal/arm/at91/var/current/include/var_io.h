@@ -271,7 +271,7 @@
 #define AT91_USART_RXD2     AT91_PIN(0,0,22) // USART 2 receive data
 #define AT91_SPI_SPCK       AT91_PIN(0,0,23) // SPI Clock signal 
 #define AT91_SPI_MISO       AT91_PIN(0,0,24) // SPI Master In Slave Out 
-#define AT91_SPI_MOIS       AT91_PIN(0,0,25) // SPI Master Out Slave In 
+#define AT91_SPI_MOSI       AT91_PIN(0,0,25) // SPI Master Out Slave In 
 #define AT91_SPI_NPCS0      AT91_PIN(0,0,26) // SPI Peripheral Chip Select 0
 #define AT91_SPI_NPCS1      AT91_PIN(0,0,27) // SPI Peripheral Chip Select 1
 #define AT91_SPI_NPCS2      AT91_PIN(0,0,28) // SPI Peripheral Chip Select 2
@@ -318,7 +318,7 @@
 #define AT91_PIO_PSR_RXD2    0x00400000 // USART 2 receive data
 #define AT91_PIO_PSR_SPCK    0x00800000 // SPI Clock signal 
 #define AT91_PIO_PSR_MISO    0x01000000 // SPI Master In Slave Out 
-#define AT91_PIO_PSR_MOIS    0x02000000 // SPI Master Out Slave In 
+#define AT91_PIO_PSR_MOSI    0x02000000 // SPI Master Out Slave In 
 #define AT91_PIO_PSR_NPCS0   0x04000000 // SPI Peripheral Chip Select 0
 #define AT91_PIO_PSR_NPCS1   0x08000000 // SPI Peripheral Chip Select 1
 #define AT91_PIO_PSR_NPCS2   0x10000000 // SPI Peripheral Chip Select 2
@@ -357,7 +357,7 @@
 #define AT91_DBG_DTXD       AT91_PIN(0,0,10) // Debug UART Transmit
 #define AT91_SPI_NPCS0      AT91_PIN(0,0,11) // SPI Chip Select 0
 #define AT91_SPI_MISO       AT91_PIN(0,0,12) // SPI Input
-#define AT91_SPI_MOIS       AT91_PIN(0,0,13) // SPI Output
+#define AT91_SPI_MOSI       AT91_PIN(0,0,13) // SPI Output
 #define AT91_SPI_SPCK       AT91_PIN(0,0,14) // SPI clock
 #define AT91_S2C_TF         AT91_PIN(0,0,15) // S2C Transmit Frame Sync
 #define AT91_S2C_TK         AT91_PIN(0,0,16) // S2C Transmit Clock
@@ -428,7 +428,7 @@
 #define AT91_PIO_PSR_DTXD     0x00000400 // Debug UART Transmit
 #define AT91_PIO_PSR_NPCS0    0x00000800 // SPI Chip Select 0
 #define AT91_PIO_PSR_MISO     0x00001000 // SPI Input
-#define AT91_PIO_PSR_MOIS     0x00002000 // SPI Output
+#define AT91_PIO_PSR_MOSI     0x00002000 // SPI Output
 #define AT91_PIO_PSR_SPCK     0x00004000 // SPI clock
 #define AT91_PIO_PSR_TF       0x00008000 // S2C Transmit Frame Sync
 #define AT91_PIO_PSR_TK       0x00010000 // S2C Transmit Clock
@@ -507,7 +507,7 @@
 #define AT91_SPI_NPCS2  AT91_PIN(0,0,14) // SPI 0 Chip Select 2 
 #define AT91_SPI_NPCS3  AT91_PIN(0,0,15) // SPI 0 Chip Select 3 
 #define AT91_SPI_MISO   AT91_PIN(0,0,16) // SPI 0 Master In Slave Out
-#define AT91_SPI_MOIS   AT91_PIN(0,0,17) // SPI 0 Master Out Slave In 
+#define AT91_SPI_MOSI   AT91_PIN(0,0,17) // SPI 0 Master Out Slave In 
 #define AT91_SPI_SPCK   AT91_PIN(0,0,18) // SPI 0 Clock
 #define AT91_CAN_CANRX  AT91_PIN(0,0,19) // CAN Receive
 #define AT91_CAN_CANTX  AT91_PIN(0,0,20) // CAN Transmit 
@@ -891,8 +891,8 @@
 #ifdef CYGHWR_HAL_ARM_AT91SAM7
 #define AT91_AIC_DCR    0x138 // Debug Control Register
 #define AT91_AIC_FFER   0x140 // Fast Forcing Enable Register
-#define AT91_AIC_FFDR   0x144 // Fast Forcing Enable Register
-#define AT91_AIC_FFSR   0x148 // Fast Forcing Enable Register
+#define AT91_AIC_FFDR   0x144 // Fast Forcing Disable Register
+#define AT91_AIC_FFSR   0x148 // Fast Forcing Status Register
 #endif // CYGHWR_HAL_ARM_AT91SAM7
 
 //=============================================================================
@@ -1262,7 +1262,7 @@
 #define AT91_PMC_SCER_PCK3 (1 << 11) // Programmable Clock Output
 
 #define AT91_PMC_PCER_PIOA (1 << 2) // Parallel IO Controller
-#define AT91_PMC_PCER_ADC  (1 << 4) // Analog-to-Digital Conveter
+#define AT91_PMC_PCER_ADC  (1 << 4) // Analog-to-Digital Converter
 #define AT91_PMC_PCER_SPI  (1 << 5) // Serial Peripheral Interface
 #define AT91_PMC_PCER_US0  (1 << 6) // USART 0
 #define AT91_PMC_PCER_US1  (1 << 7) // USART 1
@@ -1297,7 +1297,7 @@
 #define AT91_PMC_PCER_TC2  (1 <<14) // Timer Counter 2
 #define AT91_PMC_PCER_CAN  (1 <<15) // Controller Area Network
 #define AT91_PMC_PCER_EMAC (1 <<16) // Ethernet MAC
-#define AT91_PMC_PCER_ADC  (1 <<17) // Analog-to-Digital Conveter
+#define AT91_PMC_PCER_ADC  (1 <<17) // Analog-to-Digital Converter
 #else // Something unknown
 
 #error Unknown AT91 variant
@@ -1814,10 +1814,10 @@
 #define AT91_SSC_TFMR_FSOS_LOW      (3<<16) //Low Level Frame Synch Output
 #define AT91_SSC_TFMR_FSOS_HIGH     (4<<16) //High Level Frame Synch Output
 #define AT91_SSC_TFMR_FSOS_TOGGLE   (5<<16) //Toggle Frame Synch Output
-#define AT91_SSC_RFMR_FSDEN_DEF     (0<<23) //Frame Sync is Default Data
-#define AT91_SSC_RFMR_FSDEN_TSHR    (1<<23) //Frame Sync is TSHR Data
-#define AT91_SSC_RFMR_FSEDGE_POS    (0<<24) //Intr on +ve edge of Frame Sync
-#define AT91_SSC_RFMR_FSEDGE_NEG    (1<<24) //Intr on -ve edge of Frame Sync
+#define AT91_SSC_TFMR_FSDEN_DEF     (0<<23) //Frame Sync is Default Data
+#define AT91_SSC_TFMR_FSDEN_TSHR    (1<<23) //Frame Sync is TSHR Data
+#define AT91_SSC_TFMR_FSEDGE_POS    (0<<24) //Intr on +ve edge of Frame Sync
+#define AT91_SSC_TFMR_FSEDGE_NEG    (1<<24) //Intr on -ve edge of Frame Sync
 #define AT91_SSC_RHR  (0x20)
 #define AT91_SSC_THR  (0x24)
 #define AT91_SSC_RSHR (0x30)
@@ -1856,8 +1856,8 @@
 
 #define AT91_SSC_PTCR_RXTEN  (1 << 0) //Receive Transfers Enabled
 #define AT91_SSC_PTCR_RXTDIS (1 << 1) //Receive Transfers Disabled 
-#define AT91_SSC_PTCR_TXTEN  (1 << 8) //Receive Transfers Enabled  
-#define AT91_SSC_PTCR_TXTDIS (1 << 9) //Receive Transfers Disabled 
+#define AT91_SSC_PTCR_TXTEN  (1 << 8) //Transmit Transfers Enabled  
+#define AT91_SSC_PTCR_TXTDIS (1 << 9) //Transmit Transfers Disabled 
 
 #endif
 
@@ -2563,7 +2563,7 @@
   CYG_MACRO_START                               \
   HAL_ARM_AT91_PIOX_CFG(_pin_, 0, AT91_PIO);        \
   HAL_ARM_AT91_PIOX_CFG(_pin_, 1, AT91_PIOB);       \
-CYG_MACRO_END
+  CYG_MACRO_END
 
 // Configure a GPIO pin direction
 #define HAL_ARM_AT91_GPIO_CFG_DIRECTION(_pin_, _dir_)            \
