@@ -168,9 +168,14 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
             display       "Real-time clock period"
             flavor        data
             legal_values  1 to 0xffff 
-            calculated    ((CYGNUM_HAL_RTC_NUMERATOR * CYGNUM_HAL_ARM_AT91_CLOCK_SPEED/16) / CYGNUM_HAL_RTC_DENOMINATOR / 1000000000)
-            description   "
-                CYGNUM_HAL_RTC_PERIOD : (CYGNUM_HAL_RTC_NUMERATOR * CYGNUM_HAL_ARM_AT91_CLOCK_SPEED/16) / CYGNUM_HAL_RTC_DENOMINATOR / 1000000000 "
+            calculated    { (CYGNUM_HAL_RTC_NUMERATOR * 
+                             CYGNUM_HAL_ARM_AT91_CLOCK_SPEED /
+                             (CYGBLD_HAL_ARM_AT91_TIMER_TC ? 32 : 16) / 
+                             CYGNUM_HAL_RTC_DENOMINATOR / 
+                             1000000000
+                            )
+                          }
+            description   "Value to program into the RTC clock generator."
         }
     }
     

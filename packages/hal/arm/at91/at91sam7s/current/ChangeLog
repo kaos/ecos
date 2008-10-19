@@ -1,3 +1,9 @@
+2008-10-19  Igor B. Poretsky <poretsky@mlbox.ru>
+	    Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/hal_arm_at91sam7s.cdl: Fix calculation of RTC period. The TC
+	uses a different divider as the PIT.
+
 2008-09-04  John Eigelaar  <jeigelaar@mweb.co.za>
 
 	* cdl/hal_arm_at91sam7s.cdl: Set MOR OSCCOUNT and PLL Count to
