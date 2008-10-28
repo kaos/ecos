@@ -1,3 +1,8 @@
+2008-10-28  Oliver Munz <munz@speag.ch>
+
+	* cdl/phy_eth_drivers.cdl: 
+	* src/KSZ8041.c: Add support for Micrel KSZ8041 PHY
+	
 2008-08-05  Uwe Kindler <uwe_kindler@web.de>
 
 	* cdl/phy_eth_drivers.cdl: 

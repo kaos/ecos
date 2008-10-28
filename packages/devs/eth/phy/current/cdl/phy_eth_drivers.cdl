@@ -159,4 +159,13 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
           Include support for the Micrel KSZ8001 PHY"
     }
 
+    cdl_option CYGHWR_DEVS_ETH_PHY_KSZ8041 {
+        display       "Micrel KSZ8041"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a KSZ8041.c
+        description "
+          Include support for the Micrel KSZ8041 PHY"
+    }
+
 }
