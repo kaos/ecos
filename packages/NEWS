@@ -1,3 +1,6 @@
+* Cortex-M Architecture HAL contributed by eCosCentric Ltd.
+* STM32 Variant HAL, STM3210E platform HAL, serial device driver,
+  on-chip flash driver contributed by eCosCentric Ltd.
 * Synthetic target framebuffer device driver contributed by
   eCosCentric Ltd
 * Generic framebuffer support contributed by eCosCentric Ltd.

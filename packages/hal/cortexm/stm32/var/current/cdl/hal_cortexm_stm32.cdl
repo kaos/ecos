@@ -1,0 +1,231 @@
+##==========================================================================
+##
+##      hal_cortexm_stm32.cdl
+##
+##      Cortex-M STM32 variant HAL configuration data
+##
+##==========================================================================
+######ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2008 eCosCentric Limited.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+######ECOSGPLCOPYRIGHTEND####
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    nickg
+## Date:         2008-07-30
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+cdl_package CYGPKG_HAL_CORTEXM_STM32 {
+    display       "Cortex-M3 STM32 Variant"
+    parent        CYGPKG_HAL_CORTEXM
+    hardware
+    include_dir   cyg/hal
+    define_header hal_cortexm_stm32.h
+    description   "
+        This package provides generic support for the ST Cortex-M based STM32
+        microcontroller family.
+        It is also necessary to select a variant and platform HAL package."
+
+    compile       hal_diag.c stm32_misc.c
+
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
+    implements    CYGINT_PROFILE_HAL_TIMER
+
+    requires      { CYGHWR_HAL_CORTEXM == "M3" }
+
+    cdl_option CYGHWR_HAL_CORTEXM_STM32 {
+        display          "STM32 variant in use"
+        flavor           data
+        default_value    {"F103ZE"}
+        legal_values     {"F103RC" "F103VC" "F103ZC"
+                          "F103RD" "F103VD" "F103ZD"
+                          "F103RE" "F103VE" "F103ZE" }
+        description      "The STM32 has several variants, the main differences
+                          being in the size of on-chip FLASH and SRAM
+                          and numbers of some peripherals. This option
+                          allows the platform HAL to select the specific
+                          microcontroller fitted."
+    }
+                          
+    cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS {
+        display         "CPU priority levels"
+        flavor          data
+        calculated      4
+        description     "This option defines the number of bits used to
+                         encode the exception priority levels that this
+                         variant of the Cortex-M CPU implements."
+    }
+
+    
+   
+    cdl_component CYGHWR_HAL_CORTEXM_STM32_CLOCK {
+        display         "Clock setup calculations"
+        default_value   1
+        
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE {
+            display         "PLL input source"
+            flavor          data
+            default_value   { "HSE" }
+            legal_values    { "HSI_HALF" "HSE" "HSE_HALF" }
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL {
+            display         "PLL multiplier"
+            flavor          data
+            default_value   9
+            legal_values    2 to 16
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV {
+            display         "HCLK divider"
+            flavor          data
+            default_value   1
+            legal_values    { 1 2 4 8 16 64 128 256 512 }
+        }
+        
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK1_DIV {
+            display         "PCLK1 divider"
+            flavor          data
+            default_value   2
+            legal_values    { 1 2 4 8 16 }
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV {
+            display         "PCLK2 divider"
+            flavor          data
+            default_value   1
+            legal_values    { 1 2 4 8 16 }
+        }
+    }
+
+    cdl_option CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY {
+        display       "Clock interrupt ISR priority"
+        flavor        data
+        calculated    0xE0
+        description   "Set clock ISR priority to lowest priority."
+    }
+        
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants"
+        flavor        none
+        no_define
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            default_value 1000000000
+        }
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            default_value 100
+        }
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+            default_value 1000000 / CYGNUM_HAL_RTC_DENOMINATOR
+            description   "The period defined here is something of a fake, it is expressed
+                           in terms of a notional 1MHz clock. The value actually installed
+                           in the hardware is calculated from the current settings of the
+                           clock generation hardware."
+        }
+    }
+
+    
+    cdl_interface CYGINT_HAL_STM32_UART0 {
+        display     "Platform has UART0 serial port"
+        description "The platform has a socket on UART0."
+    }
+
+    cdl_interface CYGINT_HAL_STM32_UART1 {
+        display     "Platform has UART1 serial port"
+        description "The platform has a socket on UART1."
+    }
+
+    cdl_interface CYGINT_HAL_STM32_UART2 {
+        display     "Platform has UART2 serial port"
+        description "The platform has a socket on UART2."
+    }
+
+    cdl_interface CYGINT_HAL_STM32_UART3 {
+        display     "Platform has UART3 serial port"
+        description "The platform has a socket on UART3."
+    }
+
+    cdl_interface CYGINT_HAL_STM32_UART4 {
+        display     "Platform has UART4 serial port"
+        description "The platform has a socket on UART4."
+    }
+    
+    cdl_component CYGPKG_HAL_CORTEXM_STM32_OPTIONS {
+        display "Build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package."
+
+        cdl_option CYGPKG_HAL_CORTEXM_STM32_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the STM32 variant HAL package. These flags are used
+                in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_HAL_CORTEXM_STM32_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the STM32 variant HAL package. These flags are removed from
+                the set of global flags if present."
+        }
+    }
+
+    cdl_option CYGPKG_HAL_CORTEXM_STM32_TESTS {
+        display "STM32 tests"
+        active_if      CYGPKG_KERNEL
+        flavor  data
+        no_define
+        calculated { "tests/timers" }
+        description   "
+            This option specifies the set of tests for the STM32 HAL."
+    }
+    
+}

@@ -1,0 +1,36 @@
+// eCos memory layout
+
+#include <pkgconf/hal.h>
+#include <cyg/infra/cyg_type.inc>
+
+MEMORY
+{
+    sram  : ORIGIN = 0x20000000, LENGTH = 0x00010000-CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+    flash : ORIGIN = 0x08000000, LENGTH = 0x00080000
+    rom   : ORIGIN = 0x64000000, LENGTH = 0x01000000
+    ram   : ORIGIN = 0x68000000, LENGTH = 0x00100000
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    SECTION_rom_vectors (ram, 0x68000000, LMA_EQ_VMA)
+    SECTION_RELOCS (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_text (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_fini (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_rodata (ram, ALIGN(0x8), LMA_EQ_VMA)
+    SECTION_rodata1 (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_fixup (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_gcc_except_table (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_eh_frame (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_got (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_data (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+    SECTIONS_END
+}
+
+hal_vsr_table = 0x20000000;
+hal_virtual_vector_table = hal_vsr_table + 128*4;
+hal_startup_stack = 0x20000000 + 1024*64;
+

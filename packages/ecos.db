@@ -6693,3 +6693,72 @@ package CYGPKG_ATHTTPD {
 }
 
 
+# ==========================================================================
+# Cortex-M architecture support
+
+package CYGPKG_HAL_CORTEXM {
+	alias		{ "Cortex-M common HAL" hal_cortexm cortexm_hal cortexm_arch_hal }
+	directory	hal/cortexm/arch
+	script		hal_cortexm.cdl
+	hardware
+	description "
+        The CortexM architecture HAL package provides generic support for the ARM
+        Cortex-M processor architecture. It is also necessary to select
+        variant and platform HAL packages."
+}
+
+package CYGPKG_HAL_CORTEXM_STM32 {
+	alias		{ "ST STM32 variant HAL" hal_cortexm_stm32 }
+	directory	hal/cortexm/stm32/var
+	script		hal_cortexm_stm32.cdl
+	hardware
+        description "
+        The STM32 HAL package provides the support needed to run
+        eCos and RedBoot on targets based on the ST STM32
+        family of microcontrollers."
+}
+
+package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
+	alias		{ "ST STM3210E EVAL HAL" hal_cortexm_stm3210e_eval }
+	directory	hal/cortexm/stm32/stm3210e_eval
+	script		hal_cortexm_stm32_stm3210e_eval.cdl
+	hardware
+        description "
+        The stm3210e_eval HAL package provides the support needed to run
+        eCos on the ST STM3210E EVAL board."
+}
+
+package CYGPKG_IO_SERIAL_CORTEXM_STM32 {
+    alias             { "ST STM32 serial device drivers"
+                        devs_serial_cortexm_stm32 stm32_serial_driver }
+    hardware
+    directory	      devs/serial/cortexm/stm32
+    script	      ser_cortexm_stm32.cdl	
+    description       "ST STM32 serial device driver"
+}
+
+package CYGPKG_DEVS_FLASH_STM32 {
+	alias 		{ "Internal FLASH memory support for ST STM32" flash_stm32 }
+	directory	devs/flash/cortexm/stm32
+	script		flash_stm32.cdl
+	hardware
+        description "
+           This package contains hardware support for the internal FLASH memory
+	   on the ST STM32 devices."
+}
+
+target stm3210e_eval {
+        alias { "ST STM3210E EVAL board" stm3210e }
+        packages { CYGPKG_HAL_CORTEXM
+                   CYGPKG_HAL_CORTEXM_STM32
+                   CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL
+                   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2
+                   CYGPKG_DEVS_FLASH_STM32
+                   CYGPKG_IO_SERIAL_CORTEXM_STM32
+                 }
+        description "The stm3210e_eval target provides the packages needed
+        to run eCos on the STM3210E EVAL board."
+}
+
+# ==========================================================================
+# End of ecos.db

@@ -1,0 +1,68 @@
+2008-10-10  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_rom.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_rom.h:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_ram.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_ram.h:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_jtag.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_jtag.h:	
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_sram.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_sram.h:
+	Update RAM/SRAM upper limits to account for interrupt/init
+	stack.
+
+	* src/stm3210e_eval_flash.c: Use generic null functions for
+	external flash lock operations.
+
+2008-10-06  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3210e_eval.cdl:
+	* include/plf_arch.h:
+	* include/plf_intr.h:
+	* include/plf_io.h:
+	* src/stm3210e_eval_misc.c:
+	* src/stm3210e_eval_flash.c:
+	* misc/redboot_ROM.ecm:
+	* misc/redboot_JTAG.ecm:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_rom.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_rom.h:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_ram.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_ram.h:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_jtag.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_jtag.h:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_sram.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_sram.h:
+	New package -- ST STM3210E EVAL board HAL.
+	
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2008 eCosCentric Limited
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================

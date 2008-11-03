@@ -1,3 +1,10 @@
+2008-11-03  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/dlmalloc.cxx (MALLOC_COPY): Replace memmove() with memcpy().
+
+	* include/dlmallocimpl.hxx (class Cyg_Mempool_dlmalloc_Implementation):
+	Remove spurious typedef in definition of struct malloc_chunk.
+
 2008-01-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/dlmalloc.cxx (MALLOC_COPY): 

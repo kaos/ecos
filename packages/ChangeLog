@@ -1,3 +1,7 @@
+2008-10-31  Nick Garnett  <nickg@ecoscentric.com>
+
+	* NEWS, ecos.db: Add Cortex-M HAL and drivers.
+
 2008-10-07  Bart Veer  <bartv@ecoscentric.com>
 
 	* NEWS, ecos.db: add generic framebuffer support and a synthetic

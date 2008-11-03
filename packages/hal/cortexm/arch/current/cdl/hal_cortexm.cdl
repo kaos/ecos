@@ -1,0 +1,134 @@
+##==========================================================================
+##
+##      hal_cortexm.cdl
+##
+##      Cortex-M architectural HAL configuration data
+##
+##==========================================================================
+######ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2008 eCosCentric Limited.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+######ECOSGPLCOPYRIGHTEND####
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    nickg
+## Date:         2008-07-30
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+cdl_package CYGPKG_HAL_CORTEXM {
+    display       "Cortex-M Architecture"
+    parent        CYGPKG_HAL
+    hardware
+    include_dir   cyg/hal
+    define_header hal_cortexm.h
+    description   "
+        This package provides generic support for the ARM Cortex-M architecture.
+        It is also necessary to select a variant and platform HAL package."
+
+    compile       hal_misc.c context.S cortexm_stub.c
+
+    requires { CYGHWR_HAL_CORTEXM_BIGENDIAN implies
+        is_substr(CYGBLD_GLOBAL_CFLAGS,   " -mbig-endian ") &&
+        is_substr(CYGBLD_GLOBAL_LDFLAGS,  " -mbig-endian ") }
+    requires { !CYGHWR_HAL_CORTEXM_BIGENDIAN implies
+        !is_substr(CYGBLD_GLOBAL_CFLAGS,  " -mbig-endian ") &&
+        !is_substr(CYGBLD_GLOBAL_LDFLAGS, " -mbig-endian ") }
+
+    make {
+        <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
+        $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(CFLAGS) -c -o $@ $<
+        @echo $@ ": \\" > $(notdir $@).deps
+        @tail -n +2 vectors.tmp >> $(notdir $@).deps
+        @echo >> $(notdir $@).deps
+        @rm vectors.tmp
+    }
+
+    make {
+        <PREFIX>/lib/target.ld: <PACKAGE>/src/cortexm.ld
+        $(CC) -E -P -Wp,-MD,target.tmp -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
+        @echo $@ ": \\" > $(notdir $@).deps
+        @tail -n +2 target.tmp >> $(notdir $@).deps
+        @echo >> $(notdir $@).deps
+        @rm target.tmp
+    }
+
+    cdl_interface CYGINT_HAL_CORTEXM_BIGENDIAN {
+        display "The platform and architecture supports Big Endian operation"
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_BIGENDIAN {
+        display          "Use big-endian mode"
+        active_if        { CYGINT_HAL_CORTEXM_BIGENDIAN != 0 }
+        default_value    0
+        description      "
+            Use the CPU in big-endian mode."
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM {
+        display          "Cortex-M CPU family"
+        flavor           data
+        legal_values     { "M1" "M3" }
+        default_value    { "M3" }
+        description      "
+            The Cortex-M architecture has two variants at present. The M1 is
+            base on the ARMV6 architecture specification and executes an extended
+            variant of the Thumb instruction set and has some differences in
+            the interrupt controller. The M3 is based on the ARMV7 architecture
+            specification and executes the Thumb2 instruction set."
+    }
+
+    cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_MAX {
+         display         "Maximum usable priority"
+         flavor          data
+         calculated      1<<(8-CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS)
+         description     "
+             Calculate the maximum exception priority that can be set by interrupts.
+             Higher priorities are reserved for the DEBUG and SVC traps."
+    }
+    
+    cdl_option CYGBLD_LINKER_SCRIPT {
+        display "Linker script"
+        flavor data
+	no_define
+        calculated  { "src/cortexm.ld" }
+    }
+
+    cdl_option CYGNUM_HAL_BREAKPOINT_LIST_SIZE {
+            display       "Number of breakpoints supported by the HAL."
+            flavor        data
+            default_value 8
+            description   "
+                This option determines the number of breakpoints supported by the HAL."
+    }    
+}
+
+# EOF hal_cortexm.cdl

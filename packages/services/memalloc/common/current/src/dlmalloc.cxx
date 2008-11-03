@@ -333,7 +333,7 @@ do {                                                                          \
                                      *mcdst++ = *mcsrc++;                     \
                                      *mcdst++ = *mcsrc++;                     \
                                      *mcdst   = *mcsrc  ;                     \
-  } else memmove(dest, src, mcsz);                                             \
+  } else memcpy(dest, src, mcsz);                                             \
 } while(0)
 
 #else /* !CYGIMP_MEMALLOC_ALLOCATOR_DLMALLOC_USE_MEMCPY */

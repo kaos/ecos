@@ -102,7 +102,7 @@ public:
 
     typedef size_t Cyg_dlmalloc_size_t;
     
-    typedef struct malloc_chunk
+    struct malloc_chunk
     {
         Cyg_dlmalloc_size_t prev_size; /* Size of previous chunk (if free). */
         Cyg_dlmalloc_size_t size;      /* Size in bytes, including overhead. */

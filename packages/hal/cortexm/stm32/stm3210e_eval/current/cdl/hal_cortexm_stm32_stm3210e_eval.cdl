@@ -1,0 +1,330 @@
+##==========================================================================
+##
+##      hal_cortexm_stm32_stm3210e_eval.cdl
+##
+##      Cortex-M STM3210E EVAL platform HAL configuration data
+##
+##==========================================================================
+######ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2008 eCosCentric Limited.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+######ECOSGPLCOPYRIGHTEND####
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    nickg
+## Date:         2008-07-30
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
+    display       "ST STM3210E EVAL Development Board HAL"
+    doc           ecospro-ref/hal-cortexm-stm3210e_eval-part.html
+    parent        CYGPKG_HAL_CORTEXM_STM32
+    define_header hal_cortexm_stm32_stm3210e_eval.h
+    include_dir   cyg/hal
+    hardware
+    description   "
+        The STM3210E EVAL HAL package provides the support needed to run
+        eCos on the ST STM3210E EVAL board."
+
+    compile       stm3210e_eval_misc.c
+
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_cortexm.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_cortexm_stm32.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_cortexm_stm32_stm3210e_eval.h>"
+	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"Cortex-M3\""
+        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"ST STM3210E EVAL\""
+        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+    }
+
+    cdl_component CYG_HAL_STARTUP {
+        display       "Startup type"
+        flavor        data
+        default_value {"RAM"}
+        legal_values  {"RAM" "SRAM" "ROM" "JTAG"}
+	no_define
+	define -file system.h CYG_HAL_STARTUP
+        description   "
+            When targetting the ST STM3210E EVAL board it is possible to
+            build the system for either RAM bootstrap or ROM bootstrap.
+            Select 'RAM' when building programs to load into RAM using onboard
+            debug software such as RedBoot or eCos GDB stubs.  Select 'ROM'
+            when building a stand-alone application which will be put
+            into ROM. The 'JTAG' type allows programs to be downloaded using a
+            JTAG debugger such as a BDI3000 or PEEDI. The 'SRAM' type allows
+            programs to be downloaded via a JTAG debugger into on-chip SRAM."
+    }
+    
+    cdl_component CYGHWR_MEMORY_LAYOUT {
+        display "Memory layout"
+        flavor data
+        no_define
+        default_value { (CYG_HAL_STARTUP == "RAM" ) ? "cortexm_stm3210e_eval_ram"      :
+                        (CYG_HAL_STARTUP == "SRAM") ? "cortexm_stm3210e_eval_sram"     :
+                        (CYG_HAL_STARTUP == "ROM" ) ? "cortexm_stm3210e_eval_rom"      :
+                        (CYG_HAL_STARTUP == "JTAG") ? "cortexm_stm3210e_eval_jtag"     :
+                                                      "undefined" }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
+                display "Memory layout linker script fragment"
+                flavor data
+                no_define
+                define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
+                calculated { "<pkgconf/mlt_" . CYGHWR_MEMORY_LAYOUT . ".ldi>" }
+        }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_H {
+                display "Memory layout header file"
+                flavor data
+                no_define
+                define -file system.h CYGHWR_MEMORY_LAYOUT_H
+                calculated { "<pkgconf/mlt_" . CYGHWR_MEMORY_LAYOUT . ".h>" }
+        }
+
+    }
+
+    cdl_option CYGARC_HAL_CORTEXM_STM32_INPUT_CLOCK {
+        display         "Input Clock frequency"
+        flavor          data
+        default_value   8000000
+        legal_values    0 to 1000000000
+        description     "Main clock input."
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_STM32_FLASH {
+        display         "External NOR flash support"
+        parent          CYGPKG_IO_FLASH
+        active_if       CYGPKG_IO_FLASH
+        flavor          none
+        compile         -library=libextras.a stm3210e_eval_flash.c
+        description "This option enables support for the external NOR flash device."
+    }
+
+    # Both UARTs 0 and 1 are available for diagnostic/debug use.
+    implements CYGINT_HAL_STM32_UART0
+    implements CYGINT_HAL_STM32_UART1
+
+    implements      CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+    implements      CYGINT_IO_SERIAL_LINE_STATUS_HW
+    
+    
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+        display      "Number of communication channels on the board"
+        flavor       data
+        calculated   2
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+        display          "Debug serial port"
+        active_if        CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+            The ST STM3210E EVAL board has two serial ports. This option
+            chooses which port will be used to connect to a host
+            running GDB."
+     }
+
+     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+         display          "Diagnostic serial port"
+         active_if        CYGPRI_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_CONFIGURABLE
+         flavor data
+         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+         default_value    0
+         description      "
+            The ST STM3210E EVAL has two serial ports. This option
+            chooses which port will be used for diagnostic output."
+     }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
+        display       "Console serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 38400
+        description   "
+            This option controls the default baud rate used for the
+            console connection.
+            Note: this should match the value chosen for the GDB port if the
+            diagnostic and GDB port are the same."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
+        display       "GDB serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 38400
+        description   "
+            This option controls the default baud rate used for the
+            GDB connection.
+            Note: this should match the value chosen for the console port if the
+            console and GDB port are the same."
+    }
+
+    
+    cdl_component CYGBLD_GLOBAL_OPTIONS {
+        display "Global build options"
+        flavor  none
+        parent  CYGPKG_NONE
+        description   "
+	    Global build options including control over
+	    compiler flags, linker flags and choice of toolchain."
+
+
+        cdl_option CYGBLD_GLOBAL_COMMAND_PREFIX {
+            display "Global command prefix"
+            flavor  data
+            no_define
+            default_value { "arm-eabi" }
+            description "
+                This option specifies the command prefix used when
+                invoking the build tools."
+        }
+
+        cdl_option CYGBLD_GLOBAL_CFLAGS {
+            display "Global compiler flags"
+            flavor  data
+            no_define
+            default_value { "-mcpu=cortex-m3 -mthumb -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions" }
+            description   "
+                This option controls the global compiler flags which are used to
+                compile all packages by default. Individual packages may define
+                options which override these global flags."
+        }
+
+        cdl_option CYGBLD_GLOBAL_LDFLAGS {
+            display "Global linker flags"
+            flavor  data
+            no_define
+            default_value { "-mcpu=cortex-m3 -mthumb -Wl,--gc-sections -Wl,-static -Wl,-n -g -nostdlib" }
+            description   "
+                This option controls the global linker flags. Individual
+                packages may define options which override these global flags."
+        }
+    }
+
+    cdl_option CYGSEM_HAL_ROM_MONITOR {
+        display       "Behave as a ROM monitor"
+        flavor        bool
+        default_value 0
+        parent        CYGPKG_HAL_ROM_MONITOR
+        requires      { CYG_HAL_STARTUP == "ROM" || CYG_HAL_STARTUP == "JTAG" }
+        requires      { CYGDBG_HAL_CRCTABLE_LOCATION == "ROM" }
+        description   "
+            Enable this option if this program is to be used as a ROM monitor,
+            i.e. applications will be loaded into RAM on the board, and this
+            ROM monitor may process exceptions or interrupts generated from the
+            application. This enables features such as utilizing a separate
+            interrupt stack when exceptions are generated."
+    }
+
+    cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
+         display       "Work with a ROM monitor"
+         flavor        booldata
+         legal_values  { "Generic" "GDB_stubs" }
+         default_value { CYG_HAL_STARTUP == "RAM" ? "GDB_stubs" : 0 }
+         parent        CYGPKG_HAL_ROM_MONITOR
+         requires      { CYG_HAL_STARTUP == "RAM" }
+         description   "
+             Support can be enabled for different varieties of ROM monitor.
+             This support changes various eCos semantics such as the encoding
+             of diagnostic output, or the overriding of hardware interrupt
+             vectors.
+             Firstly there is \"Generic\" support which prevents the HAL
+             from overriding the hardware vectors that it does not use, to
+             instead allow an installed ROM monitor to handle them. This is
+             the most basic support which is likely to be common to most
+             implementations of ROM monitor.
+             \"GDB_stubs\" provides support when GDB stubs are included in
+             the ROM monitor or boot ROM."
+     }
+
+    cdl_component CYGPKG_REDBOOT_HAL_OPTIONS {
+        display       "Redboot HAL options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
+        description   "
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+
+        requires { CYGNUM_REDBOOT_FLASH_BASE == 0x64000000 }
+
+        cdl_option CYGPRI_HAL_STM3210E_EVAL_MEM_SEGMENTS {
+            display       "Set RedBoot memory segments"
+            requires      { CYGBLD_REDBOOT_MAX_MEM_SEGMENTS == 3 }
+            no_define
+            calculated    2
+            description   "This CDL option is used to inform RedBoot of the
+                           number of RAM memory segments on this platform."
+        }
+
+        cdl_option CYGBLD_BUILD_REDBOOT_BIN {
+            display       "Build Redboot ROM binary images"
+            active_if     CYGBLD_BUILD_REDBOOT
+            default_value 1
+            no_define
+            description "This option enables the conversion of the Redboot ELF
+                         image to binary image formats suitable for ROM programming."
+
+            make -priority 325 {
+                <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
+                $(OBJCOPY) --strip-debug $< $(@:.bin=.img)
+                $(OBJCOPY) -O srec $< $(@:.bin=.srec)
+                $(OBJCOPY) -O binary $< $@
+            }
+        }
+    }
+
+    cdl_component CYGBLD_HAL_CORTEXM_STM3210E_EVAL_GDB_STUBS {
+        display "Create StubROM SREC and binary files"
+        active_if CYGBLD_BUILD_COMMON_GDB_STUBS
+        no_define
+        calculated 1
+        requires { CYG_HAL_STARTUP == "ROM" }
+
+        make -priority 325 {
+                <PREFIX>/bin/stubrom.srec : <PREFIX>/bin/gdb_module.img
+                $(OBJCOPY) -O srec $< $@
+        }
+        make -priority 325 {
+                <PREFIX>/bin/stubrom.bin : <PREFIX>/bin/gdb_module.img
+                $(OBJCOPY) -O binary $< $@
+        }
+
+        description "This component causes the ELF image generated by the
+                     build process to be converted to S-Record and binary
+                     files."
+    }
+    
+}
