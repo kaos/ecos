@@ -1,3 +1,8 @@
+2007-10-14  Oyvind Harboe  <oyvind.harboe@zylin.com>
+
+	* src/profile.c: do not relaunch tftpd thread upon second invocation
+	of profile_on
+
 2008-08-18  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/Makefile.am: update host-side configury

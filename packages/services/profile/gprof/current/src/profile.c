@@ -577,11 +577,16 @@ profile_on(void *_start, void *_end, int _bucket_size, int resolution)
 
     profile_enabled = 1;
 
-#ifdef CYGPKG_PROFILE_TFTP    
-    // Create a TFTP server to provide the data
-    // invoking this a second time is harmless
-    (void) tftpd_start(CYGNUM_PROFILE_TFTP_PORT, &profile_tftp_fileops);
-#endif    
+#ifdef CYGPKG_PROFILE_TFTP
+    static int profile_tftp_is_started        = 0;
+    if (!profile_tftp_is_started)
+    {
+    	profile_tftp_is_started = 1;
+        // Create a TFTP server the first time we start profiling to
+        // provide access to the data via the network.
+        (void) tftpd_start(CYGNUM_PROFILE_TFTP_PORT, &profile_tftp_fileops);
+    }
+#endif
 }
 
 // EOF profile.c
