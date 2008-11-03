@@ -1,3 +1,15 @@
+2009-11-03  Gabor Toeroek <tgabor84@gmail.com>
+
+	* cdl/hal_arm_at91sam7s.cdl
+	* include/hal_platform_ints.h
+	* include/plf_io.h
+	* include/var_io.h: Add support for AT91SAM7SE
+	
+2009-10-31  Oliver Munz" <munz@speag.ch>
+
+	* cdl/hal_arm_at91sam7s.cdl: Allow external clock input to be up
+	to 50Mhz, but the crystal is limited to 30MHz.
+
 2008-10-19  Igor B. Poretsky <poretsky@mlbox.ru>
 	    Andrew Lunn  <andrew.lunn@ascom.ch>
 

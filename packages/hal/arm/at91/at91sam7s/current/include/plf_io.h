@@ -76,8 +76,12 @@
 
 // Peripheral Input/Output Controllers
 #define AT91_PIOA   0xFFFFF400
-#ifdef CYGHWR_HAL_ARM_AT91SAM7X
+#if defined(CYGHWR_HAL_ARM_AT91SAM7X) || \
+    defined(CYGHWR_HAL_ARM_AT91SAM7SE)
 #define AT91_PIOB   0xFFFFF600
+#endif
+#if defined(CYGHWR_HAL_ARM_AT91SAM7SE)
+#define AT91_PIOC   0xFFFFF800
 #endif
 
 // USART
@@ -175,7 +179,9 @@ extern cyg_uint32 hal_at91_us_baud(cyg_uint32 baud);
 
 #endif
 
-#ifdef CYGHWR_HAL_ARM_AT91SAM7_at91sam7x512
+#if defined(CYGHWR_HAL_ARM_AT91SAM7_at91sam7x512) || \
+    defined(CYGHWR_HAL_ARM_AT91SAM7_at91sam7s512) || \
+    defined(CYGHWR_HAL_ARM_AT91SAM7_at91sam7se512)
 #define AT91_MC_FMR0 0x60
 #define AT91_MC_FMR1 0x70
 #define AT91_MC_FMR AT91_MC_FMR0
@@ -196,7 +202,6 @@ extern void hal_plf_eth_init(void);
 #endif          
 
 #endif  //__ASSEMBLER__         
-
 
 #endif //CYGONCE_HAL_PLF_IO_H
 

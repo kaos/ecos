@@ -77,7 +77,8 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
         flavor         data
         default_value  {"at91sam7s256"}
         legal_values   {"at91sam7s32" "at91sam7s321" "at91sam7s64" 
-                        "at91sam7s128" "at91sam7s256" 
+                        "at91sam7s128" "at91sam7s256" "at91sam7s512" 
+                        "at91sam7se32" "at91sam7se256" "at91sam7se512" 
                         "at91sam7x128" "at91sam7x256" "at91sam7x512" 
                         "at91sam7xc128" "at91sam7xc256" }
         description    "
@@ -90,13 +91,23 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
 
     cdl_option CYGHWR_HAL_ARM_AT91SAM7S {
         display     "SAM7S device" 
-        calculated  { CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s256" ||
+        calculated  { CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s512" ||
+                      CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s256" ||
                       CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s128" ||        
                       CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s64"  ||        
                       CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s32"  ||
                       CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s321" }
         description "
             Is the AT91SAM7 device a member of the AT91SAM7S family?"
+    }
+
+    cdl_option CYGHWR_HAL_ARM_AT91SAM7SE {
+        display     "SAM7SE device" 
+        calculated  { CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7se512" ||
+                      CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7se256" ||
+                      CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7se32" }
+        description "
+            Is the AT91SAM7 device a member of the AT91SAM7SE family?"
     }
 
     cdl_option CYGHWR_HAL_ARM_AT91SAM7X {
@@ -119,6 +130,7 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
     cdl_option CYGBLD_HAL_ARM_AT91SAM7_USB {
         display       "USB device"
         active_if     {!( "at91sam7s32" == CYGHWR_HAL_ARM_AT91SAM7S) ||
+                        CYGHWR_HAL_ARM_AT91SAM7SE                    ||
                         CYGHWR_HAL_ARM_AT91SAM7X                     ||
                         CYGHWR_HAL_ARM_AT91SAM7XC }
         implements    CYGINT_DEVS_USB_AT91_HAS_USB
@@ -222,10 +234,22 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
             PLL clock divided by two"
     }
 
+    cdl_option CYGNUM_HAL_ARM_AT91_CLOCK_XIN_FREQ_MAX {
+        display       "Input clock frequency maximum"
+        flavor        data
+        calculated    { CYGNUM_HAL_ARM_AT91_CLOCK_TYPE == "CRYSTAL" ? 
+                        20000000 : 50000000 }
+        description   "
+
+            The oscilator in the AT91SAM allows a crystal of up to
+            20MHz. However by feeding in directly a clock signal, it
+            is possible to use upto 50MHz in XIN."
+     }
+
     cdl_option CYGNUM_HAL_ARM_AT91_CLOCK_OSC_MAIN {
         display       "Main oscillator frequency"
         flavor        data
-        legal_values  { 3000000 to 20000000} 
+        legal_values  { 3000000 to CYGNUM_HAL_ARM_AT91_CLOCK_XIN_FREQ_MAX } 
         default_value { 18432000 }
         description   "
             The frequency of the clock input, be it a crystal or a clock 
