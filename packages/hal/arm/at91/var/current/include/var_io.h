@@ -244,6 +244,42 @@
 #define AT91_GPIO_PB31      AT91_PIN(1,0,31)
 #endif //AT91_PIOB
 
+#ifdef AT91_PIOC
+// GPIO pins on PIOC.
+#define AT91_GPIO_PC0       AT91_PIN(2,0, 0)
+#define AT91_GPIO_PC1       AT91_PIN(2,0, 1)
+#define AT91_GPIO_PC2       AT91_PIN(2,0, 2)
+#define AT91_GPIO_PC3       AT91_PIN(2,0, 3)
+#define AT91_GPIO_PC4       AT91_PIN(2,0, 4)
+#define AT91_GPIO_PC5       AT91_PIN(2,0, 5)
+#define AT91_GPIO_PC6       AT91_PIN(2,0, 6)
+#define AT91_GPIO_PC7       AT91_PIN(2,0, 7)
+#define AT91_GPIO_PC8       AT91_PIN(2,0, 8)
+#define AT91_GPIO_PC9       AT91_PIN(2,0, 9)
+#define AT91_GPIO_PC10      AT91_PIN(2,0,10)
+#define AT91_GPIO_PC11      AT91_PIN(2,0,11)
+#define AT91_GPIO_PC12      AT91_PIN(2,0,12)
+#define AT91_GPIO_PC13      AT91_PIN(2,0,13)
+#define AT91_GPIO_PC14      AT91_PIN(2,0,14)
+#define AT91_GPIO_PC15      AT91_PIN(2,0,15)
+#define AT91_GPIO_PC16      AT91_PIN(2,0,16)
+#define AT91_GPIO_PC17      AT91_PIN(2,0,17)
+#define AT91_GPIO_PC18      AT91_PIN(2,0,18)
+#define AT91_GPIO_PC19      AT91_PIN(2,0,19)
+#define AT91_GPIO_PC20      AT91_PIN(2,0,20)
+#define AT91_GPIO_PC21      AT91_PIN(2,0,21)
+#define AT91_GPIO_PC22      AT91_PIN(2,0,22)
+#define AT91_GPIO_PC23      AT91_PIN(2,0,23)
+#define AT91_GPIO_PC24      AT91_PIN(2,0,24)
+#define AT91_GPIO_PC25      AT91_PIN(2,0,25)
+#define AT91_GPIO_PC26      AT91_PIN(2,0,26)
+#define AT91_GPIO_PC27      AT91_PIN(2,0,27)
+#define AT91_GPIO_PC28      AT91_PIN(2,0,28)
+#define AT91_GPIO_PC29      AT91_PIN(2,0,29)
+#define AT91_GPIO_PC30      AT91_PIN(2,0,30)
+#define AT91_GPIO_PC31      AT91_PIN(2,0,31)
+#endif //AT91_PIOC
+
 #if defined(CYGHWR_HAL_ARM_AT91_M55800A)
 
 #define AT91_TC_TCLK3       AT91_PIN(0,0, 0) // Timer 3 Clock signal
@@ -448,7 +484,7 @@
 #define AT91_PIO_PSR_RI1      0x20000000 // USART 2 Ring Indicator
 #define AT91_PIO_PSR_IRQ1     0x40000000 // Interrupt Request 1
 #define AT91_PIO_PSR_NPCS1    0x80000000 // SPI Chip Select 1
-#endif // !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s64)
+#endif // !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s32)
 
 // PIO Peripheral B
 #define AT91_PIO_PSR_TIOA0     0x00000001 // Timer/Counter 0 IO Line A
@@ -484,7 +520,7 @@
 #define AT91_PIO_PSR_TCLK2     0x20000000 // External Clock Input 2
 #define AT91_PIO_PSR_NPCS2X    0x40000000 // SPI Chip Select 2 (again)
 #define AT91_PIO_PSR_PCK2X     0x80000000 // Programmable Clock Output 2(again)
-#endif // !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s64)
+#endif // !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s32)
 #endif // CYGHWR_HAL_ARM_AT91SAM7S
 
 #ifdef CYGHWR_HAL_ARM_AT91SAM7X
@@ -707,11 +743,404 @@
 #define AT91_PIO_PSR_PWM1X        (1<<28) // Pulse Width Modulation #1
 #define AT91_PIO_PSR_PWM2X        (1<<29) // Pulse Width Modulation #2
 #define AT91_PIO_PSR_PWM3X        (1<<30) // Pulse Width Modulation #3
-#endif
+#endif // CYGHWR_HAL_ARM_AT91SAM7X
 
 #ifdef CYGHWR_HAL_ARM_AT91SAM7XC
 #error Sorry, still missing. Happy typing
 #endif
+
+#ifdef CYGHWR_HAL_ARM_AT91SAM7SE
+//PIO Controller A Peripheral A
+#define AT91_PWM_PWM0       AT91_PIN(0,0, 0) // Pulse Width Modulation 0
+#define AT91_PWM_PWM1       AT91_PIN(0,0, 1) // Pulse Width Modulation 1
+#define AT91_PWM_PWM2       AT91_PIN(0,0, 2) // Pulse Width Modulation 2
+#define AT91_TWI_TWD        AT91_PIN(0,0, 3) // Two Wire Data
+#define AT91_TWI_TWCK       AT91_PIN(0,0, 4) // Two Wire Clock
+#define AT91_USART_RXD0     AT91_PIN(0,0, 5) // USART 0 Receive Data
+#define AT91_USART_TXD0     AT91_PIN(0,0, 6) // USART 0 Transmit Data
+#define AT91_USART_RTS0     AT91_PIN(0,0, 7) // USART 0 Ready To Send
+#define AT91_USART_CTS0     AT91_PIN(0,0, 8) // USART 0 Clear To Send
+#define AT91_DBG_DRXD       AT91_PIN(0,0, 9) // Debug UART Receive
+#define AT91_DBG_DTXD       AT91_PIN(0,0,10) // Debug UART Transmit
+#define AT91_SPI_NPCS0      AT91_PIN(0,0,11) // SPI Chip Select 0
+#define AT91_SPI_MISO       AT91_PIN(0,0,12) // SPI Input
+#define AT91_SPI_MOSI       AT91_PIN(0,0,13) // SPI Output
+#define AT91_SPI_SPCK       AT91_PIN(0,0,14) // SPI clock
+#define AT91_S2C_TF         AT91_PIN(0,0,15) // S2C Transmit Frame Sync
+#define AT91_S2C_TK         AT91_PIN(0,0,16) // S2C Transmit Clock
+#define AT91_S2C_TD         AT91_PIN(0,0,17) // S2C Transmit Data
+#define AT91_S2C_RD         AT91_PIN(0,0,18) // S2C Receive Data
+#define AT91_S2C_RK         AT91_PIN(0,0,19) // S2C Receive Clock
+#define AT91_S2C_RF         AT91_PIN(0,0,20) // S2C Receive Frame Sync
+#define AT91_USART_RXD1     AT91_PIN(0,0,21) // USART 1 Receive Data
+#define AT91_USART_TXD1     AT91_PIN(0,0,22) // USART 1 Transmit Data
+#define AT91_USART_SCK1     AT91_PIN(0,0,23) // USART 1 Serial Clock
+#define AT91_USART_RTS1     AT91_PIN(0,0,24) // USART 1 Ready To Send
+#define AT91_USART_CTS1     AT91_PIN(0,0,25) // USART 1 Clear To Send
+#define AT91_USART_DVD1     AT91_PIN(0,0,26) // USART 1 Data Carrier Detect
+#define AT91_USART_DTR1     AT91_PIN(0,0,27) // USART 1 Data Terminal Ready
+#define AT91_USART_DSR1     AT91_PIN(0,0,28) // USART 1 Data Set Ready
+#define AT91_USART_RI1      AT91_PIN(0,0,29) // USART 2 Ring Indicator
+#define AT91_INT_IRQ1       AT91_PIN(0,0,30) // Interrupt Request 1
+#define AT91_SPI_NPCS1      AT91_PIN(0,0,31) // SPI Chip Select 1
+
+//PIO Controller A Peripheral B
+#define AT91_EBI_A0_NBS0    AT91_PIN(0,1, 0) // EBI: Addr 0 / SDRAM Byte Mask 0
+#define AT91_EBI_A1_NBS2    AT91_PIN(0,1, 1) // EBI: Addr 1 / SDRAM Byte Mask 2
+#define AT91_EBI_A2         AT91_PIN(0,1, 2) // EBI: Addr 2
+#define AT91_EBI_A3         AT91_PIN(0,1, 3) // EBI: Addr 3
+#define AT91_EBI_A4         AT91_PIN(0,1, 4) // EBI: Addr 4
+#define AT91_EBI_A5         AT91_PIN(0,1, 5) // EBI: Addr 5
+#define AT91_EBI_A6         AT91_PIN(0,1, 6) // EBI: Addr 6
+#define AT91_EBI_A7         AT91_PIN(0,1, 7) // EBI: Addr 7
+#define AT91_EBI_A8         AT91_PIN(0,1, 8) // EBI: Addr 8
+#define AT91_EBI_A9         AT91_PIN(0,1, 9) // EBI: Addr 9
+#define AT91_EBI_A10        AT91_PIN(0,1,10) // EBI: Addr 10
+#define AT91_EBI_A11        AT91_PIN(0,1,11) // EBI: Addr 11
+#define AT91_EBI_A12        AT91_PIN(0,1,12) // EBI: Addr 12
+#define AT91_EBI_A13        AT91_PIN(0,1,13) // EBI: Addr 13
+#define AT91_EBI_A14        AT91_PIN(0,1,14) // EBI: Addr 14
+#define AT91_EBI_A15        AT91_PIN(0,1,15) // EBI: Addr 15
+#define AT91_EBI_A16_BA0    AT91_PIN(0,1,16) // EBI: Addr 16 / SDRAM Bank Sel 0
+#define AT91_EBI_A17_BA1    AT91_PIN(0,1,17) // EBI: Addr 17 / SDRAM Bank Sel 1
+#define AT91_EBI_NBS3_CFIOW AT91_PIN(0,1,18) // EBI: SDRAM Byte Mask 3 / 
+                                             // CompactFlash I/O Write Signal
+#define AT91_EBI_NCS4_CFCS0 AT91_PIN(0,1,19) // EBI: Chip Select 4 / 
+                                             // CompactFlash Chip Select 0
+#define AT91_EBI_NCS2_CFCS1 AT91_PIN(0,1,20) // EBI: Chip Select 2 / 
+                                             // CompactFlash Chip Select 1
+#define AT91_EBI_NCS6_CFCE2 AT91_PIN(0,1,21) // EBI: Chip Select 6 / 
+                                             // CompactFlash Chip Enable 2
+#define AT91_EBI_NCS5_CFCE1 AT91_PIN(0,1,22) // EBI: Chip Select 5 / 
+                                             // CompactFlash Chip Enable 1
+#define AT91_EBI_NWR1_NBS1_CFIOR \
+                            AT91_PIN(0,1,23) // EBI: SMC Write 1 / 
+                                             // SDRAM Byte Mask 1 / 
+                                             // CompactFlash I/O Read Signal
+#define AT91_EBI_SDA10      AT91_PIN(0,1,24) // EBI: SDRAM Address 10
+#define AT91_EBI_SDCKE      AT91_PIN(0,1,25) // EBI: SDRAM Clock Enable
+#define AT91_EBI_NCS1_SDCS  AT91_PIN(0,1,26) // EBI: Chip Select 1 / 
+                                             // SDRAM Controller Chip Select
+#define AT91_EBI_SDWE       AT91_PIN(0,1,27) // EBI: SDRAM Write Enable
+#define AT91_EBI_CAS        AT91_PIN(0,1,28) // EBI: SDRAM Column Signal
+#define AT91_EBI_RAS        AT91_PIN(0,1,29) // EBI: SDRAM Row Signal
+#define AT91_EBI_D30        AT91_PIN(0,1,30) // EBI: Data 30
+#define AT91_EBI_D31        AT91_PIN(0,1,31) // EBI: Data 31
+
+//PIO Controller A Peripheral A
+#define AT91_PIO_PSR_PWM0       (1<< 0) // Pulse Width Modulation 0
+#define AT91_PIO_PSR_PWM1       (1<< 1) // Pulse Width Modulation 1
+#define AT91_PIO_PSR_PWM2       (1<< 2) // Pulse Width Modulation 2
+#define AT91_PIO_PSR_TWD        (1<< 3) // Two Wire Data
+#define AT91_PIO_PSR_TWCK       (1<< 4) // Two Wire Clock
+#define AT91_PIO_PSR_RXD0       (1<< 5) // USART 0 Receive Data
+#define AT91_PIO_PSR_TXD0       (1<< 6) // USART 0 Transmit Data
+#define AT91_PIO_PSR_RTS0       (1<< 7) // USART 0 Ready To Send
+#define AT91_PIO_PSR_CTS0       (1<< 8) // USART 0 Clear To Send
+#define AT91_PIO_PSR_DRXD       (1<< 9) // Debug UART Receive
+#define AT91_PIO_PSR_DTXD       (1<<10) // Debug UART Transmit
+#define AT91_PIO_PSR_NPCS0      (1<<11) // SPI Chip Select 0
+#define AT91_PIO_PSR_MISO       (1<<12) // SPI Input
+#define AT91_PIO_PSR_MOSI       (1<<13) // SPI Output
+#define AT91_PIO_PSR_SPCK       (1<<14) // SPI clock
+#define AT91_PIO_PSR_TF         (1<<15) // S2C Transmit Frame Sync
+#define AT91_PIO_PSR_TK         (1<<16) // S2C Transmit Clock
+#define AT91_PIO_PSR_TD         (1<<17) // S2C Transmit Data
+#define AT91_PIO_PSR_RD         (1<<18) // S2C Receive Data
+#define AT91_PIO_PSR_RK         (1<<19) // S2C Receive Clock
+#define AT91_PIO_PSR_RF         (1<<20) // S2C Receive Frame Sync
+#define AT91_PIO_PSR_RXD1       (1<<21) // USART 1 Receive Data
+#define AT91_PIO_PSR_TXD1       (1<<22) // USART 1 Transmit Data
+#define AT91_PIO_PSR_SCK1       (1<<23) // USART 1 Serial Clock
+#define AT91_PIO_PSR_RTS1       (1<<24) // USART 1 Ready To Send
+#define AT91_PIO_PSR_CTS1       (1<<25) // USART 1 Clear To Send
+#define AT91_PIO_PSR_DVD1       (1<<26) // USART 1 Data Carrier Detect
+#define AT91_PIO_PSR_DTR1       (1<<27) // USART 1 Data Terminal Ready
+#define AT91_PIO_PSR_DSR1       (1<<28) // USART 1 Data Set Ready
+#define AT91_PIO_PSR_RI1        (1<<29) // USART 2 Ring Indicator
+#define AT91_PIO_PSR_IRQ1       (1<<30) // Interrupt Request 1
+#define AT91_PIO_PSR_NPCS1      (1<<31) // SPI Chip Select 1
+
+//PIO Controller A Peripheral B
+#define AT91_PIO_PSR_A0_NBS0    (1<< 0) // EBI: Address 0 / SDRAM Byte Mask 0
+#define AT91_PIO_PSR_A1_NBS2    (1<< 1) // EBI: Address 1 / SDRAM Byte Mask 2
+#define AT91_PIO_PSR_A2         (1<< 2) // EBI: Address 2
+#define AT91_PIO_PSR_A3         (1<< 3) // EBI: Address 3
+#define AT91_PIO_PSR_A4         (1<< 4) // EBI: Address 4
+#define AT91_PIO_PSR_A5         (1<< 5) // EBI: Address 5
+#define AT91_PIO_PSR_A6         (1<< 6) // EBI: Address 6
+#define AT91_PIO_PSR_A7         (1<< 7) // EBI: Address 7
+#define AT91_PIO_PSR_A8         (1<< 8) // EBI: Address 8
+#define AT91_PIO_PSR_A9         (1<< 9) // EBI: Address 9
+#define AT91_PIO_PSR_A10        (1<<10) // EBI: Address 10
+#define AT91_PIO_PSR_A11        (1<<11) // EBI: Address 11
+#define AT91_PIO_PSR_A12        (1<<12) // EBI: Address 12
+#define AT91_PIO_PSR_A13        (1<<13) // EBI: Address 13
+#define AT91_PIO_PSR_A14        (1<<14) // EBI: Address 14
+#define AT91_PIO_PSR_A15        (1<<15) // EBI: Address 15
+#define AT91_PIO_PSR_A16_BA0    (1<<16) // EBI: Address 16 / SDRAM Bank Sel 0
+#define AT91_PIO_PSR_A17_BA1    (1<<17) // EBI: Address 17 / SDRAM Bank Sel 1
+#define AT91_PIO_PSR_NBS3_CFIOW (1<<18) // EBI: SDRAM Byte Mask 3 / 
+                                        // CompactFlash I/O Write Signal
+#define AT91_PIO_PSR_NCS4_CFCS0 (1<<19) // EBI: Chip Select 4 / 
+                                        // CompactFlash Chip Select 0
+#define AT91_PIO_PSR_NCS2_CFCS1 (1<<20) // EBI: Chip Select 2 / 
+                                        // CompactFlash Chip Select 1
+#define AT91_PIO_PSR_NCS6_CFCE2 (1<<21) // EBI: Chip Select 6 / 
+                                        // CompactFlash Chip Enable 2
+#define AT91_PIO_PSR_NCS5_CFCE1 (1<<22) // EBI: Chip Select 5 / 
+                                        // CompactFlash Chip Enable 1
+#define AT91_PIO_PSR_NWR1_NBS1_CFIOR	\
+                                (1<<23) // EBI: Write 1 / SDRAM Byte Mask 1 / 
+                                        // CompactFlash I/O Read Signal
+#define AT91_PIO_PSR_SDA10      (1<<24) // EBI: SDRAM Address 10
+#define AT91_PIO_PSR_SDCKE      (1<<25) // EBI: SDRAM Clock Enable
+#define AT91_PIO_PSR_NCS1_SDCS  (1<<26) // EBI: Chip Select 1 / 
+                                        // SDRAM Controller Chip Select
+#define AT91_PIO_PSR_SDWE       (1<<27) // EBI: SDRAM Write Enable
+#define AT91_PIO_PSR_CAS        (1<<28) // EBI: SDRAM Column Signal
+#define AT91_PIO_PSR_RAS        (1<<29) // EBI: SDRAM Row Signal
+#define AT91_PIO_PSR_D30        (1<<30) // EBI: Data 30
+#define AT91_PIO_PSR_D31        (1<<31) // EBI: Data 31
+
+//PIO Controller B Peripheral A
+#define AT91_TC_TIOA0       AT91_PIN(1,0, 0) // Timer/Counter 0 IO Line A
+#define AT91_TC_TIOB0       AT91_PIN(1,0, 1) // Timer/Counter 0 IO Line B
+#define AT91_USART_SCK0     AT91_PIN(1,0, 2) // USART 0 Serial Clock
+#define AT91_SPI_NPCS3      AT91_PIN(1,0, 3) // SPI Chip Select 3
+#define AT91_TC_TCLK0       AT91_PIN(1,0, 4) // Timer/Counter 0 Clock Input
+#define AT91_SPI_NPCS3X     AT91_PIN(1,0, 5) // SPI Chip Select 3 (again)
+#define AT91_PCK_PCK0       AT91_PIN(1,0, 6) // Programmable Clock Output 0
+#define AT91_PWM_PWM3       AT91_PIN(1,0, 7) // Pulse Width Modulation #3
+#define AT91_ADC_ADTRG      AT91_PIN(1,0, 8) // ADC Trigger
+#define AT91_SPI_NPCS1X     AT91_PIN(1,0, 9) // SPI Chip Select 1
+#define AT91_SPI_NPCS2      AT91_PIN(1,0,10) // SPI Chip Select 2
+#define AT91_PWM_PWM0X      AT91_PIN(1,0,11) // Pulse Width Modulation #0
+#define AT91_PIO_PWM_PWM1X  AT91_PIN(1,0,12) // Pulse Width Modulation #1
+#define AT91_PIO_PWM_PWM2X  AT91_PIN(1,0,13) // Pulse Width Modulation #2
+#define AT91_PIO_PWM_PWM4X  AT91_PIN(1,0,14) // Pulse Width Modulation #4
+#define AT91_TC_TIOA1       AT91_PIN(1,0,15) // Timer/Counter 1 IO Line A
+#define AT91_TC_TIOB1       AT91_PIN(1,0,16) // Timer/Counter 1 IO Line B
+#define AT91_PCK_PCK1       AT91_PIN(1,0,17) // Programmable Clock Output 1
+#define AT91_PCK_PCK2       AT91_PIN(1,0,18) // Programmable Clock Output 2
+#define AT91_INT_FIQ        AT91_PIN(1,0,19) // Fast Interrupt Request
+#define AT91_INT_IRQ0       AT91_PIN(1,0,20) // Interrupt Request 0
+#define AT91_PCK_PCK1X      AT91_PIN(1,0,21) // Programmable Clock Output 1
+#define AT91_SPI_NPCS3XX    AT91_PIN(1,0,22) // SPI Chip Select 3 (yet again)
+#define AT91_PWM_PWM0XX     AT91_PIN(1,0,23) // Pulse Width Modulation #0
+#define AT91_PWM_PWM1XX     AT91_PIN(1,0,24) // Pulse Width Modulation #1
+#define AT91_PWM_PWM2XX     AT91_PIN(1,0,25) // Pulse Width Modulation 2
+#define AT91_TC_TIOA2       AT91_PIN(1,0,26) // Timer/Counter 2 IO Line A
+#define AT91_TC_TIOB2       AT91_PIN(1,0,27) // Timer/Counter 2 IO Line B
+#define AT91_TC_TCLK1       AT91_PIN(1,0,28) // External Clock Input 1
+#define AT91_TC_TCLK2       AT91_PIN(1,0,29) // External Clock Input 2
+#define AT91_SPI_NPCS2X     AT91_PIN(1,0,30) // SPI Chip Select 2 (again)
+#define AT91_PCK_PCK2X      AT91_PIN(1,0,31) // Programmable Clock Output 2
+
+//PIO Controller B Peripheral B
+#define AT91_EBI_A0_NBS0X   AT91_PIN(1,1, 0) // EBI: Addr 0 / SDRAM Byte Mask 0
+#define AT91_EBI_A1_NBS2X   AT91_PIN(1,1, 1) // EBI: Addr 1 / SDRAM Byte Mask 2
+#define AT91_EBI_A2X        AT91_PIN(1,1, 2) // EBI: Addr 2
+#define AT91_EBI_A3X        AT91_PIN(1,1, 3) // EBI: Addr 3
+#define AT91_EBI_A4X        AT91_PIN(1,1, 4) // EBI: Addr 4
+#define AT91_EBI_A5X        AT91_PIN(1,1, 5) // EBI: Addr 5
+#define AT91_EBI_A6X        AT91_PIN(1,1, 6) // EBI: Addr 6
+#define AT91_EBI_A7X        AT91_PIN(1,1, 7) // EBI: Addr 7
+#define AT91_EBI_A8X        AT91_PIN(1,1, 8) // EBI: Addr 8
+#define AT91_EBI_A9X        AT91_PIN(1,1, 9) // EBI: Addr 9
+#define AT91_EBI_A10X       AT91_PIN(1,1,10) // EBI: Addr 10
+#define AT91_EBI_A11X       AT91_PIN(1,1,11) // EBI: Addr 11
+#define AT91_EBI_A12X       AT91_PIN(1,1,12) // EBI: Addr 12
+#define AT91_EBI_A13X       AT91_PIN(1,1,13) // EBI: Addr 13
+#define AT91_EBI_A14X       AT91_PIN(1,1,14) // EBI: Addr 14
+#define AT91_EBI_A15X       AT91_PIN(1,1,15) // EBI: Addr 15
+#define AT91_EBI_A16_BA0X   AT91_PIN(1,1,16) // EBI: Addr 16 / 
+                                             // SDRAM Bank Select 0
+#define AT91_EBI_A17_BA1X   AT91_PIN(1,1,17) // EBI: Addr 17 / 
+                                             // SDRAM Bank Select 1
+#define AT91_EBI_D16        AT91_PIN(1,1,18) // EBI: Data 16
+#define AT91_EBI_D17        AT91_PIN(1,1,19) // EBI: Data 17
+#define AT91_EBI_D18        AT91_PIN(1,1,20) // EBI: Data 18
+#define AT91_EBI_D19        AT91_PIN(1,1,21) // EBI: Data 19
+#define AT91_EBI_D20        AT91_PIN(1,1,22) // EBI: Data 20
+#define AT91_EBI_D21        AT91_PIN(1,1,23) // EBI: Data 21
+#define AT91_EBI_D22        AT91_PIN(1,1,24) // EBI: Data 22
+#define AT91_EBI_D23        AT91_PIN(1,1,25) // EBI: Data 23
+#define AT91_EBI_D24        AT91_PIN(1,1,26) // EBI: Data 24
+#define AT91_EBI_D25        AT91_PIN(1,1,27) // EBI: Data 25
+#define AT91_EBI_D26        AT91_PIN(1,1,28) // EBI: Data 26
+#define AT91_EBI_D27        AT91_PIN(1,1,29) // EBI: Data 27
+#define AT91_EBI_D28        AT91_PIN(1,1,30) // EBI: Data 28
+#define AT91_EBI_D29        AT91_PIN(1,1,31) // EBI: Data 29
+
+//PIO Controller B Peripheral A
+#define AT91_PIO_PSR_TIOA0      (1<< 0) // Timer/Counter 0 IO Line A
+#define AT91_PIO_PSR_TIOB0      (1<< 1) // Timer/Counter 0 IO Line B
+#define AT91_PIO_PSR_SCK0       (1<< 2) // USART 0 Serial Clock
+#define AT91_PIO_PSR_NPCS3      (1<< 3) // SPI Chip Select 3
+#define AT91_PIO_PSR_TCLK0      (1<< 4) // Timer/Counter 0 Clock Input
+#define AT91_PIO_PSR_NPCS3X     (1<< 5) // SPI Chip Select 3 (again)
+#define AT91_PIO_PSR_PCK0       (1<< 6) // Programmable Clock Output 0
+#define AT91_PIO_PSR_PWM3       (1<< 7) // Pulse Width Modulation #3
+#define AT91_PIO_PSR_ADTRG      (1<< 8) // ADC Trigger
+#define AT91_PIO_PSR_NPCS1X     (1<< 9) // SPI Chip Select 1
+#define AT91_PIO_PSR_NPCS2      (1<<10) // SPI Chip Select 2
+#define AT91_PIO_PSR_PWM0X      (1<<11) // Pulse Width Modulation #0
+#define AT91_PIO_PSR_PWM1X      (1<<12) // Pulse Width Modulation #1
+#define AT91_PIO_PSR_PWM2X      (1<<13) // Pulse Width Modulation #2
+#define AT91_PIO_PSR_PWM4X      (1<<14) // Pulse Width Modulation #4
+#define AT91_PIO_PSR_TIOA1      (1<<15) // Timer/Counter 1 IO Line A
+#define AT91_PIO_PSR_TIOB1      (1<<16) // Timer/Counter 1 IO Line B
+#define AT91_PIO_PSR_PCK1       (1<<17) // Programmable Clock Output 1
+#define AT91_PIO_PSR_PCK2       (1<<18) // Programmable Clock Output 2
+#define AT91_PIO_PSR_FIQ        (1<<19) // Fast Interrupt Request
+#define AT91_PIO_PSR_IRQ0       (1<<20) // Interrupt Request 0
+#define AT91_PIO_PSR_PCK1X      (1<<21) // Programmable Clock Output 1
+#define AT91_PIO_PSR_NPCS3XX    (1<<22) // SPI Chip Select 3 (yet again)
+#define AT91_PIO_PSR_PWM0XX     (1<<23) // Pulse Width Modulation #0
+#define AT91_PIO_PSR_PWM1XX     (1<<24) // Pulse Width Modulation #1
+#define AT91_PIO_PSR_PWM2XX     (1<<25) // Pulse Width Modulation 2
+#define AT91_PIO_PSR_TIOA2      (1<<26) // Timer/Counter 2 IO Line A
+#define AT91_PIO_PSR_TIOB2      (1<<27) // Timer/Counter 2 IO Line B
+#define AT91_PIO_PSR_TCLK1      (1<<28) // External Clock Input 1
+#define AT91_PIO_PSR_TCLK2      (1<<29) // External Clock Input 2
+#define AT91_PIO_PSR_NPCS2X     (1<<30) // SPI Chip Select 2 (again)
+#define AT91_PIO_PSR_PCK2X      (1<<31) // Programmable Clock Output 2
+
+//PIO Controller B Peripheral B
+#define AT91_PIO_PSR_NBS0X      (1<< 0) // EBI: Address 0 / SDRAM Byte Mask 0
+#define AT91_PIO_PSR_NBS2X      (1<< 1) // EBI: Address 1 / SDRAM Byte Mask 2
+#define AT91_PIO_PSR_A2X        (1<< 2) // EBI: Address 2
+#define AT91_PIO_PSR_A3X        (1<< 3) // EBI: Address 3
+#define AT91_PIO_PSR_A4X        (1<< 4) // EBI: Address 4
+#define AT91_PIO_PSR_A5X        (1<< 5) // EBI: Address 5
+#define AT91_PIO_PSR_A6X        (1<< 6) // EBI: Address 6
+#define AT91_PIO_PSR_A7X        (1<< 7) // EBI: Address 7
+#define AT91_PIO_PSR_A8X        (1<< 8) // EBI: Address 8
+#define AT91_PIO_PSR_A9X        (1<< 9) // EBI: Address 9
+#define AT91_PIO_PSR_A10X       (1<<10) // EBI: Address 10
+#define AT91_PIO_PSR_A11X       (1<<11) // EBI: Address 11
+#define AT91_PIO_PSR_A12X       (1<<12) // EBI: Address 12
+#define AT91_PIO_PSR_A13X       (1<<13) // EBI: Address 13
+#define AT91_PIO_PSR_A14X       (1<<14) // EBI: Address 14
+#define AT91_PIO_PSR_A15X       (1<<15) // EBI: Address 15
+#define AT91_PIO_PSR_BA0X       (1<<16) // EBI: Address 16 / 
+                                        // SDRAM Bank Select 0
+#define AT91_PIO_PSR_BA1X       (1<<17) // EBI: Address 17 /
+                                        // SDRAM Bank Select 1
+#define AT91_PIO_PSR_D16        (1<<18) // EBI: Data 16
+#define AT91_PIO_PSR_D17        (1<<19) // EBI: Data 17
+#define AT91_PIO_PSR_D18        (1<<20) // EBI: Data 18
+#define AT91_PIO_PSR_D19        (1<<21) // EBI: Data 19
+#define AT91_PIO_PSR_D20        (1<<22) // EBI: Data 20
+#define AT91_PIO_PSR_D21        (1<<23) // EBI: Data 21
+#define AT91_PIO_PSR_D22        (1<<24) // EBI: Data 22
+#define AT91_PIO_PSR_D23        (1<<25) // EBI: Data 23
+#define AT91_PIO_PSR_D24        (1<<26) // EBI: Data 24
+#define AT91_PIO_PSR_D25        (1<<27) // EBI: Data 25
+#define AT91_PIO_PSR_D26        (1<<28) // EBI: Data 26
+#define AT91_PIO_PSR_D27        (1<<29) // EBI: Data 27
+#define AT91_PIO_PSR_D28        (1<<30) // EBI: Data 28
+#define AT91_PIO_PSR_D29        (1<<31) // EBI: Data 29
+
+//PIO Controller C Peripheral A
+#define AT91_EBI_D0         AT91_PIN(2,0, 0) // EBI: Data 0
+#define AT91_EBI_D1         AT91_PIN(2,0, 1) // EBI: Data 1
+#define AT91_EBI_D2         AT91_PIN(2,0, 2) // EBI: Data 2
+#define AT91_EBI_D3         AT91_PIN(2,0, 3) // EBI: Data 3
+#define AT91_EBI_D4         AT91_PIN(2,0, 4) // EBI: Data 4
+#define AT91_EBI_D5         AT91_PIN(2,0, 5) // EBI: Data 5
+#define AT91_EBI_D6         AT91_PIN(2,0, 6) // EBI: Data 6
+#define AT91_EBI_D7         AT91_PIN(2,0, 7) // EBI: Data 7
+#define AT91_EBI_D8         AT91_PIN(2,0, 8) // EBI: Data 8
+#define AT91_EBI_D9         AT91_PIN(2,0, 9) // EBI: Data 9
+#define AT91_EBI_D10        AT91_PIN(2,0,10) // EBI: Data 10
+#define AT91_EBI_D11        AT91_PIN(2,0,11) // EBI: Data 11
+#define AT91_EBI_D12        AT91_PIN(2,0,12) // EBI: Data 12
+#define AT91_EBI_D13        AT91_PIN(2,0,13) // EBI: Data 13
+#define AT91_EBI_D14        AT91_PIN(2,0,14) // EBI: Data 14
+#define AT91_EBI_D15        AT91_PIN(2,0,15) // EBI: Data 15
+#define AT91_EBI_A18        AT91_PIN(2,0,16) // EBI: Address 18
+#define AT91_EBI_A19        AT91_PIN(2,0,17) // EBI: Address 19
+#define AT91_EBI_A20        AT91_PIN(2,0,18) // EBI: Address 20
+#define AT91_EBI_A21_NANDALE \
+                            AT91_PIN(2,0,19) // EBI: Address 21 / 
+                                             // NAND Flash Address Line Enable
+#define AT91_EBI_A22_REG_NANDCLE \
+                            AT91_PIN(2,0,20) // EBI: Address 22 / 
+                                             // CompactFlash REG Signal / 
+                                             // NAND Flash Command Line Enable
+#define AT91_EBI_CFNRW      AT91_PIN(2,0,23) // EBI: CF Read Not Write Signal
+
+//PIO Controller C Peripheral B
+#define AT91_USART_RTS1X    AT91_PIN(2,1, 8) // USART 1 Ready To Send
+#define AT91_USART_DTR1X    AT91_PIN(2,1, 9) // USART 1 Data Terminal Ready
+#define AT91_PCK_PCK0X      AT91_PIN(2,1,10) // Programmable Clock Output 0
+#define AT91_PCK_PCK1XX     AT91_PIN(2,1,11) // Programmable Clock Output 1
+#define AT91_PCK_PCK2XX     AT91_PIN(2,1,12) // Programmable Clock Output 2
+#define AT91_SPI_NPCS1XX    AT91_PIN(2,1,14) // SPI Chip Select 1
+#define AT91_EBI_NCS3_NANDCS \
+                            AT91_PIN(2,1,15) // EBI: Chip Select 3 / 
+                                             // NAND Flash Chip Select
+#define AT91_EBI_NWAIT      AT91_PIN(2,1,16) // EBI: External Wait Signal
+#define AT91_EBI_NANDOE     AT91_PIN(2,1,17) // EBI: NAND Flash Output Enable
+#define AT91_EBI_NANDWE     AT91_PIN(2,1,18) // EBI: NAND Flash Write Enable
+#define AT91_EBI_NCS7       AT91_PIN(2,1,20) // EBI: Chip Select 7
+#define AT91_EBI_NWR0_NWE_CFWE \
+                            AT91_PIN(2,1,21) // EBI: Write 0 / 
+                                             // SMC Write Enable / 
+                                             // CompactFlash Write Enable
+#define AT91_EBI_NRD_CFOE   AT91_PIN(2,1,22) // EBI: SMC Read Enable / 
+                                             // CompactFlash Output Enable
+#define AT91_EBI_NCS0       AT91_PIN(2,1,23) // EBI: Chip Select 0
+
+//PIO Controller C Peripheral A
+#define AT91_PIO_PSR_D0         (1<< 0) // EBI: Data 0
+#define AT91_PIO_PSR_D1         (1<< 1) // EBI: Data 1
+#define AT91_PIO_PSR_D2         (1<< 2) // EBI: Data 2
+#define AT91_PIO_PSR_D3         (1<< 3) // EBI: Data 3
+#define AT91_PIO_PSR_D4         (1<< 4) // EBI: Data 4
+#define AT91_PIO_PSR_D5         (1<< 5) // EBI: Data 5
+#define AT91_PIO_PSR_D6         (1<< 6) // EBI: Data 6
+#define AT91_PIO_PSR_D7         (1<< 7) // EBI: Data 7
+#define AT91_PIO_PSR_D8         (1<< 8) // EBI: Data 8
+#define AT91_PIO_PSR_D9         (1<< 9) // EBI: Data 9
+#define AT91_PIO_PSR_D10        (1<<10) // EBI: Data 10
+#define AT91_PIO_PSR_D11        (1<<11) // EBI: Data 11
+#define AT91_PIO_PSR_D12        (1<<12) // EBI: Data 12
+#define AT91_PIO_PSR_D13        (1<<13) // EBI: Data 13
+#define AT91_PIO_PSR_D14        (1<<14) // EBI: Data 14
+#define AT91_PIO_PSR_D15        (1<<15) // EBI: Data 15
+#define AT91_PIO_PSR_A18        (1<<16) // EBI: Address 18
+#define AT91_PIO_PSR_A19        (1<<17) // EBI: Address 19
+#define AT91_PIO_PSR_A20        (1<<18) // EBI: Address 20
+#define AT91_PIO_PSR_NANDALE    (1<<19) // EBI: Address 21 / 
+                                        // NAND Flash Address Line Enable
+#define AT91_PIO_PSR_NANDCLE    (1<<20) // EBI: Address 22 / 
+                                        // CompactFlash REG Signal / 
+                                        // NAND Flash Command Line Enable
+#define AT91_PIO_PSR_CFNRW      (1<<23) // EBI: CF Read Not Write Signal
+
+//PIO Controller C Peripheral B
+#define AT91_PIO_PSR_RTS1X      (1<< 8) // USART 1 Ready To Send
+#define AT91_PIO_PSR_DTR1X      (1<< 9) // USART 1 Data Terminal Ready
+#define AT91_PIO_PSR_PCK0X      (1<<10) // Programmable Clock Output 0
+#define AT91_PIO_PSR_PCK1XX     (1<<11) // Programmable Clock Output 1
+#define AT91_PIO_PSR_PCK2XX     (1<<12) // Programmable Clock Output 2
+#define AT91_PIO_PSR_NPCS1XX    (1<<14) // SPI Chip Select 1
+#define AT91_PIO_PSR_NANDCS     (1<<15) // EBI: Chip Select 3 / 
+                                        // NAND Flash Chip Select
+#define AT91_PIO_PSR_NWAIT      (1<<16) // EBI: External Wait Signal
+#define AT91_PIO_PSR_NANDOE     (1<<17) // EBI: NAND Flash Output Enable
+#define AT91_PIO_PSR_NANDWE     (1<<18) // EBI: NAND Flash Write Enable
+#define AT91_PIO_PSR_NCS7       (1<<20) // EBI: Chip Select 7
+#define AT91_PIO_PSR_CFWE       (1<<21) // EBI: Write 0 / SMC Write Enable / 
+                                        // CompactFlash Write Enable
+#define AT91_PIO_PSR_CFOE       (1<<22) // EBI: SMC Read Enable / 
+                                        // CompactFlash Output Enable
+#define AT91_PIO_PSR_NCS0       (1<<23) // EBI: Chip Select 0
+
+#endif // CYGHWR_HAL_ARM_AT91SAM7SE
 
 #else
 #define AT91_TC_TCLK0    AT91_PIN(0,0, 0) // Timer #0 clock
@@ -1043,6 +1472,12 @@
 //=============================================================================
 // External Bus Interface
 
+#if defined(CYGHWR_HAL_ARM_AT91_R40807) || \
+    defined(CYGHWR_HAL_ARM_AT91_R40008) || \
+    defined(CYGHWR_HAL_ARM_AT91_M42800A) || \
+    defined(CYGHWR_HAL_ARM_AT91_M55800A)
+
+
 #ifndef AT91_EBI
 #define AT91_EBI        0xFFE00000
 #endif
@@ -1090,6 +1525,73 @@
 #define AT91_EBI_MCR_ALE_2M   0x6
 #define AT91_EBI_MCR_ALE_1M   0x7   // Address line enable
 #define AT91_EBI_MCR_DRP      (0x1 << 4)  // Data read protocol
+
+#elif defined(CYGHWR_HAL_ARM_AT91SAM7SE)
+
+#ifndef AT91_EBI
+#define AT91_EBI        0xFFFFFF80
+#endif
+
+#define AT91_EBI_CSA	0x00
+#define AT91_EBI_CSA_CS1A (1 << 1)  // Assign NCS1 to SDRAM instead of
+                                    // static memory
+#define AT91_EBI_CSA_CS2A (1 << 2)  // Assign NCS2 (as second slot CS),
+                                    // NCS5, NCS6 to CompactFlash (access of 
+                                    // NCS5, NCS6 areas are undefined)
+                                    // instead of static memory
+#define AT91_EBI_CSA_CS3A (1 << 3)  // Assign NCS3 to NAND Flash instead of 
+                                    // static memory
+#define AT91_EBI_CSA_CS4A (1 << 4)  // Assign NCS4 (as second slot CS), NCS5, 
+                                    // NCS6 to CompactFlash (access of NCS5, 
+                                    // NCS6 areas are undefined) instead of 
+                                    // static memory
+#define AT91_EBI_CSA_NWPC (1 << 16) // Enable SMC NWAIT pin
+
+#define AT91_EBI_SMC 0x90	// SMC Configuration Registers
+#define AT91_EBI_SMC_CSR(n) (AT91_EBI_SMC+0x4*(n)) // Chip select registers
+#define AT91_EBI_SMC_CSR_NWS_MASK  (0x7F << 0)	// Number of Wait States mask
+#define AT91_EBI_SMC_CSR_NWS(n) \
+  ( ((n)<< 0) & AT91_EBI_SMC_CSR_NWS_MASK )     // Number of Wait States 
+                                                // (depends on read protocol)
+#define AT91_EBI_SMC_CSR_WSEN      (1 << 7)	// Wait State Enable
+#define AT91_EBI_SMC_CSR_TDF_MASK  (0x0F << 8)	// Data Float Time mask
+#define AT91_EBI_SMC_CSR_TDF(n) \
+  ( ((n)<< 8) & AT91_EBI_SMC_CSR_TDF_MASK )     // Data Float Time (between 
+                                                // different chip selects)
+#define AT91_EBI_SMC_CSR_BAT_2x8   (0 << 7)	// Byte Access Type 
+                                                // (two 8-bit wide devices)
+#define AT91_EBI_SMC_CSR_BAT_1x16  (1 << 7)	// Byte Access Type 
+                                                // (one 16-bit wide device)
+#define AT91_EBI_SMC_CSR_DBW_MASK  (0x03 << 13)	// Data Bus Width mask
+#define AT91_EBI_SMC_CSR_DBW_16    (0x01 << 13)	// Data Bus Width: 16 bit
+#define AT91_EBI_SMC_CSR_DBW_8     (0x02 << 13)	// Data Bus Width:  8 bit
+#define AT91_EBI_SMC_CSR_DRP_STD   (0x00 << 15)	// Data Read Protocol: standard
+#define AT91_EBI_SMC_CSR_DRP_EARLY (0x01 << 15)	// Data Read Protocol: early
+#define AT91_EBI_SMC_CSR_ACSS_MASK (0x03 << 16)	// Address to Chip Select 
+                                                // Setup mask
+#define AT91_EBI_SMC_CSR_ACSS(n) \
+  ( ((n)<< 16) & AT91_EBI_SMC_CSR_ACSS_MASK )	// Address to Chip Select 
+                                                // Setup: hold address before 
+                                                // and after CS for n cycles
+#define AT91_EBI_SMC_CSR_RWSETUP_MASK \
+                                   (0x07 << 24)	// Read and Write Signal 
+                                                // Setup Time
+#define AT91_EBI_SMC_CSR_RWSETUP(n) \
+  ( ((n)<< 24) & AT91_EBI_SMC_CSR_RWSETUP_MASK )// Read and Write Signal 
+                                                // Setup Time is (n+0.5) 
+                                                // (there are exceptions)
+#define AT91_EBI_SMC_CSR_RWHOLD_MASK \
+                                   (0x07 << 28)	// Read and Write Signal 
+                                                // Hold Time
+#define AT91_EBI_SMC_CSR_RWHOLD(n) \
+  ( ((n)<< 28) & AT91_EBI_SMC_CSR_RWHOLD_MASK )	// Read and Write Signal Hold
+                                                // Time is n (there are 
+                                                // exceptions)
+
+#define AT91_MC_SDRAMC 0xB0	// SDRAMC Configuration Registers
+#define AT91_MC_ECC    0xDC	// ECC Configuration Registers
+#endif
+
 
 //=============================================================================
 // Power Saving or Management
@@ -1298,6 +1800,30 @@
 #define AT91_PMC_PCER_CAN  (1 <<15) // Controller Area Network
 #define AT91_PMC_PCER_EMAC (1 <<16) // Ethernet MAC
 #define AT91_PMC_PCER_ADC  (1 <<17) // Analog-to-Digital Converter
+
+#elif defined(CYGHWR_HAL_ARM_AT91SAM7SE)
+#define AT91_PMC_SCER_PCK  (1 << 0) // Processor Clock
+#define AT91_PMC_SCER_UDP  (1 << 7) // USB Device Clock
+#define AT91_PMC_SCER_PCK0 (1 << 8) // Programmable Clock Output
+#define AT91_PMC_SCER_PCK1 (1 << 9) // Programmable Clock Output
+#define AT91_PMC_SCER_PCK2 (1 << 10) // Programmable Clock Output
+#define AT91_PMC_SCER_PCK3 (1 << 11) // Programmable Clock Output
+
+#define AT91_PMC_PCER_PIOA (1 << 2) // Parallel IO Controller
+#define AT91_PMC_PCER_PIOB (1 << 3) // Parallel IO Controller
+#define AT91_PMC_PCER_PIOC (1 << 4) // Parallel IO Controller
+#define AT91_PMC_PCER_SPI  (1 << 5) // Serial Peripheral Interface
+#define AT91_PMC_PCER_US0  (1 << 6) // USART 0
+#define AT91_PMC_PCER_US1  (1 << 7) // USART 1
+#define AT91_PMC_PCER_SSC  (1 << 8) // Serial Synchronous Controller
+#define AT91_PMC_PCER_TWI  (1 << 9) // Two-Wire Interface
+#define AT91_PMC_PCER_PWMC (1 <<10) // PWM Controller
+#define AT91_PMC_PCER_UDP  (1 <<11) // USB Device Port
+#define AT91_PMC_PCER_TC0  (1 <<12) // Timer Counter 0
+#define AT91_PMC_PCER_TC1  (1 <<13) // Timer Counter 1
+#define AT91_PMC_PCER_TC2  (1 <<14) // Timer Counter 2
+#define AT91_PMC_PCER_ADC  (1 <<15) // Analog-to-Digital Converter
+
 #else // Something unknown
 
 #error Unknown AT91 variant
@@ -1486,7 +2012,9 @@
 #define AT91_MC_FMR_3FWS  (3 << 8) // 4R,4W wait states
 #define AT91_MC_FMR_FMCN_MASK (0xff << 16)
 #define AT91_MC_FMR_FMCN_SHIFT 16
+#ifndef AT91_MC_FCR
 #define AT91_MC_FCR  0x64 // Flash Command Register
+#endif
 #define AT91_MC_FCR_START_PROG (0x1 << 0) // Start Programming of Page
 #define AT91_MC_FCR_LOCK       (0x2 << 0) // Lock sector
 #define AT91_MC_FCR_PROG_LOCK  (0x3 << 0) // Program and Lock
@@ -1498,13 +2026,60 @@
 #define AT91_MC_FCR_PAGE_MASK  (0x3ff)
 #define AT91_MC_FCR_PAGE_SHIFT 8
 #define AT91_MC_FCR_KEY        (0x5a << 24) // Key to enable command
+#ifndef AT91_MC_FSR
 #define AT91_MC_FSR  0x68 // Flash Status Register
+#endif
 #define AT91_MC_FSR_FRDY       (1 << 0) // Flash Ready for next command
 #define AT91_MC_FSR_LOCKE      (1 << 2) // Programming of a locked block
 #define AT91_MC_FSR_PROGE      (1 << 3) // Programming error
 #define AT91_MC_FSR_SECURITY   (1 << 4) // Security bit is set
 #define AT91_MC_FSR_GPNVM0     (1 << 8) // General purpose NVM bit 0
 #define AT91_MC_FSR_GPNVM1     (1 << 9) // General purpose NVM bit 1
+#endif
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7SE)
+#define AT91_MC_PUIA(n) (0x10+(n)*4)	// MC Protection Unit Area n
+#define AT91_MC_PUIA_PROT_MASK   (0x3 << 0) // Protection mask
+#define AT91_MC_PUIA_PROT_PNAUNA (0x0 << 0) // No Access, User=No Access
+#define AT91_MC_PUIA_PROT_PRWUNA (0x1 << 0) // Privilige=R/W, User=No Access
+#define AT91_MC_PUIA_PROT_PRWURO (0x2 << 0) // Privilige=R/W, User=R Only
+#define AT91_MC_PUIA_PROT_PRWURW (0x3 << 0) // Privilige=R/W, User=R/W
+#define AT91_MC_PUIA_SIZE_MASK	 (0xF << 4) // Area Size mask
+#define AT91_MC_PUIA_SIZE_1KB	 (0x0 << 4) // Area Size=1KB
+#define AT91_MC_PUIA_SIZE_2KB	 (0x1 << 4) // Area Size=2KB
+#define AT91_MC_PUIA_SIZE_4KB	 (0x2 << 4) // Area Size=4KB
+#define AT91_MC_PUIA_SIZE_8KB	 (0x3 << 4) // Area Size=8KB
+#define AT91_MC_PUIA_SIZE_16KB	 (0x4 << 4) // Area Size=16KB
+#define AT91_MC_PUIA_SIZE_32KB	 (0x5 << 4) // Area Size=32KB
+#define AT91_MC_PUIA_SIZE_64KB	 (0x6 << 4) // Area Size=64KB
+#define AT91_MC_PUIA_SIZE_128KB	 (0x7 << 4) // Area Size=128KB
+#define AT91_MC_PUIA_SIZE_256KB	 (0x8 << 4) // Area Size=256KB
+#define AT91_MC_PUIA_SIZE_512KB	 (0x9 << 4) // Area Size=512KB
+#define AT91_MC_PUIA_SIZE_1MB	 (0xA << 4) // Area Size=1MB
+#define AT91_MC_PUIA_SIZE_2MB	 (0xB << 4) // Area Size=2MB
+// Datasheet says value is 0xD, but it's out of the sequence and
+// Atmel header also says 0xC.
+#define AT91_MC_PUIA_SIZE_4MB	 (0xC << 4) // Area Size=4MB 
+// The following are not mentioned in datasheet, but present in Atmel header
+#define AT91_MC_PUIA_SIZE_8MB	 (0xD << 4) // Area Size=8MByte 
+#define AT91_MC_PUIA_SIZE_16MB	 (0xE << 4) // Area Size=16MByte
+#define AT91_MC_PUIA_SIZE_64MB	 (0xF << 4) // Area Size=64MByte
+#define AT91_MC_BA_MASK		 (0x3FFFF << 10) // Area Base Address Mask
+#define AT91_MC_BA(addr)	 ((addr) << 10)  // Set Area Base Address in 
+                                                 // multiples of 1KB (must be 
+                                                 // a multiple of the selected
+                                                 // Area Size)
+#define	AT91_MC_PUP 0x50       // MC Protection Unit Peripherals
+#define AT91_MC_PUP_PROT_MASK	(0x3 << 0) // Protection mask
+#define AT91_MC_PUP_PROT_PNAUNA	(0x0 << 0) // Privilige=No Access, 
+                                           // User=No Access (DO NOT USE)
+#define AT91_MC_PUP_PROT_PRWUNA	(0x1 << 0) // Privilige=R/W, User=No Access
+#define AT91_MC_PUP_PROT_PRWURO	(0x2 << 0) // Privilige=R/W, User=R Only
+#define AT91_MC_PUP_PROT_PRWURW	(0x3 << 0) // Privilige=R/W, User=R/W
+#define	AT91_MC_PUER 		0x54  // Protection Unit Enable Register
+#define	AT91_MC_PUER_PUEB	(0x1) // Protection Unit Enable Bit 
+                                      // (PROGRAM ALL AREA REGISTERS BEFORE 
+                                      // ENABLE)
 #endif
 
 //=============================================================================
@@ -2306,6 +2881,7 @@
 #define AT91_PWM_CH2 0xFFFCC240
 #define AT91_PWM_CH3 0xFFFCC260
 #define AT91_PWM_CH_SIZE 0x20
+#define AT91_PWM_CH(n)   (AT91_PWM_CH0+(n)*AT91_PWM_CH_SIZE)
 #endif
 
 #if defined(CYGHWR_HAL_ARM_AT91SAM7)
@@ -2382,6 +2958,7 @@
 #define AT91_PWM_CPRDR (0x08) // Channel Period
 #define AT91_PWM_CCNTR (0x0C) // Channel Counter
 #define AT91_PWM_CUPDR (0x10) // Channel Update
+
 
 #endif
 
@@ -2511,7 +3088,9 @@
 #define AT91_PIN_INTERRUPT_DISABLE 0
 
 #ifndef AT91_PIOB
+//------------------------
 // Only one PIO controller
+//------------------------
 
 // Configure a peripheral pin for peripheral operation
 #define HAL_ARM_AT91_PIO_CFG(_pin_)             \
@@ -2555,14 +3134,16 @@
   HAL_ARM_AT91_GPIOX_GET(_pin_, _value_, 0, AT91_PIO);               \
   CYG_MACRO_END
 
-#else // !AT91_PIOB
+#elif !defined(AT91_PIOC) // !AT91_PIOB
+//--------------------
 // Two PIO controllers
+//--------------------
 
 // Configure a peripheral pin for peripheral operation
-#define HAL_ARM_AT91_PIO_CFG(_pin_)             \
-  CYG_MACRO_START                               \
-  HAL_ARM_AT91_PIOX_CFG(_pin_, 0, AT91_PIO);        \
-  HAL_ARM_AT91_PIOX_CFG(_pin_, 1, AT91_PIOB);       \
+#define HAL_ARM_AT91_PIO_CFG(_pin_)                              \
+  CYG_MACRO_START                                                \
+  HAL_ARM_AT91_PIOX_CFG(_pin_, 0, AT91_PIO);                     \
+  HAL_ARM_AT91_PIOX_CFG(_pin_, 1, AT91_PIOB);                    \
   CYG_MACRO_END
 
 // Configure a GPIO pin direction
@@ -2605,6 +3186,66 @@
   CYG_MACRO_START                                                    \
   HAL_ARM_AT91_GPIOX_GET(_pin_, _value_, 0, AT91_PIO);               \
   HAL_ARM_AT91_GPIOX_GET(_pin_, _value_, 1, AT91_PIOB);              \
+  CYG_MACRO_END
+#else
+//----------------------
+// Three PIO controllers
+//----------------------
+
+// Configure a peripheral pin for peripheral operation
+#define HAL_ARM_AT91_PIO_CFG(_pin_)                 \
+  CYG_MACRO_START                                   \
+  HAL_ARM_AT91_PIOX_CFG(_pin_, 0, AT91_PIO);        \
+  HAL_ARM_AT91_PIOX_CFG(_pin_, 1, AT91_PIOB);       \
+  HAL_ARM_AT91_PIOX_CFG(_pin_, 2, AT91_PIOC);       \
+  CYG_MACRO_END
+
+// Configure a GPIO pin direction
+#define HAL_ARM_AT91_GPIO_CFG_DIRECTION(_pin_, _dir_)            \
+  CYG_MACRO_START                                                \
+  HAL_ARM_AT91_GPIOX_CFG_DIRECTION(_pin_, _dir_, 0, AT91_PIO);   \
+  HAL_ARM_AT91_GPIOX_CFG_DIRECTION(_pin_, _dir_, 1, AT91_PIOB);  \
+  HAL_ARM_AT91_GPIOX_CFG_DIRECTION(_pin_, _dir_, 2, AT91_PIOC);  \
+  CYG_MACRO_END
+
+// Configure a GPIO pin pullup resistor
+#define HAL_ARM_AT91_GPIO_CFG_PULLUP(_pin_, _enable_)               \
+  CYG_MACRO_START                                                   \
+  HAL_ARM_AT91_GPIOX_CFG_PULLUP(_pin_, _enable_, 0, AT91_PIO);      \
+  HAL_ARM_AT91_GPIOX_CFG_PULLUP(_pin_, _enable_, 1, AT91_PIOB);     \
+  HAL_ARM_AT91_GPIOX_CFG_PULLUP(_pin_, _enable_, 2, AT91_PIOC);     \
+  CYG_MACRO_END
+
+// Configure a GPIO pin to generate interrupts
+#define HAL_ARM_AT91_GPIO_CFG_INTERRUPT(_pin_, _enable_)            \
+  CYG_MACRO_START                                                   \
+  HAL_ARM_AT91_GPIOX_CFG_INTERRUPT(_pin_, _enable_, 0, AT91_PIO);   \
+  HAL_ARM_AT91_GPIOX_CFG_INTERRUPT(_pin_, _enable_, 1, AT91_PIOB);  \
+  HAL_ARM_AT91_GPIOX_CFG_INTERRUPT(_pin_, _enable_, 2, AT91_PIOC);  \
+  CYG_MACRO_END
+
+// Set a GPIO pin to 1
+#define HAL_ARM_AT91_GPIO_SET(_pin_)                                \
+  CYG_MACRO_START                                                   \
+  HAL_ARM_AT91_GPIOX_SET(_pin_, 0, AT91_PIO);                       \
+  HAL_ARM_AT91_GPIOX_SET(_pin_, 1, AT91_PIOB);                      \
+  HAL_ARM_AT91_GPIOX_SET(_pin_, 2, AT91_PIOC);                      \
+  CYG_MACRO_END
+
+// Reset a GPIO pin to 0
+#define HAL_ARM_AT91_GPIO_RESET(_pin_)                              \
+  CYG_MACRO_START                                                   \
+  HAL_ARM_AT91_GPIOX_RESET(_pin_, 0, AT91_PIO);                     \
+  HAL_ARM_AT91_GPIOX_RESET(_pin_, 1, AT91_PIOB);                    \
+  HAL_ARM_AT91_GPIOX_RESET(_pin_, 2, AT91_PIOC);                    \
+  CYG_MACRO_END
+
+// Get the state of a GPIO pin
+#define HAL_ARM_AT91_GPIO_GET(_pin_, _value_)                        \
+  CYG_MACRO_START                                                    \
+  HAL_ARM_AT91_GPIOX_GET(_pin_, _value_, 0, AT91_PIO);               \
+  HAL_ARM_AT91_GPIOX_GET(_pin_, _value_, 1, AT91_PIOB);              \
+  HAL_ARM_AT91_GPIOX_GET(_pin_, _value_, 2, AT91_PIOC);              \
   CYG_MACRO_END
 #endif //!AT91_PIOB
 
