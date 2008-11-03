@@ -126,9 +126,13 @@ static const usb_configuration_descriptor usb_configuration = {
     number_interfaces:  USBS_SERIAL_NUM_IFACE,
     configuration_id:   1,
     configuration_str:  0,
+#ifdef CYGOPT_IO_USB_SLAVE_SERIAL_BUSPOWERED
+    attributes:         (USB_CONFIGURATION_DESCRIPTOR_ATTR_REQUIRED),
+#else
     attributes:         (USB_CONFIGURATION_DESCRIPTOR_ATTR_REQUIRED |
                          USB_CONFIGURATION_DESCRIPTOR_ATTR_SELF_POWERED),
-    max_power:          50
+#endif
+    max_power:          (CYGNUM_IO_USB_SLAVE_SERIAL_CURRENTDRAW+1)/2	
 };
 
 // ----- Interface Descriptor -----

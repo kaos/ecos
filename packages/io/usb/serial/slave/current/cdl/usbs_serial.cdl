@@ -191,6 +191,32 @@ cdl_package CYGPKG_IO_USB_SLAVE_SERIAL {
                 is first plugged into the host."
     }
 
+    cdl_option CYGOPT_IO_USB_SLAVE_SERIAL_BUSPOWERED {
+        display       "The Device is bus powered"
+        default_value 0
+        flavor        bool
+        description   "
+            Tells the host whether the Device is a bus powered
+            device or a self powered device."
+    }
+    cdl_option CYGNUM_IO_USB_SLAVE_SERIAL_CURRENTDRAW {
+        display       "Maximum current (in mA) drawn from USB bus"
+        flavor        data
+        default_value 100
+        legal_values  1 to 500
+        requires      { (CYGNUM_IO_USB_SLAVE_SERIAL_CURRENTDRAW > 100) 
+                         implies CYGBLD_IO_USB_SLAVE_SERIAL_BUSPOWERED }
+        description   "
+            The maximum current drawn by the Device from the USB bus.
+            It should report the peak value. A self powered device
+            can draw up to 100mA, a bus powered device can draw up to
+            500mA. (If it is sometimes below 100mA and sometimes over,
+            then a tranition could be done at runtime between self and
+            bus powered modes, but that would be complicated and the
+            device would have to return from configured to addressed
+            state. For details, see the USB specification.)"
+    }
+
     cdl_option  CYGBLD_IO_USB_SLAVE_SERIAL_DEBUG {
         display       "Enable debug output from the driver"
         default_value 0

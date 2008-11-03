@@ -1,3 +1,10 @@
+2008-11-03  Gabor Toeroek <tgabor84@gmail.com>
+
+	* cdl/usbs_serial.cdl:
+	* src/usbs_serial.c (usb_configuration): Add to enumeration if the
+	device is bus powered or self powered, and what power it will
+	draw.
+
 2008-08-09  Frank Pagliughi <fpagliughi@mindspring.com>
 
 	* host/linux/ecos_usbserial.c (ecos_usbserial_probe): fix compiling
