@@ -212,12 +212,16 @@ flash_hwr_init(void){
 
   if (((chipID1r & AT91_DBG_C1R_ARCH_MASK) != AT91_DBG_C1R_ARCH_AT91SAM7Sxx) &&
       ((chipID1r & AT91_DBG_C1R_ARCH_MASK) != AT91_DBG_C1R_ARCH_AT91SAM7Xxx) &&
-      ((chipID1r & AT91_DBG_C1R_ARCH_MASK) != AT91_DBG_C1R_ARCH_AT91SAM7XC))
+      ((chipID1r & AT91_DBG_C1R_ARCH_MASK) != AT91_DBG_C1R_ARCH_AT91SAM7XC) &&
+      ((chipID1r & AT91_DBG_C1R_ARCH_MASK) != AT91_DBG_C1R_ARCH_AT91SAM7SExx))
     goto out;
   
   if ((chipID1r & AT91_DBG_C1R_FLASH_MASK) == AT91_DBG_C1R_FLASH_0K)
     goto out;
   
+
+  if ((chipID1r & AT91_DBG_C1R_NVPTYP_MASK) != AT91_DBG_C1R_NVPTYP_ROMFLASH)
+  {
   switch (chipID1r & AT91_DBG_C1R_FLASH_MASK) {
     case AT91_DBG_C1R_FLASH_32K:
       flash_info.block_size = 128;
@@ -239,8 +243,55 @@ flash_hwr_init(void){
       flash_info.blocks = 1024;
       lock_bits = 16;
       break;
+#ifdef AT91_MC_FMR1
+		case AT91_DBG_C1R_FLASH_512K:
+		  flash_info.block_size = 256;
+		  flash_info.blocks = 1024;
+		  lock_bits = 16;
+		  (*flash_info.pf)("at91_flash: Only EFC0 is supported for writes and locks");
+		  //flash_info.blocks = 2048;
+		  //lock_bits = 32;
+		  break;
+#endif
+		default:
+		  goto out;
+	  }
+  } else {
+	  // if there is both flash & ROM then: ROM=AT91_DBG_C1R_FLASH, flash=AT91_DBG_C1R_FLASH2
+	  switch (chipID1r & AT91_DBG_C1R_FLASH2_MASK) {
+		case AT91_DBG_C1R_FLASH2_32K:
+		  flash_info.block_size = 128;
+		  flash_info.blocks = 256;
+		  lock_bits = 8;
+		  break;
+		case AT91_DBG_C1R_FLASH2_64K:
+		  flash_info.block_size = 128;
+		  flash_info.blocks = 512;
+		  lock_bits = 16;
+		  break;
+		case AT91_DBG_C1R_FLASH2_128K:
+		  flash_info.block_size = 256;
+		  flash_info.blocks = 512;
+		  lock_bits = 8;
+		  break;
+		case AT91_DBG_C1R_FLASH2_256K:
+		  flash_info.block_size = 256;
+		  flash_info.blocks = 1024;
+		  lock_bits = 16;
+		  break;
+#ifdef AT91_MC_FMR1
+		case AT91_DBG_C1R_FLASH2_512K:
+		  flash_info.block_size = 256;
+		  flash_info.blocks = 1024;
+		  lock_bits = 16;
+		  (*flash_info.pf)("at91_flash: Only EFC0 is supported for writes and locks");
+		  //flash_info.blocks = 2048;
+		  //lock_bits = 32;
+		  break;
+#endif
     default:
       goto out;
+  }
   }
   flash_info.buffer_size = 0;
   flash_info.start = (void *) 0x00100000;
@@ -252,11 +303,17 @@ flash_hwr_init(void){
   // Set the FLASH clock to 1.5 microseconds based on the MCLK.  This
   // assumes the CPU is still running from the PLL clock as defined in
   // the HAL CDL and the HAL startup code. 
-  fmcn = CYGNUM_HAL_ARM_AT91_CLOCK_SPEED / 1000000 * 1.5;
+  fmcn = CYGNUM_HAL_ARM_AT91_CLOCK_SPEED * 1.5 / 1000000 + 0.999999; // We must round up!
   HAL_READ_UINT32(AT91_MC+AT91_MC_FMR, flash_mode);
   flash_mode = flash_mode & ~AT91_MC_FMR_FMCN_MASK;
   flash_mode = flash_mode | (fmcn << AT91_MC_FMR_FMCN_SHIFT);
   HAL_WRITE_UINT32(AT91_MC+AT91_MC_FMR, flash_mode);
+#ifdef AT91_MC_FMR1
+  HAL_READ_UINT32(AT91_MC+AT91_MC_FMR1, flash_mode);
+  flash_mode = flash_mode & ~AT91_MC_FMR_FMCN_MASK;
+  flash_mode = flash_mode | (fmcn << AT91_MC_FMR_FMCN_SHIFT);
+  HAL_WRITE_UINT32(AT91_MC+AT91_MC_FMR1, flash_mode);
+#endif
   
   return FLASH_ERR_OK;
   

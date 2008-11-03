@@ -1,3 +1,10 @@
+2008-11-03  Gabor Toeroek <tgabor84@gmail.com>
+
+	* src/at91_flash.c (flash_hwr_init): Add partial support for
+	AT91SAM7SE. This can have a second embedded flash controller and
+	maybe ROM as well as FLASH. Only writing to the first controller
+	is currently supported.
+ 
 2008-10-19  Oliver Munz <munz@speag.ch>
 
 	* src/at91_flash.c (flash_hwr_init): Add support for AT91SAM7XC.
