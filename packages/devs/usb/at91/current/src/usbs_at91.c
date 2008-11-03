@@ -49,11 +49,13 @@
 //####DESCRIPTIONEND####
 //==========================================================================
 
+#include <pkgconf/system.h>
 #include <pkgconf/devs_usb_at91.h>
 #include <cyg/io/usb/usb.h>
 #include <cyg/io/usb/usbs.h>
 #include <cyg/io/usb/usbs_at91.h>
 
+#include CYGBLD_HAL_PLATFORM_H
 #include <cyg/hal/hal_io.h>
 #include <cyg/hal/drv_api.h>
 #include <cyg/hal/hal_io.h>
@@ -82,39 +84,132 @@
 #define pCSRn(N) (pCSR0 + (N * 4))
 #define pFDRn(N) (pFDR0 + (N * 4))
 
+#if (AT91_USB_ENDPOINTS == 8)
+#define AT91_UDP_ALLOWED_IRQs \
+    (AT91_UDP_WAKEUP | AT91_UDP_ENDBUSRES | AT91_UDP_EXTRSM | \
+     AT91_UDP_RXRSM  | AT91_UDP_RXSUSP    | AT91_UDP_EPINT0 | \
+     AT91_UDP_EPINT1 | AT91_UDP_EPINT2    | AT91_UDP_EPINT3 | \
+     AT91_UDP_EPINT4 | AT91_UDP_EPINT5 | \
+     AT91_UDP_EPINT6 | AT91_UDP_EPINT7 )
+#elif (AT91_USB_ENDPOINTS == 6)
+#define AT91_UDP_ALLOWED_IRQs \
+    (AT91_UDP_WAKEUP | AT91_UDP_ENDBUSRES | AT91_UDP_EXTRSM | \
+     AT91_UDP_RXRSM  | AT91_UDP_RXSUSP    | AT91_UDP_EPINT0 | \
+     AT91_UDP_EPINT1 | AT91_UDP_EPINT2    | AT91_UDP_EPINT3 | \
+     AT91_UDP_EPINT4 | AT91_UDP_EPINT5 )
+#elif (AT91_USB_ENDPOINTS == 4)
 #define AT91_UDP_ALLOWED_IRQs \
     (AT91_UDP_WAKEUP | AT91_UDP_ENDBUSRES | AT91_UDP_EXTRSM | \
      AT91_UDP_RXRSM  | AT91_UDP_RXSUSP    | AT91_UDP_EPINT0 | \
      AT91_UDP_EPINT1 | AT91_UDP_EPINT2    | AT91_UDP_EPINT3)
+#endif
 
 #define THERE_IS_A_NEW_PACKET_IN_THE_UDP 0xffff
 
 // Fifo size for each end point.
+#if defined(CYGHWR_HAL_ARM_AT91SAM7SE)
+static const cyg_uint16 usbs_at91_endpoint_fifo_size[AT91_USB_ENDPOINTS] = {
+  8,
+  64,
+  64,
+  64,
+  512,
+  512,
+  64,
+  64
+};
+#elif defined(CYGHWR_HAL_ARM_AT91SAM7X)
+static const cyg_uint16 usbs_at91_endpoint_fifo_size[AT91_USB_ENDPOINTS] = {
+  8,
+  64,
+  64,
+  64,
+  256,
+  256
+};
+#else
 static const cyg_uint16 usbs_at91_endpoint_fifo_size[AT91_USB_ENDPOINTS] = {
   8,
   64,
   64,
   64,
 };
+#endif
 
 // Does an endpoint support ping pong buffering?
+#if defined(CYGHWR_HAL_ARM_AT91SAM7SE)
+static const bool usbs_at91_endpoint_pingpong[AT91_USB_ENDPOINTS] = {
+  false,
+  true,
+  true,
+  false,
+  true,
+  true,
+  true,
+  true
+};
+#elif defined(CYGHWR_HAL_ARM_AT91SAM7X)
+static const bool usbs_at91_endpoint_pingpong[AT91_USB_ENDPOINTS] = {
+  false,
+  true,
+  true,
+  false,
+  true,
+  true
+};
+#else
 static const bool usbs_at91_endpoint_pingpong[AT91_USB_ENDPOINTS] = {
   false,
   true,
   true,
   false
 };
+#endif
 
 static cyg_uint8 *usbs_at91_endpoint_pbegin[AT91_USB_ENDPOINTS] = 
+#if (AT91_USB_ENDPOINTS == 8)
+  { 0, 0, 0, 0, 0, 0, 0, 0 };
+#elif (AT91_USB_ENDPOINTS == 6)
+  { 0, 0, 0, 0, 0, 0 };
+#else
   { 0, 0, 0, 0 };
+#endif
+
 static cyg_uint8 *usbs_at91_endpoint_pend[AT91_USB_ENDPOINTS] = 
+#if (AT91_USB_ENDPOINTS == 8)
+  { 0, 0, 0, 0, 0, 0, 0, 0 };
+#elif (AT91_USB_ENDPOINTS == 6)
+  { 0, 0, 0, 0, 0, 0 };
+#else
   { 0, 0 ,0, 0 };
+#endif
+
 static bool usbs_at91_endpoint_bank1[AT91_USB_ENDPOINTS] = 
+#if (AT91_USB_ENDPOINTS == 8)
+  { false, false, false, false, false, false, false, false };
+#elif (AT91_USB_ENDPOINTS == 6)
+  { false, false, false, false, false, false };
+#else
   { false, false, false, false };
+#endif
+
 static cyg_uint16 usbs_at91_endpoint_bytes_in_fifo[AT91_USB_ENDPOINTS] =
+#if (AT91_USB_ENDPOINTS == 8)
+  { 0, 0, 0, 0, 0, 0, 0, 0 };
+#elif (AT91_USB_ENDPOINTS == 6)
+  { 0, 0, 0, 0, 0, 0 };
+#else
   { 0, 0, 0, 0 };
+#endif
+
 static cyg_uint16 usbs_at91_endpoint_bytes_received[AT91_USB_ENDPOINTS] =
   { THERE_IS_A_NEW_PACKET_IN_THE_UDP, THERE_IS_A_NEW_PACKET_IN_THE_UDP,
+#if (AT91_USB_ENDPOINTS > 4)
+	THERE_IS_A_NEW_PACKET_IN_THE_UDP, THERE_IS_A_NEW_PACKET_IN_THE_UDP,
+#if (AT91_USB_ENDPOINTS > 6)
+	THERE_IS_A_NEW_PACKET_IN_THE_UDP, THERE_IS_A_NEW_PACKET_IN_THE_UDP,
+#endif
+#endif
     THERE_IS_A_NEW_PACKET_IN_THE_UDP, THERE_IS_A_NEW_PACKET_IN_THE_UDP};
 
 static cyg_interrupt usbs_at91_intr_data;
@@ -196,6 +291,58 @@ usbs_rx_endpoint usbs_at91_ep3 = {
   halted:         0,
 };
 
+#if (AT91_USB_ENDPOINTS > 4)
+// Endpoint 4 Receive control structure
+usbs_rx_endpoint usbs_at91_ep4 = {
+  start_rx_fn:    usbs_at91_endpoint_start,
+  set_halted_fn:  usbs_at91_endpoint_set_halted,
+  complete_fn:    (void (*)(void *, int)) 0,
+  complete_data:  (void *) 0,
+  buffer:         (unsigned char *) 0,
+  buffer_size:    0,
+  halted:         0,
+};
+#endif
+
+#if (AT91_USB_ENDPOINTS > 5)
+// Endpoint 5 Receive control structure
+usbs_rx_endpoint usbs_at91_ep5 = {
+  start_rx_fn:    usbs_at91_endpoint_start,
+  set_halted_fn:  usbs_at91_endpoint_set_halted,
+  complete_fn:    (void (*)(void *, int)) 0,
+  complete_data:  (void *) 0,
+  buffer:         (unsigned char *) 0,
+  buffer_size:    0,
+  halted:         0,
+};
+#endif
+
+#if (AT91_USB_ENDPOINTS > 6)
+// Endpoint 6 Receive control structure
+usbs_rx_endpoint usbs_at91_ep6 = {
+  start_rx_fn:    usbs_at91_endpoint_start,
+  set_halted_fn:  usbs_at91_endpoint_set_halted,
+  complete_fn:    (void (*)(void *, int)) 0,
+  complete_data:  (void *) 0,
+  buffer:         (unsigned char *) 0,
+  buffer_size:    0,
+  halted:         0,
+};
+#endif
+
+#if (AT91_USB_ENDPOINTS > 7)
+// Endpoint 7 Receive control structure
+usbs_rx_endpoint usbs_at91_ep7 = {
+  start_rx_fn:    usbs_at91_endpoint_start,
+  set_halted_fn:  usbs_at91_endpoint_set_halted,
+  complete_fn:    (void (*)(void *, int)) 0,
+  complete_data:  (void *) 0,
+  buffer:         (unsigned char *) 0,
+  buffer_size:    0,
+  halted:         0,
+};
+#endif
+
 // Array of end points. Used for translating end point pointer to an
 // end point number
 static const void *usbs_at91_endpoints[AT91_USB_ENDPOINTS] = {
@@ -203,6 +350,12 @@ static const void *usbs_at91_endpoints[AT91_USB_ENDPOINTS] = {
   (void *) &usbs_at91_ep1,
   (void *) &usbs_at91_ep2,
   (void *) &usbs_at91_ep3
+#if (AT91_USB_ENDPOINTS > 4)
+  ,(void *) &usbs_at91_ep4, (void *) &usbs_at91_ep5
+#if (AT91_USB_ENDPOINTS > 6)
+  ,(void *) &usbs_at91_ep6, (void *) &usbs_at91_ep7
+#endif
+#endif
 };
 
 // Convert an endpoint pointer to an endpoint number, using the array
@@ -276,6 +429,16 @@ write_fifo_uint8 (cyg_addrword_t pdest, cyg_uint8 * psource,
 static void
 usbs_at91_set_pullup (bool set)
 {                
+#ifdef CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_INTERNAL
+  cyg_uint32 txvc;
+  HAL_READ_UINT32(AT91_UDP + AT91_UDP_TXVC, buf);
+  if (set) {
+    txvc |= AT91_UDP_TXVC_PUON;
+  } else {
+    txvc &= ~AT91_UDP_TXVC_PUON;
+  }
+  HAL_WRITE_UINT32(AT91_UDP + AT91_UDP_TXVC, txvc);
+#endif // CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_INTERNAL
 
 #ifndef CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_PIN_NONE
   if (
@@ -466,13 +629,9 @@ usbs_at91_endpoint_init (usbs_rx_endpoint * pep, cyg_uint8 endpoint_type,
 }
 
 static void
-usbs_at91_handle_reset (void)
+usbs_at91_reset_device (void)
 {
   int epn;
-  const usb_endpoint_descriptor *usb_endpoints;
-  cyg_uint8 endpoint_type;
-  
-   cyg_uint8 endpoint_number;
 
   usbs_end_all_transfers (-EPIPE);
   
@@ -490,6 +649,18 @@ usbs_at91_handle_reset (void)
     usbs_at91_endpoint_init ((usbs_rx_endpoint *)usbs_at91_endpoints[epn], 
                              0, false);
   }
+}
+
+static void
+usbs_at91_handle_reset (void)
+{
+  int epn;
+  const usb_endpoint_descriptor *usb_endpoints;
+  cyg_uint8 endpoint_type;
+
+  cyg_uint8 endpoint_number;
+
+  usbs_at91_reset_device ();
 
   // Now walk the endpoints configuring them correctly. This only
   // works if there is one interface.
@@ -505,11 +676,11 @@ usbs_at91_handle_reset (void)
                       USB_ENDPOINT_DESCRIPTOR_ENDPOINT_IN : 
                       USB_ENDPOINT_DESCRIPTOR_ENDPOINT_OUT));
     endpoint_number = usb_endpoints[epn-1].endpoint & ~(USB_ENDPOINT_DESCRIPTOR_ENDPOINT_IN); 
-    if ( endpoint_number < AT91_USB_ENDPOINTS )
-    {
-        usbs_at91_endpoint_init((usbs_rx_endpoint *)usbs_at91_endpoints[endpoint_number],
-                                endpoint_type,
-                                true);
+
+    if ( endpoint_number < AT91_USB_ENDPOINTS ) {
+      usbs_at91_endpoint_init((usbs_rx_endpoint *)usbs_at91_endpoints[endpoint_number],
+                              endpoint_type,
+                              true);
     }
   }
 }
@@ -527,6 +698,7 @@ usbs_at91_ep0_start (usbs_control_endpoint * endpoint)
 #endif
   
   usbs_at91_set_pullup (true);
+  CLEAR_BITS(AT91_UDP + AT91_UDP_TXVC, AT91_UDP_TXVC_TXVDIS);
 }
 
 static void
@@ -1323,7 +1495,7 @@ usbs_at91_init (void)
   HAL_ARM_AT91_GPIO_CFG_DIRECTION(CYGDAT_DEVS_USB_AT91_GPIO_READ_POWER_PIN,
                                   AT91_PIN_IN);
 #endif
-  usbs_at91_handle_reset ();
+  usbs_at91_reset_device ();
   
   cyg_drv_interrupt_create (CYGNUM_HAL_INTERRUPT_UDP, 
                             6,  // priority
@@ -1334,8 +1506,6 @@ usbs_at91_init (void)
   
   cyg_drv_interrupt_attach (usbs_at91_intr_handle);
   cyg_drv_interrupt_unmask (CYGNUM_HAL_INTERRUPT_UDP);
-  
-  HAL_WRITE_UINT32 (AT91_UDP + AT91_UDP_TXVC, 0);
   
   usbs_at91_ep0.state = USBS_STATE_POWERED;
   usbs_state_notify (&usbs_at91_ep0);

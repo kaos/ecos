@@ -50,13 +50,31 @@
 
 #include <cyg/io/usb/usbs.h>
 #include <pkgconf/devs_usb_at91.h>
+#include <pkgconf/system.h>
+#ifdef CYGPKG_HAL_ARM_AT91SAM7
+#include <pkgconf/hal_arm_at91sam7.h>
+#endif
 
+#if defined(CYGHWR_HAL_ARM_AT91SAM7SE)
+#define AT91_USB_ENDPOINTS 8
+#elif defined(CYGHWR_HAL_ARM_AT91SAM7X)
+#define AT91_USB_ENDPOINTS 6
+#else
 #define AT91_USB_ENDPOINTS 4
+#endif
  
 extern usbs_control_endpoint    usbs_at91_ep0;
 extern usbs_rx_endpoint         usbs_at91_ep1;
 extern usbs_rx_endpoint         usbs_at91_ep2;
 extern usbs_rx_endpoint         usbs_at91_ep3;
+#if (AT91_USB_ENDPOINTS > 4)
+extern usbs_rx_endpoint         usbs_at91_ep4;
+extern usbs_rx_endpoint         usbs_at91_ep5;
+#if (AT91_USB_ENDPOINTS > 6)
+extern usbs_rx_endpoint         usbs_at91_ep6;
+extern usbs_rx_endpoint         usbs_at91_ep7;
+#endif
+#endif
 
 extern void usbs_at91_endpoint_init(usbs_rx_endpoint * pep, 
                                     cyg_uint8 endpoint_type, cyg_bool enable);

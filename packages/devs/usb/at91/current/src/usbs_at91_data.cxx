@@ -121,14 +121,17 @@ CHAR_DEVTAB_ENTRY(usbs_at91_ep0_devtab_entry,
 
 #if defined(CYGVAR_DEVS_USB_AT91_EP1_DEVTAB_ENTRY) || \
     defined(CYGVAR_DEVS_USB_AT91_EP2_DEVTAB_ENTRY) || \
-    defined(CYGVAR_DEVS_USB_AT91_EP3_DEVTAB_ENTRY)
+    defined(CYGVAR_DEVS_USB_AT91_EP3_DEVTAB_ENTRY) || \
+    defined(CYGVAR_DEVS_USB_AT91_EP4_DEVTAB_ENTRY) || \
+    defined(CYGVAR_DEVS_USB_AT91_EP5_DEVTAB_ENTRY) || \
+    defined(CYGVAR_DEVS_USB_AT91_EP6_DEVTAB_ENTRY) || \
+    defined(CYGVAR_DEVS_USB_AT91_EP7_DEVTAB_ENTRY)
 
 static bool usbs_at91_devtab_dummy_init(struct cyg_devtab_entry* tab){
   
     CYG_UNUSED_PARAM(struct cyg_devtab_entry*, tab);
     return true;
 }
-
 #endif
 
 #ifdef CYGVAR_DEVS_USB_AT91_EP1_DEVTAB_ENTRY
@@ -180,4 +183,72 @@ CHAR_DEVTAB_ENTRY(usbs_at91_ep3_devtab_entry,
                   &usbs_at91_devtab_dummy_init,
                   0,
                   (void*) &usbs_at91_ep3);
+#endif
+
+#ifdef CYGVAR_DEVS_USB_AT91_EP4_DEVTAB_ENTRY
+CHAR_DEVIO_TABLE(usbs_at91_ep4_devtab_functions,
+                 &usbs_devtab_cwrite,
+                 &usbs_devtab_cread,
+                 &cyg_devio_select,
+                 &usbs_devtab_get_config,
+                 &usbs_devtab_set_config);
+
+CHAR_DEVTAB_ENTRY(usbs_at91_ep4_devtab_entry,
+                  CYGDAT_DEVS_USB_AT91_DEVTAB_BASENAME "4",
+                  0,
+                  &usbs_at91_ep4_devtab_functions,
+                  &usbs_at91_devtab_dummy_init,
+                  0,
+                  (void*) &usbs_at91_ep4);
+#endif
+
+#ifdef CYGVAR_DEVS_USB_AT91_EP5_DEVTAB_ENTRY
+CHAR_DEVIO_TABLE(usbs_at91_ep5_devtab_functions,
+                 &usbs_devtab_cwrite,
+                 &usbs_devtab_cread,
+                 &cyg_devio_select,
+                 &usbs_devtab_get_config,
+                 &usbs_devtab_set_config);
+
+CHAR_DEVTAB_ENTRY(usbs_at91_ep5_devtab_entry,
+                  CYGDAT_DEVS_USB_AT91_DEVTAB_BASENAME "5",
+                  0,
+                  &usbs_at91_ep5_devtab_functions,
+                  &usbs_at91_devtab_dummy_init,
+                  0,
+                  (void*) &usbs_at91_ep5);
+#endif
+
+#ifdef CYGVAR_DEVS_USB_AT91_EP6_DEVTAB_ENTRY
+CHAR_DEVIO_TABLE(usbs_at91_ep6_devtab_functions,
+                 &usbs_devtab_cwrite,
+                 &usbs_devtab_cread,
+                 &cyg_devio_select,
+                 &usbs_devtab_get_config,
+                 &usbs_devtab_set_config);
+
+CHAR_DEVTAB_ENTRY(usbs_at91_ep6_devtab_entry,
+                  CYGDAT_DEVS_USB_AT91_DEVTAB_BASENAME "6",
+                  0,
+                  &usbs_at91_ep6_devtab_functions,
+                  &usbs_at91_devtab_dummy_init,
+                  0,
+                  (void*) &usbs_at91_ep6);
+#endif
+
+#ifdef CYGVAR_DEVS_USB_AT91_EP7_DEVTAB_ENTRY
+CHAR_DEVIO_TABLE(usbs_at91_ep7_devtab_functions,
+                 &usbs_devtab_cwrite,
+                 &usbs_devtab_cread,
+                 &cyg_devio_select,
+                 &usbs_devtab_get_config,
+                 &usbs_devtab_set_config);
+
+CHAR_DEVTAB_ENTRY(usbs_at91_ep7_devtab_entry,
+                  CYGDAT_DEVS_USB_AT91_DEVTAB_BASENAME "7",
+                  0,
+                  &usbs_at91_ep7_devtab_functions,
+                  &usbs_at91_devtab_dummy_init,
+                  0,
+                  (void*) &usbs_at91_ep7);
 #endif

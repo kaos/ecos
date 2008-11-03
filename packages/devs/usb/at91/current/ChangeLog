@@ -1,3 +1,11 @@
+2008-11-03  Gabor Toeroek <tgabor84@gmail.com>
+
+	* cdl/usbs_at91.cdl: 
+	* include/usbs_at91.h:
+	* src/usbs_at91.c:
+	* src/usbs_at91_data.c: Support for SAM7SE which has an internal
+	  pullup.  Added extra endpoints for those chips that have them.
+	
 2007-11-20  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/usbs_at91.cdl: Fixed typos in

@@ -93,6 +93,17 @@ cdl_package CYGPKG_DEVS_USB_AT91 {
             Enable support for endpoint 0. If this support is disabled
             then the entire USB port is unusable."
     
+        cdl_option CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_INTERNAL {
+            display       "The chip has internal pullup"
+            flavor        bool
+            calculated    { CYGHWR_HAL_ARM_AT91SAM7SE }
+            requires      { CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_PIN == "NONE" }
+            description "
+                   The chip has an internal pullup resistor;
+                   the use of this pullup is mandatory (?), so there
+                   should be no external pullup resistor."
+        }
+    
         cdl_option CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_PIN {
             display       "PIO-Pin who controls the pullup resistor"
             flavor        data
@@ -105,6 +116,7 @@ cdl_package CYGPKG_DEVS_USB_AT91 {
 
         cdl_option CYGNUM_DEVS_USB_AT91_GPIO_SET_PULLUP_INVERTED {
             display       "Has the signal to be inverted?"
+            active_if     {CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_PIN != "NONE"}
             flavor        bool
             default_value 1
             description "
