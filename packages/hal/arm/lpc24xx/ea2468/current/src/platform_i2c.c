@@ -54,13 +54,13 @@
 #include <pkgconf/system.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_io.h>
-#include <cyg/io/i2c.h>
-#include <cyg/io/i2c_lpc2xxx.h>
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/hal/hal_endian.h>
 
 
 #ifdef CYGHWR_HAL_ARM_LPC24XX_I2C0_SUPP
+#include <cyg/io/i2c.h>
+#include <cyg/io/i2c_lpc2xxx.h>
 //=============================================================================
 // Setup I2C bus 0
 //=============================================================================

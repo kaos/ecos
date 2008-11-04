@@ -4,14 +4,14 @@
 MEMORY
 {
     sram   : ORIGIN = 0x40000000, LENGTH = 0x10000
-    ram    : ORIGIN = 0xA0000000, LENGTH = 0x2000000
+    ram    : ORIGIN = 0xA0100000, LENGTH = 0x1F00000
 }
 
 SECTIONS
 {
     SECTIONS_BEGIN
     SECTION_fixed_vectors (sram, 0x40000400, LMA_EQ_VMA)
-    SECTION_rom_vectors (ram, 0xA0010000, LMA_EQ_VMA)
+    SECTION_rom_vectors (ram, 0xA0100000, LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata (ram, ALIGN (0x4), LMA_EQ_VMA)

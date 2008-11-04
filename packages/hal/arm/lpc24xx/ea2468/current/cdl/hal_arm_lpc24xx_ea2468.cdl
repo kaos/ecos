@@ -133,7 +133,7 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX_EA2468 {
         default_value    0
         description      "
             The LPC2468 OEM board has two serial channels. The first
-            channel, UART0, ist routed to an USB-to-serial bridge and
+            channel, UART0, is routed to an USB-to-serial bridge and
             the second channel, UART1, is available on the Sub-D9
             RS232 connector. This option chooses which channel will be
             used to connect to a host running GDB."  
@@ -324,8 +324,8 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX_EA2468 {
         no_define
         calculated { "tests/i2c_eeprom" }
         description   "
-            This option specifies the set of tests for the LPC2xxx 
-            CAN device driver."
+            This option specifies the set of tests for the EA2468 
+            OEM board HAL."
     }
 
 }

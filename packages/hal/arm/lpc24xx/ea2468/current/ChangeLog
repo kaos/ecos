@@ -1,3 +1,12 @@
+2008-11-01  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/hal_arm_lpc24xx_ea2468.cdl: Fixed typo
+	* include/pkgconf/mlt_arm_lpc24xx_ea2468_ram.h: Reserve 1 MB of
+          SDRAM for RedBoot.
+	* include/pkgconf/mlt_arm_lpc24xx_ea2468_ram.ldi: Reserve 1 MB of
+          SDRAM for RedBoot
+	* src/platform_i2c.c: Compile only if I2C channel 0 is supported       
+
 2008-09-18  Uwe Kindler  <uwe_kindler@web.de>
 
 	* cdl/hal_arm_lpc2xxx_ea2468.cdl: Added compile platform_i2c.c and
@@ -60,7 +69,6 @@
 ##
 ## This exception does not invalidate any other reasons why a work based on
 ## this file might be covered by the GNU General Public License.
-##
 ## -------------------------------------------
 #####ECOSGPLCOPYRIGHTEND####
 # ====================================================================

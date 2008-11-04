@@ -53,6 +53,7 @@
 #include <cyg/infra/cyg_ass.h>          // assertion macros
 #include <cyg/infra/diag.h>
 #include <cyg/hal/hal_diag.h>
+#include <cyg/hal/hal_io.h>
 
 // Package requirements
 #if defined(CYGHWR_HAL_ARM_LPC24XX_I2C0_SUPP) && defined(CYGPKG_KERNEL)
