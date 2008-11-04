@@ -2,7 +2,7 @@
 //
 //      lpc2xxx_wallclock.cxx
 //
-//      Wallclock implementation for LPC2xxx
+//      Wallclock implementation for LPC2xxx and LPC24xxx
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -40,9 +40,9 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
-// Contributors:  
+// Contributors:  Uwe Kindler <uwe_kindler@web.de 
 // Date:          2007-06-19
-// Purpose:       Wallclock driver for LPC2xxx
+// Purpose:       Wallclock driver for LPC2xxx and LPC24xx
 //
 //####DESCRIPTIONEND####
 //
@@ -58,6 +58,30 @@
 
 #include <cyg/io/wallclock.hxx>
 #include <cyg/io/wallclock/wallclock.inl>
+
+//
+// The LPC2xxx variant HAL provides the CPU clock and the peripheral divider
+// VPBDIV. The LPC24xx variant HAL provides the RTC clock directly be means
+// of CYGNUM_HAL_ARM_LPC24XX_RTC_CLK. 
+//
+#ifdef CYGNUM_HAL_ARM_LPC2XXX_VPBDIV
+#define LPC2XXX_RTC_CLK (CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED / \
+                         CYGNUM_HAL_ARM_LPC2XXX_VPBDIV)
+#endif // CYGNUM_HAL_ARM_LPC2XXX_VPBDIV
+
+#ifdef CYGNUM_HAL_ARM_LPC24XX_RTC_CLK
+#define LPC2XXX_RTC_CLK (CYGNUM_HAL_ARM_LPC24XX_RTC_CLK)
+#endif // CYGNUM_HAL_ARM_LPC2XXX_VPBDIV
+
+
+#define CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREINT                     \
+        ((LPC2XXX_RTC_CLK / 32768) - 1)
+
+#define CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREFRAC                    \
+        (LPC2XXX_RTC_CLK -                                       \
+        ((CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREINT + 1) * 32768))
+
+
 
 /*
  * I don't like to write LOTS OF CAPITALIZED TEXT.
@@ -101,7 +125,9 @@ Cyg_WallClock::init_hw_seconds(void)
   rtc->ciir = 0x0;
   rtc->amr  = 0xf;
   
-  /* initialize prescaler */
+  // initialize prescaler - if the RTC id driven by an external 32.768 crystal
+  // clock then initializing the prescaler is not required but writing the
+  // registers here should not cause any trouble
   rtc->preint  = CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREINT;
   rtc->prefrac = CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREFRAC;
   

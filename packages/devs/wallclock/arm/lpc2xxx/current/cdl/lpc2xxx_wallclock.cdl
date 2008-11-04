@@ -53,7 +53,7 @@ cdl_package CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX {
 
     parent        CYGPKG_IO_WALLCLOCK
     active_if     CYGPKG_IO_WALLCLOCK
-    active_if     CYGPKG_HAL_ARM_LPC2XXX
+    active_if     CYGPKG_HAL_ARM_LPC2XXX || CYGPKG_HAL_ARM_LPC24XX
 
     requires      { CYGHWR_HAL_ARM_LPC2XXX_IDLE_PWRSAVE == 0 }
     compile       lpc2xxx_wallclock.cxx
@@ -67,20 +67,5 @@ cdl_package CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX {
         display       "Hardware wallclock"
         default_value 1
         implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
-    }
-
-    cdl_option CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREINT {
-        display    "RTC prescaler integer portion"
-        flavor     data
-        calculated { ((CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED / 
-                       CYGNUM_HAL_ARM_LPC2XXX_VPBDIV) / 32768) - 1 }
-    }
-
-    cdl_option CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREFRAC {
-        display    "RTC prescaler fractional portion"
-        flavor     data
-        calculated { ((CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED / 
-                       CYGNUM_HAL_ARM_LPC2XXX_VPBDIV) -
-                      ((CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREINT + 1) * 32768)) }
     }
 }

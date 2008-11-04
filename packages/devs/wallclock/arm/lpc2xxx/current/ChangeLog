@@ -1,3 +1,10 @@
+2008-11-01  Uwe Kindler <uwe_kindler@web.de>
+
+	* cdl/lpc2xxx_wallclock.cdl: Moved CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREINT
+	  and CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREFRAC to lpc2xxx_wallclock.cxx
+	* src/lpc2xxx_wallclock.cxx: Some small changes to support LPC24xx
+          devices
+    
 2007-07-12  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
 
 	* lpc2xxx: driver for on-chip RTC unit
