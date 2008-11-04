@@ -366,7 +366,7 @@ __externC void hal_delay_us( cyg_int32 us );
 
 #define HAL_PLATFORM_RESET()                                            \
 {                                                                       \
-    HAL_WRITE_UINT32(CYGARC_REG_SYSTICK_BASE+CYGARC_REG_NVIC_AIRCR,     \
+    HAL_WRITE_UINT32(CYGARC_REG_NVIC_BASE+CYGARC_REG_NVIC_AIRCR,        \
                      CYGARC_REG_NVIC_AIRCR_KEY|                         \
                      CYGARC_REG_NVIC_AIRCR_SYSRESETREQ );               \
     for(;;);                                                            \
