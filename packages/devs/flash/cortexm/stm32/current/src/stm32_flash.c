@@ -118,19 +118,21 @@ stm32_flash_init(struct cyg_flash_dev* dev)
 
     stf_diag("sig %08x id %08x\n", sig, id );
     
-    flash_size = 1024*CYGHWR_HAL_STM32_DEV_SIG_FSIZE(sig);
+    flash_size = CYGHWR_HAL_STM32_DEV_SIG_FSIZE(sig);
 
     if( CYGHWR_HAL_STM32_MCU_ID_DEV(id) == CYGHWR_HAL_STM32_MCU_ID_DEV_MEDIUM )
     {
         block_size = 1024;
-        if( flash_size == 0xFFFF ) flash_size = 128*1024;
+        if( flash_size == 0xFFFF ) flash_size = 128;
     }
     else if( CYGHWR_HAL_STM32_MCU_ID_DEV(id) == CYGHWR_HAL_STM32_MCU_ID_DEV_HIGH )
     {
         block_size = 2048;
-        if( flash_size == 0xFFFF ) flash_size = 512*1024;
+        if( flash_size == 0xFFFF ) flash_size = 512;
     }
 
+    flash_size *= 1024;
+    
     stm32_dev->block_info[0].blocks             = flash_size/block_size;
     stm32_dev->block_info[0].block_size         = block_size;
     

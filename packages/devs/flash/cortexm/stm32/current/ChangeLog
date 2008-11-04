@@ -1,3 +1,8 @@
+2008-11-04  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* src/stm32_flash.c:
+	Fixed detection on early silicon.
+
 2008-10-07  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/flash_stm32.cdl:
