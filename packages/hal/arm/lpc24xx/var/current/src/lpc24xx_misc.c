@@ -75,6 +75,9 @@
 #include <cyg/infra/diag.h>     // For diagnostic printing
 
 
+static cyg_uint32 clock_period = 0;
+
+
 //===========================================================================
 // Get peripheral clock for a certain peripheral
 //===========================================================================
@@ -115,9 +118,13 @@ cyg_uint32 hal_lpc_get_pclk(cyg_uint32 pclk_id)
 //===========================================================================
 void hal_lpc_set_pclk(cyg_uint32 peripheral_id, cyg_uint8 divider)
 {
-    static const cyg_uint8 clock_tbl[4] =
+    static const cyg_uint8 clock_tbl[5] =
     {
-        0x01, 0x02, 0x00, 0x03
+        0x01, // divider 1
+        0x02, // divider 2 
+        0x00, // divider 4
+        0x03, // divider 6
+        0x03  // divider 8
     }; 
     cyg_uint32 clock;
     cyg_uint32 pclkselreg;
@@ -134,7 +141,6 @@ void hal_lpc_set_pclk(cyg_uint32 peripheral_id, cyg_uint8 divider)
                   CYGARC_HAL_LPC24XX_REG_PCLKSEL0 : 
                   CYGARC_HAL_LPC24XX_REG_PCLKSEL1;  
     HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_SCB_BASE + pclkselreg, regval);
-    divider = (6 == divider) ? 8 : divider;
     clock = clock_tbl[divider >> 1];
     regval &= ~(0x03 << ((peripheral_id & 0xF) << 1));
     regval |= (clock << ((peripheral_id & 0xF) << 1));   
@@ -189,30 +195,61 @@ void hal_set_pin_function(cyg_uint8 port, cyg_uint8 pin, cyg_uint8 function)
 
 
 //===========================================================================
+// Start clock of RTC timer
+//===========================================================================
+void hal_start_clock_tmr(cyg_uint32 period)
+{
+    if (clock_period == period)
+    {
+        return;
+    }
+
+
+    cyg_uint32 tmr_period = period / (CYGNUM_HAL_ARM_LPC24XX_CLOCK_SPEED / 
+                            hal_lpc_get_pclk(CYNUM_HAL_LPC24XX_PCLK_TIMER0)); 
+    
+    //
+    // Execute the following steps only if counter is not running yet
+    //                        
+    if (!clock_period)
+    {    
+        // 
+        // Disable and reset counter, set prescale register to 0 and
+        // Set up match register 
+        //
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                         CYGARC_HAL_LPC24XX_REG_TxTCR, 2);
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                         CYGARC_HAL_LPC24XX_REG_TxPR, 0);
+    }
+    
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                     CYGARC_HAL_LPC24XX_REG_TxMR0, tmr_period);  
+    //
+    // Reset on match and Enable counter - interrupts are disabled
+    //
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                     CYGARC_HAL_LPC24XX_REG_TxMCR, 
+                     CYGARC_HAL_LPC24XX_REG_TxMCR_MR0_RESET);
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                     CYGARC_HAL_LPC24XX_REG_TxTCR, 1); 
+}
+
+
+//===========================================================================
 // initialize timer 0 as eCos realtime clock source
 //===========================================================================
 void hal_clock_initialize(cyg_uint32 period)
 {
-    CYG_ADDRESS timer = CYGARC_HAL_LPC24XX_REG_TIMER0_BASE;
-
-    period = period / (CYGNUM_HAL_ARM_LPC24XX_CLOCK_SPEED / 
-                       hal_lpc_get_pclk(CYNUM_HAL_LPC24XX_PCLK_TIMER0));
-
-    // 
-    // Disable and reset counter, set prescale register to 0 and
-    // Set up match register 
-    //
-    HAL_WRITE_UINT32(timer + CYGARC_HAL_LPC24XX_REG_TxTCR, 2);
-    HAL_WRITE_UINT32(timer + CYGARC_HAL_LPC24XX_REG_TxPR, 0);
-    HAL_WRITE_UINT32(timer + CYGARC_HAL_LPC24XX_REG_TxMR0, period);
+    hal_start_clock_tmr(period);
     
     //
-    // Reset and generate interrupt on match and Enable counter
+    // Reset and generate interrupt on match
     //
-    HAL_WRITE_UINT32(timer + CYGARC_HAL_LPC24XX_REG_TxMCR, 
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                     CYGARC_HAL_LPC24XX_REG_TxMCR, 
                      CYGARC_HAL_LPC24XX_REG_TxMCR_MR0_INT | 
                      CYGARC_HAL_LPC24XX_REG_TxMCR_MR0_RESET);
-    HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxTCR, 1);
 }
 
 
@@ -221,22 +258,20 @@ void hal_clock_initialize(cyg_uint32 period)
 //===========================================================================
 void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
 {
-    static cyg_uint32 _period = 0;
-    CYG_ADDRESS        timer  = CYGARC_HAL_LPC24XX_REG_TIMER0_BASE;
-
-    HAL_WRITE_UINT32(timer + CYGARC_HAL_LPC24XX_REG_TxIR, 
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                     CYGARC_HAL_LPC24XX_REG_TxIR, 
                      CYGARC_HAL_LPC24XX_REG_TxIR_MR0);  // Clear interrupt
 
-    if (period != _period) 
+    if (period != clock_period) 
     {
         hal_clock_initialize(period);
     }
-    _period = period;
+    clock_period = period;
 }
 
 
 //===========================================================================
-// Reset clock value
+// Read clock value
 //===========================================================================
 void hal_clock_read(cyg_uint32 *pvalue)
 {
@@ -249,40 +284,77 @@ void hal_clock_read(cyg_uint32 *pvalue)
 
 
 //===========================================================================
-// Delay for some number of micro-seconds - use TIMER1
+// Delay for maximum 1000 micorseconds
 //===========================================================================
-void hal_delay_us(cyg_int32 usecs)
+static void delay_max1000_us(cyg_uint32 usecs)
 {
-    CYG_ADDRESS timer = CYGARC_HAL_LPC24XX_REG_TIMER1_BASE;
-    cyg_uint32 stat;
-    cyg_uint64 ticks;
+    cyg_uint32 ticks;
+    cyg_uint32 start_counter;
+    cyg_uint32 target_counter;
+    cyg_uint32 counter;
+    cyg_uint32 tmr_period;
+      
 
+    CYG_ASSERT((usecs <= 1000) && (usecs > 0), "Invalid usecs value");
+    HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                    CYGARC_HAL_LPC24XX_REG_TxTC, start_counter);
+                    
+    HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                    CYGARC_HAL_LPC24XX_REG_TxMR0, tmr_period);
+                   
+    //
+    // If timer 0 match period is not initialized, then this is the
+    // first time that someone uses the timer and we need to initialize it
+    //
+    if (!tmr_period)
+    {
+        hal_start_clock_tmr(CYGNUM_HAL_RTC_PERIOD);
+        HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                        CYGARC_HAL_LPC24XX_REG_TxMR0, tmr_period);
+    } 
+                                        
     // Calculate how many timer ticks the required number of
     // microseconds equate to. We do this calculation in 64 bit
     // arithmetic to avoid overflow.
     ticks = (((cyg_uint64)usecs) * 
-             ((cyg_uint64)hal_lpc_get_pclk(CYNUM_HAL_LPC24XX_PCLK_TIMER1))) / 
+             ((cyg_uint64)hal_lpc_get_pclk(CYNUM_HAL_LPC24XX_PCLK_TIMER0))) / 
                1000000LL;
+               
+    target_counter = (start_counter + ticks) % tmr_period;
     
-    // Disable and reset counter
-    HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxTCR, 2);
-    
-    // Stop on match
-    HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxMR0, ticks);
-    HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxMCR, 
-                     CYGARC_HAL_LPC24XX_REG_TxMCR_MR0_STOP | 
-                     CYGARC_HAL_LPC24XX_REG_TxMCR_MR0_RESET);
+    if (target_counter > start_counter)
+    {
+        do
+        {
+            HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                            CYGARC_HAL_LPC24XX_REG_TxTC, counter);
+        } while ((counter >= start_counter) && (counter < target_counter));
+    }
+    else
+    {
+        do
+        {
+            HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_TIMER0_BASE + 
+                            CYGARC_HAL_LPC24XX_REG_TxTC, counter);
+        } while ((counter >= start_counter) || (counter < target_counter));
+    } // if (target_counter > start_counter)
+}
 
-    //set prescale register to 0
-    HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxPR, 0);         
 
-    // Enable counter
-    HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxTCR, 1);
+//===========================================================================
+// Delay for a certain numbr of microseconds
+//===========================================================================
+void hal_delay_us(cyg_int32 usecs)
+{   
+    cyg_uint16 delay_duration = usecs % 1000;
+    delay_duration = (delay_duration != 0) ? delay_duration : 1000;
 
-    // Wait for the match
-    do {
-        HAL_READ_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxTC, stat);
-    } while (stat < ticks);
+    do
+    {
+        delay_max1000_us(delay_duration); 
+        usecs -= delay_duration;
+        delay_duration = 1000;   
+    } while (usecs > 0);  
 }
 
 
@@ -309,6 +381,10 @@ void hal_hardware_init(void)
                      CYGNUM_HAL_ARM_LPC24XX_I2C1_CLK_DIV);
     hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_I2C2,  
                      CYGNUM_HAL_ARM_LPC24XX_I2C2_CLK_DIV);
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_RTC,  
+                     CYGNUM_HAL_ARM_LPC24XX_RTC_CLK_DIV);
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_ADC,  
+                     CYGNUM_HAL_ARM_LPC24XX_ADC_CLK_DIV);
                      
     //
     // Enable power for all used on-chip peripherals
@@ -329,7 +405,20 @@ void hal_hardware_init(void)
     hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_I2C2, 1);
 #else
     hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_I2C2, 0);
-#endif // CYGHWR_HAL_ARM_LPC24XX_I2C0_SUPP    
+#endif // CYGHWR_HAL_ARM_LPC24XX_I2C0_SUPP  
+ 
+#ifdef CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_RTC, 1);
+#else 
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_RTC, 0);
+#endif // CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX
+
+#ifdef CYGPKG_DEVS_ADC_ARM_LPC24XX
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_ADC, 1);
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_TIMER1, 1);
+#else
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_ADC, 0);
+#endif // CYGPKG_DEVS_ADC_ARM_LPC24XX
     
     //
     // Fill vector address registers with interrupt number. If an interrupt

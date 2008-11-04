@@ -351,6 +351,8 @@
 // RTC
 
 #define CYGARC_HAL_LPC24XX_REG_RTC_BASE                   0xE0024000
+#define CYGARC_HAL_LPC2XXX_REG_RTC_BASE                   0xE0024000 
+
 
 // Registers are offsets from base of this subsystem
 
@@ -483,8 +485,8 @@
 
 //=============================================================================
 // ADC (AD)
-
 #define CYGARC_HAL_LPC24XX_REG_AD_BASE                  0xE0034000
+#define CYGARC_HAL_LPC2XXX_REG_AD_BASE CYGARC_HAL_LPC24XX_REG_AD_BASE
 
 // Registers are offsets from base of this subsystem
 #define CYGARC_HAL_LPC24XX_REG_ADCR                     0x0000

@@ -1,3 +1,16 @@
+2008-11-01  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/hal_arm_lpc24xx.cdl: Added configuration options for ADC
+	  clock and RTC clock
+	* include/lpc24xx_misc.h Added macros CYG_HAL_ARM_LPC24XX_PCLK() and
+	  CYG_HAL_ARM_LPC24XX_SET_POWER() for configuring on-chip peripherals
+	  Added CYG_HAL_ARM_LPC24XX_PIN_CFG() for configuration of pin function
+	* src/lpc24xx_misc.c: Changed function hal_delay_us() to use the same
+	  timer (timer 0) like the eCos realtime clock. This safes one timer
+	  peripheral for application use. 
+	  Fixed wrong clock divider table in hal_lpc_set_pclk(). Added ADC and
+	  RTC clock divider configuration and power on.
+	  
 2008-09-18  Uwe Kindler  <uwe_kindler@web.de>
 
 	* cdl/hal_arm_lpc24xx.cdl: Added I2C configuration options for

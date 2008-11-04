@@ -55,6 +55,7 @@
 // Use PCLK identifiers below
 //
 externC cyg_uint32 hal_lpc_get_pclk(cyg_uint32 pclk_id);
+#define CYG_HAL_ARM_LPC24XX_PCLK(_pclkid_) hal_lpc_get_pclk(_pclkid_) 
 
 //
 // Identifiers for peripheral clock. Use these identifiers with the function
@@ -96,6 +97,9 @@ externC cyg_uint32 hal_lpc_get_pclk(cyg_uint32 pclk_id);
 // Use PCONP identifiers from below
 //
 externC void hal_lpc_set_power(cyg_uint8 pconp_id, int on);
+#define CYG_HAL_ARM_LPC24XX_SET_POWER(_pconp_id_, _on_) \
+        hal_lpc_set_power((_pconp_id_), (_on_))
+
 
 //
 // Identifiers for power control
@@ -133,7 +137,10 @@ externC void hal_lpc_set_power(cyg_uint8 pconp_id, int on);
 //-----------------------------------------------------------------------------
 // Configure pin function
 //
-void hal_set_pin_function(cyg_uint8 port, cyg_uint8 pin, cyg_uint8 function);
+externC void hal_set_pin_function(cyg_uint8 port, cyg_uint8 pin, 
+                                  cyg_uint8 function);
+#define CYG_HAL_ARM_LPC24XX_PIN_CFG(_port_, _pin_, _func_) \
+        hal_set_pin_function((_port_), (_pin_), (_func_))
 
 
 //-----------------------------------------------------------------------------
@@ -143,7 +150,6 @@ void hal_set_pin_function(cyg_uint8 port, cyg_uint8 pin, cyg_uint8 function);
 // Now we rely on the fact that we use the same baudrate clock for all
 // UARTs and we query only UART0
 //-----------------------------------------------------------------------------
-#define CYG_HAL_ARM_LPC24XX_PCLK(_pclkid_) hal_lpc_get_pclk(_pclkid_) 
 #define CYG_HAL_ARM_LPC2XXX_BAUD_GENERATOR(baud) \
             (CYG_HAL_ARM_LPC24XX_PCLK(CYNUM_HAL_LPC24XX_PCLK_UART0)/((baud)*16))
 #define CYG_HAL_ARM_LPC24XX_BAUD_GENERATOR(_pclkid_, baud) \

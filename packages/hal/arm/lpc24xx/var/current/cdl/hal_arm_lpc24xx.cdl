@@ -241,15 +241,17 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX {
                 legal_values  1 to 8
                 default_value { 6 }
                 description "
-                    This divider controls the division of the PLL output before 
-                    it is used by the USB block. If the PLL is bypassed, the 
-                    division may be by 1. In that case, the PLL input frequency 
-                    must be 48 MHz, with a 500 ppm tolerance. When the PLL is 
-                    running, the output must be divided in order to bring the 
-                    USB clock frequency to 48 MHz with a 50% duty cycle. A 
-                    4-bit divider allows obtaining the correct USB clock from 
-                    any even multiple of 48 MHz (i.e. any mutliple of 96 MHz) 
-                    within the PLL operating range."
+                    This divider controls the division of the PLL
+                    output before it is used by the USB block. If the
+                    PLL is bypassed, the division may be by 1. In that
+                    case, the PLL input frequency must be 48 MHz, with
+                    a 500 ppm tolerance. When the PLL is running, the
+                    output must be divided in order to bring the USB
+                    clock frequency to 48 MHz with a 50% duty cycle. A
+                    4-bit divider allows obtaining the correct USB
+                    clock from any even multiple of 48 MHz (i.e. any
+                    mutliple of 96 MHz) within the PLL operating
+                    range."
             }
         }
         
@@ -274,7 +276,49 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX {
             }
         }
         
-        for { set ::channel 0 } { $::channel < 3 } { incr ::channel } { 
+        cdl_component CYGNUM_HAL_ARM_LPC24XX_RTC_CLK {
+            display       "RTC clock speed"
+            flavor        data
+            calculated   {  CYGNUM_HAL_ARM_LPC24XX_CLOCK_SPEED / 
+                            CYGNUM_HAL_ARM_LPC24XX_RTC_CLK_DIV}
+            description "
+                The RTC clock speed is the CPU clock output divided by the 
+                RTC clock divider" 
+                
+            cdl_option CYGNUM_HAL_ARM_LPC24XX_RTC_CLK_DIV {
+                display       "RTC clock divider"
+                flavor        data
+                legal_values  { 2 4 8 }
+                default_value { 2 }
+                description "
+                    This divider selects the peripheral clock for on-chip 
+                    RTC if no external 32.768 kHz crystal clock for the 
+                    on-chip real-time clock peripheral unit is provided."
+            }
+        }
+        
+        cdl_component CYGNUM_HAL_ARM_LPC24XX_ADC_CLK {
+            display       "ADC clock speed"
+            flavor        data
+            calculated   {  CYGNUM_HAL_ARM_LPC24XX_CLOCK_SPEED / 
+                            CYGNUM_HAL_ARM_LPC24XX_ADC_CLK_DIV}
+            description "
+                The ADC clock speed is the CPU clock output divided by the 
+                ADC clock divider" 
+                
+            cdl_option CYGNUM_HAL_ARM_LPC24XX_ADC_CLK_DIV {
+                display       "ADC clock divider"
+                flavor        data
+                legal_values  { 1 2 4 8 }
+                default_value { 1 }
+                description "
+                    This divider selects the peripheral clock for on-chip 
+                    ADC. The ADC clock is the input clock of the ADC 
+                    peripheral."
+            }
+        }
+        
+        for { set ::channel 0 } { $::channel < 3 } { incr ::channel } {            
             cdl_component CYGNUM_HAL_ARM_LPC24XX_I2C[set ::channel]_CLK {
                 display       "I2C channel [set ::channel] clock speed"
                 flavor        data
@@ -302,6 +346,7 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX {
         cdl_component CYGHWR_HAL_ARM_LPC24XX_I2C[set ::channel]_SUPP {
             display       "I2C channel [set ::channel] configuration"
             parent        CYGPKG_DEVS_I2C_ARM_LPC2XXX
+            active_if     CYGPKG_DEVS_I2C_ARM_LPC2XXX
             flavor         bool
             default_value  [set ::channel] == 0
             description "
@@ -319,7 +364,7 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX {
                     interrupt priority registers defaults all
                     interrupts to the lowest priority 15, allowing a
                     single write to elevate the priority of an
-                    individual interrupt."  
+                    individual interrupt."
             }
         
             cdl_option CYGNUM_HAL_ARM_LPC24XX_I2C[set ::channel]_BUS_FREQ {
