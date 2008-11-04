@@ -1,0 +1,158 @@
+# ====================================================================
+#
+#      adc_lpc24xx.cdl
+#
+#      eCos LPC24xx ADC configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2008 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Uwe Kindler <uwe_kindler@web.de>
+# Contributors:   
+# Date:           2008-09-24
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+
+cdl_package CYGPKG_DEVS_ADC_ARM_LPC24XX {
+    display     "ADC hardware device driver for LPC24xx family of ARM controllers"
+    
+    parent      CYGPKG_IO_ADC_DEVICES
+    active_if   CYGPKG_IO_ADC_DEVICES
+    active_if   CYGPKG_HAL_ARM_LPC24XX
+    requires    {CYGNUM_IO_ADC_SAMPLE_SIZE <= 10}
+    requires    {CYGNUM_IO_ADC_SAMPLE_SIZE >= 3}
+    description " 
+           This package provides a generic ADC device driver for the on-chip
+           ADC peripherals in LPX24xx processors."
+           
+    include_dir cyg/io
+    compile     -library=libextras.a adc_lpc24xx.c
+    
+    cdl_interface CYGINT_DEVS_ADC_ARM_LPC24XX_CHANNELS {
+        display "Number of ADC channels"
+    }  
+   
+    cdl_option CYGPKG_DEVS_ADC_ARM_LPC24XX_DEBUG_LEVEL {
+         display "Driver debug output level"
+         flavor  data
+         legal_values {0 1 2}
+         default_value 0
+         description   "
+             This option specifies the level of debug data output by
+             the LPC24XX ADC device driver. A value of 0 signifies
+             no debug data output; 1 signifies normal debug data
+             output. If an overrun occurred then this can only be
+             detected by debug output messages."         
+    }
+    
+    cdl_option CYGNUM_DEVS_ADC_ARM_LPC24XX_INTPRIO {
+        display       "Interrupt priority"
+        flavor        data
+        legal_values  0 to 15
+        default_value 15
+        description   "
+            This option selects the interrupt priority for the ADC
+            interrupts.  Timer 1 is used for generating the sample
+            clock. So this option configures the interrupt priority
+            for timer 1. There are 16 priority levels corresponding to
+            the values 0 through 15 decimal, of which 15 is the lowest
+            priority. The reset value of these registers defaults all
+            interrupts to the lowest priority, allowing a single write
+            to elevate the priority of an individual interrupt."
+    }
+
+      
+    cdl_option CYGNUM_DEVS_ADC_ARM_LPC24XX_DEFAULT_RATE {
+        display "Default sample rate"
+        flavor   data
+        legal_values 1 to 10000
+        default_value 100
+        description "
+            The driver will be initialized with the default sample rate.
+            If you raise the default sample rate you might need to increase
+            the buffer size for each channel."
+    }
+                
+    # Support up to 8 ADC channels
+    for { set ::channel 0 } { $::channel < 8 } { incr ::channel } {  
+    
+        cdl_component CYGPKG_DEVS_ADC_ARM_LPC24XX_CHANNEL[set ::channel] {
+            display        "Access ADC channel [set ::channel]"
+            flavor          bool
+            default_value   [set ::channel] == 0
+            implements      CYGINT_DEVS_ADC_ARM_LPC24XX_CHANNELS
+            description "
+                If the application needs to access the on-chip ADC
+                channel [set ::channel] via an eCos ADC driver then
+                this option should be enabled."
+     
+            cdl_option CYGDAT_DEVS_ADC_ARM_LPC24XX_CHANNEL[set ::channel]_NAME {
+                display "Device name"
+                flavor      data
+                default_value   [format {"\"/dev/adc0%d\""} $::channel]
+                description "
+                    This option controls the name that an eCos application
+                    should use to access this device via cyg_io_lookup(),
+                    open(), or similar calls."
+            }
+        
+            cdl_option CYGDAT_DEVS_ADC_ARM_LPC24XX_CHANNEL[set ::channel]_BUFSIZE {
+                display "Size of data buffer"
+                flavor  data
+                legal_values  0x01 to 0x2000000
+                default_value 512
+                description "
+                    This option controls the number of samples the
+                    buffer can store. The required RAM depends on the
+                    sample size and on the number of samples. If the
+                    sample size is <= 8 bit the the required RAM =
+                    size of data buffer. If the sample size is 9 or 10
+                    bit then required RAM = size of data buffer * 2."
+            } 
+        } 
+    }
+    
+    cdl_option CYGPKG_DEVS_ADC_ARM_LPC24XX_TESTS {
+        display "Tests for LPC24xx ADC driver"
+        flavor  data
+        no_define
+        calculated { "tests/lpc24xx_adc_test" }
+        description   "
+            This option specifies the set of tests for the LPC24xx 
+            ADC device driver."
+    }
+
+}
