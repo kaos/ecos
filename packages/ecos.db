@@ -2279,7 +2279,7 @@ package CYGPKG_DEVS_SPI_ARM_LPC2XXX {
     hardware
     directory     devs/spi/arm/lpc2xxx
     script        spi_lpc2xxx.cdl
-    description "This package provides a driver for the I2C unit of the LPC2xxx
+    description "This package provides a driver for the SPI unit of the LPC2xxx
                  controller family."
 }
 
@@ -2323,6 +2323,16 @@ package CYGPKG_DEVS_I2C_ARM_LPC2XXX {
     script          i2c_lpc2xxx.cdl
     description "This package provides a driver for the I2C unit of the LPC2xxx
                  controller family."
+}
+
+package CYGPKG_DEVS_ADC_ARM_LPC24XX {
+    alias           { "LPC24xx ADC driver" }
+    hardware
+    directory       devs/adc/arm/lpc24xx
+    script          adc_lpc24xx.cdl
+    description "
+            This packages provides an ADC driver for the on-chip
+            ADC provided by the LPC24xx processor family."
 }
 
 package CYGPKG_IO_ADC {
@@ -4822,6 +4832,8 @@ target ea2468 {
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC24XX
                    CYGPKG_HAL_ARM_LPC24XX_EA2468 
+                   CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX                        
+                   CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX
                    CYGPKG_IO_SERIAL_GENERIC_16X5X
                    CYGPKG_IO_SERIAL_ARM_LPC24XX
                    CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX
@@ -4830,6 +4842,10 @@ target ea2468 {
                    CYGPKG_DEVS_FLASH_SST_39VFXXX
                    CYGPKG_DEVS_ETH_PHY
                    CYGPKG_DEVS_ETH_ARM_LPC2XXX
+                   CYGPKG_IO_I2C
+                   CYGPKG_DEVS_I2C_ARM_LPC2XXX     
+                   CYGPKG_IO_ADC
+                   CYGPKG_DEVS_ADC_ARM_LPC24XX
         }
         description "
             The Embedded Artists LPC2468 HAL package provides the support

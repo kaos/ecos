@@ -1,3 +1,9 @@
+2008-09-11  Uwe Kindler <uwe.kindler@cetoni.de>
+
+	* NEWS: 
+	* ecos.db: Add ADC device driver for EA2468 OEM board
+	           which uses a new generic LPC24xx ADC driver.
+
 2008-10-31  Nick Garnett  <nickg@ecoscentric.com>
 
 	* NEWS, ecos.db: Add Cortex-M HAL and drivers.
@@ -6,7 +12,7 @@
 
 	* NEWS, ecos.db: add generic framebuffer support and a synthetic
 	target 	device driver.
-
+	
 2008-09-15  Steven Clugston  <steven.clugston@ncl.ac.uk>
 		
 	* NEWS:
