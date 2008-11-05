@@ -326,7 +326,7 @@ __externC cyg_uint32 hal_cortexm_systick_clock;
 #define HAL_CLOCK_INITIALIZE( __period )                                \
 {                                                                       \
     cyg_uint32 __p = __period;                                          \
-    __p = hal_cortexm_systick_clock / ( 1000000 / __p );                \
+    __p = hal_cortexm_systick_clock / ( 1000000 / __p ) - 1;            \
     HAL_WRITE_UINT32(CYGARC_REG_SYSTICK_BASE+CYGARC_REG_SYSTICK_RELOAD, \
                      __p );                                             \
     HAL_WRITE_UINT32(CYGARC_REG_SYSTICK_BASE+CYGARC_REG_SYSTICK_CSR,    \
@@ -345,8 +345,8 @@ __externC cyg_uint32 hal_cortexm_systick_clock;
     cyg_uint32 __period, __value;                                       \
     HAL_READ_UINT32(CYGARC_REG_SYSTICK_BASE+CYGARC_REG_SYSTICK_RELOAD, __period ); \
     HAL_READ_UINT32(CYGARC_REG_SYSTICK_BASE+CYGARC_REG_SYSTICK_VALUE, __value ); \
-    __value = __period - __value;                                       \
-    __value /= (hal_cortexm_systick_clock/ 1000000 );                   \
+    __value = ( __period + 1 ) - __value;                               \
+    __value /= (hal_cortexm_systick_clock / 1000000 );                  \
     *(__pvalue) = __value;                                              \
 }
 

@@ -500,8 +500,9 @@ __externC void hal_delay_us( cyg_int32 us )
     {
         HAL_CLOCK_READ( &t1 );
         if( t1 < t0 )
-            t1 += CYGNUM_HAL_RTC_PERIOD;
-        us -= t1-t0;
+            us -= (t1 + CYGNUM_HAL_RTC_PERIOD - t0);
+        else
+        	us -= t1 - t0;
         t0 = t1;
     }
 }
