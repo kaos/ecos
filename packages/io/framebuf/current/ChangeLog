@@ -1,3 +1,8 @@
+2008-11-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/linear.c: fix the block move operations (new_y > y) overlap
+	handling.
+
 2008-10-06 Bart Veer  <bartv@ecoscentric.com>
 
 	* src/gen_framebufs.tcl, cdl/framebuf.cdl, tests/*: add some

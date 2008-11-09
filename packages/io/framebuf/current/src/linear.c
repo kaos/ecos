@@ -515,9 +515,9 @@ cyg_fb_linear_move_block_8_impl(void* fbaddr, cyg_ucount16 stride,
         dest   += (height * stride);
         
         for ( ; height; height--) {
-            __builtin_memcpy(dest, source, width);
             source  -= stride;
             dest    -= stride;
+            __builtin_memcpy(dest, source, width);
         }
         return;
     }
@@ -640,9 +640,9 @@ cyg_fb_linear_move_block_16_impl(void* fbaddr, cyg_ucount16 stride8,
         dest   = (cyg_uint16*)(((cyg_uint8*)dest)   + (height * stride8));
         width <<= 1;
         for ( ; height; height--) {
-            __builtin_memcpy(dest, source, width);
             source   = (cyg_uint16*)(((cyg_uint8*)source) - stride8);
             dest     = (cyg_uint16*)(((cyg_uint8*)dest) - stride8);
+            __builtin_memcpy(dest, source, width);
         }
         return;
     }
@@ -765,9 +765,9 @@ cyg_fb_linear_move_block_32_impl(void* fbaddr, cyg_ucount16 stride8,
         dest    = (cyg_uint32*)(((cyg_uint8*)dest)   + (height * stride8));
         width <<= 2;
         for ( ; height; height--) {
-            __builtin_memcpy(dest, source, width);
             source   = (cyg_uint32*)(((cyg_uint8*)source) - stride8);
             dest     = (cyg_uint32*)(((cyg_uint8*)dest) - stride8);
+            __builtin_memcpy(dest, source, width);
         }
         return;
     }
