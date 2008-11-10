@@ -1,5 +1,11 @@
 2008-11-03  Gabor Toeroek <tgabor84@gmail.com>
 
+	* cdl/usbs_serial.cdl: Fix typo introduced by Andrew Lunn in the
+	previous patch when CYGBLD_IO_USB_SLAVE_SERIAL_BUSPOWERED as
+	renamed CYGOPT_IO_USB_SLAVE_SERIAL_BUSPOWERED.
+
+2008-11-03  Gabor Toeroek <tgabor84@gmail.com>
+
 	* cdl/usbs_serial.cdl:
 	* src/usbs_serial.c (usb_configuration): Add to enumeration if the
 	device is bus powered or self powered, and what power it will

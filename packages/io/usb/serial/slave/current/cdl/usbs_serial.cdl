@@ -205,7 +205,7 @@ cdl_package CYGPKG_IO_USB_SLAVE_SERIAL {
         default_value 100
         legal_values  1 to 500
         requires      { (CYGNUM_IO_USB_SLAVE_SERIAL_CURRENTDRAW > 100) 
-                         implies CYGBLD_IO_USB_SLAVE_SERIAL_BUSPOWERED }
+                         implies CYGOPT_IO_USB_SLAVE_SERIAL_BUSPOWERED }
         description   "
             The maximum current drawn by the Device from the USB bus.
             It should report the peak value. A self powered device
