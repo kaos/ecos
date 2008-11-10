@@ -19,7 +19,7 @@
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ## Copyright (C) 2003 John Dallaway
-## Copyright (C) 2004 eCosCentric Limited
+## Copyright (C) 2004, 2005 eCosCentric Limited
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -120,10 +120,13 @@ namespace eval ecosadmin {
 
 	# Details of the command line arguments, if any.
 	variable list_packages_arg   0;     # list
+	variable clean_database_arg  0;     # clean
+	variable check_database_arg  0;     # check
 	variable accept_license_arg  0;     # --accept_license
 	variable extract_license_arg 0;     # --extract_license
 	variable add_package        "";     # add FILE
 	variable remove_package     "";     # remove PACKAGE
+	variable keep_targets_arg   "";     # --keep_targets
 	variable merge_repository   "";     # merge REPOSITORY
 	variable version_arg        "";     # --version VER
 	
@@ -394,6 +397,18 @@ proc ecosadmin::parse_arguments { argv0 argv } {
 				continue
 			}
 
+			# check for the clean command
+			if { [regexp -- {^-?-?clean$} $args($i)] == 1 } {
+				set ecosadmin::clean_database_arg 1
+				continue
+			}
+				
+			# check for the check command
+			if { [regexp -- {^-?-?check$} $args($i)] == 1 } {
+				set ecosadmin::check_database_arg 1
+				continue
+			}
+				
 			# check for --version
 			if { [regexp -- {^-?-version=?(.*)$} $args($i) dummy match1] == 1 } {
 				if { $match1 != "" } {
@@ -420,6 +435,12 @@ proc ecosadmin::parse_arguments { argv0 argv } {
 				continue
 			}
 		
+			# check for --keep_targets
+			if { [regexp -- {^-?-keep_targets$} $args($i)] == 1 } {
+				set ecosadmin::keep_targets_arg 1
+				continue
+			}
+
 			# check for the add command
 			if { [regexp -- {^-?-?add=?(.*)$} $args($i) dummy match1] == 1 } {
 				if { $match1 != "" } {
@@ -497,6 +518,7 @@ proc ecosadmin::argument_help { } {
 	puts "Usage: ecosadmin \[ command \]"
 	puts "  commands are:"
 	puts "    list                                   : list packages"
+	puts "    check                                  : check database"
 	puts "    add FILE                               : add packages"
 	puts "    remove PACKAGE \[ --version VER \]       : remove a package"
 }
@@ -734,12 +756,14 @@ proc ecosadmin::locate_subdirs { dir { pattern "*" }} {
 
 	ASSERT { $dir != "" }
 
-	set dirlist [glob -nocomplain -- [file join $dir $pattern "."]]
+	set dirlist [glob -nocomplain -- [file join $dir $pattern]]
 
-	# Eliminate the pathnames and the spurious /. at the end of each entry
+	# Eliminate the pathnames and the regular (non-directory) files
 	set dirnames ""
 	foreach dir $dirlist {
-		lappend dirnames [file tail [file dirname $dir]]
+		if { [file isdirectory $dir] } {
+			lappend dirnames [file tail $dir]
+		}
 	}
 
 	# Get rid of the CVS directory, if any
@@ -923,6 +947,10 @@ proc ecosadmin::template_requires_any_package { template packages } {
 # file to the eCos repository database iff they are not already present
 
 proc ecosadmin::merge_new_packages { datafile } {
+	# array of targets which require merging of package list
+	array set ::ecosadmin::merge_target_packages {}
+	variable ::ecosadmin::merge_targets ""
+	variable ::ecosadmin::target_packages ""
 
 	# open the eCos database file for appending
 	set ecosfile [ file join $ecosadmin::component_repository "ecos.db" ]
@@ -940,6 +968,21 @@ proc ecosadmin::merge_new_packages { datafile } {
 			( ( $command == "target" ) && ( [ lsearch -exact $ecosadmin::known_targets $name ] == -1 ) ) ||
 			( ( $command == "template" ) && ( [ lsearch -exact $ecosadmin::known_templates $name ] == -1 ) ) } {
 			puts $ecosadmin::outfile "$command $name {$body}\n"
+		} elseif { ($command == "target") } {
+			# target is already defined so store any new package names for a possible merge
+			set merge_required 0
+			foreach pkg $ecosadmin::target_packages {
+				# for each package name in the target record
+				if { [ lsearch $ecosadmin::target_data($name,packages) $pkg ] == -1 } {
+					# package name is not in the existing target record
+					lappend ecosadmin::merge_target_packages($name) $pkg
+					set merge_required 1
+				}
+			}
+			if { $merge_required == 1 } {
+				# at least one package name is not in the existing target record
+				lappend ecosadmin::merge_targets $name
+			}
 		}
 		
 		# add new packages to the list of merged packages
@@ -948,10 +991,15 @@ proc ecosadmin::merge_new_packages { datafile } {
 		}
 	}
 
+	proc set_target_packages { packages } {
+		set ecosadmin::target_packages $packages
+	}
+
 	# Create the parser, add the aliased commands, and then define
 	# the routines that do the real work.
 	set parser [ interp create -safe ]
 	$parser alias merge ecosadmin::merge
+	$parser alias set_target_packages ecosadmin::set_target_packages
 	$parser eval {
 		proc package { name body } {
 			merge "package" $name $body
@@ -962,8 +1010,19 @@ proc ecosadmin::merge_new_packages { datafile } {
 		}
 
 		proc target { name body } {
+			eval $body
 			merge "target" $name $body
 		}
+
+		proc packages { str } {
+			set_target_packages $str
+		}
+
+		proc alias { str } { }
+		proc description { str } { }
+		proc disable { str } { }
+		proc enable { str } { }
+		proc set_value { str1 str2 } { }
 	}
 
 	# The parser is ready to evaluate the script. To avoid having to give the
@@ -978,6 +1037,7 @@ proc ecosadmin::merge_new_packages { datafile } {
 
 	# The interpreter and the aliased commands are no longer required.
 	rename merge {}
+	rename set_target_packages {}
 	interp delete $parser
 
 	# close the eCos database file
@@ -987,6 +1047,121 @@ proc ecosadmin::merge_new_packages { datafile } {
 	if { $status != 0 } {
 		ecosadmin::fatal_error "parsing $datafile:\n$message"
 	}
+
+	# having appended any new records to ecos.db we can now merge extra
+	# packages into target records as necessary
+
+	# open the new eCos database file for writing
+	set ecosfile [ file join $ecosadmin::component_repository "ecos.db.new" ]
+	variable outfile [ open $ecosfile w ]
+	variable target_packages ""
+	variable target_attributes ""
+
+	# this procedure is called when the interpreter encounters a command in ecos.db when
+	# merging extra packages into target records
+	proc merge_target { command name body } {
+		if { ( $command == "target" ) && ( [ lsearch $ecosadmin::merge_targets $name ] != -1 ) } {
+			# add new package(s) to the target definition
+			puts $ecosadmin::outfile "$command $name \{\n$ecosadmin::target_attributes \tpackages \{"
+			foreach pkg $ecosadmin::target_packages {
+				puts $ecosadmin::outfile "\t\t$pkg"
+			}
+			foreach pkg $ecosadmin::merge_target_packages($name) {
+				ecosadmin::report "adding $pkg to target $name"			
+				puts $ecosadmin::outfile "\t\t$pkg"
+			}
+			puts $ecosadmin::outfile "\t\}\n\}\n"
+		} else {
+			# copy the data record to the new database
+			puts $ecosadmin::outfile "$command $name {$body}\n"
+		}
+	}
+
+	proc add_target_attribute { attribute value } {
+		set ecosadmin::target_attributes "$ecosadmin::target_attributes \t$attribute $value\n"
+	}
+
+	proc clear_target_attributes { } {
+		set ecosadmin::target_attributes ""
+	}
+
+	proc set_target_packages { packages } {
+		set ecosadmin::target_packages $packages
+	}
+
+	# Create the parser, add the aliased commands, and then define
+	# the routines that do the real work.
+	set parser [ interp create -safe ]
+	$parser alias add_target_attribute ecosadmin::add_target_attribute
+	$parser alias set_target_packages ecosadmin::set_target_packages
+	$parser alias clear_target_attributes ecosadmin::clear_target_attributes
+	$parser eval {
+		proc package { name body } {
+			filter "package" $name $body
+		}
+
+		proc template { name body } {
+			filter "template" $name $body
+		}
+
+		proc target { name body } {
+			clear_target_attributes
+			eval $body
+			filter "target" $name $body
+		}
+
+		proc packages { str } {
+			set_target_packages $str
+		}
+
+		proc alias { str } {
+			add_target_attribute "alias" \{$str\}
+		}
+
+		proc description { str } {
+			add_target_attribute "description" \"$str\"
+		}
+
+		proc disable { str } {
+			add_target_attribute "disable" \{$str\}
+		}
+
+		proc enable { str } {
+			add_target_attribute "enable" \{$str\}
+		}
+
+		proc set_value { str1 str2 } {
+			add_target_attribute "set_value" "$str1 \"$str2\""
+		}
+	}
+
+	# The parser is ready to evaluate the script. To avoid having to give the
+	# safe interpreter file I/O capabilities, the file is actually read in
+	# here and then evaluated.
+	set filename [ file join $ecosadmin::component_repository "ecos.db" ]
+	set status [ catch {
+		set fd [ open $filename r ]
+		set script [ read $fd ]
+		close $fd
+
+		$parser alias filter ecosadmin::merge_target
+		$parser eval $script
+	} message ]
+
+	# The interpreter and the aliased commands are no longer required.
+	rename merge_target {}
+	interp delete $parser
+
+	# close the new eCos database file
+	close $outfile
+
+	# report errors
+	if { $status != 0 } {
+		ecosadmin::fatal_error "parsing $filename:\n$message"
+	}
+
+	# replace the old eCos database file with the new one
+	file rename -force $ecosfile $filename
 }
 
 #-----------------------------------------------------------------------
@@ -1001,6 +1176,8 @@ proc ecosadmin::filter_old_packages { old_packages } {
 	variable outfile [ open $ecosfile w ]
 	variable filter_list $old_packages
 	variable removed_packages ""
+	variable target_packages ""
+	variable target_attributes ""
 
 	# this procedure is called when the interpreter encounters a command in the datafile on the first pass
 	# it generates a list of packages which will be removed on the second pass
@@ -1017,8 +1194,24 @@ proc ecosadmin::filter_old_packages { old_packages } {
 	# this procedure is called when the interpreter encounters a command in the datafile on the second pass
 	proc filter { command name body } {
 		if { ( $command == "target" ) && ( ( [ target_requires_any_package $name $ecosadmin::removed_packages ] != 0 ) || ( [ target_requires_missing_package $name ] != 0 ) ) } {
-			# the target requires a package which has been removed so remove the target
-			ecosadmin::report "removing target $name"
+			# the target requires a package which has been removed
+			if { $ecosadmin::keep_targets_arg != 1 } {
+				# "--keep_targets" not specified so remove targets with missing packages
+				ecosadmin::report "removing target $name"
+			} else {
+				# "--keep_targets" specified so remove missing packages from the target definition
+				puts $ecosadmin::outfile "$command $name \{\n$ecosadmin::target_attributes \tpackages \{"
+				foreach pkg $ecosadmin::target_packages {
+					if { ([ lsearch $ecosadmin::removed_packages $pkg ] == -1) && ([ lsearch $ecosadmin::known_packages $pkg ] != -1) } {
+						# package exists and has not been listed for removal so keep it in the target definition
+						puts $ecosadmin::outfile "\t\t$pkg"
+					} else {
+						# package is missing or has been listed for removal so remove it from the target definition
+						puts "removing $pkg from $name target record"
+					}
+				}
+				puts $ecosadmin::outfile "\t\}\n\}\n"
+			}
 		} elseif { ( $command == "template" ) && ( ( [ template_requires_any_package $name $ecosadmin::removed_packages ] != 0 ) || ( [ template_requires_missing_package $name ] != 0 ) ) } {
 			# the template requires a package which has been removed so remove the template
 			ecosadmin::report "removing template $name"
@@ -1054,9 +1247,24 @@ proc ecosadmin::filter_old_packages { old_packages } {
 		}
 	}
 
+	proc add_target_attribute { attribute value } {
+		set ecosadmin::target_attributes "$ecosadmin::target_attributes \t$attribute $value\n"
+	}
+
+	proc clear_target_attributes { } {
+		set ecosadmin::target_attributes ""
+	}
+
+	proc set_target_packages { packages } {
+		set ecosadmin::target_packages $packages
+	}
+
 	# Create the parser, add the aliased commands, and then define
 	# the routines that do the real work.
 	set parser [ interp create -safe ]
+	$parser alias add_target_attribute ecosadmin::add_target_attribute
+	$parser alias set_target_packages ecosadmin::set_target_packages
+	$parser alias clear_target_attributes ecosadmin::clear_target_attributes
 	$parser eval {
 		proc package { name body } {
 			filter "package" $name $body
@@ -1067,7 +1275,33 @@ proc ecosadmin::filter_old_packages { old_packages } {
 		}
 
 		proc target { name body } {
+			clear_target_attributes
+			eval $body
 			filter "target" $name $body
+		}
+
+		proc packages { str } {
+			set_target_packages $str
+		}
+
+		proc alias { str } {
+			add_target_attribute "alias" \{$str\}
+		}
+
+		proc description { str } {
+			add_target_attribute "description" \"$str\"
+		}
+
+		proc disable { str } {
+			add_target_attribute "disable" \{$str\}
+		}
+
+		proc enable { str } {
+			add_target_attribute "enable" \{$str\}
+		}
+
+		proc set_value { str1 str2 } {
+			add_target_attribute "set_value" "$str1 \"$str2\""
 		}
 	}
 
@@ -1205,7 +1439,7 @@ proc ecosadmin::process_remove_package { } {
 	set package_name [ ecosadmin::find_package $ecosadmin::remove_package ]
 	if { $package_name == "" } {
 		# package not found
-		fatal_error "package not found"
+		fatal_error "package $ecosadmin::remove_package not found"
 	} elseif { $ecosadmin::version_arg == "" } {
 		# version not specified
 #		if { [ llength $ecosadmin::package_data($package_name,versions) ] > 1 } {
@@ -1213,11 +1447,55 @@ proc ecosadmin::process_remove_package { } {
 #		}
 	} elseif { [ lsearch $ecosadmin::package_data($package_name,versions) $ecosadmin::version_arg ] == -1 } {
 		# specified version not found
-		fatal_error "version not found"
+		fatal_error "version $ecosadmin::version_arg not found"
 	}
 	
 	# filter out the old package from the eCos database file
 	filter_old_packages $package_name
+}
+
+# ----------------------------------------------------------------------------
+# Process_clean_database. This routine is responsible for tidying up an
+# eCos repository package database
+#
+
+proc ecosadmin::process_clean_database { } {
+
+	# filter out missing packages from the eCos database file
+	filter_old_packages ""
+}
+
+# ----------------------------------------------------------------------------
+# Process_check_database. This routine is responsible for checking an
+# eCos repository package database
+#
+
+proc ecosadmin::process_check_database { } {
+
+	foreach target $ecosadmin::known_targets {
+		foreach package $ecosadmin::target_data($target,packages) {
+			if { [ lsearch -exact $ecosadmin::known_packages $package ] != -1 } {
+				if { $ecosadmin::package_data($package,hardware) != 1 } {
+					ecosadmin::warning "non-hardware package $package used in target $target"
+				}
+			} else {
+				ecosadmin::warning "target $target refers to non-existent package $package"
+			}
+		}
+	}
+	foreach package $ecosadmin::known_packages {
+		if { $ecosadmin::package_data($package,hardware) == 1 } {
+			variable hardware_package_required 0
+			foreach target $ecosadmin::known_targets {
+				if { [ target_requires_any_package $target $package ] } {
+					set hardware_package_required 1
+				}
+			}
+			if { $hardware_package_required == 0 } {
+				ecosadmin::warning "hardware package $package not used by any target"
+			}
+		}
+	}
 }
 
 # ----------------------------------------------------------------------------
@@ -1257,7 +1535,7 @@ proc ecosadmin::process_merge_repository { } {
 		set repository_files [ ecosadmin::locate_all_files [ file join $ecosadmin::component_repository $topdir ] ]
 		set merge_files [ ecosadmin::locate_all_files [ file join $ecosadmin::merge_repository $topdir ] ]
 		foreach filename $merge_files {
-			if { [lsearch $repository_files $filename] == -1 } {
+			if { [string length $filename] > 0 && [lsearch $repository_files $filename] == -1 } {
 				ecosadmin::report "copying $topdir file $filename"
 				file mkdir [ file join $ecosadmin::component_repository $topdir [ file dirname $filename ] ]
 				file copy [ file join $ecosadmin::merge_repository $topdir $filename ] [ file join $ecosadmin::component_repository $topdir $filename ]
@@ -1353,6 +1631,10 @@ if { ! [info exists ecosadmin_not_standalone] } {
 			ecosadmin::process_remove_package
 		} elseif { $ecosadmin::merge_repository != "" } {
 			ecosadmin::process_merge_repository
+		} elseif { $ecosadmin::clean_database_arg != 0 } {
+			ecosadmin::process_clean_database
+		} elseif { $ecosadmin::check_database_arg != 0 } {
+			ecosadmin::process_check_database
 		}
 
 	} error_message ] != 0 } { 

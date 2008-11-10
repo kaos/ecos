@@ -153,6 +153,22 @@
 	driver, and extensions to the AT91 variant HAL in addition to the
 	AT91SAM7S HAL.
 
+2005-08-17  John Dallaway  <jld@ecoscentric.com>
+
+	* ecosadmin.tcl: Add new packages to an existing target
+	record where necessary when installing an eCos package
+	distribution file (.epk).
+
+2005-07-18  John Dallaway  <jld@ecoscentric.com>
+
+	* ecosadmin.tcl: Update hardware package lists within
+	target records when a package is missing.
+
+2005-07-12  John Dallaway  <jld@ecoscentric.com>
+
+	* ecosadmin.tcl: Optionally update hardware package lists
+	within target records when removing packages.
+
 2005-06-28  Nick Garnett  <nickg@ecoscentric.com>
 
 	* ecos.db: Added Object Loader package.
@@ -161,6 +177,11 @@
 
 	* ecos.db: Added a ethernet device driver for the NETARM.
 	
+2005-06-10  John Dallaway  <jld@ecoscentric.com>
+
+	* ecosadmin.tcl(ecosadmin::locate_subdirs): Accommodate
+	the behaviour of recent versions of Cygwin.
+
 2005-04-17   Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* ecos.db: Added support for the AT91 based PhyCore
@@ -188,6 +209,10 @@
 2004-11-19  Jani Monoses <jani@iv.ro>
 
 	* ecos.db: New lpc2xxx platform, Olimex LPC-MT.
+
+2004-11-16  John Dallaway  <jld@ecoscentric.com>
+
+	* ecosadmin.tcl: Add "clean" and "check" commands.
 
 2004-11-14  Jani Monoses <jani@iv.ro>
 
