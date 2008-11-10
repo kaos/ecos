@@ -27,6 +27,16 @@
 	config.cxx, component.cxx, cdlmisc.cxx, cdlcore.hxx, cdl.hxx,
 	build.cxx: fix various compiler warnings.
 
+2008-08-14  John Dallaway  <jld@ecoscentric.com>
+
+	* interp.cxx (locate_files): Ignore file names with a leading period
+	(such as ".cvsignore").
+
+2005-11-11  John Dallaway  <jld@ecoscentric.com>
+
+	* interp.cxx (locate_subdirs): Ignore directory names with a leading
+	period (such as ".svn").
+
 2004-06-23  John Dallaway  <jld@ecoscentric.com>
 
 	* interp.cxx (locate_subdirs): Avoid use of a trailing period in
