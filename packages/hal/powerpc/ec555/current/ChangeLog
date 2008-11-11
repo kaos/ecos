@@ -1,3 +1,15 @@
+2008-11-07  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/pkgconf/mlt_powerpc_ec555_f02_s01_ram.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f02_s01_rom.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f04_s02_ram.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f04_s02_rom.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f08_s04_ram.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f08_s04_rom.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f08_s08_ram.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f08_s08_rom.ldi:
+	Add SECTION_eh_frame and SECTION_RELOCS.
+
 2004-09-23  Bob Koninckx <bob.koninckx@o-3s.com>
 
 	* src/ec555.S: Updated memory controller settings for ethernet card. Now
