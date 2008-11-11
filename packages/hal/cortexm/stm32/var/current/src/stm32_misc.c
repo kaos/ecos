@@ -310,6 +310,22 @@ __externC void hal_stm32_gpio_in ( cyg_uint32 pin, int *val )
 }
 
 //==========================================================================
+// Backup domain
+
+void hal_stm32_bd_unprotect( int unprotect )
+{
+    CYG_ADDRESS pwr = CYGHWR_HAL_STM32_PWR;
+    cyg_uint32 cr;
+    
+    HAL_READ_UINT32( pwr+CYGHWR_HAL_STM32_PWR_CR, cr );
+    if( unprotect )
+        cr |= CYGHWR_HAL_STM32_PWR_CR_DBP;
+    else
+        cr &= ~CYGHWR_HAL_STM32_PWR_CR_DBP;
+    HAL_WRITE_UINT32( pwr+CYGHWR_HAL_STM32_PWR_CR, cr );
+}
+
+//==========================================================================
 // UART baud rate
 //
 // Set the baud rate divider of a UART based on the requested rate and

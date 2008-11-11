@@ -242,6 +242,45 @@
 #define CYGHWR_HAL_STM32_RCC_CSR_WWDGRSTF       BIT_(30)
 #define CYGHWR_HAL_STM32_RCC_CSR_LPWRRSTF       BIT_(31)
 
+#define CYGHWR_HAL_STM32_RCC_BDCR_LSEON         BIT_(0)
+#define CYGHWR_HAL_STM32_RCC_BDCR_LSERDY        BIT_(1)
+#define CYGHWR_HAL_STM32_RCC_BDCR_LSEBYP        BIT_(2)
+#define CYGHWR_HAL_STM32_RCC_BDCR_RTCSEL_NO     VALUE_(8,0)
+#define CYGHWR_HAL_STM32_RCC_BDCR_RTCSEL_LSE    VALUE_(8,1)
+#define CYGHWR_HAL_STM32_RCC_BDCR_RTCSEL_LSI    VALUE_(8,2)
+#define CYGHWR_HAL_STM32_RCC_BDCR_RTCSEL_HSE    VALUE_(8,3)
+#define CYGHWR_HAL_STM32_RCC_BDCR_RTCSEL_XXX    VALUE_(8,3)
+#define CYGHWR_HAL_STM32_RCC_BDCR_RTCEN         BIT_(15)
+#define CYGHWR_HAL_STM32_RCC_BDCR_BDRST         BIT_(16)
+
+//=============================================================================
+// Realtime Clock
+
+#define CYGHWR_HAL_STM32_RTC_CRH                0x00
+#define CYGHWR_HAL_STM32_RTC_CRL                0x04
+#define CYGHWR_HAL_STM32_RTC_PRLH               0x08
+#define CYGHWR_HAL_STM32_RTC_PRLL               0x0C
+#define CYGHWR_HAL_STM32_RTC_DIVH               0x10
+#define CYGHWR_HAL_STM32_RTC_DIVL               0x14
+#define CYGHWR_HAL_STM32_RTC_CNTH               0x18
+#define CYGHWR_HAL_STM32_RTC_CNTL               0x1C
+#define CYGHWR_HAL_STM32_RTC_ALRH               0x20
+#define CYGHWR_HAL_STM32_RTC_ALRL               0x24
+
+// CRH fields
+
+#define CYGHWR_HAL_STM32_RTC_CRH_SECIE          BIT_(0)
+#define CYGHWR_HAL_STM32_RTC_CRH_ALRIE          BIT_(1)
+#define CYGHWR_HAL_STM32_RTC_CRH_OWIE           BIT_(2)
+
+// CRL fields
+
+#define CYGHWR_HAL_STM32_RTC_CRL_SECF           BIT_(0)
+#define CYGHWR_HAL_STM32_RTC_CRL_ALRCF          BIT_(1)
+#define CYGHWR_HAL_STM32_RTC_CRL_OWF            BIT_(2)
+#define CYGHWR_HAL_STM32_RTC_CRL_RSF            BIT_(3)
+#define CYGHWR_HAL_STM32_RTC_CRL_CNF            BIT_(4)
+#define CYGHWR_HAL_STM32_RTC_CRL_RTOFF          BIT_(5)
 
 //=============================================================================
 // External interrupt controller
@@ -526,6 +565,43 @@ __externC void hal_stm32_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 #define CYGHWR_HAL_STM32_FLASH_OBR_nRST_STOP    BIT_(3)
 #define CYGHWR_HAL_STM32_FLASH_OBR_nRST_STDBY   BIT_(4)
 
+//=============================================================================
+// Power control
+
+#define CYGHWR_HAL_STM32_PWR_CR                 0x00
+#define CYGHWR_HAL_STM32_PWR_CSR                0x04
+
+// CR fields
+
+#define CYGHWR_HAL_STM32_PWR_CR_LPDS            BIT_(0)
+#define CYGHWR_HAL_STM32_PWR_CR_PDDS            BIT_(1)
+#define CYGHWR_HAL_STM32_PWR_CR_CWUF            BIT_(2)
+#define CYGHWR_HAL_STM32_PWR_CR_CSBF            BIT_(3)
+#define CYGHWR_HAL_STM32_PWR_CR_PVDE            BIT_(4)
+#define CYGHWR_HAL_STM32_PWR_CR_PLS_XXX         VALUE_(5,7)
+#define CYGHWR_HAL_STM32_PWR_CR_DBP             BIT_(8)
+
+// CSR fields
+
+#define CYGHWR_HAL_STM32_PWR_CSR_WUF            BIT_(0)
+#define CYGHWR_HAL_STM32_PWR_CSR_SBF            BIT_(1)
+#define CYGHWR_HAL_STM32_PWR_CSR_PVDO           BIT_(2)
+#define CYGHWR_HAL_STM32_PWR_CSR_EWUP           BIT_(8)
+
+// Functions and macros to reset the backup domain as well as
+// enable/disable backup domain write protection.
+
+__externC void hal_stm32_bd_unprotect( int disable );
+
+#define CYGHWR_HAL_STM32_BD_RESET()                                         \
+    CYG_MACRO_START                                                         \
+    HAL_WRITE_UINT32(CYGHWR_HAL_STM32_RCC+CYGHWR_HAL_STM32_RCC_BDCR,        \
+                     CYGHWR_HAL_STM32_RCC_BDCR_BDRST);                      \
+    HAL_WRITE_UINT32(CYGHWR_HAL_STM32_RCC+CYGHWR_HAL_STM32_RCC_BDCR, 0);    \
+    CYG_MACRO_END
+
+#define CYGHWR_HAL_STM32_BD_UNPROTECT(__unprotect )                         \
+    hal_stm32_bd_unprotect( __unprotect )
 
 //=============================================================================
 // FSMC

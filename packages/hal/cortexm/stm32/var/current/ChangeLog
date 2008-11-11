@@ -1,3 +1,10 @@
+2008-11-11  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_io.h: Add power control definitions.
+
+	* src/stm32_misc.c (hal_stm32_bd_unprotect): Add this function to
+	control backup domain write protection.
+
 2008-10-14  Nick Garnett  <nickg@ecoscentric.com>
 
 	* tests/timers.c: Add ifdefs to avoid compiling tests when not all
