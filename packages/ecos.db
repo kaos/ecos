@@ -539,7 +539,7 @@ package CYGPKG_DEVS_FLASH_MALTA {
 }
 
 package CYGPKG_DEVS_FLASH_ARM_EXCALIBUR {
-	alias 		{ "FLASH memory support for Altera ARM9/Excalibur board" flash_malta }
+	alias 		{ "FLASH memory support for Altera ARM9/Excalibur board" flash_excalibur }
 	directory	devs/flash/arm/excalibur
 	script		flash_excalibur.cdl
 	hardware
@@ -1214,7 +1214,7 @@ package CYGPKG_IO_SERIAL_GENERIC_16X5X {
 
 package CYGPKG_IO_SERIAL_SH_SCI {
     alias             { "SH SCI serial device drivers"
-                        devs_serial_sh_sci sci_serial_driver }
+                        devs_serial_sh_sci sh_sci_serial_driver }
     hardware
     directory	      devs/serial/sh/sci
     script	      ser_sh_sci.cdl	
@@ -1302,7 +1302,7 @@ package CYGPKG_IO_SERIAL_SH_SE77X9 {
 
 package CYGPKG_IO_SERIAL_SH_SH4_202_MD {
     alias             { "SH4-202 MicroDev serial device driver"
-                        devs_serial_sh3_se77x9 se77x9_serial_driver }
+                        devs_serial_sh4_202_md sh4_202_md_serial_driver }
     hardware
     directory	      devs/serial/sh/sh4_202_md
     script	      ser_sh4_202_md.cdl	
@@ -1341,7 +1341,7 @@ package CYGPKG_IO_SERIAL_MIPS_IDT79S334A {
 
 package CYGPKG_IO_SERIAL_H8300_SCI {
     alias             { "H8/300 SCI serial device drivers"
-                        devs_serial_h8300h_sci sci_serial_driver }
+                        devs_serial_h8300h_sci h8300h_sci_serial_driver }
     hardware
     directory       devs/serial/h8300/h8300h
     script          serial_h8300.cdl  
@@ -1743,7 +1743,7 @@ package CYGPKG_DEVS_ETH_POWERPC_MBX {
 }
 
 package CYGPKG_DEVS_ETH_POWERPC_QUICC2 {
-	alias 		{ "QUICC2 ethernet driver" quicc_eth_driver }
+	alias 		{ "QUICC2 ethernet driver" quicc2_eth_driver }
 	hardware
 	directory	devs/eth/powerpc/quicc2
 	script		quicc2_eth_drivers.cdl
@@ -2593,7 +2593,7 @@ package CYGPKG_CYGMON {
 }
 
 package CYGPKG_REDBOOT {
-    alias           { "RedBoot, the Red Hat bootstrap" cygmon }
+    alias           { "RedBoot, the Red Hat bootstrap" redboot }
     directory       redboot
     script          redboot.cdl
     description     "
@@ -2682,7 +2682,7 @@ package CYGPKG_HAL_ARM_AT91 {
 }
 
 package CYGPKG_HAL_ARM_AT91_JTST {
-	alias		{ "Atmel AT572D740 (diopsis) evaluation board (jtst)" hal_arm_at91 arm_at91_hal }
+	alias		{ "Atmel AT572D740 (diopsis) evaluation board (jtst)" hal_arm_at91_jtst arm_at91_jtst_hal }
 	directory	hal/arm/at91/jtst
 	script		hal_arm_at91_jtst.cdl
 	hardware
@@ -2732,7 +2732,7 @@ package CYGPKG_HAL_ARM_SAM7EX256 {
 }
 
 package CYGPKG_HAL_ARM_AT91_EB40 {
-	alias		{ "Atmel evaluation board (EB40)" hal_arm_at91 arm_at91_hal }
+	alias		{ "Atmel evaluation board (EB40)" hal_arm_at91_eb40 arm_at91_eb40_hal }
 	directory	hal/arm/at91/eb40
 	script		hal_arm_at91_eb40.cdl
 	hardware
@@ -3376,7 +3376,7 @@ H8/300H processor."
 }
 
 package CYGPKG_HAL_H8300_H8S {
-	alias		{ "Hitachi H8S variant HAL" hal_h8s h8300h_hal}
+	alias		{ "Hitachi H8S variant HAL" hal_h8s h8s_hal}
 	directory	hal/h8300/h8s
 	script		hal_h8300_h8s.cdl
 	hardware
@@ -4241,7 +4241,7 @@ package CYGPKG_HAL_CALM16 {
 }
 
 package CYGPKG_HAL_CALM16_CORE {
-	alias		{ "CORE HAL" hal_calm16core calm16core_hal calm16core_arch_hal }
+	alias		{ "CalmRISC16 Core HAL" hal_calm16core calm16core_hal calm16core_arch_hal }
 	directory	hal/calmrisc16/core/
 	script		hal_calm16_core.cdl
 	hardware
@@ -4252,7 +4252,7 @@ package CYGPKG_HAL_CALM16_CORE {
 }
 
 package CYGPKG_HAL_CALM16_CEB {
-	alias		{ "Core eval board" hal_ceb ceb_hal }
+	alias		{ "CalmRISC16 Core eval board" hal_calm16_ceb calm16_ceb_hal }
 	directory	hal/calmrisc16/ceb
 	script		hal_calm16_ceb.cdl
 	hardware
@@ -4276,14 +4276,14 @@ package CYGPKG_HAL_CALM32 {
 }
 
 package CYGPKG_HAL_CALM32_CORE {
-	alias		{ "CORE HAL" hal_calm32core calm32core_hal calm32core_arch_hal }
+	alias		{ "CalmRISC32 Core HAL" hal_calm32core calm32core_hal calm32core_arch_hal }
 	directory	hal/calmrisc32/core/
 	script		hal_calm32_core.cdl
 	hardware
 }
 
 package CYGPKG_HAL_CALM32_CEB {
-	alias		{ "Core eval board" hal_ceb ceb_hal }
+	alias		{ "CalmRISC32 Core eval board" hal_calm32_ceb calm32_ceb_hal hal_commo }
 	directory	hal/calmrisc32/ceb
 	script		hal_calm32_ceb.cdl
 	hardware
