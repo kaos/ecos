@@ -6706,22 +6706,32 @@ package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
 }
 
 package CYGPKG_IO_SERIAL_CORTEXM_STM32 {
-    alias             { "ST STM32 serial device drivers"
-                        devs_serial_cortexm_stm32 stm32_serial_driver }
-    hardware
-    directory	      devs/serial/cortexm/stm32
-    script	      ser_cortexm_stm32.cdl	
-    description       "ST STM32 serial device driver"
+        alias           { "ST STM32 serial device drivers"
+                          devs_serial_cortexm_stm32 stm32_serial_driver }
+        hardware
+        directory	devs/serial/cortexm/stm32
+        script	        ser_cortexm_stm32.cdl	
+        description     "ST STM32 serial device driver"
 }
 
 package CYGPKG_DEVS_FLASH_STM32 {
-	alias 		{ "Internal FLASH memory support for ST STM32" flash_stm32 }
-	directory	devs/flash/cortexm/stm32
-	script		flash_stm32.cdl
-	hardware
+        alias           { "Internal FLASH memory support for ST STM32" flash_stm32 }
+        directory       devs/flash/cortexm/stm32
+        script          flash_stm32.cdl
+        hardware
         description "
-           This package contains hardware support for the internal FLASH memory
-	   on the ST STM32 devices."
+        This package contains hardware support for the internal FLASH memory
+        on the ST STM32 devices."
+}
+
+package CYGPKG_DEVS_WALLCLOCK_STM32 {
+        alias           { "ST STM32 RTC wallclock support" wallclock_stm32 }
+        directory       devs/wallclock/cortexm/stm32
+        script          wallclock_stm32.cdl
+        hardware
+        description "
+        Wallclock support for on-chip RTC on STM32 devices.driver for the
+        STM32 controller and compatibles"
 }
 
 target stm3210e_eval {
@@ -6732,6 +6742,7 @@ target stm3210e_eval {
                    CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2
                    CYGPKG_DEVS_FLASH_STM32
                    CYGPKG_IO_SERIAL_CORTEXM_STM32
+                   CYGPKG_DEVS_WALLCLOCK_STM32
                  }
         description "The stm3210e_eval target provides the packages needed
         to run eCos on the STM3210E EVAL board."

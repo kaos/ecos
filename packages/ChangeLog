@@ -1,3 +1,7 @@
+2008-11-11  Nick Garnett  <nickg@ecoscentric.com>
+
+	* ecos.db: Add STM32 wallclock driver.
+
 2008-11-11  John Dallaway  <jld@ecoscentric.com>
 
 	* ecos.db: Remove package records for absent packages and remove
@@ -8,7 +12,7 @@
 	* NEWS: 
 	* ecos.db: Add ADC device driver for EA2468 OEM board
 	           which uses a new generic LPC24xx ADC driver.
-
+	
 2008-10-31  Nick Garnett  <nickg@ecoscentric.com>
 
 	* NEWS, ecos.db: Add Cortex-M HAL and drivers.
