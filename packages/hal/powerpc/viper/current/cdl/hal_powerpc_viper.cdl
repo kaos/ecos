@@ -10,6 +10,7 @@
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ## Copyright (C) 2002, 2003 Gary Thomas
+## Copyright (C) 2004 eCosCentric Limited
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -51,14 +52,14 @@
 # ====================================================================
 
 cdl_package CYGPKG_HAL_POWERPC_VIPER {
-    display       "A&M VIPER PowerPC evaluation board"
+    display       "A&M Viper PowerPC evaluation board"
     parent        CYGPKG_HAL_POWERPC
     requires      CYGPKG_HAL_POWERPC_MPC8xx
     define_header hal_powerpc_viper.h
     include_dir   cyg/hal
     description   "
         The VIPER HAL package provides the support needed to run
-        eCos on a A&M VIPER board equipped with a PowerPC processor."
+        eCos on a A&M Viper board equipped with a PowerPC processor."
 
     compile       hal_diag.c hal_aux.c viper.S
 
