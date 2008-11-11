@@ -1,3 +1,8 @@
+2008-07-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/thread.inl: Silence some warnings by assigning
+	string literals to const char *, not char *.
+
 2007-08-23  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
 
 	* tests/intr0.cxx, tests/kintr0.c: As suggested by Bart Veer,

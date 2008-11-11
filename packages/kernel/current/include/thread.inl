@@ -13,6 +13,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2008 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -113,13 +114,13 @@ inline void Cyg_HardwareThread::check_stack(void)
           i < CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE/sizeof(cyg_uint32);
           i++ ) {
         if ((sig ^ (i * 0x01010101)) != base[i]) {
-            char *reason = "Stack base corrupt";
+            const char *reason = "Stack base corrupt";
             diag_printf("%s - i: %d\n", reason, i);
             diag_dump_buf(base, CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE);
             CYG_FAIL(reason);
         }
         if ((sig ^ (i * 0x10101010)) != top[i]) {
-            char *reason = "Stack top corrupt";
+            const char *reason = "Stack top corrupt";
             diag_printf("%s - i: %d\n", reason, i);
             diag_dump_buf(top, CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE);
             CYG_FAIL(reason);
@@ -143,7 +144,7 @@ inline void Cyg_HardwareThread::check_stack(void)
               i < CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE/sizeof(cyg_uint32);
               i++ ) {
             if ((sig ^ (i * 0x01010101)) != p[i]) {
-                char *reason = "Gap between stack limit and base corrupt";
+                const char *reason = "Gap between stack limit and base corrupt";
                 diag_printf("%s - i: %d\n", reason, i);
                 diag_dump_buf(p, CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE);
                 CYG_FAIL(reason);
