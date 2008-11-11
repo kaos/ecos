@@ -1,3 +1,11 @@
+2008-11-07  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/pkgconf/mlt_powerpc_vads_ram.ldi:
+	* include/pkgconf/mlt_powerpc_vads_romhigh.ldi:
+	* include/pkgconf/mlt_powerpc_vads_romlow.ldi:
+	* include/pkgconf/mlt_powerpc_vads_romram.ldi:
+	Add SECTION_eh_frame and SECTION_RELOCS.
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_powerpc_vads.cdl:
