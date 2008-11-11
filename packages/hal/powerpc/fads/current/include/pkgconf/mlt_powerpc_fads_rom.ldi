@@ -15,12 +15,14 @@ SECTIONS
     SECTIONS_BEGIN
     SECTION_vectors (rom, 0x2800000, LMA_EQ_VMA)
     SECTION_text (rom, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_RELOCS (rom, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_fini (rom, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_rodata1 (rom, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_rodata (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fixup (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_gcc_except_table (rom, ALIGN (0x1), LMA_EQ_VMA)
-    SECTION_data (ram, 0x100000, FOLLOWING (.gcc_except_table))
+    SECTION_eh_frame (rom, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_data (ram, 0x100000, FOLLOWING (.eh_frame))
     SECTION_sbss (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)
     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
