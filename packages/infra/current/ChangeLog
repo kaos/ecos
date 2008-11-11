@@ -1,3 +1,9 @@
+2008-10-02  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/gccsupport.cxx (fwrite, fputc): New functions since GCC can
+	now optimise certain builtins used by the libsupc++ runtime to
+	these.
+
 2008-07-10  Grant Edwards <grant.b.edwards@gmail.com>
 
         * src/diag.cxx: allow ASCII escape character in printf
@@ -69,6 +75,12 @@
 	indicate to gcc 3.4.4 or above not to throw away a variable or
 	function even when it appears to be not references.
 	
+2005-04-07  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/gccsupport.cxx: New file. Provide very simple defaults for
+	some dependencies of the GCC runtime.	
+	* cdl/infra.cdl: Build it.
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/diag.h: Added CYGBLD_ATTRIB_PRINTF_FORMAT where
