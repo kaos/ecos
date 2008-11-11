@@ -172,6 +172,9 @@
 	(do_go): Ditto.
 	(error_handler): Ditto for this function.
 
+	* cdl/redboot.cdl: RedBoot always needs to claim the virtual
+	vector comms, so express that explicitly.
+
 2005-09-09  Andrew Dyer  <adyer@righthandtech.com>
  
  	* src/load.c: add calls to redboot_getc_terminate before exiting
