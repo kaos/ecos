@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 2004, 2005, 2007, 2008 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -78,10 +79,39 @@
 #define CPSR_SUPERVISOR_MODE	0x13
 #define CPSR_UNDEF_MODE		0x1B
 
+// The following are not supported by every CPU, but if
+// they are, they have the following values:
+#define CPSR_ICACHE_ENABLE	0x1000
+#define CPSR_BIG_ENDIAN		0x80
+#define CPSR_DCACHE_ENABLE	0x4
+#define CPSR_ALIGN_FAULT_ENABLE	0x2
+#define CPSR_MMU_ENABLE		0x1
+
 #define CPSR_MODE_BITS          0x1F
 
 #define CPSR_INITIAL (CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_SUPERVISOR_MODE)
 #define CPSR_THREAD_INITIAL (CPSR_SUPERVISOR_MODE)
+
+//
+// Vector table offsets
+//
+
+#define HAL_ARM_RESET_VECTOR			0x00
+#define HAL_ARM_UNDEFINED_VECTOR		0x04
+#define HAL_ARM_SWI_VECTOR			0x08
+#define HAL_ARM_PREFETCH_VECTOR			0x0C
+#define HAL_ARM_ABORT_VECTOR			0x10
+#define HAL_ARM_RESERVED_VECTOR			0x14
+#define HAL_ARM_IRQ_VECTOR			0x18
+#define HAL_ARM_FIQ_VECTOR			0x1C
+#define HAL_ARM_RESET_VECTOR_ADDR		0x20
+#define HAL_ARM_UNDEFINED_VECTOR_ADDR		0x24
+#define HAL_ARM_SWI_VECTOR_ADDR			0x28
+#define HAL_ARM_PREFETCH_VECTOR_ADDR		0x2C
+#define HAL_ARM_ABORT_VECTOR_ADDR		0x30
+#define HAL_ARM_RESERVED_VECTOR_ADDR		0x34
+#define HAL_ARM_IRQ_VECTOR_ADDR			0x38
+#define HAL_ARM_FIQ_VECTOR_ADDR			0x3C
 
 //--------------------------------------------------------------------------
 // Processor saved states:

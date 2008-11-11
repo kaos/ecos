@@ -7,6 +7,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2005, 2008 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -30,23 +31,17 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/hal.h>
 
 STARTUP(vectors.o)
 ENTRY(reset_vector)
 INPUT(extras.o)
-#if (__GNUC__ >= 3)
-GROUP(libtarget.a libgcc.a libsupc++.a)
-#else
-GROUP(libtarget.a libgcc.a)
-#endif
+GROUP( CYGBLD_HAL_LINKER_GROUPED_LIBS )
 
 #if defined(__ARMEB__)
 OUTPUT_FORMAT(elf32-bigarm)
@@ -72,8 +67,21 @@ OUTPUT_FORMAT(elf32-bigarm)
 #undef  CYGPRI_PID_BE_WORKAROUND
 #endif
 
+// ALIGN_LMA is 4, but the AAPCS now requires that double word types
+// be aligned to 8, which means some input sections can be marked as needing
+// 8-byte alignment, even text ones (consider literal data).
+// This is quite a big backward-compatibility problem for us as a zillion
+// platform mlt files for ARM assume that 4-byte alignment is adequate. Really
+// this is a bigger problem for the VMA but of course the LMA and VMA have to
+// move in sync, since things like .data are just copied as a block. Still,
+// ALIGN_LMA as 4 is probably best, but there can be problems with this.
+
 #define ALIGN_LMA 4
-#define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
+#define AAPCS_ALIGN 8
+#define FOLLOWING_ALIGNED(_section_, _align_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + (_align_) - 1) & ~ ((_align_) - 1))
+#define FOLLOWING(_section_) FOLLOWING_ALIGNED(_section_, ALIGN_LMA)
+
+
 #define LMA_EQ_VMA
 #define FORCE_OUTPUT . = .
 
@@ -90,7 +98,17 @@ OUTPUT_FORMAT(elf32-bigarm)
   .debug_str      0 : { *(.debug_str) }         \
   .debug_loc      0 : { *(.debug_loc) }         \
   .debug_macinfo  0 : { *(.debug_macinfo) }     \
-  .note.arm.ident 0 : { KEEP (*(.note.arm.ident)) }
+  .note.arm.ident 0 : { KEEP (*(.note.arm.ident)) } \
+  /DISCARD/       0 : { *(.fini_array*) }
+
+
+// Following not used unless CYGHWR_HAL_ARM_SEPARATE_VSR_TABLE
+// defined in hal_platform_setup.h. Otherwise vsr table
+// goes in .fixed_vectors.
+#define SECTION_hal_vsr_table(_region_, _vma_, _lma_) \
+    .hal_vsr_table _vma_ : _lma_ \
+    { FORCE_OUTPUT; KEEP (*(.hal_vsr_table)) } \
+    > _region_
 
 #define SECTION_fixed_vectors(_region_, _vma_, _lma_) \
     .fixed_vectors _vma_ : _lma_ \
@@ -104,12 +122,73 @@ OUTPUT_FORMAT(elf32-bigarm)
     > _region_ \
     __rom_vectors_lma = LOADADDR(.rom_vectors);
 
+/* The following two sections are used for C++ exception handling
+ * only and so can be discarded if not used for that.
+ * These are both included directly from the SECTION_text
+ * definition and so, for now, are not expected to be listed
+ * separately in mlt files.
+ */
+#ifdef CYGPKG_LIBSTDCXX
+#define SECTION_ARM_extab(_region_, _vma_, _lma_) \
+    .ARM.extab _vma_ : _lma_ \
+    { PROVIDE (__stext = ABSOLUTE(.)); _stext = ABSOLUTE(.) ; \
+    FORCE_OUTPUT; \
+    *(.ARM.extab* .gnu.linkonce.armextab.*) } > _region_
+
+#define SECTION_ARM_exidx(_region_, _vma_, _lma_) \
+    . = _vma_; \
+    . = ALIGN(AAPCS_ALIGN); \
+    __exidx_start = ABSOLUTE(.); \
+    .ARM.exidx ALIGN(AAPCS_ALIGN) : _lma_ { \
+    *(.ARM.exidx* .gnu.linkonce.armexidx.*) \
+    FORCE_OUTPUT; \
+    } > _region_ \
+    __exidx_end = ABSOLUTE(.);
+
+#else
+#define SECTION_ARM_extab(_region_, _vma_, _lma_) \
+    .ARM.extab _vma_ : _lma_ \
+    { PROVIDE (__stext = ABSOLUTE(.)); _stext = ABSOLUTE(.) ; \
+    FORCE_OUTPUT; \
+    } > _region_ \
+    /DISCARD/     0 : { *(.ARM.extab* .gnu.linkonce.armextab.*) }
+
+#define SECTION_ARM_exidx(_region_, _vma_, _lma_) \
+    . = _vma_; \
+    . = ALIGN(AAPCS_ALIGN); \
+    __exidx_start = ABSOLUTE(.); \
+    .ARM.exidx ALIGN(AAPCS_ALIGN) : _lma_ { \
+    FORCE_OUTPUT; \
+    } > _region_ \
+    __exidx_end = ABSOLUTE(.); \
+    /DISCARD/     0 : { *(.ARM.exidx* .gnu.linkonce.armexidx.*) }
+#endif
+
+
+
+// We slot in the .ARM.extab and .ARM.exidx sections first. They
+// need to be close to .text due to their relocations which may
+// want small offsets - .rodata may be somewhere very different.
+// This approach also allows forward compatibility with targets
+// which haven't used the EABI before (no new SECTION_xxx definition
+// to use).
+// One glitch is that the AAPCS can require up to 8-byte alignment
+// for double word types. For sections after the first (for which we
+// "trust" the MLT files (probably a mistake)), we need to
+// ensure the subsequent sections' VMA and LMA move in sync, which
+// means keeping the same alignment, and thus since for example literal
+// data in .text can require up to 8 byte alignment, the LMA must also
+// be 8 byte aligned.
+
 #define SECTION_text(_region_, _vma_, _lma_) \
-    .text _vma_ : _lma_ \
-    { _stext = ABSOLUTE(.); \
-    PROVIDE (__stext = ABSOLUTE(.)); \
+    SECTION_ARM_extab(_region_, _vma_, _lma_) \
+    SECTION_ARM_exidx(_region_, ALIGN(AAPCS_ALIGN), FOLLOWING_ALIGNED(.ARM.extab, AAPCS_ALIGN)) \
+    .text ALIGN(AAPCS_ALIGN) : FOLLOWING_ALIGNED(.ARM.exidx, AAPCS_ALIGN) \
+    { \
     *(.text*) *(.gnu.warning) *(.gnu.linkonce.t.*) *(.init) \
     *(.glue_7) *(.glue_7t)  \
+    __CTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.ctors*))) __CTOR_END__ = ABSOLUTE (.); \
+    __DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) __DTOR_END__ = ABSOLUTE (.); \
     } > _region_ \
     _etext = .; PROVIDE (__etext = .);
 
@@ -138,10 +217,18 @@ OUTPUT_FORMAT(elf32-bigarm)
     { FORCE_OUTPUT; *(.fixup) } \
     > _region_
 
-#define SECTION_gcc_except_table(_region_, _vma_, _lma_) \
-    .gcc_except_table _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.gcc_except_table) } \
-    > _region_
+#ifdef CYGPKG_LIBSTDCXX
+/* We want to discard C++ exception frame data if we don't have the
+ * C++ support to use it. So there are two versions of the section
+ * definitions for .gcc_except_table and .eh_frame, one which keeps
+ * them, the other discards.
+ */
+#define SECTION_gcc_except_table(_region_, _vma_, _lma_)      \
+    .gcc_except_table _vma_ : _lma_                           \
+    { FORCE_OUTPUT;                                           \
+      KEEP(*(.gcc_except_table))                              \
+      *(.gcc_except_table.*)                                  \
+    } > _region_
 
 #define SECTION_eh_frame(_region_, _vma_, _lma_)      \
   .eh_frame _vma_ : _lma_                             \
@@ -151,6 +238,21 @@ OUTPUT_FORMAT(elf32-bigarm)
        __FRAME_END__ = .;                             \
        . = . + 8;                                     \
     } > _region_ = 0
+#else
+#define SECTION_gcc_except_table(_region_, _vma_, _lma_)      \
+    .gcc_except_table _vma_ : _lma_                           \
+    { FORCE_OUTPUT;                                           \
+    } > _region_                                              \
+    /DISCARD/     0 : { *(.gcc_except_table*) }
+
+#define SECTION_eh_frame(_region_, _vma_, _lma_)      \
+  .eh_frame _vma_ : _lma_                             \
+    {                                                 \
+       FORCE_OUTPUT;  __EH_FRAME_BEGIN__ = .;         \
+       __FRAME_END__ = .;                             \
+    } > _region_                                      \
+    /DISCARD/     0 : { *(.eh_frame) }
+#endif
 
 #define SECTION_RELOCS(_region_, _vma_, _lma_)                              \
   .rel.text      :                                                          \
@@ -230,8 +332,8 @@ OUTPUT_FORMAT(elf32-bigarm)
     . = ALIGN (4); \
     KEEP(*( SORT (.ecos.table.*))) ;            \
     . = ALIGN (4); \
-    __CTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.ctors*))) __CTOR_END__ = ABSOLUTE (.); \
-    __DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) __DTOR_END__ = ABSOLUTE (.); \
+    __init_array_start__ = ABSOLUTE (.); KEEP (*(SORT (.init_array.*))) \
+    KEEP (*(SORT (.init_array))) __init_array_end__ = ABSOLUTE (.); \
     *(.dynamic) *(.sdata*) *(.gnu.linkonce.s.*) \
     . = ALIGN (4); *(.2ram.*) } \
     > _region_ \

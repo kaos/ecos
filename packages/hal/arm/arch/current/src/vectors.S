@@ -180,8 +180,14 @@ _name_:
 
 //==========================================================================
 // Hardware exception vectors.
-//   This entire section will be copied to location 0x0000 at startup time.
+//   This entire section will be copied to the vector table base (by default at
+//   location 0x0000) at startup time.
 //
+
+#ifndef CYGHWR_HAL_VECTOR_TABLE_BASE
+# define CYGHWR_HAL_VECTOR_TABLE_BASE     0x0
+#endif  /* ifdef CYGHWR_HAL_VECTOR_TABLE_BASE */
+
         .code   32
         .section ".vectors","ax"
 
@@ -356,43 +362,47 @@ start:
 #endif
 
         // Reset software interrupt pointer
-        mov     r0,#0           // move vectors
+        ldr     r0,=CYGHWR_HAL_VECTOR_TABLE_BASE           // move vectors
         ldr     r1,.__exception_handlers
 #if defined(CYG_HAL_STARTUP_RAM) && \
     !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
         cmp     r7,#CPSR_SUPERVISOR_MODE
         beq     10f
 #endif
-        ldr     r2,[r1,#0x28]   // software interrupt
-        str     r2,[r0,#0x28]
+        ldr     r2,[r1,#HAL_ARM_SWI_VECTOR_ADDR]   // software interrupt
+        str     r2,[r0,#HAL_ARM_SWI_VECTOR_ADDR]
 10:
-        ldr     r2,[r1,#0x18]   // IRQ
-        str     r2,[r0,#0x18]
-        ldr     r2,[r1,#0x38]
-        str     r2,[r0,#0x38]
-        ldr     r2,[r1,#0x1C]   // FIQ
-        str     r2,[r0,#0x1C]
-        ldr     r2,[r1,#0x3C]
-        str     r2,[r0,#0x3C]
-        ldr     r2,[r1,#0x0C]   // abort (prefetch)
-        str     r2,[r0,#0x0C]
-        ldr     r2,[r1,#0x2C]   
-        str     r2,[r0,#0x2C]
-        ldr     r2,[r1,#0x10]   // abort (data)
-        str     r2,[r0,#0x10]
-        ldr     r2,[r1,#0x30]
-        str     r2,[r0,#0x30]
+        ldr     r2,[r1,#HAL_ARM_IRQ_VECTOR]   // IRQ
+        str     r2,[r0,#HAL_ARM_IRQ_VECTOR]
+        ldr     r2,[r1,#HAL_ARM_IRQ_VECTOR_ADDR]
+        str     r2,[r0,#HAL_ARM_IRQ_VECTOR_ADDR]
+        ldr     r2,[r1,#HAL_ARM_FIQ_VECTOR]   // FIQ
+        str     r2,[r0,#HAL_ARM_FIQ_VECTOR]
+        ldr     r2,[r1,#HAL_ARM_FIQ_VECTOR_ADDR]
+        str     r2,[r0,#HAL_ARM_FIQ_VECTOR_ADDR]
+        ldr     r2,[r1,#HAL_ARM_PREFETCH_VECTOR]   // abort (prefetch)
+        str     r2,[r0,#HAL_ARM_PREFETCH_VECTOR]
+        ldr     r2,[r1,#HAL_ARM_PREFETCH_VECTOR_ADDR]   
+        str     r2,[r0,#HAL_ARM_PREFETCH_VECTOR_ADDR]
+        ldr     r2,[r1,#HAL_ARM_ABORT_VECTOR]   // abort (data)
+        str     r2,[r0,#HAL_ARM_ABORT_VECTOR]
+        ldr     r2,[r1,#HAL_ARM_ABORT_VECTOR_ADDR]
+        str     r2,[r0,#HAL_ARM_ABORT_VECTOR_ADDR]
 
         LED 4
 
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
         // Set up reset vector
-        mov     r0,#0
+        ldr     r0,=CYGHWR_HAL_VECTOR_TABLE_BASE
         ldr     r1,.__exception_handlers
-        ldr     r2,[r1,#0x00]    // reset vector intstruction
-        str     r2,[r0,#0x00]
+# ifndef CYGSEM_HAL_KEEP_RESET_VECTOR
+        ldr     r2,[r1,#HAL_ARM_RESET_VECTOR]    // reset vector instruction
+        str     r2,[r0,#HAL_ARM_RESET_VECTOR]
+#  ifndef CYGSEM_HAL_ROM_RESET_USES_JUMP // if using jump, reset vector address is not referenced
         ldr     r2,=warm_reset
-        str     r2,[r0,#0x20]
+        str     r2,[r0,#HAL_ARM_RESET_VECTOR_ADDR]
+#  endif
+# endif
         // Relocate [copy] data from ROM to RAM
         ldr     r3,.__rom_data_start
         ldr     r4,.__ram_data_start

@@ -1,3 +1,94 @@
+2008-10-07  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/arm.ld: Discard C++ EH-related sections when we can't
+	possibly support C++ EH (no CYGPKG_LIBSTDCXX).
+
+2008-09-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/hal_mk_defs.c: Also export HAL_BREAKINST_THUMB and
+	HAL_BREAKINST_ARM to asm.
+	* src/arm.ld: Revise alignment yet further. Maintain ALIGN_LMA
+	at original value, but define alignment for use in compliance
+	with AAPCS. Expand explanatory comments.
+	(SECTION_text): Comply with AAPCS alignment when inserting
+	.ARM.extab and .ARM.exidx.	
+
+2008-09-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/arm.ld: Rework alignment further to improve backward
+	compatibility. Improve commenting on alignment issues.
+
+2008-08-26  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/arm.ld: We need to be double-word aligned sometimes, so align
+	LMA the same way too.
+
+2008-07-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_arm.cdl (CYGBLD_HAL_ARM_EABI): EABI has a different C++
+	EH implementation, so don't let LIBSTDCXX use the default one.
+
+2008-06-04  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/vectors.S: Correctly conditionalise overwriting (or not)
+	of reset vector.
+
+2008-05-28  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/hal_misc.c (CONSTRUCTORS_END): Fix fencepost error.
+
+2008-05-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/arm_stub.h: Remove CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION
+	and CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION defines which should remain
+	as their defaults.
+	* src/arm.ld: Add SECTION_hal_vsr_table for targets which need the
+	VSR table in a different location to the rest of the fixed vectors.
+	* src/vectors.S: Allow hal_platform_setup.h to define
+	CYGHWR_HAL_ARM_SEPARATE_VSR_TABLE to allow move of hal_vsr_table
+	to its own section at a different address.
+
+2008-05-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/hal_mk_defs.c (main): Export exception vector info
+	to asm.
+	* src/arm.ld: Remove previous EABI support and instead use a
+	different approach incorporating into existing SECTION macros for
+	better backward compatibility.
+	* src/hal_misc.c (cyg_hal_invoke_constructors): Rewrite init_array
+	support for EABI.
+	There is now nothing copyrightable remaining from Chris Zimman's
+	earlier work in this package.
+
+2008-05-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_arm.cdl: Rename EABI option. Set default from
+	toolchain prefix and flags. Rewrite description.
+	* include/hal_arch.h: Rename exception vector addresses to
+	names less likely to potentially clash with applications.
+	* src/vectors.S: Update vector address names in line with
+	hal_arch.h change. Rename CYGNUM_HAL_VECTOR_TABLE ->
+	CYGHWR_HAL_VECTOR_TABLE_BASE.
+
+2008-05-09  Chris Zimman  <czimman@bloomberg.com>
+2008-05-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	Some of the following changes were inspired by work from Chris
+	Zimman. Further changes were also provided, but have not been
+	included because either they are cosmetic (whitespace changes
+	etc.) and thus will only make it more difficult to merge in future
+	updates from public eCos code base in future, increase code size
+	for those who don't need it, or break compatibility with public
+	eCos.
+	* cdl/hal_arm.cdl: Add EABI build option.
+	* include/hal_arch.h: Add extra CPSR definitions, and exception
+	vector addresses.
+	* src/arm.ld: Add EABI support.
+	* src/hal_misc.c: Add EABI constructor support.
+	* src/vectors.S: Allow variant/processor/platform to specify
+	alternate vector table base. Use pretty names from hal_arch.h
+	for vector offset/addresses.
+
 2007-10-15  Sergei Gavrikov <w3sg@SoftHome.net>
 
 	* cdl/hal_arm.cdl: Use ACTUAL_CFLAGS whenever possible to avoid

@@ -167,6 +167,21 @@ cdl_package CYGPKG_HAL_ARM {
              optimize for on boards that support multiple CPU types."
     }
 
+    cdl_option CYGBLD_HAL_ARM_EABI {
+        display          "Build for ARM EABI"
+        default_value    { (is_substr(CYGBLD_GLOBAL_COMMAND_PREFIX, "-eabi") && \
+                            !is_substr(CYGBLD_GLOBAL_CFLAGS, "-mabi=apcs-gnu") && \
+                            !is_substr(CYGBLD_GLOBAL_CFLAGS, "-mabi=atpcs")) || \
+                           is_substr(CYGBLD_GLOBAL_CFLAGS, "-mabi=aapcs") }
+        # The EABI uses a different C++ exception implementation to the standard
+        # one and thus we indicate this to CYGPKG_LIBSTDCXX
+        implements       CYGINT_LIBSTDCXX_NO_CXX_EXCEPTION_REG_FRAME_IMPL
+        description "
+            If using a toolchain which targets the ARM EABI (embedded application
+            binary interface), this option should be enabled to provide altered
+            semantics and differing linker section output."
+    }
+
     cdl_option CYGHWR_HAL_ARM_DUMP_EXCEPTIONS {
         display          "Provide diagnostic dump for exceptions"
         requires         !CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS

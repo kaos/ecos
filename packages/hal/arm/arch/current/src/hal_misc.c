@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2008 eCosCentric Limited.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -60,14 +61,13 @@
 #include <pkgconf/cygmon.h>
 #endif
 
+#include <cyg/infra/diag.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_trac.h>         // tracing macros
 #include <cyg/infra/cyg_ass.h>          // assertion macros
 
 #include <cyg/hal/hal_arch.h>           // HAL header
 #include <cyg/hal/hal_intr.h>           // HAL header
-
-#include <cyg/infra/diag.h>
 
 /*------------------------------------------------------------------------*/
 /* First level C exception handler.                                       */
@@ -178,28 +178,41 @@ cyg_bool cyg_hal_stop_constructors;
 #endif
 
 typedef void (*pfunc) (void);
+
+// EABI uses different symbols, and constructors are in opposite order.
+#ifdef CYGBLD_HAL_ARM_EABI
+extern pfunc __init_array_start__[];
+extern pfunc __init_array_end__[];
+#define CONSTRUCTORS_START  (__init_array_start__[0])
+#define CONSTRUCTORS_END    (__init_array_end__)
+#define NEXT_CONSTRUCTOR(c) ((c)++)
+#else
 extern pfunc __CTOR_LIST__[];
 extern pfunc __CTOR_END__[];
+#define CONSTRUCTORS_START  (__CTOR_END__[-1])
+#define CONSTRUCTORS_END    (&__CTOR_LIST__[-1])
+#define NEXT_CONSTRUCTOR(c) ((c)--)
+#endif
 
 void
 cyg_hal_invoke_constructors (void)
 {
 #ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
-    static pfunc *p = &__CTOR_END__[-1];
+    static pfunc *p = &CONSTRUCTORS_START;
     
     cyg_hal_stop_constructors = 0;
-    for (; p >= __CTOR_LIST__; p--) {
-        (*p) ();
+    for (; p != CONSTRUCTORS_END; NEXT_CONSTRUCTOR(p)) {
+        (*p)();
         if (cyg_hal_stop_constructors) {
-            p--;
+            NEXT_CONSTRUCTOR(p);
             break;
         }
     }
 #else
     pfunc *p;
 
-    for (p = &__CTOR_END__[-1]; p >= __CTOR_LIST__; p--)
-        (*p) ();
+    for (p = &CONSTRUCTORS_START; p != CONSTRUCTORS_END; NEXT_CONSTRUCTOR(p))
+        (*p)();
 #endif
 }
 
