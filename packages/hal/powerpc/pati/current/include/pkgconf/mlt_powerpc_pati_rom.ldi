@@ -16,11 +16,13 @@ SECTIONS
 
     SECTION_vectors          (rom, 0x00000000,   LMA_EQ_VMA)
     SECTION_text             (rom, ALIGN (0x4),  LMA_EQ_VMA)
+    SECTION_RELOCS             (rom, ALIGN (0x8),  LMA_EQ_VMA)
     SECTION_fini             (rom, ALIGN (0x8),  LMA_EQ_VMA)
     SECTION_rodata1          (rom, ALIGN (0x8),  LMA_EQ_VMA)
     SECTION_rodata           (rom, ALIGN (0x4),  LMA_EQ_VMA)
     SECTION_fixup            (rom, ALIGN (0x4),  LMA_EQ_VMA)
     SECTION_gcc_except_table (rom, ALIGN (0x1),  LMA_EQ_VMA)
+    SECTION_eh_frame         (rom, ALIGN (0x4),  LMA_EQ_VMA)
 
     . = 0x3f9800;
     CYG_LABEL_DEFN(__reserved_vsr_table) = ALIGN (0x10);
@@ -28,7 +30,7 @@ SECTIONS
     CYG_LABEL_DEFN(__reserved_virtual_table) = ALIGN (0x10);
     . = CYG_LABEL_DEFN(__reserved_virtual_table) + 0x100;
 
-    SECTION_data             (iram, ALIGN (0x10), FOLLOWING (.gcc_except_table))
+    SECTION_data             (iram, ALIGN (0x10), FOLLOWING (.eh_frame))
     SECTION_sbss             (iram, ALIGN (0x4),  LMA_EQ_VMA)
 
     . = 0x400000;
