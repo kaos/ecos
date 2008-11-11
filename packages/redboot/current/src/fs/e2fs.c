@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Gary Thomas <gary@mind.be>
+// Copyright (C) 2008 eCosCentric Limited.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -160,13 +161,16 @@ static int
 e2fs_mount(partition_t *part, e2fs_desc_t *e2fs)
 {
     int sb_block = 1;
-    cyg_uint32  sb_buf[E2FS_MIN_BLOCK_SIZE/sizeof(cyg_uint32)];
-    struct e2fs_super_block *sb = (struct e2fs_super_block *)sb_buf;
+    union {
+        cyg_uint32  sb_buf[E2FS_MIN_BLOCK_SIZE/sizeof(cyg_uint32)];
+        struct e2fs_super_block sbdata;
+    } sbdata_union;
+    struct e2fs_super_block *sb=&sbdata_union.sbdata;
 
     e2fs->part = part;
 
     if (!PARTITION_READ(part, sb_block*(E2FS_MIN_BLOCK_SIZE/SECTOR_SIZE),
-			(cyg_uint32 *)sb, E2FS_MIN_BLOCK_SIZE/SECTOR_SIZE))
+			&sbdata_union.sb_buf[0], E2FS_MIN_BLOCK_SIZE/SECTOR_SIZE))
 	return -1;
 
     if (SWAB_LE16(sb->magic) != E2FS_SUPER_MAGIC) {

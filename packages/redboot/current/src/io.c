@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 // Copyright (C) 2002, 2003, 2005 Gary Thomas
+// Copyright (C) 2004, 2008 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -119,7 +120,7 @@ do_channel(int argc, char *argv[])
 }
 
 void 
-mon_write_char(char c)
+mon_write_char(unsigned char c)
 {
     hal_virtual_comm_table_t *__chan;
 
@@ -148,7 +149,7 @@ mon_write_char(char c)
 }
 
 static void 
-mon_read_char(char *c)
+mon_read_char(unsigned char *c)
 {
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     
@@ -165,7 +166,7 @@ static int _mon_timeout;
 #endif
 
 bool
-mon_read_char_with_timeout(char *c)
+mon_read_char_with_timeout(unsigned char *c)
 {
     bool res = false;
     hal_virtual_comm_table_t *__chan;
@@ -253,10 +254,10 @@ mon_set_read_char_timeout(int ms)
 bool
 _rb_break(int timeout)
 {
-    char c;
+    unsigned char c;
     mon_set_read_char_timeout(timeout);
     if (mon_read_char_with_timeout(&c)) {
-        if (c == 0x03) {  // Test for ^C
+        if (c == '\x03') {  // Test for ^C
             return true;
         }
     }
@@ -402,7 +403,7 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
 #define CTRL(c) ((c)&0x1F)
 #ifdef CYGSEM_REDBOOT_CMD_LINE_ANSI_SEQUENCES
         // Special handling of ANSI keyboard sequences (arrows, etc)
-        if (c == 0x1B) {
+        if (c == '\x1B') {
             // Leadin for ANSI keyboard sequence
             ansi_state = 1;
             continue;
@@ -693,7 +694,7 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
             }
 #endif
             if (console_echo) {
-                mon_write_char(c);
+                mon_write_char((unsigned char)c);
             }
             if (ip == eol) {
                 // Advance both pointers

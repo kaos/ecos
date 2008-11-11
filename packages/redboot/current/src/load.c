@@ -116,8 +116,8 @@ extern struct load_io_entry __RedBoot_LOAD_TAB__[], __RedBoot_LOAD_TAB_END__;
 struct {
     getc_io_funcs_t *io;
     int (*fun)(char *, int len, int *err);
-    unsigned char  buf[BUF_SIZE];
-    unsigned char *bufp;
+    char  buf[BUF_SIZE];
+    char *bufp;
     int   avail, len, err;
     int   verbose, decompress, tick;
 #ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
@@ -165,7 +165,7 @@ redboot_getc(void)
         }
     }
     getc_info.avail--;
-    return *getc_info.bufp++;
+    return ((int)*getc_info.bufp++) & 0x00FF;
 }
 
 #ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
@@ -310,7 +310,7 @@ load_elf_image(getc_t getc, unsigned long base)
     unsigned long addr_offset = 0;
     unsigned long highest_address = 0;
     unsigned long lowest_address = 0xFFFFFFFF;
-    unsigned char *SHORT_DATA = "Short data reading ELF file\n";
+    const char SHORT_DATA[] = "Short data reading ELF file\n";
 
     // Read the header
     if (_read(getc, (unsigned char *)&ehdr, sizeof(ehdr)) != sizeof(ehdr)) {

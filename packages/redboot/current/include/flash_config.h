@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 2008 eCosCentric Limited.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -102,7 +103,7 @@ bool flash_add_config(struct config_option *opt, bool update);
 struct _config {
     unsigned long len;
     unsigned long key1;
-    unsigned char config_data[MAX_CONFIG_DATA-(4*4)];
+    char config_data[MAX_CONFIG_DATA-(4*4)];
     unsigned long key2;
     unsigned long cksum;
 };

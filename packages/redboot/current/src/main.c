@@ -283,10 +283,10 @@ cyg_start(void)
 #endif
 #ifdef CYGMEM_SECTION_heap1
     workspace_start = (unsigned char *)CYGMEM_SECTION_heap1;
-    workspace_end = (unsigned char *)(CYGMEM_SECTION_heap1+CYGMEM_SECTION_heap1_SIZE);
+    workspace_end = (unsigned char *)CYGMEM_SECTION_heap1+CYGMEM_SECTION_heap1_SIZE;
 #else
     workspace_start = (unsigned char *)CYGMEM_REGION_ram;
-    workspace_end = (unsigned char *)(CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE);
+    workspace_end = (unsigned char *)CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE;
 #endif
 
     if ( ram_end < workspace_end ) {
@@ -337,11 +337,11 @@ cyg_start(void)
 # endif
     if (script) {
         // Give the guy a chance to abort any boot script
-        unsigned char *hold_script = script;
+        char *hold_script = script;
         int script_timeout_ms = script_timeout * CYGNUM_REDBOOT_BOOT_SCRIPT_TIMEOUT_RESOLUTION;
         diag_printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
                     script_timeout_ms/1000, script_timeout_ms%1000);
-        script = (unsigned char *)0;
+        script = NULL;
         res = _GETS_CTRLC;  // Treat 0 timeout as ^C
         while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
             res = _rb_gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
@@ -354,7 +354,7 @@ cyg_start(void)
             script_timeout_ms -= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT;
         }
         if (res == _GETS_CTRLC) {
-            script = (unsigned char *)0;  // Disable script
+            script = NULL;  // Disable script
         } else {
             script = hold_script;  // Re-enable script
         }
@@ -382,6 +382,8 @@ cyg_start(void)
 		int dbgchan;
                 hal_virtual_comm_table_t *__chan;
                 int i;
+                CYG_ADDRESS gdb_stack_sp;
+
                 // Special case of '$' - need to start GDB protocol
                 gdb_active = true;
                 // Mask interrupts on all channels
@@ -393,12 +395,13 @@ cyg_start(void)
     
                 CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 
+                gdb_stack_sp = (CYG_ADDRESS)workspace_end;
                 // set up a temporary context that will take us to the trampoline
-                HAL_THREAD_INIT_CONTEXT((CYG_ADDRWORD)workspace_end,
+                HAL_THREAD_INIT_CONTEXT(gdb_stack_sp,
                                         breakpoint, trampoline,0);
 
                 // switch context to trampoline (get GDB stubs started)
-                HAL_THREAD_SWITCH_CONTEXT(&saved_context, &workspace_end);
+                HAL_THREAD_SWITCH_CONTEXT(&saved_context, &gdb_stack_sp);
 
                 gdb_active = false;
 
@@ -527,6 +530,7 @@ do_go(int argc, char *argv[])
     struct option_info opts[3];
     char line[8];
     hal_virtual_comm_table_t *__chan;
+    CYG_ADDRESS trampoline_stack_sp;
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
     __mem_fault_handler = 0; // Let GDB handle any faults directly
@@ -556,8 +560,8 @@ do_go(int argc, char *argv[])
     if (wait_time_set) {
         int script_timeout_ms = wait_time * 1000;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-        unsigned char *hold_script = script;
-        script = (unsigned char *)0;
+        char *hold_script = script;
+        script = NULL;
 #endif
         diag_printf("About to start execution at %p - abort with ^C within %d seconds\n",
                     (void *)entry, wait_time);
@@ -599,12 +603,12 @@ do_go(int argc, char *argv[])
     }
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
+    trampoline_stack_sp = (CYG_ADDRESS)workspace_end;
     // set up a temporary context that will take us to the trampoline
-    HAL_THREAD_INIT_CONTEXT((CYG_ADDRWORD)workspace_end, 
-                            entry, trampoline, 0);
+    HAL_THREAD_INIT_CONTEXT(trampoline_stack_sp, entry, trampoline, 0);
 
     // switch context to trampoline
-    HAL_THREAD_SWITCH_CONTEXT(&saved_context, &workspace_end);
+    HAL_THREAD_SWITCH_CONTEXT(&saved_context, &trampoline_stack_sp);
 
     // we get back here by way of return_to_redboot()
 
@@ -762,3 +766,5 @@ valid_address(unsigned char *addr)
     }
     return false;
 }
+
+/* EOF main.c */

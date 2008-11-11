@@ -261,7 +261,7 @@ int redboot_exec( char *command, ... )
     return result;
 }
 
-externC void err_printf( char *fmt, ... )
+externC void err_printf( const char *fmt, ... )
 {
     va_list ap;
     

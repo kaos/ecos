@@ -87,7 +87,7 @@ struct fis_valid_info
 struct fis_image_desc {
     union
     {
-    unsigned char name[16];      // Null terminated name
+        char name[16];      // Null terminated name
         #ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
            struct fis_valid_info valid_info;
         #endif

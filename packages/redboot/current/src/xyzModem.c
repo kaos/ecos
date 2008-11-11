@@ -59,14 +59,14 @@
 // Assumption - run xyzModem protocol over the console port
 
 // Values magic to the protocol
-#define SOH 0x01
-#define STX 0x02
-#define EOT 0x04
-#define ACK 0x06
-#define BSP 0x08
-#define NAK 0x15
-#define CAN 0x18
-#define EOF 0x1A  // ^Z for DOS officionados
+#define SOH '\x01'
+#define STX '\x02'
+#define EOT '\x04'
+#define ACK '\x06'
+#define BSP '\x08'
+#define NAK '\x15'
+#define CAN '\x18'
+#define EOF '\x1A'  // ^Z for DOS officionados
 
 #define USE_YMODEM_LENGTH
 
@@ -180,7 +180,7 @@ static void
 xyzModem_flush(void)
 {
     int res;
-    char c;
+    unsigned char c;
     while (true) {
         res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &c);
         if (!res) return;
@@ -190,7 +190,7 @@ xyzModem_flush(void)
 static int
 xyzModem_get_hdr(void)
 {
-    char c;
+    unsigned char c;
     int res;
     bool hdr_found = false;
     int i, can_total, hdr_chars;
@@ -288,7 +288,7 @@ xyzModem_get_hdr(void)
     }
     ZM_DEBUG(zm_dump(__LINE__));
     // Validate the message
-    if ((xyz.blk ^ xyz.cblk) != (unsigned char)0xFF) {
+    if ((xyz.blk ^ xyz.cblk) != 0x00FF) {
         ZM_DEBUG(zm_dprintf("Framing error - blk: %x/%x/%x\n", xyz.blk, xyz.cblk, (xyz.blk ^ xyz.cblk)));
         ZM_DEBUG(zm_dump_buf(xyz.pkt, xyz.len));
         xyzModem_flush();
@@ -372,7 +372,7 @@ xyzModem_stream_open(connection_info_t *info, int *err)
                 // skip filename
                 while (*xyz.bufp++);
                 // get the length
-                parse_num(xyz.bufp, &xyz.file_length, NULL, " ");
+                parse_num((char*)xyz.bufp, &xyz.file_length, NULL, " ");
 #endif
                 // The rest of the file name data block quietly discarded
                 xyz.tx_ack = true;

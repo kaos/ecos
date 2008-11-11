@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 // Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2004, 2005 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -70,11 +71,6 @@ extern bool net_debug;
 extern int cyg_io_eth_net_debug;
 # endif
 #endif
-
-extern unsigned long do_ms_tick(void);
-extern unsigned long get_ms_ticks(void);
-#define MS_TICKS() get_ms_ticks()
-#define MS_TICKS_DELAY() do_ms_tick()
 
 /* #define NET_SUPPORT_RARP  1 */
 #define NET_SUPPORT_ICMP 1
@@ -644,5 +640,8 @@ extern int net_devindex(char *name);
 #else
 #define BSPLOG(x)
 #endif
+
+// Need tick functions
+#include <redboot.h>
 
 #endif // _NET_H_

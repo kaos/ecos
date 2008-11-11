@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 // Copyright (C) 2002, 2003, 2004 Gary Thomas
+// Copyright (C) 2004,2005 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -887,12 +888,11 @@ do_ip_addr(int argc, char *argv[])
         char *slash_pos;
         /* see if the (optional) mask length was given */
         if( (slash_pos = strchr(ip_addr, '/')) ) {
-            int mask_len;
-            unsigned long mask;
+            unsigned long mask, mask_len;
             *slash_pos = '\0';
             slash_pos++;
-            if( !parse_num(slash_pos, (unsigned long *)&mask_len, 0, 0) ||  
-                mask_len <= 0 || mask_len > 32 ) {
+            if( !parse_num(slash_pos, &mask_len, 0, 0) ||  
+                mask_len == 0 || mask_len > 32 ) {
                 diag_printf("Invalid mask length: %s\n", slash_pos);
                 return;
             }

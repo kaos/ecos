@@ -115,7 +115,7 @@ EXTERN bool net_debug;
 #endif
 
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
-EXTERN unsigned char *script;
+EXTERN char *script;
 EXTERN int script_timeout;
 #ifdef CYGSEM_REDBOOT_VARIABLE_BAUD_RATE
 EXTERN int console_baud_rate;
@@ -135,8 +135,8 @@ typedef int _printf_fun(const char *fmt, ...);
 externC int  strcasecmp(const char *s1, const char *s2);
 externC int  strncasecmp(const char *s1, const char *s2, size_t len);
 
-externC void mon_write_char(char c);
-externC bool mon_read_char_with_timeout(char *c);
+externC void mon_write_char(unsigned char c);
+externC bool mon_read_char_with_timeout(unsigned char *c);
 externC void mon_set_read_char_timeout(int ms);
 externC bool verify_action(char *fmt, ...);
 externC bool verify_action_with_timeout(int timeout, char *fmt, ...);
@@ -159,6 +159,14 @@ externC bool _rb_break(int timeout);
 // "console" selection
 externC int  start_console(void);
 externC void end_console(int old_console);
+
+// Tick functions
+__externC unsigned long do_ms_tick(void);
+__externC unsigned long get_ms_ticks(void);
+__externC void ms_ticks_add_us(long);
+
+#define MS_TICKS() get_ms_ticks()
+#define MS_TICKS_DELAY() do_ms_tick()
 
 // Alias functions
 #ifdef CYGSEM_REDBOOT_FLASH_ALIASES
@@ -318,7 +326,7 @@ externC bool scan_opts(int argc, char *argv[], int first,
 
 externC int redboot_exec( char *command, ... );
 
-externC void err_printf( char *fmt, ... );
+externC void err_printf( const char *fmt, ... );
 
 #ifdef CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS
 #define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \

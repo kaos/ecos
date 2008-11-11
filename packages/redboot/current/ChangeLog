@@ -1,3 +1,27 @@
+2008-06-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/fconfig.c, src/flash.c, src/io.c, src/load.c, src/main.c,
+  	src/xyzModem.c, include/redboot.h: more signed vs. unsigned char
+	issues. 
+
+2008-05-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/fs/e2fs.c (e2fs_mount): Avoid compiler strict aliasing
+	problem.
+
+	* include/fis.h (struct fis_image_desc): Make fis name be
+	signed char to reduce warnings.
+	* include/flash_config.h (struct _config): Make config_data
+	be signed char to reduce warnings.
+	* include/redboot.h: mon_write_char and mon_read_char_with_timeout
+	take unsigned char, to reduce warnings.
+	* src/parse.c: Add const to err_printf format.
+	* src/fconfig.c: Many signed/unsigned warning cleanups.
+	* src/io.c: Ditto.
+	* src/xyzModem.c: Ditto.
+	* src/load.c: Ditto.
+	* src/flash.c: Ditto.
+
 2007-08-28  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/flash.c (do_flash_init): Memory allocation was slightly
@@ -191,6 +215,28 @@
 
 	* src/net/net_io.c: Use CYGDAT_REDBOOT_DEFAULT_NETWORK_DEVICE as
 	the default to the net_device config option.
+
+2005-08-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/fconfig.c (flash_write_config): Warning cleanup.
+	* src/net/net_io.c (do_ip_addr): Warning cleanup.
+	* src/flash.c (fis_create): Warning cleanup.
+
+2005-08-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/net/net.h: Include redboot.h for tick functions.
+
+2005-08-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/net/net.h: Pull tick functions into redboot.h as they
+	are used more widely than the net stack.
+	* include/redboot.h: Declare tick functions.
+	* src/main.c (cyg_start): Correctly compute workspace_end so it
+	works even on high RAM values [bug #1000202].
+	Don't use workspace_end directly for context init - it gets
+	modified.
+	(do_go): Don't use workspace_end directly for context init -
+	it gets	modified.
 
 2005-07-06  Isaac Claymore <iclaymore@gmail.com>
 

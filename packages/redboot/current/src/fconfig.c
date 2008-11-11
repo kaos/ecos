@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 // Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2005, 2008 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -106,7 +107,7 @@ int   cfg_size;   // Length of config data - rounded to Flash block size
 #endif // FLASH MEDIA
 
 // Prototypes for local functions
-static unsigned char *flash_lookup_config(char *key);
+static char *flash_lookup_config(char *key);
 
 static bool config_ok;
 
@@ -201,7 +202,7 @@ conf_endian_fixup(void *ptr)
 {
 #ifdef REDBOOT_FLASH_REVERSE_BYTEORDER
     struct _config *p = (struct _config *)ptr;
-    unsigned char *dp = p->config_data;
+    char *dp = p->config_data;
     void *val_ptr;
     int len;
     cyg_uint16 u16;
@@ -249,7 +250,7 @@ conf_endian_fixup(void *ptr)
 }
 
 static int
-get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
+get_config(char *dp, char *title, int list_opt, char *newvalue )
 {
     char line[256], hold_line[256], *sp, *lp;
     int ret;
@@ -317,7 +318,7 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
         break;
     case CONFIG_SCRIPT:
         diag_printf("\n");
-        sp = lp = (unsigned char *)val_ptr;
+        sp = lp = (char *)val_ptr;
         while (*sp) {
             while (*lp != '\n') lp++;
             *lp = '\0';
@@ -432,7 +433,7 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
 #endif
     case CONFIG_SCRIPT:
         // Assume it always changes
-        sp = (unsigned char *)val_ptr;
+        sp = (char *)val_ptr;
 	script_len = 0;
         diag_printf("Enter script, terminate with empty line\n");
         while (true) {
@@ -459,7 +460,7 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
             diag_printf("Sorry, value is too long\n");
             return CONFIG_BAD;
         }
-        strcpy((unsigned char *)val_ptr, line);
+        strcpy((char *)val_ptr, line);
         break;
     }
     return CONFIG_CHANGED;
@@ -517,7 +518,7 @@ do_flash_config(int argc, char *argv[])
     bool fullnames;
     bool dumbterminal;
     int list_opt = 0;
-    unsigned char *dp;
+    char *dp;
     int len, ret;
     char *title;
     char *onlyone = NULL;
@@ -532,7 +533,7 @@ do_flash_config(int argc, char *argv[])
     }
 #endif
     memcpy(backup_config, config, sizeof(struct _config));
-    script = (unsigned char *)0;
+    script = NULL;
 
     init_opts(&opts[0], 'l', false, OPTION_ARG_TYPE_FLG, 
               (void *)&list_only, (bool *)0, "list configuration only");
@@ -696,7 +697,7 @@ flash_lookup_alias(char *alias, char *alias_buf)
 {
     char name[80];
     char *val;
-    unsigned char * dp;
+    char * dp;
     void *val_ptr;
     int type;
     bool hold_bool_val;
@@ -774,9 +775,13 @@ flash_crc(struct _config *conf)
 void
 flash_write_config(bool prompt)
 {
-#if defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH)
-#if !defined(CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG)
+#if defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH) && !defined(CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG)
+# ifdef CYG_FLASH_ERR_OK // crude temporary hack to see if we're being used with flashv2
+    cyg_flashaddr_t err_addr;
+# else
     void *err_addr;
+# endif
+#if !defined(CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG)
     int stat;
 #endif
 #endif
@@ -819,13 +824,13 @@ flash_write_config(bool prompt)
 //
 // Find the configuration entry for a particular key
 //
-static unsigned char *
+static char *
 flash_lookup_config(char *key)
 {
-    unsigned char *dp;
+    char *dp;
     int len;
 
-    if (!config_ok) return (unsigned char *)NULL;
+    if (!config_ok) return NULL;
 
     dp = &config->config_data[0];
     while (dp < &config->config_data[sizeof(config->config_data)]) {
@@ -837,7 +842,7 @@ flash_lookup_config(char *key)
         dp += len;
     }
 //    diag_printf("Can't find config data for '%s'\n", key);
-    return false;
+    return NULL;
 }
 
 //
@@ -846,7 +851,7 @@ flash_lookup_config(char *key)
 bool
 flash_next_key(char *key, int keylen, int *type, int *offset)
 {
-    unsigned char *dp;
+    char *dp;
     int len;
 
     if (!config_ok) return false;
@@ -867,7 +872,7 @@ flash_next_key(char *key, int keylen, int *type, int *offset)
 bool
 flash_get_config(char *key, void *val, int type)
 {
-    unsigned char *dp;
+    char *dp;
     void *val_ptr;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK
     struct _config *save_config = 0;
@@ -876,7 +881,7 @@ flash_get_config(char *key, void *val, int type)
 
     if (!config_ok) return false;
 
-    if ((dp = flash_lookup_config(key)) != (unsigned char *)NULL) {
+    if ((dp = flash_lookup_config(key)) != NULL) {
         if (CONFIG_OBJECT_TYPE(dp) == type) {
             val_ptr = (void *)CONFIG_OBJECT_VALUE(dp);
             switch (type) {
@@ -941,12 +946,12 @@ flash_get_config(char *key, void *val, int type)
 bool
 flash_set_config(char *key, void *val, int type)
 {
-    unsigned char *dp;
+    char *dp;
     void *val_ptr;
 
     if (!config_ok) return false;
 
-    if ((dp = flash_lookup_config(key)) != (unsigned char *)NULL) {
+    if ((dp = flash_lookup_config(key)) != NULL) {
         if (CONFIG_OBJECT_TYPE(dp) == type) {
             val_ptr = (void *)CONFIG_OBJECT_VALUE(dp);
             switch (type) {
@@ -987,7 +992,7 @@ flash_set_config(char *key, void *val, int type)
 // Copy data into the config area
 //
 static void
-flash_config_insert_value(unsigned char *dp, struct config_option *opt)
+flash_config_insert_value(char *dp, struct config_option *opt)
 {
     switch (opt->type) {
         // Note: the data may be unaligned in the configuration data
@@ -1034,12 +1039,12 @@ flash_config_insert_value(unsigned char *dp, struct config_option *opt)
 bool
 flash_add_config(struct config_option *opt, bool update)
 {
-    unsigned char *dp, *kp;
+    char *dp, *kp;
     int len, elen, size;
 
     // If data item is already present, just update it
     // Note: only the data value can be thusly changed
-    if ((dp = flash_lookup_config(opt->key)) != (unsigned char *)NULL) {
+    if ((dp = flash_lookup_config(opt->key)) != NULL) {
         flash_config_insert_value(CONFIG_OBJECT_VALUE(dp), opt);
         if (update) {
             flash_write_config(true);
@@ -1126,7 +1131,7 @@ load_flash_config(void)
 #endif
 
     config_ok = false;
-    script = (unsigned char *)0;
+    script = NULL;
     cfg_temp -= sizeof(struct _config);  // Space for primary config data
     config = (struct _config *)cfg_temp;
     cfg_temp -= sizeof(struct _config);  // Space for backup config data
