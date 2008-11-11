@@ -1,3 +1,10 @@
+2008-11-07  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/pkgconf/mlt_powerpc_ts1000_ram.ldi:
+	* include/pkgconf/mlt_powerpc_ts1000_rom.ldi:
+	* include/pkgconf/mlt_powerpc_ts1000_romram.ldi:
+	Add SECTION_eh_frame and SECTION_RELOCS.
+
 2003-12-08  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/hal_powerpc_ts1000.cdl: 
