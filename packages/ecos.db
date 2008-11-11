@@ -4380,18 +4380,6 @@ a FR30 based microcontroller. FR50 and FR60 architectures should also select
 this one."
 }
 
-package CYGPKG_HAL_FR30_MB91360 {
-    alias       { "Fujitsu MB31360 variant (FR50)" hal_fr30_mb91360
-                    fr30_mb91360_hal }
-    directory   hal/fr30/mb91360
-    script      hal_fr30_mb91360.cdl
-    hardware
-        description "
-The Fujitsu MB91360 HAL package provides the support needed to run eCos on 
-the Phytec MB91F364G Kit board. It contains a MB91F364G
-Microcontroller from Fujitsu with a FR50 Core. So FR30 support is needed."
-}
-
 package CYGPKG_HAL_FR30_MB91301 {
     alias       { "Fujitsu MB31301 variant (FR60)" hal_fr30_mb91301
                     fr30_mb91301_hal }
@@ -4402,18 +4390,6 @@ package CYGPKG_HAL_FR30_MB91301 {
 The Fujitsu MB91301 HAL package provides the support needed to run eCos on
 the Fujitsu Starterkit MB91302 Evaluation board. It contains a MB91302A
 Microcontroller from Fujitsu with a FR60 Core. So FR30 support is also needed."
-}
-
-package CYGPKG_HAL_FR30_MB91360_PHYTEC91F364G {
-    alias       { "Phytec Fujitsu MB91F364G Kit board" hal_fr30_phytec91f364g
-                    fr30_phytec91f364g_hal }
-    directory   hal/fr30/phytec91f364g
-    script      hal_fr30_phytec91f364g.cdl
-    hardware
-        description "
-The Phytec91f364g HAL package provides the support needed to run eCos on 
-the Phytec Fujitsu MB91F364G Kit board. It contains a MB91F364G
-Microcontroller from Fujitsu with a FR50 Core. So FR30 support is needed."
 }
 
 package CYGPKG_HAL_FR30_MB91301_SKMB91302 {
@@ -4509,19 +4485,6 @@ MB93090-PD00 Portable Development Kit."
 }
 
 # FR30 Targets
-
-target phytec91f364g {
-    alias { "Phytec Fujitsu MB91F364G Kit board" phytec91f364g }
-    packages { CYGPKG_HAL_FR30
-                   CYGPKG_HAL_FR30_MB91360
-                   CYGPKG_HAL_FR30_MB91360_PHYTEC91F364G
-}
-        description "
-The Phytec91f364g HAL package provides the support needed to run eCos on 
-the Phytec Fujitsu MB91F364G Kit board. It contains a MB91F364G
-Microcontroller from Fujitsu with a FR50 Core. So FR30 support is
-included."
-}
 
 target skmb91302 {
     alias { "Fujitsu Starterkit MB91302 board" skmb91302 }
@@ -4844,7 +4807,6 @@ target ea2468 {
                    CYGPKG_DEVS_ETH_ARM_LPC2XXX
                    CYGPKG_IO_I2C
                    CYGPKG_DEVS_I2C_ARM_LPC2XXX     
-                   CYGPKG_IO_ADC
                    CYGPKG_DEVS_ADC_ARM_LPC24XX
         }
         description "
@@ -5525,7 +5487,6 @@ target pc_usb_d12 {
                           CYGPKG_IO_USB_SLAVE
                           CYGPKG_DEVS_USB_D12
                           CYGPKG_DEVS_USB_I386_SOROD12
-                          CYGPKG_IO_FILEIO
                           CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS12887
                           CYGPKG_DEVICES_WALLCLOCK_I386_PC
         }

@@ -1,3 +1,8 @@
+2008-11-11  John Dallaway  <jld@ecoscentric.com>
+
+	* ecos.db: Remove package records for absent packages and remove
+	non-hardware packages from target records.
+
 2008-09-11  Uwe Kindler <uwe.kindler@cetoni.de>
 
 	* NEWS: 
