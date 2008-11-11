@@ -1,3 +1,28 @@
+2008-05-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/thread-packets.c (threadmatch): Silence pointer signedness
+	warning.
+	(threadref_to_int): Ditto.
+	* src/generic-stub.c (__mem2hex): Ditto.
+	(__mem2hex_safe): Ditto.
+	(__hex2mem): Ditto.
+	(__hex2mem_safe): Ditto.
+	* src/hal_if.c (delay_us): Ditto.
+	* include/hal_stub.h (CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION):
+	Instead of using a local variable to avoid compiler reordering
+	when taking the address of a label, instead call an external function.
+	(NB making the variable volatile isn't sufficient).
+
+2008-05-13  Chris Zimman  <czimman@bloomberg.com>
+
+	* cdl/hal.cdl: Work around problem with current ARM EABI tools by
+	using /dev/null as linker script. Should be safe with other tools.
+
+2007-11-27  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_if.c (delay_us): use HAL_DELAY_US() rather than the
+	fancy implementation if the port cannot provide HAL_CLOCK_READ()
+
 2007-09-27  Grant Edwards <grante@visi.com>
 
         * include/hal_endian.h (SWAP16): Fix "return value" so
@@ -34,6 +59,12 @@
 
 	* src/hal_if.c Added missing declarations of tries when compiling
 	with CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0.
+
+2005-02-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/common.cdl: Add CYGBLD_HAL_LINKER_GROUPED_LIBS to allow
+	CDL setting of libraries used for GROUP() directive in linker
+	script.
 
 2004-11-20  Andrew Lunn  <andrew.lunn@ascom.ch>
 

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2008 eCosCentric Limited.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -403,7 +404,7 @@ static int threadref_to_int(threadref * ref)
   unsigned char * scan ;
   int i ;
   
-  scan = (char *) ref ;
+  scan = (unsigned char *) ref ;
   scan += 4 ;
   i = 4 ;
   while (i-- > 0) value = (value << 8) | ((*scan++) & 0xff) ;
@@ -428,8 +429,8 @@ int threadmatch(
 {
   unsigned char * srcp, * destp ;
   int i , result ;
-  srcp = (char *) src ;
-  destp = (char *) dest ;
+  srcp = (unsigned char *) src ;
+  destp = (unsigned char *) dest ;
   i = 8 ;
   result = 1 ;
   while (i-- > 0 ) result &= (*srcp++ == *destp++) ? 1 : 0 ;

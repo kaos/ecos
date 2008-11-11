@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2008 eCosCentric Limited.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -262,6 +263,9 @@ extern volatile int cyg_hal_gdb_running_step;
 // Use these in hal_diag.c when about to write a whole $O packet to GDB.
 // NB they require __builtin_return_address() to work: if your platform
 // does not support this, use HAL_DISABLE_INTERRUPTS &c instead.
+// These are used to ensure the user's GDB cannot step through the critical
+// region, causing everything to go horribly wrong - particularly likely
+// with watching variables. Instead it will magically skip over the region.
 
 #if 1 // Can use the address of a label: this is more portable
 
@@ -282,9 +286,14 @@ do {                                                                         \
 do {                                                                          \
     cyg_hal_gdb_remove_break( (target_register_t)&&cyg_hal_gdb_break_place ); \
     HAL_RESTORE_INTERRUPTS(_old_);                                            \
-    _old_ = 1; /* actually use the label as a label... */                     \
+    /* The following is solely to provide the label without the compiler      \
+     * optimising it away. By referencing an external function, it can't      \
+     * remove or reorder it. And because we have just called                  \
+     * cyg_hal_gdb_remove_break(), we know cyg_hal_gdb_break_is_set() will    \
+     * return 0.                                                              \
+     */                                                                       \
 cyg_hal_gdb_break_place:;                                                     \
-    if ( (_old_)-- > 0 ) /* ...or the compiler might move it! */              \
+    if ( cyg_hal_gdb_break_is_set() ) /* ...or the compiler might move it! */ \
         goto cyg_hal_gdb_break_place;                                         \
 } while ( 0 )
 #endif

@@ -12,6 +12,7 @@
 // Copyright (C) 2002, 2003 Gary Thomas
 // Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
 // Copyright (C) 2003 Jonathan Larmour <jlarmour@eCosCentric.com>
+// Copyright (C) 2004, 2005, 2006, 2008 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -274,9 +275,10 @@ static void
 delay_us(cyg_int32 usecs)
 {
     CYGARC_HAL_SAVE_GP();
-#ifdef CYGPKG_KERNEL
+#if defined(CYGPKG_KERNEL) && defined(HAL_CLOCK_READ)
     {
-        cyg_int32 start, elapsed, elapsed_usec;
+        cyg_uint32 start, elapsed_hal;
+        cyg_int32 elapsed, elapsed_usec;
         cyg_int32 slice;
         cyg_int32 usec_per_period = CYGNUM_HAL_RTC_NUMERATOR/CYGNUM_HAL_RTC_DENOMINATOR/1000;
         cyg_int32 ticks_per_usec = CYGNUM_KERNEL_COUNTERS_RTC_PERIOD/usec_per_period;
@@ -311,8 +313,8 @@ delay_us(cyg_int32 usecs)
     
             HAL_CLOCK_READ(&start);
             do {
-                HAL_CLOCK_READ(&elapsed);
-                elapsed = (elapsed - start); // counts up!
+                HAL_CLOCK_READ(&elapsed_hal);
+                elapsed = (elapsed_hal - start); // counts up!
                 if (elapsed < 0)
                     elapsed += CYGNUM_KERNEL_COUNTERS_RTC_PERIOD;
             } while (elapsed < slice);

@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2005 eCosCentric Ltd.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -32,9 +33,6 @@
 ##
 ## This exception does not invalidate any other reasons why a work based on
 ## this file might be covered by the GNU General Public License.
-##
-## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-## at http://sources.redhat.com/ecos/ecos-license/
 ## -------------------------------------------
 #####ECOSGPLCOPYRIGHTEND####
 # ====================================================================
@@ -150,3 +148,46 @@ cdl_component CYGDBG_HAL_DIAG_TO_DEBUG_CHAN {
     }
 }
 
+cdl_component CYGBLD_HAL_LINKER_GROUPED_LIBS {
+    display       "Grouped libraries for linking"
+    flavor        data
+    default_value CYGBLD_HAL_LINKER_GROUPED_LIBS_DEFAULT
+    requires      { is_substr(CYGBLD_HAL_LINKER_GROUPED_LIBS, "libtarget.a") }
+    description   "
+                This option provides a list of libraries used to satisfy
+                linker dependencies, but necessary for building eCos. It is passed
+                to a GROUP() directive in the linker script, which is analogous
+                to using the \"-(\" aka \"--start-group\", and \"-)\" aka
+                \"--end-group\" options on the linker command line.
+
+                It provides a similar function to adding \"-llibname\" to the
+                linker, but with the added feature that each library in the group
+                is scanned in turn for unresolved symbols, and this process is
+                repeated until there are no more unresolved symbols. This is important
+                for system libraries as there are often mutual dependencies.
+
+                This option should not be used for adding application specific
+                libraries. That should be done in the application's own makefile
+                or link line.
+        
+                Users wishing to use the GNU Compiler prior to GCC 3.0 will
+                need to remove libsupc++.a from this option.
+
+                Note that libtarget.a is always required to build eCos."
+
+    cdl_option CYGBLD_HAL_LINKER_GROUPED_LIBS_DEFAULT {
+        display       "Default setting"
+        flavor        data
+        default_value { "libtarget.a libgcc.a libsupc++.a" }
+        description   "
+                This option is intended to be used by other eCos packages (including
+                HAL packages) to provide a different default value for
+                CYGBLD_HAL_LINKER_GROUPED_LIBS.
+
+                This is separated into its own option to continue to
+                allow the user to make customisations to the grouped library
+                list."
+    }
+}
+
+# EOF common.cdl

@@ -71,7 +71,7 @@ cdl_package CYGPKG_HAL {
 
     make -priority 250 {
         <PREFIX>/lib/extras.o: <PREFIX>/lib/libextras.a
-        $(CC) $(CFLAGS) -nostdlib -Wl,-r -Wl,--whole-archive -o $@ $<
+        $(CC) $(CFLAGS) -nostdlib -Wl,-r -T /dev/null -Wl,--whole-archive -o $@ $<
     }   
 
 

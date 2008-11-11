@@ -548,8 +548,8 @@ __mem2hex (mem, buf, count, may_fault)
      int count;
      int may_fault;
 {
-  hexMemDst      = (unsigned char *) buf;
-  hexMemSrc      = (unsigned char *) mem;
+  hexMemDst      = (char *) buf;
+  hexMemSrc      = (char *) mem;
   hexMemCount    = count;
   may_fault_mode = may_fault;
 #ifdef TARGET_HAS_HARVARD_MEMORY
@@ -577,8 +577,8 @@ __mem2hex (mem, buf, count, may_fault)
 static char *
 __mem2hex_safe (target_addr_t mem, char *buf, int count)
 {
-  hexMemDst      = (unsigned char *) buf;
-  hexMemSrc      = (unsigned char *) TARGET_ADDR_TO_PTR(mem);
+  hexMemDst      = (char *) buf;
+  hexMemSrc      = (char *) TARGET_ADDR_TO_PTR(mem);
   hexMemCount    = count;
   may_fault_mode = 1;
 #ifdef TARGET_HAS_HARVARD_MEMORY
@@ -665,8 +665,8 @@ __hex2mem (buf, mem, count, may_fault)
      int count;
      int may_fault;
 {
-  hexMemSrc      = (unsigned char *) buf;
-  hexMemDst      = (unsigned char *) mem;
+  hexMemSrc      = (char *) buf;
+  hexMemDst      = (char *) mem;
   hexMemCount    = count;
   may_fault_mode = may_fault;
 #ifdef TARGET_HAS_HARVARD_MEMORY
@@ -691,8 +691,8 @@ __hex2mem (buf, mem, count, may_fault)
 char *
 __hex2mem_safe (char *buf, target_addr_t mem, int count)
 {
-  hexMemSrc      = (unsigned char *) buf;
-  hexMemDst      = (unsigned char *) TARGET_ADDR_TO_PTR(mem);
+  hexMemSrc      = (char *) buf;
+  hexMemDst      = (char *) TARGET_ADDR_TO_PTR(mem);
   hexMemCount    = count;
   may_fault_mode = 1;
 #ifdef TARGET_HAS_HARVARD_MEMORY
