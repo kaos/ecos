@@ -1,3 +1,14 @@
+2008-10-31  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/powerpc.ld (SECTION_data): Do not define _GLOBAL_OFFSET_TABLE_
+	It is meant to be defined by the linker.
+
+2008-10-10  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/powerpc.ld: Remove workaround from 2005-06-03 for LD bug,
+	since fixed.
+	Include .eh_frame_hdr in .eh_frame.
+
 2008-09-23  Shaun Louie <sal@microplex.com>
 
     * src/vectors.S: Changed compile condition that determines whether
@@ -17,15 +28,39 @@
 	* include/arch.inc: Add one-time-include protection since newer
 	versions of the GNU assembler complain about redefining macros.
 
+2005-06-29  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/powerpc.ld: Future-proof relocs sections.
+
+2005-06-10  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/powerpc.ld: gcc_except_table subsections don't need to be
+	kept.
+
+2005-06-03  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/powerpc.ld: gcc_except_table needs to be marked KEEP.
+
 2005-03-14  Peter Korsgaard  <jacmetd@sunsite.dk>
 
 	* src/redboot_linux_exec.c (do_exec): Correctly set bi_size.
+
+2005-02-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/powerpc.ld: Use CYGBLD_HAL_LINKER_GROUPED_LIBS from the common HAL
+	for GROUP() list now.
 
 2004-11-04  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/ppc_stub.c (__is_single_step): Removed compiler warning
 	about pointer / integer comparison.
 	
+2004-09-28  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/powerpc.ld: Add relocs section. Break out .eh_frame section and
+	define correctly. Split .gnu.linkonce.* subsections correctly between
+	text/rodata/data/sdata/sbss/scommon etc.
+
 2004-05-27  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/redboot_linux_exec.c (do_exec): Be sensitive to value in

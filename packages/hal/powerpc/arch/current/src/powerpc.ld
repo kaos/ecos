@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004, 2005, 2008 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -48,16 +49,15 @@
 //####DESCRIPTIONEND####
 //
 //==========================================================================
+
+#include <pkgconf/hal.h>
+
 STARTUP(vectors.o)
 ENTRY(__exception_reset)
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
-#if (__GNUC__ >= 3)
-GROUP(libtarget.a libgcc.a libsupc++.a)
-#else
-GROUP(libtarget.a libgcc.a)
-#endif
+GROUP( CYGBLD_HAL_LINKER_GROUPED_LIBS )
 
 #define ALIGN_LMA 8
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
@@ -67,6 +67,49 @@ GROUP(libtarget.a libgcc.a)
 
 #define SECTIONS_BEGIN
 
+#define SECTION_RELOCS(_region_, _vma_, _lma_)                          \
+  .rel.dyn        :                                                     \
+    {                                                                   \
+      *(.rel.init)                                                      \
+      *(.rel.text .rel.text.* .rel.gnu.linkonce.t.*)                    \
+      *(.rel.fini)                                                      \
+      *(.rel.rodata .rel.rodata.* .rel.gnu.linkonce.r.*)                \
+      *(.rel.data.rel.ro*)                                              \
+      *(.rel.data .rel.data.* .rel.gnu.linkonce.d.*)                    \
+      *(.rel.tdata .rel.tdata.* .rel.gnu.linkonce.td.*)                 \
+      *(.rel.tbss .rel.tbss.* .rel.gnu.linkonce.tb.*)                   \
+      *(.rel.ctors)                                                     \
+      *(.rel.dtors)                                                     \
+      *(.rel.got)                                                       \
+      *(.rel.sdata .rel.sdata.* .rel.gnu.linkonce.s.*)                  \
+      *(.rel.sbss .rel.sbss.* .rel.gnu.linkonce.sb.*)                   \
+      *(.rel.sdata2 .rel.sdata2.* .rel.gnu.linkonce.s2.*)               \
+      *(.rel.sbss2 .rel.sbss2.* .rel.gnu.linkonce.sb2.*)                \
+      *(.rel.bss .rel.bss.* .rel.gnu.linkonce.b.*)                      \
+    } > _region_                                                        \
+  .rela.dyn       :                                                     \
+    {                                                                   \
+      *(.rela.init)                                                     \
+      *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*)                 \
+      *(.rela.fini)                                                     \
+      *(.rela.rodata .rela.rodata.* .rela.gnu.linkonce.r.*)             \
+      *(.rela.data .rela.data.* .rela.gnu.linkonce.d.*)                 \
+      *(.rela.tdata .rela.tdata.* .rela.gnu.linkonce.td.*)              \
+      *(.rela.tbss .rela.tbss.* .rela.gnu.linkonce.tb.*)                \
+      *(.rela.ctors)                                                    \
+      *(.rela.dtors)                                                    \
+      *(.rela.got)                                                      \
+      *(.rela.got1)                                                     \
+      *(.rela.got2)                                                     \
+      *(.rela.sdata .rela.sdata.* .rela.gnu.linkonce.s.*)               \
+      *(.rela.sbss .rela.sbss.* .rela.gnu.linkonce.sb.*)                \
+      *(.rela.sdata2 .rela.sdata2.* .rela.gnu.linkonce.s2.*)            \
+      *(.rela.sbss2 .rela.sbss2.* .rela.gnu.linkonce.sb2.*)             \
+      *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*)                   \
+    } > _region_                                                        \
+  .rel.plt        : { *(.rel.plt) } > _region_                          \
+  .rela.plt       : { *(.rela.plt) } > _region_
+
 #define SECTION_vectors(_region_, _vma_, _lma_)        \
   .vectors _vma_ : _lma_                                              \
   { FORCE_OUTPUT; KEEP(*(.vectors)) }         \
@@ -75,7 +118,7 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_text(_region_, _vma_, _lma_)           \
   .text _vma_ : _lma_                                                 \
   { _stext = .;       \
-    *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) }      \
+    *(.text*) *(.gnu.warning) *(.gnu.linkonce.t.*) *(.init) }      \
   > _region_                                                    \
   _etext = .;  PROVIDE (etext = .);
 
@@ -89,25 +132,43 @@ GROUP(libtarget.a libgcc.a)
     { FORCE_OUTPUT; *(.rodata1*) }             \
     > _region_
 
-#define SECTION_rodata(_region_, _vma_, _lma_) \
-    .rodata _vma_ : _lma_                                     \
-    { FORCE_OUTPUT; *(.rodata*) }     \
-    > _region_
+#define SECTION_rodata(_region_, _vma_, _lma_)          \
+    .rodata _vma_ : _lma_                               \
+    { FORCE_OUTPUT; *(.rodata*) *(.gnu.linkonce.r.*)    \
+    } > _region_
 
 #define SECTION_fixup(_region_, _vma_, _lma_)                      \
     .fixup _vma_ : _lma_                                                          \
     { __FIXUP_START__ = ABSOLUTE(.); *(.fixup) __FIXUP_END__ = ABSOLUTE(.);}\
     > _region_
 
+/* We want to discard C++ exception frame data if we don't have the
+ * C++ support to use it. But we can't. With current binutils (2008-05-13)
+ * the linker goes very wrong if either of the contents of
+ * .gcc_except_table or .eh_frame are discarded. Yes I tried.
+ */
 #define SECTION_gcc_except_table(_region_, _vma_, _lma_)       \
-    .gcc_except_table _vma_ : _lma_                                           \
-    { __EXCEPT_START__ = ABSOLUTE(.); *(.gcc_except_table)              \
-      __EXCEPT_END__ = ABSOLUTE(.);}                                    \
-    > _region_
+    .gcc_except_table _vma_ : _lma_                            \
+    { __EXCEPT_START__ = ABSOLUTE(.);                          \
+      *(.gcc_except_table)                                     \
+      *(.gcc_except_table.*)                                   \
+      __EXCEPT_END__ = ABSOLUTE(.);                            \
+    } > _region_
+
+#define SECTION_eh_frame(_region_, _vma_, _lma_)      \
+  .eh_frame _vma_ : _lma_                             \
+    {                                                 \
+       *(.eh_frame_hdr)                               \
+       FORCE_OUTPUT;  __EH_FRAME_BEGIN__ = .;         \
+       KEEP(*(.eh_frame))                             \
+       __FRAME_END__ = .;                             \
+       . = . + 8;                                     \
+    } > _region_ = 0
 
 #define SECTION_data(_region_, _vma_, _lma_)                         \
     .data _vma_ : _lma_                                                             \
     { __ram_data_start = ABSOLUTE(.); *(.data*)                                 \
+      *(.gnu.linkonce.d.*) \
     __GOT1_START__ = ABSOLUTE(.); *(.got1) __GOT1_END__ = ABSOLUTE(.);        \
       /* Put .ctors and .dtors next to the .got2 section, so that */          \
       /* the pointers get relocated with -mrelocatable.           */          \
@@ -120,14 +181,13 @@ GROUP(libtarget.a libgcc.a)
       . = ALIGN(4);                                                           \
       *( .2ram.*) ;                                                           \
     __GOT2_START__ = ABSOLUTE(.); *(.got2) __GOT2_END__ = ABSOLUTE(.);        \
-    __GOT_START = ABSOLUTE(.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE(. + 32768);   \
+    __GOT_START = ABSOLUTE(.);                                                \
     _SDA_BASE_ = ABSOLUTE(.); *(.got.plt) *(.got)                             \
     __GOT_END__ = ABSOLUTE(.);  *(.dynamic)                                   \
-    *(.eh_frame)                                                              \
       /* We want the small data sections together, so single-instruction */   \
       /* offsets can access them all, and initialized data all before    */   \
       /* uninitialized, so we can shorten the on-disk segment size.      */   \
-    __SDATA_START__ = ABSOLUTE(.); *(.sdata) *(.sdata.*)                      \
+    __SDATA_START__ = ABSOLUTE(.); *(.sdata) *(.sdata.*) *(.gnu.linkonce.s.*) \
     __SDATA2_START__ = ABSOLUTE(.); *(.sdata2*) }                             \
     > _region_                                                                \
     __rom_data_start = LOADADDR(.data);                                       \
@@ -139,14 +199,14 @@ GROUP(libtarget.a libgcc.a)
     { __sbss_start = ABSOLUTE (.);                                        \
     __SBSS_START__ = ABSOLUTE(.); *(.sbss.*) __SBSS_END__ = ABSOLUTE(.);   \
     __SBSSx_START__ = ABSOLUTE(.); *(.sbss*) __SBSSx_END__ = ABSOLUTE(.);\
-    *(.scommon*)                                                          \
+     *(.gnu.linkonce.sb.*) *(.scommon*)                                       \
     __sbss_end = ABSOLUTE (.); }                                          \
     > _region_
 
 #define SECTION_bss(_region_, _vma_, _lma_)                      \
     .bss _vma_ : _lma_                                                          \
     { __bss_start = ABSOLUTE (.);                       \
-      FORCE_OUTPUT; *(.dynbss*) *(.bss*) *(COMMON)      \
+      FORCE_OUTPUT; *(.dynbss*) *(.bss*) *(.gnu.linkonce.b.*) *(COMMON)      \
       __bss_end = ABSOLUTE (.); }                       \
     > _region_
 
