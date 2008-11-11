@@ -1,3 +1,10 @@
+2008-11-07  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/pkgconf/mlt_powerpc_moab_ram.ldi:
+	* include/pkgconf/mlt_powerpc_moab_rom.ldi:
+	* include/pkgconf/mlt_powerpc_moab_romram.ldi:
+	Add SECTION_eh_frame and SECTION_RELOCS.
+
 2005-02-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/moab.S: Rework startup sequence - faster and works better
