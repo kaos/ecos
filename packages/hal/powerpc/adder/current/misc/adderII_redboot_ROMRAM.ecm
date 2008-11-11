@@ -72,7 +72,7 @@ cdl_component CYGBLD_BUILD_REDBOOT {
 };
 
 cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
-    user_value 0x00030000
+    user_value 0x00050000
 };
 
 cdl_option CYGOPT_REDBOOT_FIS_REDBOOT_BACKUP {

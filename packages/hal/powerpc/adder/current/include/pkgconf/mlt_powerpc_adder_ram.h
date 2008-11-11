@@ -29,7 +29,7 @@ extern char CYG_LABEL_NAME (__reserved_virtual_table) [];
 extern char CYG_LABEL_NAME (__reserved_for_rom) [];
 #endif
 #define CYGMEM_SECTION_reserved_for_rom (CYG_LABEL_NAME (__reserved_for_rom))
-#define CYGMEM_SECTION_reserved_for_rom_SIZE (0x3cd00)
+#define CYGMEM_SECTION_reserved_for_rom_SIZE (0x5cd00)
 #ifndef __ASSEMBLER__
 extern char CYG_LABEL_NAME (__heap1) [];
 #endif

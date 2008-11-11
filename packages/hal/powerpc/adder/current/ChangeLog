@@ -3,11 +3,38 @@
 	* src/hal_aux.c: Added prototype of _adder_set_led() to remove
 	compiler warning
 	
+2005-01-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* misc/adderII_redboot_ROMRAM.ecm: Update minimum image size from
+	0x30000 to 0x50000.
+
+	* include/pkgconf/mlt_powerpc_adder_ram.ldi: Allow up to 0x60000 to be used
+	by ROM.
+	* include/pkgconf/mlt_powerpc_adder_ram.h
+	(CYGMEM_SECTION_reserved_for_rom_SIZE): Ditto.
+
+2004-11-04  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/hal_powerpc_adder.cdl: Remove "-fvtable-gc" and "-finit-priority"
+	from the set of default compilation flags.
+
+2004-09-28  John Dallaway  <jld@ecoscentric.com>
+
+	* include/pkgconf/mlt_powerpc_adder_romram.ldi: Include relocs and
+	.eh_frame sections.
+	* include/pkgconf/mlt_powerpc_adder_rom.ldi: Ditto.
+	* include/pkgconf/mlt_powerpc_adder_ram.ldi: Ditto.
+	
 2004-09-16  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_aux.c (hal_platform_init): Move parallel port initializations
 	from variant here (comment says they are required re: errata, but no
 	supporting documentation is known)
+
+2004-01-12  John Dallaway  <jld@ecoscentric.com>
+
+	* include/pkgconf/mlt_powerpc_adder_ram.*, doc/adder.sgml:
+	Reserve an additional 64kB for use by RedBoot.
 
 2003-12-21  Gary Thomas  <gary@mlbassoc.com>
 
