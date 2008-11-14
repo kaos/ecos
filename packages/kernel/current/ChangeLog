@@ -1,3 +1,8 @@
+2008-11-14  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/tm_basic.cxx (max): Resolve issue 1000636 with extra
+	bracketing.
+
 2008-07-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/thread.inl: Silence some warnings by assigning
