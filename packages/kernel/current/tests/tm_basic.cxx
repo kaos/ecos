@@ -210,7 +210,7 @@ void run_flag_tests(void);
 void run_alarm_tests(void);
 
 #ifndef max
-#define max(n,m) ((m) > (n) ? (n) : (m))
+#define max(n,m) ((m) > (n) ? (m) : (n))
 #endif
 
 // Wait until a clock tick [real time clock] has passed.  This should keep it
