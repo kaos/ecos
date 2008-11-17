@@ -431,7 +431,7 @@ usbs_at91_set_pullup (bool set)
 {                
 #ifdef CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_INTERNAL
   cyg_uint32 txvc;
-  HAL_READ_UINT32(AT91_UDP + AT91_UDP_TXVC, buf);
+  HAL_READ_UINT32(AT91_UDP + AT91_UDP_TXVC, txvc);
   if (set) {
     txvc |= AT91_UDP_TXVC_PUON;
   } else {
