@@ -91,6 +91,21 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
            into ROM, but execute from RAM."
     }
 
+    cdl_option CYGHWR_HAL_ARM_XSCALE_IXDP425_FLASH {
+        display         "External Intel StrataFLASH memory support"
+        parent          CYGPKG_IO_FLASH
+        active_if       CYGPKG_IO_FLASH
+        flavor          bool
+        default_value   1
+        no_define
+        implements      CYGHWR_IO_FLASH_BLOCK_LOCKING
+        compile         -library=libextras.a ixdp425_strataflash.c
+        description "
+            The IXDP425 development board is fitted with an external Intel
+            StrataFLASH 28F128J3 FLASH memory device. This option enables
+            support for the StrataFlash."
+    }
+
     cdl_component CYGBLD_GLOBAL_OPTIONS {
         display "Global build options"
         flavor  none

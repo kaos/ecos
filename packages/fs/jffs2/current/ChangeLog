@@ -1,3 +1,21 @@
+2008-11-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/jffs2_1.c, tests/jffs2_2.c, tests/jffs2_3.c: 
+	Select device name to use according to configury, including flash
+	API in use.
+
+2008-06-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/jffs2.cdl (CYGPKG_FS_JFFS2_CFLAGS_ADD): Conditionalise use of
+	workaround for building with native linux tools so that it only
+	applies when using synth target. Otherwise it can cause problems
+	with some other third-party builds of the toolchain.
+
+2004-07-14  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/fileio1.c (main): If we have two filesystem configured
+	mount the second one on /mnt and list the root of it.
+
 2008-04-02  Xinghua Yang <yxinghua@sunnorth.com.cn>
             Taiyun  Wang <taiyun@sunnorth.com.cn>
             Andrew Lunn <andrew.lunn@ascom.ch>
@@ -94,6 +112,11 @@
 
 	* Merge from public MTD.
 	
+2004-07-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flashio.c (jffs2_flash_erase): Minor update for new
+	flash API.
+
 2004-04-19  Oyvind Harboe <oyvind.harboe@zylin.com>
 	
 	* src/build.c: JFFS2 can now be used as a write-once, read many mode

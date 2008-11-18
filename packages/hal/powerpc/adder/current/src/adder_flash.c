@@ -1,17 +1,14 @@
-#ifndef CYGONCE_PLF_IO_H
-#define CYGONCE_PLF_IO_H
-
-//=============================================================================
+//==========================================================================
 //
-//      plf_io.h
+//      adder_flash.c
 //
-//      Platform specific IO support
+//      Support for the external AMD flash device on Adder boards
 //
-//=============================================================================
+//==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004, 2006, 2008 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -35,38 +32,54 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
-//=============================================================================
+//==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    msalter
-// Contributors: msalter
-// Date:         2002-01-10
-// Purpose:      Intel IXDP425 IO support macros
-// Description: 
-// Usage:        #include <cyg/hal/plf_io.h>
+// Author(s):   bartv
+// Date:        2004-11-25
 //
 //####DESCRIPTIONEND####
-//
 //=============================================================================
 
-#include <pkgconf/hal.h>
-#include <cyg/hal/ixdp425.h>
-#include CYGBLD_HAL_PLF_INTS_H
+// There is a single AMD AM29LV320D device. DevId 22F6, 4MB, 63*64K,
+// 8*8K.
 
-// Override IXP425 variant CYGARC_UNCACHED_ADDRESS definition
-#define CYGARC_UNCACHED_ADDRESS(x)                                       \
-    ((((cyg_uint32)(x)) < 0x10000000) ? (((cyg_uint32)(x))+0x20000000) : \
-     ((((cyg_uint32)(x)) >= IXDP_FLASH_BASE) && (((cyg_uint32)(x)) < (IXDP_FLASH_BASE+IXDP_FLASH_SIZE))) ? \
-     ((x)+(IXDP_FLASH_UNCACHED_BASE-IXDP_FLASH_BASE)) :                  \
-     (x))
+#include <pkgconf/system.h>
+#ifdef CYGPKG_IO_FLASH
+#include <cyg/io/flash.h>
+#include <cyg/io/flash_dev.h>
+#include <cyg/io/am29xxxxx_dev.h>
 
-#include <cyg/hal/hal_io.h>             // IO macros
+static const CYG_FLASH_FUNS(hal_adder_flash_amd_funs,
+                            &cyg_am29xxxxx_init_cfi_16,
+                            &cyg_flash_devfn_query_nop,
+                            &cyg_am29xxxxx_erase_16,
+                            &cyg_am29xxxxx_program_16,
+                            (int (*)(struct cyg_flash_dev*, const cyg_flashaddr_t, void*, size_t))0,
+                            &cyg_flash_devfn_lock_nop,
+                            &cyg_flash_devfn_unlock_nop);
 
-//-----------------------------------------------------------------------------
-// end of plf_io.h
-#endif // CYGONCE_PLF_IO_H
+static cyg_am29xxxxx_dev hal_adder_flash_priv = {
+    .devid      = 0x22F6,
+    .block_info = {
+        { 0, 0 },
+        { 0, 0 },
+        { 0, 0 },
+        { 0, 0 }
+    }
+};
+
+CYG_FLASH_DRIVER(hal_adder_flash,
+                 &hal_adder_flash_amd_funs,
+                 0,
+                 0xFE000000,
+                 0xFE3FFFFF,
+                 4,
+                 hal_adder_flash_priv.block_info,
+                 &hal_adder_flash_priv
+);
+#endif  // CYGPKG_IO_FLASH
+
+// EOF adder_flash.c

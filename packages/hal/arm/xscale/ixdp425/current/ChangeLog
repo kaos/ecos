@@ -1,6 +1,23 @@
+2006-08-02  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/ixdp425_strataflash.c: In CYG_FLASH_FUNS, replace query
+        function with generic nop version.
+        Remove hwr_map_error: it no longer exists for CYG_FLASH_FUNS.
+
 2006-03-01  Mark Salter  <msalter@sadr.localdomain>
 
 	* include/hal_platform_setup.h: Fix DELAY macro.
+
+2006-01-31  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_arm_xscale_ixdp425.cdl
+	(CYGHWR_HAL_ARM_XSCALE_IXDP425_FLASH): New option to support
+	v2 Flash driver.
+	* src/ixdp425_strataflash.c: New v2 flash driver.
+	* include/hal_platform_setup.h: Add uncached Flash mapping.
+	* include/ixdp425.h: Add uncached flash mappings.
+	* include/plf_io.h: Provide CYGARC_UNCACHED_ADDRESS.
+	* misc/redboot*.ecm: Use Strata V2 Flash driver.
 
 2004-09-27  Mark Salter  <msalter@redhat.com>
 

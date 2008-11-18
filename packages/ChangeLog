@@ -1,3 +1,24 @@
+2008-11-16  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* ecos.db: Use v2 drivers for adder/adderII and IXDP425.
+
+2008-11-16  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* ecos.db: Merge flash_v2 branch to trunk including these changes:
+
+ 2004-11-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* ecos.db: Add new AM29xxxxxx driver which supports the V2 API
+
+ 2004-08-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* ecos.db: Added the new strata driver which uses the V2 API.
+
+ 2004-08-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* ecos.db: Added the new synthetic target flash device which uses
+	the new API and has some extra goodies like boot blocks.
+
 2008-11-11  Nick Garnett  <nickg@ecoscentric.com>
 
 	* ecos.db: Add STM32 wallclock driver.

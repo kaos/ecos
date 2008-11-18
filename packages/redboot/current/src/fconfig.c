@@ -77,7 +77,7 @@ externC bool cyg_plf_redboot_esa_validate(unsigned char *val);
 
 #ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
 externC int do_flash_init(void);
-externC int flash_read(void *flash_base, void *ram_base, int len, void **err_address);
+#include <cyg/io/flash.h>
 #endif
 
 // Round a quantity up
@@ -91,19 +91,20 @@ struct _config *config, *backup_config;
 
 // Local data used by these routines
 #ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
-extern void *flash_start, *flash_end;
-extern int flash_block_size, flash_num_blocks;
+extern cyg_flashaddr_t flash_start, flash_end;
+extern size_t flash_block_size;
+extern cyg_uint32 flash_num_blocks;
 extern int __flash_init;
 #ifdef CYGOPT_REDBOOT_FIS
 extern void *fis_work_block;
-extern void *fis_addr;
+extern cyg_flashaddr_t fis_addr;
 extern int fisdir_size;  // Size of FIS directory.
 #endif
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK
 static struct _config  *readonly_config;
 #endif
-void *cfg_base;   // Location in Flash of config data
-int   cfg_size;   // Length of config data - rounded to Flash block size
+cyg_flashaddr_t cfg_base;    // Location in Flash of config data
+size_t  cfg_size;            // Length of config data - rounded to Flash block size
 #endif // FLASH MEDIA
 
 // Prototypes for local functions
@@ -775,13 +776,9 @@ flash_crc(struct _config *conf)
 void
 flash_write_config(bool prompt)
 {
-#if defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH) && !defined(CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG)
-# ifdef CYG_FLASH_ERR_OK // crude temporary hack to see if we're being used with flashv2
-    cyg_flashaddr_t err_addr;
-# else
-    void *err_addr;
-# endif
+#if defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH)
 #if !defined(CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG)
+    cyg_flashaddr_t err_addr;
     int stat;
 #endif
 #endif
@@ -798,21 +795,23 @@ flash_write_config(bool prompt)
 #else 
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
         // Insure [quietly] that the config page is unlocked before trying to update
-        flash_unlock((void *)cfg_base, cfg_size, (void **)&err_addr);
+        cyg_flash_unlock(cfg_base, cfg_size, &err_addr);
 #endif
-        if ((stat = flash_erase(cfg_base, cfg_size, (void **)&err_addr)) != 0) {
-            diag_printf("   initialization failed at %p: %s\n", err_addr, flash_errmsg(stat));
+        if ((stat = cyg_flash_erase(cfg_base, cfg_size, &err_addr)) != 0) {
+            diag_printf("   initialization failed at %p: %s\n", (void*)err_addr, 
+                        cyg_flash_errmsg(stat));
         } else {
             conf_endian_fixup(config);
-            if ((stat = FLASH_PROGRAM(cfg_base, config, sizeof(struct _config), (void **)&err_addr)) != 0) {
+            if ((stat = cyg_flash_program(cfg_base, (void *)config, sizeof(struct _config), 
+                                      &err_addr)) != 0) {
                 diag_printf("Error writing config data at %p: %s\n", 
-                            err_addr, flash_errmsg(stat));
+                            (void*)err_addr, cyg_flash_errmsg(stat));
             }
             conf_endian_fixup(config);
         }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
         // Insure [quietly] that the config data is locked after the update
-        flash_lock((void *)cfg_base, cfg_size, (void **)&err_addr);
+        cyg_flash_lock(cfg_base, cfg_size, &err_addr);
 #endif
 #endif // CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
 #else  // CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
@@ -1127,7 +1126,7 @@ load_flash_config(void)
     bool use_boot_script;
     unsigned char *cfg_temp = (unsigned char *)workspace_end;
 #ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
 #endif
 
     config_ok = false;
@@ -1151,21 +1150,21 @@ load_flash_config(void)
         diag_printf("Sorry, FLASH config exceeds available space in FIS directory\n");
         return;
     }
-    cfg_base = (void *)(((CYG_ADDRESS)fis_addr + fisdir_size) - cfg_size);
+    cfg_base = (((CYG_ADDRESS)fis_addr + fisdir_size) - cfg_size);
     fisdir_size -= cfg_size;
 #else
     cfg_size = (flash_block_size > sizeof(struct _config)) ? 
         sizeof(struct _config) : 
         _rup(sizeof(struct _config), flash_block_size);
     if (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK < 0) {
-        cfg_base = (void *)((CYG_ADDRESS)flash_end + 1 -
+        cfg_base = ((CYG_ADDRESS)flash_end + 1 -
            _rup(_rup((-CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*flash_block_size), cfg_size), flash_block_size));
     } else {
-        cfg_base = (void *)((CYG_ADDRESS)flash_start + 
+        cfg_base = ((CYG_ADDRESS)flash_start + 
            _rup(_rup((CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*flash_block_size), cfg_size), flash_block_size));
     }
 #endif
-    FLASH_READ(cfg_base, config, sizeof(struct _config), &err_addr);
+    cyg_flash_read(cfg_base, (void *)config, sizeof(struct _config), &err_addr);
     conf_endian_fixup(config);
 #else
     read_eeprom(config, sizeof(struct _config));  // into 'config'
@@ -1181,6 +1180,7 @@ load_flash_config(void)
         return;
     }
     config_ok = true;
+    
     flash_get_config("boot_script", &use_boot_script, CONFIG_BOOL);
     if (use_boot_script) {
         flash_get_config("boot_script_data", &script, CONFIG_SCRIPT);

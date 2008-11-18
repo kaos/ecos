@@ -8,6 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2004, 2005, 2006, 2007, 2008 eCosCentric Limited
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 // Copyright (C) 2003, 2004 Gary Thomas
 //
@@ -33,9 +34,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -164,19 +162,20 @@ RedBoot_nested_cmd("fis",
     );
 
 // Local data used by these routines
-void *flash_start, *flash_end;
-int flash_block_size, flash_num_blocks;
+cyg_flashaddr_t flash_start, flash_end;
+size_t flash_block_size;
+cyg_uint32 flash_num_blocks;
 #ifdef CYGOPT_REDBOOT_FIS
 void *fis_work_block;
-void *fis_addr;
+cyg_flashaddr_t fis_addr;
 #ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
 void *redundant_fis_addr;
 #endif
 int fisdir_size;  // Size of FIS directory.
 #endif
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-extern void *cfg_base;   // Location in Flash of config data
-extern int   cfg_size;   // Length of config data - rounded to Flash block size
+extern cyg_flashaddr_t cfg_base;   // Location in Flash of config data
+extern size_t cfg_size;            // Length of config data - rounded to Flash block size
 extern struct _config *config;
 #endif
 
@@ -190,8 +189,37 @@ fis_usage(char *why)
 static void        
 _show_invalid_flash_address(CYG_ADDRESS flash_addr, int stat)
 {
-    diag_printf("Invalid FLASH address %p: %s\n", (void *)flash_addr, flash_errmsg(stat));
-    diag_printf("   valid range is %p-%p\n", (void *)flash_start, (void *)flash_end);
+    cyg_uint32 i=0;
+    cyg_flash_info_t info;
+    int ret;
+    
+    diag_printf("Invalid FLASH address %p: %s\n", (void *)flash_addr, 
+                cyg_flash_errmsg(stat));
+    do {
+      ret = cyg_flash_get_info(i, &info);
+      if (ret == CYG_FLASH_ERR_OK) {
+          diag_printf("   valid range is %p - %p\n", (void*)info.start, (void*)info.end);
+      }
+      i++;
+    } while (ret != CYG_FLASH_ERR_INVALID);
+}
+
+// Avoid overwriting the current executable. This is not a complete
+// implementation, there may be code outside the text region, but it
+// is generally good enough. If either the start of the text region or
+// the end of the text region is within the specified range then at
+// least some of the code is in the area of flash about to be erased
+// or programmed.
+static cyg_bool
+check_code_overlaps(cyg_flashaddr_t start, cyg_flashaddr_t end)
+{
+  extern char _stext[], _etext[];
+  
+  return ((((unsigned long)&_stext >= (unsigned long)start) &&
+           ((unsigned long)&_stext < (unsigned long)end))
+          ||
+          (((unsigned long)&_etext >= (unsigned long)start) &&
+           ((unsigned long)&_etext < (unsigned long)end)));
 }
 
 #ifdef CYGOPT_REDBOOT_FIS
@@ -220,9 +248,9 @@ static inline void fis_endian_fixup(void *addr)
 void
 fis_read_directory(void)
 {
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
 
-    FLASH_READ(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+    cyg_flash_read(fis_addr, fis_work_block, fisdir_size, &err_addr);
     fis_endian_fixup(fis_work_block);
 }
 
@@ -236,7 +264,7 @@ fis_lookup(char *name, int *num)
 
     img = (struct fis_image_desc *)fis_work_block;
     for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
-        if ((img->u.name[0] != (unsigned char)0xFF) &&
+        if ((img->u.name[0] != '\xFF') &&
             (strcasecmp(name, img->u.name) == 0)) {
             if (num) *num = i;
             return img;
@@ -258,8 +286,9 @@ int fis_start_update_directory(int autolock)
 #endif
 
    struct fis_image_desc* img=NULL;
-   void* err_addr=NULL;
-   void* tmp_fis_addr=NULL;
+   cyg_flashaddr_t err_addr=NULL;
+   cyg_flashaddr_t tmp_fis_addr=NULL;
+   int stat;
 
    /*exchange old and new valid fis tables*/
    tmp_fis_addr=fis_addr;
@@ -277,13 +306,20 @@ int fis_start_update_directory(int autolock)
    //ready to go....
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
    if (do_autolock)
-      flash_unlock((void *)fis_addr, fisdir_size, (void **)&err_addr);
+      cyg_flash_unlock(fis_addr, fisdir_size, &err_addr);
 #endif
 
-   flash_erase(fis_addr, fisdir_size, (void **)&err_addr);
+   if ((stat = cyg_flash_erase(fis_addr, fisdir_size, &err_addr)) != 0) {
+       diag_printf("Error erasing FIS directory at %p: %s\n", err_addr, cyg_flash_errmsg(stat));
+       return 1;
+   }
    //now magic is 0xffffffff
    fis_endian_fixup(fis_work_block);
-   flash_program(fis_addr, fis_work_block, flash_block_size, (void **)&err_addr);
+   if ((stat = cyg_flash_program(fis_addr, fis_work_block, flash_block_size, &err_addr)) != 0) {
+       diag_printf("Error writing FIS directory at %p: %s\n",
+                   err_addr, cyg_flash_errmsg(stat));
+       return 1;
+   }
    fis_endian_fixup(fis_work_block);
    //now magic is 0xff1234ff, valid is IN_PROGRESS, version_count is the old one +1
 
@@ -297,7 +333,8 @@ int fis_start_update_directory(int autolock)
 int
 fis_update_directory(int autolock, int error)
 {
-   void* err_addr=0;
+   cyg_flashaddr_t err_addr;
+   int stat;
 
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
@@ -334,7 +371,11 @@ fis_update_directory(int autolock, int error)
       img->u.valid_info.valid_flag[0]=CYG_REDBOOT_RFIS_VALID;
       img->u.valid_info.valid_flag[1]=CYG_REDBOOT_RFIS_VALID;
 
-      flash_program(tmp_fis_addr, img->u.valid_info.valid_flag, sizeof(img->u.valid_info.valid_flag), (void **)&err_addr);
+      if ((stat = cyg_flash_program(tmp_fis_addr, img->u.valid_info.valid_flag,
+                                    sizeof(img->u.valid_info.valid_flag), &err_addr)) != 0) {
+          diag_printf("Error writing FIS directory at %p: %s\n", 
+                      err_addr, cyg_flash_errmsg(stat));
+      }
    }
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
    if (do_autolock)
@@ -343,7 +384,6 @@ fis_update_directory(int autolock, int error)
 
 #else // CYGOPT_REDBOOT_REDUNDANT_FIS
     int blk_size = fisdir_size;
-    int stat;
 
     fis_endian_fixup(fis_work_block);
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
@@ -353,22 +393,22 @@ fis_update_directory(int autolock, int error)
 #endif
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
     if (do_autolock)
-        flash_unlock((void *)fis_addr, blk_size, (void **)&err_addr);
+        cyg_flash_unlock(fis_addr, blk_size, &err_addr);
 #endif
 
-    if ((stat = flash_erase(fis_addr, blk_size, (void **)&err_addr)) != 0) {
-        diag_printf("Error erasing FIS directory at %p: %s\n", err_addr, flash_errmsg(stat));
+    if ((stat = cyg_flash_erase(fis_addr, blk_size, &err_addr)) != 0) {
+        diag_printf("Error erasing FIS directory at %p: %s\n", (void*)err_addr, cyg_flash_errmsg(stat));
     } else {
-        if ((stat = FLASH_PROGRAM(fis_addr, fis_work_block,
-                                  blk_size, (void **)&err_addr)) != 0) {
+        if ((stat = cyg_flash_program(fis_addr, fis_work_block, blk_size,
+                                      &err_addr)) != 0) {
             diag_printf("Error writing FIS directory at %p: %s\n", 
-                        err_addr, flash_errmsg(stat));
+                        (void*)err_addr, cyg_flash_errmsg(stat));
         }
     }
     fis_endian_fixup(fis_work_block);
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
     if (do_autolock)
-       flash_lock((void *)fis_addr, blk_size, (void **)&err_addr);
+        cyg_flash_lock(fis_addr, blk_size, &err_addr);
 #endif
 
 #endif // CYGOPT_REDBOOT_REDUNDANT_FIS
@@ -428,17 +468,17 @@ fis_erase_redundant_directory(void)
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is unlocked before trying
     // to update
-    flash_unlock((void *)redundant_fis_addr, fisdir_size,
-                 (void **)&err_addr);
+    cyg_flash_unlock(redundant_fis_addr, fisdir_size,
+                     &err_addr);
 #endif
-    if ((stat = flash_erase(redundant_fis_addr, fisdir_size,
-                            (void **)&err_addr)) != 0) {
+    if ((stat = cyg_flash_erase(redundant_fis_addr, fisdir_size,
+                                &err_addr)) != 0) {
          diag_printf("Error erasing FIS directory at %p: %s\n",
-                     err_addr, flash_errmsg(stat));
+                     err_addr, cyg_flash_errmsg(stat));
     }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is locked after the update
-    flash_lock((void *)redundant_fis_addr, fisdir_size, (void **)&err_addr);
+    cyg_flash_lock(redundant_fis_addr, fisdir_size, &err_addr);
 #endif
 }
 #endif
@@ -448,7 +488,7 @@ fis_init(int argc, char *argv[])
 {
     int stat;
     struct fis_image_desc *img;
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
     bool full_init = false;
     struct option_info opts[1];
     CYG_ADDRESS redboot_flash_start;
@@ -472,7 +512,7 @@ fis_init(int argc, char *argv[])
                          flash_block_size : MIN_REDBOOT_IMAGE_SIZE;
 
     img = (struct fis_image_desc *)fis_work_block;
-    memset(img, 0xFF, fisdir_size);  // Start with erased data
+    memset(img, '\xFF', fisdir_size);  // Start with erased data
 
 #ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
     //create the valid flag entry
@@ -491,6 +531,7 @@ fis_init(int argc, char *argv[])
     img->flash_base = (CYG_ADDRESS)flash_start;
     img->mem_base = (CYG_ADDRESS)flash_start;
     img->size = CYGNUM_REDBOOT_FLASH_RESERVED_BASE;
+    img->data_length = img->size;
     img++;
 #endif
     redboot_flash_start = (CYG_ADDRESS)flash_start + CYGBLD_REDBOOT_FLASH_BOOT_OFFSET;
@@ -500,6 +541,7 @@ fis_init(int argc, char *argv[])
     img->flash_base = redboot_flash_start;
     img->mem_base = redboot_flash_start;
     img->size = redboot_image_size;
+    img->data_length = img->size;
     img++;
     redboot_flash_start += redboot_image_size;
 #endif
@@ -513,6 +555,7 @@ fis_init(int argc, char *argv[])
     img->flash_base = redboot_flash_start;
     img->mem_base = redboot_flash_start;
     img->size = redboot_image_size;
+    img->data_length = img->size;
     img++;
     redboot_flash_start += redboot_image_size;
 #endif
@@ -523,6 +566,7 @@ fis_init(int argc, char *argv[])
     img->flash_base = redboot_flash_start;
     img->mem_base = redboot_flash_start;
     img->size = redboot_image_size;
+    img->data_length = img->size;
     img++;
     redboot_flash_start += redboot_image_size;
 #endif
@@ -533,6 +577,7 @@ fis_init(int argc, char *argv[])
     img->flash_base = (CYG_ADDRESS)cfg_base;
     img->mem_base = (CYG_ADDRESS)cfg_base;
     img->size = cfg_size;
+    img->data_length = img->size;
     img++;
 #endif
     // And a descriptor for the descriptor table itself
@@ -541,6 +586,7 @@ fis_init(int argc, char *argv[])
     img->flash_base = (CYG_ADDRESS)fis_addr;
     img->mem_base = (CYG_ADDRESS)fis_addr;
     img->size = fisdir_size;
+    img->data_length = img->size;
     img++;
 
     //create the entry for the redundant fis table
@@ -603,10 +649,10 @@ fis_init(int argc, char *argv[])
         erase_size =  (CYG_ADDRESS)flash_start + CYGBLD_REDBOOT_FLASH_BOOT_OFFSET;
         if ( erase_size > erase_start ) {
             erase_size -= erase_start;
-            if ((stat = flash_erase((void *)erase_start, erase_size,
-                                    (void **)&err_addr)) != 0) {
+            if ((stat = cyg_flash_erase((void *)erase_start, erase_size,
+                                        &err_addr)) != 0) {
                 diag_printf("   initialization failed at %p: %s\n",
-                            err_addr, flash_errmsg(stat));
+                            err_addr, cyg_flash_errmsg(stat));
             }
         }
 #endif
@@ -622,10 +668,9 @@ fis_init(int argc, char *argv[])
         } else {
           erase_size = (CYG_ADDRESS)fis_addr - erase_start; // the gap between HWM and fis data
         }
-        if ((stat = flash_erase((void *)erase_start, erase_size,
-                                (void **)&err_addr)) != 0) {
+        if ((stat = cyg_flash_erase(erase_start, erase_size,&err_addr)) != 0) {
           diag_printf("   initialization failed %p: %s\n",
-                 err_addr, flash_errmsg(stat));
+                 err_addr, cyg_flash_errmsg(stat));
         }
         erase_start += (erase_size + flash_block_size);
         if (fis_addr > cfg_base) {
@@ -633,29 +678,26 @@ fis_init(int argc, char *argv[])
         } else {
           erase_size = (CYG_ADDRESS)cfg_base - erase_start; // the gap between fis and config data
         }
-        if ((stat = flash_erase((void *)erase_start, erase_size,
-                                (void **)&err_addr)) != 0) {
+        if ((stat = cyg_flash_erase(erase_start, erase_size,&err_addr)) != 0) {
           diag_printf("   initialization failed %p: %s\n",
-                 err_addr, flash_errmsg(stat));
+                 err_addr, cyg_flash_errmsg(stat));
         }
         erase_start += (erase_size + flash_block_size);
 #else  // !CYGSEM_REDBOOT_FLASH_CONFIG        
         erase_size = (CYG_ADDRESS)fis_addr - erase_start; // the gap between HWM and fis data
-        if ((stat = flash_erase((void *)erase_start, erase_size,
-                                (void **)&err_addr)) != 0) {
+        if ((stat = cyg_flash_erase(erase_start, erase_size,&err_addr)) != 0) {
           diag_printf("   initialization failed %p: %s\n",
-                 err_addr, flash_errmsg(stat));
+                      (void*)err_addr, cyg_flash_errmsg(stat));
         }
         erase_start += (erase_size + flash_block_size);          
 #endif
-        // Lastly, anything at the end, if there is any
-        if ( erase_start < (((CYG_ADDRESS)flash_end)+1) ) {
-            erase_size = ((CYG_ADDRESS)flash_end - erase_start) + 1;
-            if ((stat = flash_erase((void *)erase_start, erase_size,
-                                    (void **)&err_addr)) != 0) {
-                diag_printf("   initialization failed at %p: %s\n",
-                            err_addr, flash_errmsg(stat));
-            }
+        // Lastly, anything at the end
+        erase_size = ((CYG_ADDRESS)flash_end - erase_start) + 1;
+        if ((erase_size > 0) &&
+            ((stat = cyg_flash_erase(erase_start, erase_size,
+                                     &err_addr))) != 0) {
+            diag_printf("   initialization failed at %p: %s\n",
+                        (void*)err_addr, cyg_flash_errmsg(stat));
         }
 #ifndef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
     // In this case, 'fis free' works by scanning for erased blocks.  Since the
@@ -718,7 +760,7 @@ fis_list(int argc, char *argv[])
         lowest_addr = 0xFFFFFFFF;
         img = (struct fis_image_desc *) fis_work_block;
         for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
-            if (img->u.name[0] != (unsigned char)0xFF) {
+            if (img->u.name[0] != '\xFF') {
                 if ((img->flash_base >= last_addr) && (img->flash_base < lowest_addr)) {
                     lowest_addr = img->flash_base;
                     image_found = true;
@@ -744,6 +786,21 @@ fis_list(int argc, char *argv[])
     } while (image_found == true);
 }
 
+#ifdef CYGNUM_REDBOOT_FLASH_RESERVED_DEVICES
+static CYG_ADDRESS flash_reserved_devices[] = { CYGNUM_REDBOOT_FLASH_RESERVED_DEVICES, 0xFFFFFFFF };
+
+static cyg_bool flash_reserved( CYG_ADDRESS start )
+{
+    int i;
+    for( i = 0; flash_reserved_devices[i] != 0xFFFFFFFF; i++ )
+        if( start == flash_reserved_devices[i] )
+            return true;
+    return false;
+}
+#else
+#define flash_reserved(__start) false
+#endif
+
 #ifdef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
 struct free_chunk {
     CYG_ADDRESS start, end;
@@ -752,21 +809,46 @@ struct free_chunk {
 static int
 find_free(struct free_chunk *chunks)
 {
-    CYG_ADDRESS *fis_ptr, *fis_end;
+    cyg_flash_info_t info;
     struct fis_image_desc *img;
-    int i, idx;
-    int num_chunks = 1;
+    int i=0, idx;
+    int num_chunks = 0;
+    int ret;
+    
+    do {
+        // get info for each flash device
+        ret = cyg_flash_get_info(i, &info);
 
-    // Do not search the area reserved for pre-RedBoot systems:
-    fis_ptr = (CYG_ADDRESS *)((CYG_ADDRESS)flash_start + 
-                              CYGNUM_REDBOOT_FLASH_RESERVED_BASE);
-    fis_end = (CYG_ADDRESS *)flash_end;
-    chunks[num_chunks-1].start = (CYG_ADDRESS)fis_ptr;
-    chunks[num_chunks-1].end = (CYG_ADDRESS)fis_end;
+        if (ret == CYG_FLASH_ERR_OK && !flash_reserved( info.start )) {
+            
+#ifdef CYGNUM_REDBOOT_FLASH_BASE
+            if ( CYGNUM_REDBOOT_FLASH_BASE == info.start )
+#else
+            if (i == 0 )
+#endif
+            {
+                // Do not search the area reserved for pre-RedBoot systems:
+                chunks[num_chunks].start = (info.start + 
+                                            CYGNUM_REDBOOT_FLASH_RESERVED_BASE);
+                chunks[num_chunks].end = info.end;
+                num_chunks++;
+            } else {   // Contiguous flash? If so collapse the chunks together.
+                if (chunks[num_chunks-1].end == (info.start -1)) {
+                    chunks[num_chunks-1].end = info.end;
+                } else {
+                    chunks[num_chunks].start = info.start;
+                    chunks[num_chunks].end = info.end;
+                    num_chunks++;
+                }
+            }
+        }
+        i++;
+    } while (ret != CYG_FLASH_ERR_INVALID);
+    
     fis_read_directory();
     img = (struct fis_image_desc *) fis_work_block;
     for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
-        if (img->u.name[0] != (unsigned char)0xFF) {
+        if (img->u.name[0] != '\xFF') {
             // Figure out which chunk this is in and split it
             for (idx = 0;  idx < num_chunks;  idx++) {
                 if ((img->flash_base >= chunks[idx].start) && 
@@ -775,29 +857,31 @@ find_free(struct free_chunk *chunks)
                         chunks[idx].start += img->size;
                         if (chunks[idx].start >= chunks[idx].end) {
                             // This free chunk has collapsed
-                            while (idx < (num_chunks-1)) {
+                            num_chunks--;
+                            while (idx < num_chunks) {
                                 chunks[idx] = chunks[idx+1];
                                 idx++;
                             }
-                            num_chunks--;
                         }
-                    } else if ((img->flash_base+img->size) == chunks[idx].end) {
-                        chunks[idx].end = img->flash_base;
+                    } else if ((img->flash_base+img->size-1) >= chunks[idx].end) {
+                        chunks[idx].end = img->flash_base - 1;
                     } else {
                         // Split chunk into two parts
-                        if ((img->flash_base+img->size) < (CYG_ADDRESS)fis_end) {
-                            int j;
-                            // make room for new chunk
-                            for (j = num_chunks; j > (idx+1); j--)
-                                chunks[j] = chunks[j-1];
-                            chunks[idx+1].start = img->flash_base + img->size;
-                            chunks[idx+1].end = chunks[idx].end;
-                            if (++num_chunks == CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS) {
-                                diag_printf("Warning: too many free chunks\n");
-                                return num_chunks;
-                            }
+                        int idxtmp;
+                        
+                        // shift chunks along one so we insert the new one
+                        for (idxtmp=num_chunks; idxtmp > (idx+1); idxtmp--)
+                        {
+                            chunks[idxtmp] = chunks[idxtmp-1];
                         }
-                        chunks[idx].end = img->flash_base;
+                        
+                        chunks[idx+1].start = img->flash_base + img->size;
+                        chunks[idx+1].end = chunks[idx].end;
+                        chunks[idx].end = img->flash_base - 1;
+                        if (++num_chunks == CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS) {
+                          diag_printf("Warning: too many free chunks\n");
+                          return num_chunks;
+                        }
                     }
                     break;
                 }
@@ -811,42 +895,108 @@ find_free(struct free_chunk *chunks)
 static void
 fis_free(int argc, char *argv[])
 {
-#ifndef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
-    unsigned long *fis_ptr, *fis_end, flash_data;
-    unsigned long *area_start;
-    void *err_addr;
+#if !defined(CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS)
+    cyg_uint32 flash_data;
+    cyg_flashaddr_t area_start;
+    cyg_flashaddr_t err_addr;
+    cyg_uint32 flash_dev_no;
+    int flash_err;
+    cyg_flash_info_t flash_info;
+    cyg_uint32 curr_block, curr_block_info;
+    cyg_flashaddr_t curr_flash_addr, next_flash_addr;
 
-    // Do not search the area reserved for pre-RedBoot systems:
-    fis_ptr = (unsigned long *)((CYG_ADDRESS)flash_start + 
-                                CYGNUM_REDBOOT_FLASH_RESERVED_BASE);
-    fis_end = (unsigned long *)(CYG_ADDRESS)flash_end;
-    area_start = fis_ptr;
-    while (fis_ptr < fis_end) {
-        flash_read(fis_ptr, &flash_data, sizeof(unsigned long), (void **)&err_addr);
-        if (flash_data != (unsigned long)0xFFFFFFFF) {
-            if (area_start != fis_ptr) {
-                // Assume that this is something
-                diag_printf("  0x%08lX .. 0x%08lX\n",
-                            (CYG_ADDRESS)area_start, (CYG_ADDRESS)fis_ptr);
-            }
-            // Find next blank block
-            area_start = fis_ptr;
-            while (area_start < fis_end) {
-                flash_read(area_start, &flash_data, sizeof(unsigned long), (void **)&err_addr);
-                if (flash_data == (unsigned long)0xFFFFFFFF) {
-                    break;
-                }
-                area_start += flash_block_size / sizeof(CYG_ADDRESS);
-            }
-            fis_ptr = area_start;
-        } else {
-            fis_ptr += flash_block_size / sizeof(CYG_ADDRESS);
+    // For each flash device
+    for (flash_dev_no=0;; flash_dev_no++)
+    {
+        flash_err = cyg_flash_get_info( flash_dev_no, &flash_info );
+        if ( CYG_FLASH_ERR_OK != flash_err )  // assume all done
+            break;
+
+        if( flash_reserved( flash_info.start ) ) // Ignore reserved devices
+            continue;
+        
+        // Once more, from the top...
+        curr_flash_addr = area_start = flash_info.start;
+
+        // We must not search the area reserved for pre-RedBoot systems,
+        // but this is only the case for the first flash device, or
+        // the one corresponding to CYGNUM_REDBOOT_FLASH_BASE.
+        // FIXME: this is insufficiently generic by design - can only
+        // reserve on one flash.
+#ifdef CYGNUM_REDBOOT_FLASH_BASE
+        if ( CYGNUM_REDBOOT_FLASH_BASE == area_start )
+#else
+        if ( 0 == flash_dev_no )
+#endif
+        {
+            //cyg_flashaddr_t asold = area_start;
+            area_start += CYGNUM_REDBOOT_FLASH_RESERVED_BASE;
+            //diag_printf("area_start was %08x now %08x\n", asold, area_start );
         }
-    }
-    if (area_start != fis_ptr) {
-        diag_printf("  0x%08lX .. 0x%08lX\n", 
-                    (CYG_ADDRESS)area_start, (CYG_ADDRESS)fis_ptr);
-    }
+        // For each region of blocks
+        for ( curr_block_info = 0;
+              curr_block_info < flash_info.num_block_infos;
+              curr_block_info++ )
+        {
+            // For each individual block
+            for ( curr_block = 0;
+                  curr_block < flash_info.block_info[curr_block_info].blocks;
+                  curr_flash_addr = next_flash_addr, curr_block++ )
+            {
+                cyg_ucount32 i;
+                cyg_bool is_blank = true; // until proved otherwise
+                size_t amount_to_check;
+
+                // determine this now to avoid recalculating it later in this block, so we know the
+                // end of this block
+                next_flash_addr = curr_flash_addr + flash_info.block_info[curr_block_info].block_size;
+
+                // If area_start got adjusted further up, skip until we reach it
+                if ( curr_flash_addr < area_start )
+                    continue;
+                
+                //diag_printf("block region %d, block %d, flashaddr %08x\n",curr_block_info,curr_block,curr_flash_addr);
+                
+                // check 32 bytes at most. Reading it all will take too long on many devices.
+                // Perhaps this should be a config option.
+                amount_to_check = 32; 
+                if ( amount_to_check > flash_info.block_info[curr_block_info].block_size ) // paranoia
+                    amount_to_check = flash_info.block_info[curr_block_info].block_size;
+
+                for ( i=0; i<amount_to_check; i += sizeof(cyg_uint32) )
+                {
+                    flash_err = cyg_flash_read(curr_flash_addr+i, &flash_data, sizeof(cyg_uint32), &err_addr);
+                    if ( (CYG_FLASH_ERR_OK != flash_err) || (flash_data != 0xffffffff) )
+                    {
+                        is_blank = false;
+                        break; // no point continuing
+                    }
+                } // for
+                
+                if (!is_blank)
+                {
+                    /* If not blank, output the preceding region if any */
+                    if ( curr_flash_addr != area_start )
+                    {
+                        diag_printf("  0x%08lX .. 0x%08lX\n",
+                                    area_start,
+                                    next_flash_addr-1 );
+                    }
+                    area_start = next_flash_addr;
+                }
+            } // for block
+        } // for block region
+
+        /* If the blank region extended to the very end of the device, we need to do one
+         * final check at the end of the device.
+         */
+        if ( curr_flash_addr != area_start )
+        {
+            diag_printf("  0x%08lX .. 0x%08lX\n",
+                        area_start,
+                        next_flash_addr-1 );
+        }
+    } // for flash device
 #else
     struct free_chunk chunks[CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS];
     int idx, num_chunks;
@@ -865,59 +1015,124 @@ static bool
 fis_find_free(CYG_ADDRESS *addr, unsigned long length)
 {
 #ifndef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
-    unsigned long *fis_ptr, *fis_end, flash_data;
-    unsigned long *area_start;
-    void *err_addr;
+    cyg_uint32 flash_data;
+    cyg_flashaddr_t area_start;
+    cyg_flashaddr_t err_addr;
+    cyg_uint32 flash_dev_no;
+    int flash_err;
+    cyg_flash_info_t flash_info;
+    cyg_uint32 curr_block, curr_block_info;
+    cyg_flashaddr_t curr_flash_addr, next_flash_addr;
 
-    // Do not search the area reserved for pre-RedBoot systems:
-    fis_ptr = (unsigned long *)((CYG_ADDRESS)flash_start + 
-                                CYGNUM_REDBOOT_FLASH_RESERVED_BASE);
-    fis_end = (unsigned long *)(CYG_ADDRESS)flash_end;
-    area_start = fis_ptr;
-    while (fis_ptr < fis_end) {
-        flash_read(fis_ptr, &flash_data, sizeof(unsigned long), (void **)&err_addr);
-        if (flash_data != (unsigned long)0xFFFFFFFF) {
-            if (area_start != fis_ptr) {
-                // Assume that this is something
-                if ((fis_ptr-area_start) >= (length/sizeof(unsigned))) {
-                    *addr = (CYG_ADDRESS)area_start;
-                    return true;
-                }
-            }
-            // Find next blank block
-            area_start = fis_ptr;
-            while (area_start < fis_end) {
-                flash_read(area_start, &flash_data, sizeof(unsigned long), (void **)&err_addr);
-                if (flash_data == (unsigned long)0xFFFFFFFF) {
-                    break;
-                }
-                area_start += flash_block_size / sizeof(CYG_ADDRESS);
-            }
-            fis_ptr = area_start;
-        } else {
-            fis_ptr += flash_block_size / sizeof(CYG_ADDRESS);
+    // For each flash device
+    for (flash_dev_no=0;; flash_dev_no++)
+    {
+        flash_err = cyg_flash_get_info( flash_dev_no, &flash_info );
+        if ( CYG_FLASH_ERR_OK != flash_err )  // assume all done
+            break;
+
+        if( flash_reserved( flash_info.start ) ) // Ignore reserved devices
+            continue;
+        
+        // Once more, from the top...
+        curr_flash_addr = area_start = flash_info.start;
+
+        // We must not search the area reserved for pre-RedBoot systems,
+        // but this is only the case for the first flash device, or
+        // the one corresponding to CYGNUM_REDBOOT_FLASH_BASE.
+        // FIXME: this is insufficiently generic by design - can only
+        // reserve on one flash.
+#ifdef CYGNUM_REDBOOT_FLASH_BASE
+        if ( CYGNUM_REDBOOT_FLASH_BASE == area_start )
+#else
+        if ( 0 == flash_dev_no )
+#endif
+        {
+            //cyg_flashaddr_t asold = area_start;
+            area_start += CYGNUM_REDBOOT_FLASH_RESERVED_BASE;
+            //diag_printf("area_start was %08x now %08x\n", asold, area_start );
         }
-    }
-    if (area_start != fis_ptr) {
-        if ((fis_ptr-area_start) >= (length/sizeof(unsigned))) {
-            *addr = (CYG_ADDRESS)area_start;
-            return true;
+        // For each region of blocks
+        for ( curr_block_info = 0;
+              curr_block_info < flash_info.num_block_infos;
+              curr_block_info++ )
+        {
+            // For each individual block
+            for ( curr_block = 0;
+                  curr_block < flash_info.block_info[curr_block_info].blocks;
+                  curr_flash_addr = next_flash_addr, curr_block++ )
+            {
+                cyg_ucount32 i;
+                cyg_bool is_blank = true; // until proved otherwise
+                size_t amount_to_check;
+
+                // determine this now to avoid recalculating it later in this block, so we know the
+                // end of this block
+                next_flash_addr = curr_flash_addr + flash_info.block_info[curr_block_info].block_size;
+
+                // If area_start got adjusted further up, skip until we reach it
+                if ( curr_flash_addr < area_start )
+                    continue;
+                
+                //diag_printf("block region %d, block %d, flashaddr %08x\n",curr_block_info,curr_block,curr_flash_addr);
+                
+                // check 32 bytes at most. Reading it all will take too long on many devices.
+                // Perhaps this should be a config option.
+                amount_to_check = 32; 
+                if ( amount_to_check > flash_info.block_info[curr_block_info].block_size ) // paranoia
+                    amount_to_check = flash_info.block_info[curr_block_info].block_size;
+
+                for ( i=0; i<amount_to_check; i += sizeof(cyg_uint32) )
+                {
+                    flash_err = cyg_flash_read(curr_flash_addr+i, &flash_data, sizeof(cyg_uint32), &err_addr);
+                    if ( (CYG_FLASH_ERR_OK != flash_err) || (flash_data != 0xffffffff) )
+                    {
+                        is_blank = false;
+                        break; // no point continuing
+                    }
+                } // for
+                
+                if (!is_blank)
+                {
+                    /* If not blank, output the preceding region if any */
+                    if ( curr_flash_addr != area_start )
+                    {
+                        if ( length <= (next_flash_addr - area_start) )
+                        {
+                            *addr = (CYG_ADDRESS)area_start;
+                            return true;
+                        }    
+                    }
+                    area_start = next_flash_addr;
+                }
+            } // for block
+        } // for block region
+
+        /* If the blank region extended to the very end of the device, we need to do one
+         * final check at the end of the device.
+         */
+        if ( curr_flash_addr != area_start )
+        {
+            if ( length <= (next_flash_addr - area_start) )
+            {
+                *addr = (CYG_ADDRESS)area_start;
+                return true;
+            }    
         }
-    }
-    return false;
+    } // for flash device
 #else
     struct free_chunk chunks[CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS];
     int idx, num_chunks;
 
     num_chunks = find_free(chunks);
     for (idx = 0;  idx < num_chunks;  idx++) {
-        if ((chunks[idx].end - chunks[idx].start) >= length) {
+        if ((chunks[idx].end - chunks[idx].start + 1) >= length) {
             *addr = (CYG_ADDRESS)chunks[idx].start;
             return true;
         }
     }
-    return false;
 #endif
+    return false;
 }
 
 static void
@@ -925,7 +1140,7 @@ fis_create(int argc, char *argv[])
 {
     int i, stat;
     unsigned long length, img_size;
-    CYG_ADDRESS mem_addr, exec_addr, flash_addr, entry_addr;
+    CYG_ADDRESS mem_addr, exec_addr, flash_addr, entry_addr, flash_offset;
     char *name;
     bool mem_addr_set = false;
     bool exec_addr_set = false;
@@ -934,12 +1149,13 @@ fis_create(int argc, char *argv[])
     bool length_set = false;
     bool img_size_set = false;
     bool no_copy = false;
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
     struct fis_image_desc *img = NULL;
     bool defaults_assumed;
     struct option_info opts[7];
     bool prog_ok = true;
-
+    size_t block_size;
+    
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void *)&mem_addr, (bool *)&mem_addr_set, "memory base address");
     init_opts(&opts[1], 'r', true, OPTION_ARG_TYPE_NUM, 
@@ -974,14 +1190,16 @@ fis_create(int argc, char *argv[])
             }
         }
     }
-    if (!mem_addr_set && (load_address >= (CYG_ADDRESS)ram_start) &&
+    if ((!mem_addr_set || mem_addr == load_address) && !no_copy && (load_address >= (CYG_ADDRESS)ram_start) &&
 	(load_address_end) < (CYG_ADDRESS)ram_end) {
 	mem_addr = load_address;
 	mem_addr_set = true;
         defaults_assumed = true;
         // Get entry address from loader, unless overridden
-        if (!entry_addr_set)
+        if (!entry_addr_set) {
             entry_addr = entry_address;
+            entry_addr_set = true;
+        }
 	if (!length_set) {
 	    length = load_address_end - load_address;
 	    length_set = true;
@@ -1006,7 +1224,7 @@ fis_create(int argc, char *argv[])
         }
     }
 
-    if ((!no_copy && !mem_addr_set) || (no_copy && !flash_addr_set) ||
+    if ((!no_copy && !mem_addr_set) ||
         !length_set || !name) {
         fis_usage("required parameter missing");
         return;
@@ -1014,28 +1232,20 @@ fis_create(int argc, char *argv[])
     if (!img_size_set) {
         img_size = length;
     }
-    // 'length' is size of FLASH image, 'img_size' is actual data size
-    // Round up length to FLASH block size
-#ifndef CYGPKG_HAL_MIPS // FIXME: compiler is b0rken
-    length = ((length + flash_block_size - 1) / flash_block_size) * flash_block_size;
     if (length < img_size) {
         diag_printf("Invalid FLASH image size/length combination\n");
         return;
     }
-#endif
+
+    if (strlen(name) >= sizeof(img->u.name)) {
+        diag_printf("Name is too long, must be less than %d chars\n", (int)sizeof(img->u.name));
+        return;
+    }
+
     if (flash_addr_set &&
         ((stat = flash_verify_addr((void *)flash_addr)) ||
          (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
         _show_invalid_flash_address(flash_addr, stat);
-        return;
-    }
-    if (flash_addr_set && ((flash_addr & (flash_block_size-1)) != 0)) {
-        diag_printf("Invalid FLASH address: %p\n", (void *)flash_addr);
-        diag_printf("   must be 0x%x aligned\n", flash_block_size);
-        return;
-    }
-    if (strlen(name) >= sizeof(img->u.name)) {
-        diag_printf("Name is too long, must be less than %d chars\n", (int)sizeof(img->u.name));
         return;
     }
     if (!no_copy) {
@@ -1044,14 +1254,35 @@ fis_create(int argc, char *argv[])
             diag_printf("** WARNING: RAM address: %p may be invalid\n", (void *)mem_addr);
             diag_printf("   valid range is %p-%p\n", (void *)ram_start, (void *)ram_end);
         }
-        if (!flash_addr_set && !fis_find_free(&flash_addr, length)) {
-            diag_printf("Can't locate %lx(%ld) bytes free in FLASH\n", length, length);
-            return;
-        }
     }
+    if (!flash_addr_set && !fis_find_free(&flash_addr, length)) {
+        diag_printf("Can't locate %lx(%ld) bytes free in FLASH\n", length, length);
+        return;
+    }
+    flash_addr_set = true;
+
+    block_size = cyg_flash_block_size(flash_addr + length);
+    length = ((length + block_size - 1) / block_size) * block_size;
+    if (length < img_size) {
+        diag_printf("Invalid FLASH image size/length combination\n");
+        return;
+    }
+    if ((stat = cyg_flash_verify_addr(flash_addr)) ||
+        (stat = cyg_flash_verify_addr((flash_addr+length-1)))) {
+        _show_invalid_flash_address(flash_addr, stat);
+        return;
+    }
+    block_size = cyg_flash_block_size(flash_addr);
+    flash_offset = (flash_addr-flash_start)/block_size;
+    if( flash_start + (flash_offset * block_size) != flash_addr ) {
+        diag_printf("Invalid FLASH address: %p\n", (void *)flash_addr);
+        diag_printf("   must be 0x%x aligned\n", (unsigned int)flash_block_size);
+        return;
+    }
+    
     // First, see if the image by this name has agreable properties
     if (img) {
-        if (flash_addr_set && (img->flash_base != flash_addr)) {
+        if (img->flash_base != flash_addr) {
             diag_printf("Image found, but flash address (%p)\n"
                         "             is incorrect (present image location %p)\n",
                         (void*)flash_addr, (void*)img->flash_base);
@@ -1079,13 +1310,14 @@ fis_create(int argc, char *argv[])
     } else {
 #ifdef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
         // Make sure that any FLASH address specified directly is truly free
-        if (flash_addr_set && !no_copy) {
+        if (!no_copy) {
             struct free_chunk chunks[CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS];
             int idx, num_chunks;
             bool is_free = false;
 
             num_chunks = find_free(chunks);
             for (idx = 0;  idx < num_chunks;  idx++) {
+                //diag_printf("addr %08x, length %d chunk start %08x, end %08x\n",flash_addr, length, chunks[idx].start, chunks[idx].end);
                 if ((flash_addr >= chunks[idx].start) && 
                     ((flash_addr+length-1) <= chunks[idx].end)) {
                     is_free = true;
@@ -1097,10 +1329,10 @@ fis_create(int argc, char *argv[])
             }
         }
 #endif
-        // If not image by that name, try and find an empty slot
+        // If no image by that name, try and find an empty slot
         img = (struct fis_image_desc *)fis_work_block;
         for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
-            if (img->u.name[0] == (unsigned char)0xFF) {
+            if (img->u.name[0] == '\xFF') {
                 break;
             }
         }
@@ -1111,24 +1343,44 @@ fis_create(int argc, char *argv[])
     }
     if (!no_copy) {
         // Safety check - make sure the address range is not within the code we're running
-        if (flash_code_overlaps((void *)flash_addr, (void *)(flash_addr+img_size-1))) {
+        if (check_code_overlaps(flash_addr, (flash_addr+img_size-1))) {
             diag_printf("Can't program this region - contains code in use!\n");
             return;
         }
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING            
+        if (prog_ok) {
+            // Unlock area to be programmed
+            if ((stat = cyg_flash_unlock((cyg_flashaddr_t)flash_addr, length, &err_addr)) != 0) {
+                diag_printf("Can't unlock region at %p: %s\n", (void*)err_addr, flash_errmsg(stat));
+                prog_ok = false;
+            }
+        }
+#endif
         if (prog_ok) {
             // Erase area to be programmed
-            if ((stat = flash_erase((void *)flash_addr, length, (void **)&err_addr)) != 0) {
-                diag_printf("Can't erase region at %p: %s\n", err_addr, flash_errmsg(stat));
+            if ((stat = cyg_flash_erase(flash_addr, length, &err_addr)) != 0) {
+                diag_printf("Can't erase region at %p: %s\n", (void*)err_addr, cyg_flash_errmsg(stat));
                 prog_ok = false;
             }
         }
         if (prog_ok) {
             // Now program it
-            if ((stat = FLASH_PROGRAM((void *)flash_addr, (void *)mem_addr, img_size, (void **)&err_addr)) != 0) {
-                diag_printf("Can't program region at %p: %s\n", err_addr, flash_errmsg(stat));
+            if ((stat = cyg_flash_program(flash_addr, (void *)mem_addr, img_size, 
+                                          &err_addr)) != 0) {
+                diag_printf("Can't program region at %p: %s\n", (void*)err_addr, 
+                            cyg_flash_errmsg(stat));
                 prog_ok = false;
             }
         }
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING            
+        if (prog_ok) {
+            // Lock area programmed
+            if ((stat = cyg_flash_lock((cyg_flashaddr_t)flash_addr, length, &err_addr)) != 0) {
+                diag_printf("Can't lock region at %p: %s\n", (void*)err_addr, flash_errmsg(stat));
+                prog_ok = false;
+            }
+        }
+#endif
     }
     if (prog_ok) {
         // Update directory
@@ -1158,7 +1410,7 @@ fis_delete(int argc, char *argv[])
 {
     char *name;
     int num_reserved, i, stat;
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
     struct fis_image_desc *img;
 
     if (!scan_opts(argc, argv, 2, 0, 0, (void *)&name, OPTION_ARG_TYPE_STR, "image name"))
@@ -1206,10 +1458,10 @@ fis_delete(int argc, char *argv[])
         return;
     }
     // Erase Data blocks (free space)
-    if ((stat = flash_erase((void *)img->flash_base, img->size, (void **)&err_addr)) != 0) {
-        diag_printf("Error erasing at %p: %s\n", err_addr, flash_errmsg(stat));
+    if ((stat = cyg_flash_erase(img->flash_base, img->size, &err_addr)) != 0) {
+        diag_printf("Error erasing at %p: %s\n", (void*)err_addr, cyg_flash_errmsg(stat));
     } else {
-        img->u.name[0] = (unsigned char)0xFF;    
+        img->u.name[0] = '\xFF';    
         fis_start_update_directory(0);
         fis_update_directory(0, 0);
     }
@@ -1231,7 +1483,7 @@ fis_load(int argc, char *argv[])
 #if defined(CYGPRI_REDBOOT_ZLIB_FLASH) ||  defined(CYGSEM_REDBOOT_FIS_CRC_CHECK)
     bool decompress = false;
 #endif
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void *)&mem_addr, (bool *)&mem_addr_set, "memory [load] base address");
@@ -1299,7 +1551,8 @@ fis_load(int argc, char *argv[])
     } else // dangling block
 #endif
     {
-        flash_read((void *)img->flash_base, (void *)mem_addr, img->data_length, (void **)&err_addr);
+        cyg_flash_read(img->flash_base, (void *)mem_addr, img->data_length, 
+                       &err_addr);
 
         // Set load address/top
         load_address = mem_addr;
@@ -1329,14 +1582,15 @@ fis_write(int argc, char *argv[])
 {
     int stat;
     unsigned long length;
-    CYG_ADDRESS mem_addr, flash_addr;
+    CYG_ADDRESS mem_addr, flash_addr, flash_offset;
     bool mem_addr_set = false;
     bool flash_addr_set = false;
     bool length_set = false;
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
     struct option_info opts[3];
     bool prog_ok;
-
+    size_t block_size;
+    
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void *)&mem_addr, (bool *)&mem_addr_set, "memory base address");
     init_opts(&opts[1], 'f', true, OPTION_ARG_TYPE_NUM, 
@@ -1355,18 +1609,19 @@ fis_write(int argc, char *argv[])
     }
 
     // Round up length to FLASH block size
-#ifndef CYGPKG_HAL_MIPS // FIXME: compiler is b0rken
-    length = ((length + flash_block_size - 1) / flash_block_size) * flash_block_size;
-#endif
-    if (flash_addr_set &&
-        ((stat = flash_verify_addr((void *)flash_addr)) ||
-         (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
+    block_size = cyg_flash_block_size(flash_addr + length);
+    length = ((length + block_size - 1) / block_size) * block_size;
+    if ((stat = cyg_flash_verify_addr(flash_addr)) ||
+         (stat = cyg_flash_verify_addr((flash_addr+length-1)))) {
         _show_invalid_flash_address(flash_addr, stat);
         return;
     }
-    if (flash_addr_set && flash_addr & (flash_block_size-1)) {
+
+    block_size = cyg_flash_block_size(flash_addr);
+    flash_offset = (flash_addr-flash_start)/block_size;
+    if( flash_start + (flash_offset * block_size) != flash_addr ) {
         diag_printf("Invalid FLASH address: %p\n", (void *)flash_addr);
-        diag_printf("   must be 0x%x aligned\n", flash_block_size);
+        diag_printf("   must be 0x%x aligned\n", (unsigned int)block_size);
         return;
     }
     if ((mem_addr < (CYG_ADDRESS)ram_start) ||
@@ -1375,7 +1630,7 @@ fis_write(int argc, char *argv[])
         diag_printf("   valid range is %p-%p\n", (void *)ram_start, (void *)ram_end);
     }
     // Safety check - make sure the address range is not within the code we're running
-    if (flash_code_overlaps((void *)flash_addr, (void *)(flash_addr+length-1))) {
+    if (check_code_overlaps(flash_addr, (flash_addr+length-1))) {
         diag_printf("Can't program this region - contains code in use!\n");
         return;
     }
@@ -1387,15 +1642,18 @@ fis_write(int argc, char *argv[])
     prog_ok = true;
     if (prog_ok) {
         // Erase area to be programmed
-        if ((stat = flash_erase((void *)flash_addr, length, (void **)&err_addr)) != 0) {
-            diag_printf("Can't erase region at %p: %s\n", err_addr, flash_errmsg(stat));
+        if ((stat = cyg_flash_erase(flash_addr, length, &err_addr)) != 0) {
+            diag_printf("Can't erase region at %p: %s\n", (void*)err_addr, 
+                        cyg_flash_errmsg(stat));
             prog_ok = false;
         }
     }
     if (prog_ok) {
         // Now program it
-        if ((stat = FLASH_PROGRAM((void *)flash_addr, (void *)mem_addr, length, (void **)&err_addr)) != 0) {
-            diag_printf("Can't program region at %p: %s\n", err_addr, flash_errmsg(stat));
+        if ((stat = cyg_flash_program(flash_addr, (void *)mem_addr, length, 
+                                      &err_addr)) != 0) {
+            diag_printf("Can't program region at %p: %s\n", (void*)err_addr, 
+                        cyg_flash_errmsg(stat));
             prog_ok = false;
         }
     }
@@ -1406,11 +1664,13 @@ fis_erase(int argc, char *argv[])
 {
     int stat;
     unsigned long length;
-    CYG_ADDRESS flash_addr;
+    CYG_ADDRESS flash_addr, flash_offset;
     bool flash_addr_set = false;
     bool length_set = false;
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
     struct option_info opts[2];
+    size_t block_size;
+    
 
     init_opts(&opts[0], 'f', true, OPTION_ARG_TYPE_NUM, 
               (void *)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
@@ -1427,23 +1687,25 @@ fis_erase(int argc, char *argv[])
         return;
     }
     if (flash_addr_set &&
-        ((stat = flash_verify_addr((void *)flash_addr)) ||
-         (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
+        ((stat = cyg_flash_verify_addr(flash_addr)) ||
+         (stat = cyg_flash_verify_addr((flash_addr+length-1))))) {
         _show_invalid_flash_address(flash_addr, stat);
         return;
     }
-    if (flash_addr_set && flash_addr & (flash_block_size-1)) {
+    block_size = cyg_flash_block_size(flash_addr);
+    flash_offset = (flash_addr-flash_start)/block_size;
+    if( flash_addr_set && (flash_start + (flash_offset * block_size) != flash_addr) ) {
         diag_printf("Invalid FLASH address: %p\n", (void *)flash_addr);
-        diag_printf("   must be 0x%x aligned\n", flash_block_size);
+        diag_printf("   must be 0x%x aligned\n", (unsigned int)flash_block_size);
         return;
     }
     // Safety check - make sure the address range is not within the code we're running
-    if (flash_code_overlaps((void *)flash_addr, (void *)(flash_addr+length-1))) {
+    if (check_code_overlaps(flash_addr, (flash_addr+length-1))) {
         diag_printf("Can't erase this region - contains code in use!\n");
         return;
     }
-    if ((stat = flash_erase((void *)flash_addr, length, (void **)&err_addr)) != 0) {
-        diag_printf("Error erasing at %p: %s\n", err_addr, flash_errmsg(stat));
+    if ((stat = cyg_flash_erase(flash_addr, length, &err_addr)) != 0) {
+        diag_printf("Error erasing at %p: %s\n", (void*)err_addr, cyg_flash_errmsg(stat));
     }
 }
 
@@ -1458,7 +1720,7 @@ fis_lock(int argc, char *argv[])
     CYG_ADDRESS flash_addr;
     bool flash_addr_set = false;
     bool length_set = false;
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
     struct option_info opts[2];
 
     init_opts(&opts[0], 'f', true, OPTION_ARG_TYPE_NUM, 
@@ -1488,13 +1750,13 @@ fis_lock(int argc, char *argv[])
         return;
     }
     if (flash_addr_set &&
-        ((stat = flash_verify_addr((void *)flash_addr)) ||
-         (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
+        ((stat = cyg_flash_verify_addr(flash_addr)) ||
+         (stat = cyg_flash_verify_addr((flash_addr+length-1))))) {
         _show_invalid_flash_address(flash_addr, stat);
         return;
     }
-    if ((stat = flash_lock((void *)flash_addr, length, (void **)&err_addr)) != 0) {
-        diag_printf("Error locking at %p: %s\n", err_addr, flash_errmsg(stat));
+    if ((stat = cyg_flash_lock(flash_addr, length, &err_addr)) != 0) {
+        diag_printf("Error locking at %p: %s\n", (void*)err_addr, cyg_flash_errmsg(stat));
     }
 }
 
@@ -1507,7 +1769,7 @@ fis_unlock(int argc, char *argv[])
     CYG_ADDRESS flash_addr;
     bool flash_addr_set = false;
     bool length_set = false;
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
     struct option_info opts[2];
 
     init_opts(&opts[0], 'f', true, OPTION_ARG_TYPE_NUM, 
@@ -1536,27 +1798,43 @@ fis_unlock(int argc, char *argv[])
         return;
     }
     if (flash_addr_set &&
-        ((stat = flash_verify_addr((void *)flash_addr)) ||
-         (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
+        ((stat = cyg_flash_verify_addr(flash_addr)) ||
+         (stat = cyg_flash_verify_addr((flash_addr+length-1))))) {
         _show_invalid_flash_address(flash_addr, stat);
         return;
     }
 
-    if ((stat = flash_unlock((void *)flash_addr, length, (void **)&err_addr)) != 0) {
-        diag_printf("Error unlocking at %p: %s\n", err_addr, flash_errmsg(stat));
+    if ((stat = cyg_flash_unlock(flash_addr, length, &err_addr)) != 0) {
+        diag_printf("Error unlocking at %p: %s\n", (void*)err_addr, cyg_flash_errmsg(stat));
     }
 }
 #endif
 
 // This is set non-zero if the FLASH subsystem has successfully been initialized
-int __flash_init = 0;
+int __flash_init;
 
 void
 _flash_info(void)
-{
+{   
+    cyg_uint32 i=0,j;
+    cyg_flash_info_t info;
+    int ret;
+    
     if (!__flash_init) return;
-    diag_printf("FLASH: %p - 0x%x, %d blocks of %p bytes each.\n", 
-           flash_start, (CYG_ADDRWORD)flash_end + 1, flash_num_blocks, (void *)flash_block_size);
+
+    do {
+      ret = cyg_flash_get_info(i, &info);
+      if (ret == CYG_FLASH_ERR_OK) {
+          diag_printf("FLASH: %p-%p", (void*)info.start, (void*)info.end);
+        for (j=0;j < info.num_block_infos; j++) {
+          diag_printf(", %d x 0x%x blocks",
+                      info.block_info[j].blocks,
+                      (unsigned int)info.block_info[j].block_size);
+        }
+        diag_printf("\n");
+      }
+      i++;
+    } while (ret != CYG_FLASH_ERR_INVALID);
 }
 
 /* Returns -1 on failure, 0 on success, 1 if it was successfull
@@ -1564,13 +1842,14 @@ _flash_info(void)
 int
 do_flash_init(void)
 {
-    int stat;
+    int stat, i;
+    cyg_flash_info_t info;
 
 #ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
     struct fis_image_desc img0;
     struct fis_image_desc img1;
     int fis_update_was_interrupted=0;
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
 
     //check the size of fis_valid_info
     CYG_ASSERT((sizeof(struct fis_valid_info)<=sizeof(img0.u.name)), "fis_valid_info size mismatch");
@@ -1582,14 +1861,39 @@ do_flash_init(void)
 
     if (!__flash_init) {
         __flash_init = 1;
-        if ((stat = flash_init(diag_printf)) != 0) {
-            diag_printf("FLASH: driver init failed: %s\n", flash_errmsg(stat));
+        
+        if ((stat = cyg_flash_init(diag_printf)) != 0) {
+            diag_printf("FLASH: driver init failed: %s\n", cyg_flash_errmsg(stat));
             return -1;
         }
-        flash_get_limits((void *)0, (void **)&flash_start, (void **)&flash_end);
-        // Keep 'end' address as last valid location, to avoid wrap around problems
-        flash_end = (void *)((CYG_ADDRESS)flash_end - 1);
-        flash_get_block_info(&flash_block_size, &flash_num_blocks);
+
+#ifdef CYGNUM_REDBOOT_FLASH_BASE
+        stat = cyg_flash_get_info_addr(CYGNUM_REDBOOT_FLASH_BASE, &info);
+#else
+        stat = cyg_flash_get_info(0, &info);
+#endif
+        if (stat != CYG_FLASH_ERR_OK) {
+             diag_printf("FLASH: driver init failed: %s\n", 
+                         cyg_flash_errmsg(stat));
+             return false;
+        }
+        flash_start = info.start;
+        flash_end = info.end;
+
+        // No bootblock support yet, so we merge any bootblocks we might
+        // find into full size blocks
+        for (i=0; i < info.num_block_infos; i++) {
+          if (info.block_info[i].block_size > flash_block_size) {
+            flash_block_size = info.block_info[i].block_size;
+          }
+        }
+        flash_num_blocks = 0;
+        for (i=0; i < info.num_block_infos; i++) {
+          flash_num_blocks += (info.block_info[i].block_size *
+                               info.block_info[i].blocks) /
+            flash_block_size;
+        }
+        
 #ifdef CYGOPT_REDBOOT_FIS
         fisdir_size = CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_COUNT * CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_SIZE;
         fisdir_size = ((fisdir_size + flash_block_size - 1) / flash_block_size) * flash_block_size;
@@ -1603,12 +1907,13 @@ do_flash_init(void)
         workspace_end = (unsigned char *)(workspace_end-fisdir_size);
         fis_work_block = workspace_end;
 # endif
+
         if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
-            fis_addr = (void *)((CYG_ADDRESS)flash_end + 1 +
-                                (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*flash_block_size));
+            fis_addr = ((CYG_ADDRESS)flash_end + 1 +
+                        (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*flash_block_size));
         } else {
-            fis_addr = (void *)((CYG_ADDRESS)flash_start + 
-                                (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*flash_block_size));
+            fis_addr = ((CYG_ADDRESS)flash_start + 
+                        (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*flash_block_size));
         }
         
         if (((CYG_ADDRESS)fis_addr + fisdir_size - 1) > (CYG_ADDRESS)flash_end) {
@@ -1629,8 +1934,8 @@ do_flash_init(void)
             diag_printf("Redundant FIS directory doesn't fit\n");
             return -1;
         }
-        FLASH_READ(fis_addr, &img0, sizeof(img0), (void **)&err_addr);
-        FLASH_READ(redundant_fis_addr, &img1, sizeof(img1), (void **)&err_addr);
+        cyg_flash_read(fis_addr, &img0, sizeof(img0), &err_addr);
+        cyg_flash_read(redundant_fis_addr, &img1, sizeof(img1), &err_addr);
 
         if (strncmp(img0.u.valid_info.magic_name, CYG_REDBOOT_RFIS_VALID_MAGIC, CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH)!=0)
         {

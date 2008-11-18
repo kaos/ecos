@@ -144,7 +144,7 @@ cyg_bool jffs2_flash_erase(struct jffs2_sb_info * c,
 			   struct jffs2_eraseblock * jeb)
 {
 	cyg_io_flash_getconfig_erase_t e;
-	void *err_addr;
+	cyg_flashaddr_t err_addr;
 	Cyg_ErrNo err;
 	cyg_uint32 len = sizeof (e);
 	struct super_block *sb = OFNI_BS_2SFFJ(c);

@@ -15,8 +15,7 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_ARM_XSCALE_CORE current ;
     package -hardware CYGPKG_HAL_ARM_XSCALE_IXP425 current ;
     package -hardware CYGPKG_HAL_ARM_XSCALE_IXDP425 current ;
-    package -hardware CYGPKG_DEVS_FLASH_STRATA current ;
-    package -hardware CYGPKG_DEVS_FLASH_IXDP425 current ;
+    package -hardware CYGPKG_DEVS_FLASH_STRATA_V2 current ;
     package -hardware CYGPKG_DEVS_ETH_INTEL_I82559 current ;
     package -hardware CYGPKG_DEVS_ETH_ARM_IXDP425_I82559 current ;
     package -template CYGPKG_HAL current ;

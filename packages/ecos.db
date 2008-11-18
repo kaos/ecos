@@ -209,9 +209,19 @@ package CYGPKG_DEVS_FLASH_ARM_AAED2000 {
 }
 
 package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
-	alias 		{ "Support for AMD AM29xxxxx flash memory" flash_amd_am29xxxxx }
+	alias 		{ "Support for AMD AM29xxxxx flash memory (deprecated)" flash_amd_am29xxxxx }
 	directory	devs/flash/amd/am29xxxxx
 	script		flash_amd_am29xxxxx.cdl
+	hardware
+        description "
+           This package contains hardware support for AMD AM29xxxxx
+           flash memory devices."
+}
+
+package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2 {
+	alias 		{ "Support for AMD AM29xxxxx flash memory" flash_amd_am29xxxxx_v2 }
+	directory	devs/flash/amd/am29xxxxxv2
+	script		flash_am29xxxxx_v2.cdl
 	hardware
         description "
            This package contains hardware support for AMD AM29xxxxx
@@ -589,13 +599,23 @@ package CYGPKG_DEVS_FLASH_NANO {
 }
 
 package CYGPKG_DEVS_FLASH_STRATA {
-	alias 		{ "Generic FLASH memory support for Intel StrataFLASH" strata }
+	alias 		{ "Generic FLASH memory support for Intel StrataFLASH (deprecated)" strata }
 	directory	devs/flash/intel/strata
 	script		flash_strata.cdl
 	hardware
         description "
            This package contains generic hardware support for Intel
 	   StrataFLASH memory devices."
+}
+
+package CYGPKG_DEVS_FLASH_STRATA_V2 {
+	alias 		{ "Generic FLASH memory support for Intel StrataFLASH" strata_v2 }
+	directory	devs/flash/intel/stratav2
+	script		flash_strata_v2.cdl
+	hardware
+        description "
+           This package contains generic hardware support for Intel
+	   StrataFLASH memory devices using the V2 device API."
 }
 
 package CYGPKG_DEVS_FLASH_SST_39VFXXX {
@@ -799,12 +819,21 @@ package CYGPKG_DEVS_FLASH_ATLAS {
 	   on the MIPS Atlas platform."
 }
 package CYGPKG_DEVS_FLASH_SYNTH {
-    alias               { "Synthetic FLASH memory support" synth_flash flash_synth }
+    alias               { "Synthetic FLASH memory support (legacy)" synth_flash flash_synth }
     directory           devs/flash/synth
     script              flash_synth.cdl
     hardware
     description   "
         FLASH memory device support for Synthetic target"
+}
+
+package CYGPKG_DEVS_FLASH_SYNTH_V2 {
+    alias               { "Synthetic FLASH memory support" synth_flashv2 flash_synthv2 }
+    directory           devs/flash/synthv2
+    script              flash_synth.cdl
+    hardware
+    description   "
+        FLASH memory device support for Synthetic target using the new API"
 }
 
 package CYGPKG_DEVS_FLASH_TOSHIBA_TC58XXX {
@@ -4702,6 +4731,7 @@ target eb55 {
                    CYGPKG_HAL_ARM_AT91_EB55
                    CYGPKG_DEVS_FLASH_EB55
                    CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
+                   CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH
                    CYGPKG_IO_SERIAL_ARM_AT91
                    CYGPKG_DEVS_SPI_ARM_EB55
                    CYGPKG_DEVS_SPI_ARM_AT91
@@ -5137,8 +5167,7 @@ target ixdp425 {
 		   CYGPKG_IO_PCI
                    CYGPKG_DEVS_ETH_INTEL_I82559
 		   CYGPKG_DEVS_ETH_ARM_IXDP425_I82559
-                   CYGPKG_DEVS_FLASH_STRATA
-		   CYGPKG_DEVS_FLASH_IXDP425
+                   CYGPKG_DEVS_FLASH_STRATA_V2
         }
         description "
         The ixdp425 target provides the packages needed to run
@@ -6330,8 +6359,7 @@ target adder {
                           CYGPKG_HAL_POWERPC_MPC8xx
                           CYGPKG_HAL_POWERPC_ADDER
                           CYGPKG_HAL_QUICC 
-                          CYGPKG_DEVS_FLASH_POWERPC_ADDER
-                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2
                           CYGPKG_DEVS_ETH_POWERPC_QUICC
                           CYGPKG_DEVS_ETH_POWERPC_ADDER
                           CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
@@ -6348,8 +6376,7 @@ target adderII {
                           CYGPKG_HAL_POWERPC_MPC8xx
                           CYGPKG_HAL_POWERPC_ADDER
                           CYGPKG_HAL_QUICC 
-                          CYGPKG_DEVS_FLASH_POWERPC_ADDER
-                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2
                           CYGPKG_DEVS_ETH_POWERPC_FEC
                           CYGPKG_DEVS_ETH_POWERPC_ADDERII
                           CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC

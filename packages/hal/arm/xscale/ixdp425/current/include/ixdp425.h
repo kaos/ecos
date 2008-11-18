@@ -74,6 +74,7 @@
 #define IXDP_FLASH_BASE                    0x50000000
 #define IXDP_FLASH_SIZE                    0x01000000
 #define IXDP_FLASH_DC_BASE                 0xA0000000
+#define IXDP_FLASH_UNCACHED_BASE           0xB0000000
 
 // CS0 (flash optimum timing)
 #define IXP425_EXP_CS0_INIT \

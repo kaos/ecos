@@ -61,6 +61,7 @@
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
+#include <pkgconf/io_flash.h>
 
 #include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
@@ -74,6 +75,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <cyg/fileio/fileio.h>
 
@@ -83,6 +85,22 @@
 #include <pkgconf/fs_jffs2.h>	// Address of JFFS2
 
 //==========================================================================
+// Mount details
+
+#define stringify2(_x_) #_x_
+#define stringify(_x_) stringify2(_x_)
+
+#if defined(CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1)
+# define JFFS2_TEST_DEV CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1
+#elif defined(CYGFUN_IO_FLASH_BLOCK_FROM_FIS)
+# define JFFS2_TEST_DEV "/dev/flash/fis/jffs2test"
+#else
+// fall back to using a user set area in the first device (only)
+# define JFFS2_TEST_DEV "/dev/flash/0/" stringify(CYGNUM_FS_JFFS2_TEST_OFFSET) "," stringify(CYGNUM_FS_JFFS2_TEST_LENGTH)
+#endif
+
+// we could use an mtab but we don't in order to get better diagnostics
+// by calling mount() directly.
 
 #if 0
 MTAB_ENTRY( jffs2_mte1,
@@ -428,11 +446,17 @@ int main( int argc, char **argv )
     //int i;
     int existingdirents=-1;
 
+    struct mallinfo info;
+
+    info =  mallinfo();
+    diag_printf("arenasize %d, freeblocks %d, totalallocated %d, totalfree %d, maxfree %d\n",
+                info.arena, info.ordblks, info.uordblks, info.fordblks, info.maxfree);
+
     CYG_TEST_INIT();
 
     // --------------------------------------------------------------
 
-    err = mount( CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1, "/", "jffs2" );
+    err = mount( JFFS2_TEST_DEV, "/", "jffs2" );
     if( err < 0 ) SHOW_RESULT( mount, err );    
 
     err = chdir( "/" );
@@ -523,7 +547,7 @@ int main( int argc, char **argv )
     // --------------------------------------------------------------
 
     diag_printf("<INFO>: mount /jffs2 \n");
-    err = mount( CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1, "/jffs2", "jffs2" );
+    err = mount( JFFS2_TEST_DEV, "/jffs2", "jffs2" );
     if( err < 0 ) SHOW_RESULT( mount, err );    
 
     createfile( "/jffs2/tinky", 456 );
@@ -670,6 +694,29 @@ int main( int argc, char **argv )
     err = umount( "/jffs2" );
     if( err < 0 ) SHOW_RESULT( umount, err );    
     
+#ifdef CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_2
+    diag_printf("<INFO>: mounting second JFFS2 filesystem on /mnt\n");
+    
+    err = mount( CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_2, "/mnt", "jffs2" );
+    if( err < 0 ) SHOW_RESULT( mount, err );    
+
+    err = chdir( "/" );
+    if( err < 0 ) SHOW_RESULT( chdir, err );
+
+    checkcwd( "/" );
+    
+    listdir( "/", true, -1, &existingdirents );
+    if ( existingdirents < 2 )
+        CYG_TEST_FAIL("Not enough dir entries\n");
+
+    listdir( "/mnt", true, -1, &existingdirents );
+    if ( existingdirents < 2 )
+        CYG_TEST_FAIL("Not enough dir entries\n");
+
+    diag_printf("<INFO>: umount /mnt\n");    
+    err = umount( "/mnt" );
+#endif
+
     diag_printf("<INFO>: umount /\n");    
     err = umount( "/" );
     if( err < 0 ) SHOW_RESULT( umount, err );    

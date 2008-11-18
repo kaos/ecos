@@ -121,7 +121,9 @@
 #define CYG_IO_GET_CONFIG_FLASH_VERIFY           0x604
 #define CYG_IO_GET_CONFIG_FLASH_DEVSIZE          0x605
 #define CYG_IO_GET_CONFIG_FLASH_BLOCKSIZE        0x606
+#define CYG_IO_GET_CONFIG_FLASH_DEVADDR          0x607
 
+// Note the following is now deprecated. See generic flash package for the replacement.
 #define CYG_IO_SET_CONFIG_FLASH_FIS_NAME         0x680
 
 // ======== 0x700 DISK =======================================================

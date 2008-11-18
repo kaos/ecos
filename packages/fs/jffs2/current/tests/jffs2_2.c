@@ -57,6 +57,8 @@
 //####DESCRIPTIONEND####
 //
 //==========================================================================
+
+#include <pkgconf/io_flash.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -68,6 +70,24 @@
 
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>            // HAL polled output
+
+#include <pkgconf/fs_jffs2.h>	// Address of JFFS2
+
+//==========================================================================
+// Mount details
+
+#define stringify2(_x_) #_x_
+#define stringify(_x_) stringify2(_x_)
+
+#if defined(CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1)
+# define JFFS2_TEST_DEV CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1
+#elif defined(CYGFUN_IO_FLASH_BLOCK_FROM_FIS)
+# define JFFS2_TEST_DEV "/dev/flash/fis/jffs2test"
+#else
+// fall back to using a user set area in the first device (only)
+# define JFFS2_TEST_DEV "/dev/flash/0/" stringify(CYGNUM_FS_JFFS2_TEST_OFFSET) "," stringify(CYGNUM_FS_JFFS2_TEST_LENGTH)
+#endif
+
 //==========================================================================
 
 #define SHOW_RESULT( _fn, _res ) \
@@ -94,7 +114,7 @@ int main( int argc, char **argv )
     // --------------------------------------------------------------
 
     CYG_TEST_INFO("mount /");    
-    err = mount( CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1, "/", "jffs2" );
+    err = mount( JFFS2_TEST_DEV, "/", "jffs2" );
 
     if( err < 0 ) SHOW_RESULT( mount, err );    
     

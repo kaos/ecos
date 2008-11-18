@@ -305,6 +305,7 @@ icache_boundary:
 	IXP_MAP_EXP 5, (1 << 20),             0, 0, 0, 0   // NPE use
 
 	IXP_MAP_EXP_V 0, IXDP_FLASH_DC_BASE, IXDP_FLASH_SIZE, 1, 0, 0, 1  // data coherent flash
+        IXP_MAP_EXP_V 0, IXDP_FLASH_UNCACHED_BASE, IXDP_FLASH_SIZE, 0, 0, 0, 0  // uncached flash
 
 	IXP_MAP_IO      IXP425_PCI_WINDOW_BASE,  IXP425_PCI_WINDOW_SIZE
 	IXP_MAP_IO      IXP425_QMGR_BASE,        IXP425_QMGR_SIZE

@@ -7,6 +7,11 @@
 	* include/config_keys.h: Added key set setting CAN callback
 	configuration.
 	
+2007-05-10  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/config_keys.h (CYG_IO_GET_CONFIG_FLASH_DEVADDR):
+	Add this new key.
+
 2006-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/config_keys.h: Merge from eCosCentric repository.

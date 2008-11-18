@@ -61,6 +61,9 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
         eCos on a A&M ADDER board equipped with a PowerPC processor."
 
     compile       hal_diag.c hal_aux.c adder.S
+    requires      { CYGPKG_IO_FLASH implies CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2 }
+    implements    CYGHWR_DEVS_FLASH_AMD_AM29XXXXX_V2_CACHED_ONLY
+    compile       -library=libextras.a adder_flash.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
