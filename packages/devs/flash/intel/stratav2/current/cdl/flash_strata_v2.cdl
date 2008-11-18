@@ -1,0 +1,209 @@
+# ====================================================================
+#
+#      flash_strata_v2.cdl
+#
+#      FLASH memory - Hardware support for Intel Strata Flash
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2004, 2005, 2006 eCosCentric Limited
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+##
+## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+## at http://sources.redhat.com/ecos/ecos-license/
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      bartv
+# Contributors:
+# Date:           2005-06-11
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_FLASH_STRATA_V2 {
+    display       "Intel StrataFLASH memory support"
+    doc           ecospro-ref/devs-flash-strata.html
+    parent        CYGPKG_IO_FLASH
+    active_if	  CYGPKG_IO_FLASH
+    implements    CYGHWR_IO_FLASH_DEVICE
+    include_dir   cyg/io
+    compile	  strata.c
+
+    description "
+        Flash memory support for Intel StrataFlash devices and compatibles.
+        This driver implements the V2 flash driver API"
+
+    cdl_option CYGNUM_DEVS_FLASH_STRATA_V2_PROGRAM_TIMEOUT {
+	display		"Maximum number of iterations during a write"
+	flavor		data
+	default_value	100000000
+	legal_values	1024 to 0x7fffffff
+	description "
+            Flash program operations may take a long time, and the driver
+            needs to poll the device to detect when the operation has
+            completed. This option controls the maximum number of iterations
+            of the polling loop, before the driver will give up. The timeout
+            should never actually trigger, as long as the hardware is
+            functioning correctly. If a timeout does occur the flash device
+            may be left in an inconsistent state. If very slow flash devices
+            are used then the platform HAL may require a larger timeout."
+    }
+
+    cdl_option CYGNUM_DEVS_FLASH_STRATA_V2_ERASE_TIMEOUT {
+	display		"Maximum number of iterations during a block erase"
+	flavor		data
+	default_value	100000000
+	legal_values	1024 to 0x7fffffff
+	description "
+            The driver needs to poll the flash device during a block erase
+            to detect when the operation has completed. This option controls
+            the maximum number of iterations of the polling loop, before the
+            driver will give up. The timeout should never actually trigger,
+            as long as the hardware is functioning correctly. If a timeout
+            does occur the flash device may be left in an inconsistent state.
+            If very slow flash devices are used then the platform HAL may
+            require a larger timeout."
+    }
+
+    cdl_option CYGIMP_DEVS_FLASH_STRATA_V2_LEAVE_INTERRUPTS_ENABLED {
+	display		"Leave interrupts enabled during flash operations"
+	active_if	{ ! CYGHWR_DEVS_FLASH_STRATA_V2_CACHED_ONLY }
+	default_value	0
+	description "
+            On typical hardware erasing or programming a flash block requires
+            disabling interrupts and possibly the cache. During these operations
+            some or all of the flash hardware will be unusable, and disabling
+            interrupts is the only reliable way of ensuring that no interrupt
+            handler or other thread will try to access the flash in the middle
+            of the operation. This can have a major impact on the real-time
+            responsiveness of typical applications.
+
+            In some circumstances it is possible to leave interrupts enabled.
+            The application must run in RAM, not in flash. There must be some
+            way of accessing the flash which bypasses the cache. The application
+            must only access the flash using the proper API, for example
+            cyg_flash_read(), which ensures that only one thread at a time can
+            access a flash device. Finally there must be no possibility of
+            entering a ROM monitor running in flash. This can happen if RedBoot
+            is used as the ROM monitor and virtual vectors are enabled. It can
+            also happen when debugging the application via RedBoot or gdb stubs.
+
+            If the application can absolutely guarantee that the flash will not be
+            accessed during a flash operation then it is possible to enable this option,
+            improving interrupt latency. Any unexpected flash accesses are likely
+            to cause a system crash. If in doubt leave this option disabled."
+    }
+    
+    cdl_interface CYGHWR_DEVS_FLASH_STRATA_V2_CACHED_ONLY {
+	display		"Flash memory accesses are always cached"
+	flavor		bool
+	description "
+            Flash memory devices are usually accessed via the cache to achieve
+            acceptable performance. However erase and program operations need
+            to access the flash directly, bypassing the cache. On some targets
+            it is possible to access the flash in an uncached part of the
+            address space, for example by suitable MMU settings. On other
+            targets it is necessary to disable the cache while erasing or
+            programming blocks of flash. In the latter case the platform HAL
+            will implement this interface."
+    }
+
+    cdl_option CYGNUM_DEVS_FLASH_STRATA_V2_ERASE_REGIONS {
+	display		"Number of different erase regions"
+	flavor		data
+	default_value	2
+	legal_values	1 to 64
+	description "
+            Flash devices vary widely in the way the various flash blocks are
+            laid out. In uniform devices all flash blocks are the same size,
+            for example 64 blocks of 64K each. Other devices have a boot block,
+            where one of the big blocks is subdivided into a number of smaller
+            ones. For example there could be eight 8K blocks, followed by 63 64K
+            blocks. Each sequence of blocks of a given size is known as an erase
+            region, so a uniform device has a single erase region and the above
+            boot block device has two erase regions. The driver needs to know the
+            maximum number of erase regions that may be present, especially if
+            CFI is used to determine the block details at run-time. Typically
+            this option is controlled by a requires property in the platform HAL,
+            so users do not need to edit it."
+    }
+
+    cdl_option CYGNUM_DEVS_FLASH_STRATA_V2_BLOCKS {
+	display		"Maximum number of blocks per device"
+	flavor		data
+	default_value	256
+	legal_values	1 to 65536
+	description "
+            The unlock operation on some members of the Strata family of flash chips,
+            for example the j3 series, is complicated. There is no individual block
+            unlock command, only a global unlock. Hence to unlock a single block it
+            is necessary to read the current locked state of all blocks, unlock all
+            blocks, then restore the locked state where appropriate. This requires
+            one bit on the stack for every block, so the maximum number of blocks
+            must be known at compile-time. The default value of 256 should suffice
+            for most flash devices and results in additional stack usage of 32 bytes,
+            small enough that it should not cause stack overflow problems. The
+            platform HAL may require a larger value if the board's flash chips
+            require it."
+    }
+    
+    cdl_component CYGPKG_DEVS_FLASH_STRATA_V2_OPTIONS {
+        display "Strata driver build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building the Strata
+            flash driver, and details of which tests are built."
+
+        cdl_option CYGPKG_DEVS_FLASH_STRATA_V2_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the Strata flash driver. These flags
+                are used in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_DEVS_FLASH_STRATA_V2_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the Strata flash driver. These flags
+                are removed from the set of global flags if present."
+        }
+    }
+}
+

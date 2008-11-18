@@ -1,0 +1,916 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     strata.sgml                                                 -->
+<!--                                                                 -->
+<!--     Documentation for the V2 strata flash device driver.        -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2004, 2005, 2006 eCosCentric Limited.             -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Date:        2005/06/11                                         -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="devs-flash-strata"><title>Intel Strata Flash Device Driver</title>
+
+<refentry id="strata">
+  <refmeta>
+    <refentrytitle>Overview</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Overview</refname>
+    <refpurpose>eCos Support for Intel Strata Flash Devices and Compatibles</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="strata-description"><title>Description</title>
+    <para>
+The <varname>CYGPKG_DEVS_FLASH_STRATA_V2</varname> 
+flash driver package implements support for the Intel Strata
+family of flash devices and compatibles. The driver is not normally
+accessed directly. Instead application code will use the API provided
+by the generic flash driver package
+<varname>CYGPKG_IO_FLASH</varname>, for example by calling functions
+like <function>cyg_flash_program</function>. There are a small number
+of <link linkend="strata-api-other">additional functions</link>
+specific to Strata devices.
+    </para>
+    <para>
+The driver imposes one restriction on application code which
+developers should be aware of: when programming the flash the
+destination addresses must be aligned to a bus boundary. For example
+if the target hardware has a single flash device attached to a 16-bit
+bus then program operations must involve a multiple of 16-bit values
+aligned to a 16-bit boundary. Note that it is the bus width that
+matters, not the device width. If the target hardware has two 16-bit
+devices attached to a 32-bit bus then program operations must still be
+aligned to a 32-bit boundary, even though in theory a 16-bit boundary
+would suffice. In practice this is rarely an issue, and requiring the
+larger boundary greatly simplifies the code and improves performance.
+    </para>
+    <note><para>
+Many eCos targets with Strata or compatible flash devices will
+still use the older driver package
+<varname>CYGPKG_DEVS_FLASH_STRATA</varname>. Only newer ports
+and some older ports that have been converted will use the V2 driver.
+This documentation only applies to the V2 driver.
+    </para></note>
+  </refsect1>
+
+  <refsect1 id="strata-config"><title>Configuration Options</title>
+    <para>
+The Strata flash driver package will be loaded automatically when
+configuring eCos for a target with suitable hardware. However the
+driver will be inactive unless the generic flash package
+<varname>CYGPKG_IO_FLASH</varname> is loaded. It may be necessary to
+add this generic package to the configuration explicitly before the
+driver functionality becomes available. There should never be any need
+to load or unload the Strata driver package.
+    </para>
+    <para>
+There are a number of configuration options, relating mostly to hardware
+characteristics. It is very rare that application developers need to
+change any of these. For example the option
+<varname>CYGNUM_DEVS_FLASH_STRATA_V2_ERASE_REGIONS</varname> may need
+a non-default value if the flash devices used on the target have an
+unusual boot block layout. If so the platform HAL will impose a
+requires constraint on this option and the configuration system will
+resolve the constraint. The only time it might be necessary to change
+the value manually is if the actual board being used is a variant of
+the one supported by the platform HAL and uses a different flash chip.
+    </para>
+  </refsect1>
+</refentry>
+
+<refentry id="strata-instance">
+  <refmeta>
+    <refentrytitle>Instantiating a Strata Device</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Instantiating</refname>
+    <refpurpose>including the driver in an eCos target</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+#include &lt;cyg/io/strata_dev.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_init_nop</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_init_check_devid_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_init_cfi_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_erase_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+        <paramdef>cyg_flashaddr_t <parameter>addr</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_program_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+        <paramdef>cyg_flashaddr_t <parameter>addr</parameter></paramdef>
+        <paramdef>const void* <parameter>data</parameter></paramdef>
+        <paramdef>size_t <parameter>len</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_bufprogram_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+        <paramdef>cyg_flashaddr_t <parameter>addr</parameter></paramdef>
+        <paramdef>const void* <parameter>data</parameter></paramdef>
+        <paramdef>size_t <parameter>len</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_lock_j3_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+        <paramdef>const cyg_flashaddr_t <parameter>addr</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_unlock_j3_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+        <paramdef>const cyg_flashaddr_t <parameter>addr</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_lock_k3_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+        <paramdef>const cyg_flashaddr_t <parameter>addr</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_unlock_k3_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+        <paramdef>const cyg_flashaddr_t <parameter>addr</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="strata-instance-description"><title>Description</title>
+    <para>
+The Strata family contains a number of different devices, all
+supporting the same basic set of operations but with various common or
+uncommon extensions. The range includes:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term>28FxxxB3 Boot Block</term>
+        <listitem><para>
+These support 8 8K boot blocks as well as the usual 64K blocks. There
+is no buffered write capability. The only locking mechanism available
+involves manipulating voltages on certain pins.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>28FxxxC3</term>
+        <listitem><para>
+These also have boot blocks. There is no buffered write capability.
+Individual blocks can be locked and unlocked in software.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>28FxxxJ3</term>
+        <listitem><para>
+These are uniform devices where all blocks are 128K. Buffered writes
+are supported. Blocks can be locked individually, but the only unlock
+operation is a global unlock-all.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>28FxxxK3</term>
+        <listitem><para>
+These are also uniform devices with 128K blocks. Buffered writes are
+supported. Individual blocks can be locked and unlocked in software.
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+Each of these comes in a range of sizes and bus widths. There are also
+platform-specific issues such as how many devices are actually present
+on the board and where they are mapped in the address space. The
+Strata driver package cannot know all this information. Instead it
+is the responsibility of another package, usually the platform HAL, to
+instantiate some flash device structures. Two pieces of information
+are especially important: the bus configuration and the boot block
+layout.
+    </para>
+    <para>
+Flash devices are typically 8-bits, 16-bits, or 32-bits wide (64-bit
+devices are not yet in common use). Most 16-bit devices will also
+support 8-bit accesses, but not all. Similarly 32-bit devices can be
+accessed 16-bits at a time or 8-bits at a time. A board will have one
+or more of these devices on the bus. For example there may be a single
+16-bit device on a 16-bit bus, or two 16-bit devices on a 32-bit bus.
+The processor's bus logic determines which combinations are possible,
+and usually there will be a trade off between cost and performance.
+For example two 16-bit devices in parallel can provide twice the
+memory bandwidth of a single device. The driver supports the following
+combinations:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term>8</term>
+        <listitem><para>
+A single 8-bit flash device on an 8-bit bus.
+        </para></listitem>
+       </varlistentry>
+      <varlistentry>
+        <term>16</term>
+        <listitem><para>
+A single 16-bit flash device on a 16-bit bus.
+        </para></listitem>
+       </varlistentry>
+      <varlistentry>
+        <term>32</term>
+        <listitem><para>
+A single 32-bit flash device on an 32-bit bus.
+        </para></listitem>
+       </varlistentry>
+      <varlistentry>
+        <term>88</term>
+        <listitem><para>
+Two parallel 8-bit devices on an 16-bit bus.
+        </para></listitem>
+       </varlistentry>
+      <varlistentry>
+        <term>8888</term>
+        <listitem><para>
+Four parallel 8-bit devices on a 32-bit bus.
+        </para></listitem>
+       </varlistentry>
+      <varlistentry>
+        <term>1616</term>
+        <listitem><para>
+Two parallel 16-bit devices on a 32-bit bus, with one device providing
+the bottom two bytes of each 32-bit datum and the other device
+providing the upper two bytes.
+        </para></listitem>
+       </varlistentry>
+      <varlistentry>
+        <term>16as8</term>
+        <listitem><para>
+A single 16-bit flash device connected to an 8-bit bus.
+        </para></listitem>
+       </varlistentry>
+    </variablelist>
+    <para>
+These configuration all require slightly different code to manipulate
+the hardware. The Strata driver package provides separate functions
+for each configuration, for example
+<function>cyg_strata_erase_16</function> and
+<function>cyg_strata_program_1616</function>. 
+    </para>
+    <caution><para>
+At the time of writing not all the configurations have been tested.
+    </para></caution>
+    <para>
+The second piece of information is the boot block layout. Flash
+devices are subdivided into blocks (also known as sectors, both terms
+are in common use). Some operations such as erase work on a whole
+block at a time, and for most applications a block is the smallest
+unit that gets updated. A typical block size is 64K. It is inefficient
+to use an entire 64K block for small bits of configuration data and
+similar information, so some flash devices also support a number of
+smaller boot blocks. A typical 2MB flash device could have eight 8K
+blocks and 31 full-size 64K blocks. The boot blocks may appear at the
+bottom or the top of the device. So-called uniform devices do not have
+boot blocks, just full-size ones. The driver needs to know the boot
+block layout. With modern devices it can work this out at run-time,
+but often it is better to provide the information statically.
+    </para>
+  </refsect1>
+
+  <refsect1 id="strata-instance-example"><title>Example</title>
+    <para>
+Flash support is usually specific to each platform. Even if two
+platforms happen to use the same flash device there are likely to be
+differences such as the location in the address map. Hence there is
+little possibility of re-using the platform-specific code, and this
+code is generally placed in the platform HAL rather than in a separate
+package. Typically this involves a separate file and a corresponding
+compile property in the platform HAL's CDL:
+    </para>
+    <programlisting width=72>
+cdl_package CYGPKG_HAL_M68K_KIKOO {
+    &hellip;
+    compile -library=libextras.a kikoo_flash.c
+    &hellip;
+}
+    </programlisting>
+    <para>
+The contents of this file will not be accessed directly, only
+indirectly via the generic flash API, so normally it would be removed
+by link-time garbage collection. To avoid this the object file has to
+go into <filename>libextras.a</filename>.
+    </para>
+    <para>
+The actual file <filename>kikoo_flash.c</filename> will look something like:
+    </para>
+    <programlisting>
+#include &lt;pkgconf/system.h&gt;
+#ifdef CYGPKG_DEVS_FLASH_STRATA_V2
+
+#include &lt;cyg/io/flash.h&gt;
+#include &lt;cyg/io/strata_dev.h&gt;
+
+static const CYG_FLASH_FUNS(hal_kikoo_flash_strata_funs,
+    &amp;cyg_strata_init_check_devid_16,
+    &amp;cyg_flash_devfn_query_nop,
+    &amp;cyg_strata_erase_16,
+    &amp;cyg_strata_bufprogram_16,
+    (int (*)(struct cyg_flash_dev*, const cyg_flashaddr_t, void*, size_t))0,
+    &amp;cyg_strata_lock_j3_16,
+    &amp;cyg_strata_unlock_j3_16);
+
+static const cyg_strata_dev hal_kikoo_flash_priv = {
+    .manufacturer_code = CYG_FLASH_STRATA_MANUFACTURER_INTEL,
+    .device_code = 0x0017,
+    .bufsize    = 16,
+    .block_info = {
+        { 0x00020000, 64 } // 64 * 128K blocks
+    }
+};
+
+CYG_FLASH_DRIVER(hal_kikoo_flash,
+                 &amp;hal_kikoo_flash_amd_funs,
+                 0,
+                 0x60000000,
+                 0x601FFFFF,
+                 1,
+                 hal_kikoo_flash_priv.block_info,
+                 &amp;hal_kikoo_flash_priv
+);
+#endif
+    </programlisting>
+    <para>
+The bulk of the file is protected by an ifdef for the Strata flash
+driver. That driver will only be active if the generic flash support
+is enabled. Without that support there will be no way of accessing
+the device so there is no point in instantiating the device. The rest
+of the file is split into three definitions. The first supplies the
+functions which will be used to perform the actual flash accesses,
+using a macro provided by the generic flash code in <filename
+class="headerfile">cyg/io/flash_dev.h</filename>. The
+relevant ones have an <literal>_16</literal> suffix, indicating that
+on this board there is a single 16-bit flash device on a 16-bit
+bus. The second definition provides information specific to Strata
+flash devices. The third provides the
+<structname>cyg_flash_dev</structname> structure needed by the generic
+flash code, which contains pointers to the previous two.
+    </para>
+  </refsect1>
+
+  <refsect1 id="strata-instance-functions"><title>Functions</title>
+    <para>
+All eCos flash device drivers must implement a standard interface,
+defined by the generic flash code <varname>CYGPKG_IO_FLASH</varname>.
+This interface includes a table of 7 function pointers for various
+operations: initialization, query, erase, program, read,
+locking and unlocking. The query operation is optional and
+the generic flash support provides a dummy implementation
+<function>cyg_flash_devfn_query_nop</function>. Strata flash devices
+are always directly accessible so there is no need for a separate read
+function. The remaining functions are more complicated.
+    </para>
+    <para>
+Usually the table can be declared <literal>const</literal>. In a ROM
+startup application this avoids both ROM and RAM copies of the table,
+saving a small amount of memory. <literal>const</literal> should not
+be used if the table may be modified by a platform-specific
+initialization routine.
+    </para>
+
+    <refsect2 id="strata-instance-functions-init"><title>Initialization</title>
+      <para>
+There is a choice of three main initialization functions. The simplest
+is <function>cyg_flash_devfn_init_nop</function>, which does nothing. It
+can be used if the <structname>cyg_strata_dev</structname> and
+<structname>cyg_flash_dev</structname> structures are fully
+initialized statically and the flash will just work without special
+effort. This is useful if it is guaranteed that the board will always
+be manufactured using the same flash chip, since the nop function
+involves the smallest code size and run-time overheads.
+      </para>
+      <para>
+The next step up is
+<function>cyg_strata_init_check_devid_XX</function>, where
+<literal>XX</literal> will be replaced by the suffix appropriate for
+the bus configuration. It is still necessary to provide all the device
+information statically, including the <structfield>devid</structfield>
+field in the <structname>cyg_strata_dev</structname> structure.
+However this initialization function will attempt to query the flash
+device and check that the provided manufacturer and device codes
+matches the actual hardware. If there is a mismatch the device will be
+marked uninitialized and subsequent attempts to manipulate the flash
+will fail.
+      </para>
+      <para>
+If the board may end up being manufactured with any of a number of
+different flash chips then the driver can perform run-time
+initialization, using a <function>cyg_strata_init_cfi_XX</function>
+function. This queries the flash device as per the Common Flash Memory
+Interface Specification, supported by all current devices (although
+not necessarily by older devices). The
+<structfield>block_info</structfield> field in the
+<structname>cyg_strata_dev</structname> structure and the
+<structfield>end</structfield> and
+<structfield>num_block_infos</structfield> fields in the
+<structname>cyg_flash_dev</structname> structure will be filled in.
+It is still necessary to supply the <structfield>start</structfield>
+field statically since otherwise the driver will not know how to
+access the flash device. The main disadvantage of using CFI is that it
+will increase the code size.
+      </para>
+      <para>
+A final option is to use a platform-specific initialization function.
+This may be useful if the board may be manufactured with one of a
+small number of different flash devices and the platform HAL needs to
+adapt to this. The Strata driver provides a utility function to
+read the device id, <link
+linkend="strata-api-other"><function>cyg_strata_read_devid_XX</function></link>: 
+      </para>
+      <programlisting width=72>
+static int
+kikoo_flash_init(struct cyg_flash_dev* dev)
+{
+    int manufacturer_code, device_code;
+    cyg_strata_read_devid_1616(dev, &amp;manufacturer_code, &amp;device_code);
+    if (manufacturer_code != CYG_FLASH_STRATA_MANUFACTURER_STMICRO) {
+        return CYG_FLASH_ERR_DRV_WRONG_PART;
+    }
+    switch(device_code) {
+        case 0x0042 :
+          &hellip;
+        case 0x0084 :
+          &hellip;
+        default:
+          return CYG_FLASH_ERR_DRV_WRONG_PART;
+    }
+}
+      </programlisting>
+      <para>
+There are many other possible uses for a platform-specific
+initialization function. For example initial prototype boards might
+have only supported 8-bit access to a 16-bit flash device rather than
+16-bit access, but this was fixed in the next revision. The
+platform-specific initialization function could figure out which model
+board it is running on and replace the default
+<literal>16as8</literal> functions with <literal>16</literal> ones.
+      </para>
+    </refsect2>
+
+    <refsect2 id="strata-instance-functions-erase-program"><title>Erase and Program</title>
+      <para>
+The Strata driver provides erase and program functions appropriate
+for the various bus configurations. On most targets these can be used
+directly. On some targets it may be necessary to do some extra work
+before and after the erase and program operations. For example if the
+hardware has an MMU then the part of the address map containing the
+flash may have been set to read-only, in an attempt to catch spurious
+memory accesses. Erasing or programming the flash requires
+write-access, so the MMU settings have to be changed temporarily. For
+another example some flash device may require a higher voltage to be
+applied during an erase or program operation. or a higher voltage may
+be desirable to make the operation proceed faster. A typical
+platform-specific erase function would look like this:
+      </para>
+      <programlisting width=72>
+static int
+kikoo_flash_erase(struct cyg_flash_dev* dev, cyg_flashaddr_t addr)
+{
+    int result;
+    &hellip;  // Set up the hardware for an erase
+    result = cyg_strata_erase_32(dev, addr);
+    &hellip;  // Revert the hardware change
+    return result;
+}
+      </programlisting>
+      <para>
+There are two versions of the program function.
+<function>cyg_strata_bufprogram_xx</function> uses the buffered write
+capability of some strata chips. This allows the flash chip to perform
+the writes in parallel, thus greatly improving performance. It
+requires that the <structfield>bufsize</structfield> field of the
+<structname>cyg_strata_dev</structname> structure is set correctly to
+the number of words in the write buffer. The usual value for this is
+16, corresponding to a 32-byte write buffer. The alternative
+<function>cyg_strata_program_xx</function> writes the data one word at
+a time so is significantly slower. It should be used only with strata
+chips that do not support buffered writes, for example the b3 and c3
+series.
+      </para>
+      <para>
+There are two configuration options which affect the erase and program
+functions, and which a platform HAL may wish to change:
+<varname>CYGNUM_DEVS_FLASH_STRATA_V2_ERASE_TIMEOUT</varname> and
+<varname>CYGNUM_DEVS_FLASH_STRATA_V2_PROGRAM_TIMEOUT</varname>. The
+erase and program operations both involve polling for completion, and
+these timeout impose an upper bound on the polling loop. Normally
+these operations should never take anywhere close to the timeout
+period, and hence a timeout probably indicates a catastrophic failure
+that should really be handled by a watchdog reset. A reset is
+particularly appropriate because there will be no clean way of
+aborting the flash operation. The main reason for the timeouts is to
+help with debugging when porting to new hardware. If there is a valid
+reason why a particular platform needs different timeouts then the
+platform HAL's CDL can require appropriate values for these options.
+      </para>
+    </refsect2>
+
+    <refsect2 id="strata-instance-functions-locking"><title>Locking</title>
+      <para>
+Current Strata devices implement locking in three different ways,
+requiring different sets of functions:
+      </para>
+      <variablelist>
+        <varlistentry>
+          <term>28FxxxB3</term>
+          <listitem><para>
+There is no software locking support. The
+<function>cyg_flash_devfn_lock_nop</function> and
+<function>cyg_flash_devfn_unlock_nop</function> functions should be used.
+          </para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>28FxxxC3</term>
+          <term>28FxxxK3</term>
+          <listitem><para>
+These support locking and unlocking individual blocks. The
+<function>cyg_strata_lock_k3_XX</function> and
+<function>cyg_strata_unlock_k3_XX</function> functions should be used.
+All blocks are locked following power-up or reset, so the unlock
+function must be used before any erase or program operation.
+Theoretically the lock function is optional and
+<function>cyg_flash_devfn_lock_nop</function> can be used instead, saving a
+small amount of code space.
+          </para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>28FxxxJ3</term>
+          <listitem><para>
+Individual blocks can be locked using
+<function>cyg_strata_lock_j3_XX</function>, albeit using a slightly
+different algorithm from the C3 and K3 series. However the only unlock
+support is a global unlock of all blocks. Hence the only way to unlock
+a single block is to check the locked status of every block, unlock
+them all, and relock the ones that should still be locked. This
+time-consuming operation is implemented by
+<function>cyg_strata_unlock_j3_XX</function>. Worse, unlocking all
+blocks can take approximately a second. During this time the flash is
+unusable so normally interrupts have to be disabled, affecting
+real-time responsiveness. There is no way of suspending this
+operation.
+          </para>
+          <para>
+Unlike the C3 and K3 chips, on a J3 blocks are not automatically
+locked following power-up or reset. Hence lock and unlock support is
+optional, and <function>cyg_flash_devfn_lock_nop</function> and
+<function>cyg_flash_devfn_unlock_nop</function> can be used.
+          </para></listitem>
+        </varlistentry>
+      </variablelist>
+      <para>
+If real locking functions are used then the platform HAL's CDL script
+should implement the CDL interface
+<varname>CYGHWR_IO_FLASH_BLOCK_LOCKING</varname>. Otherwise the
+generic flash package may believe that none of the flash drivers in
+the system provide locking functionality and disable the interface
+functions.
+      </para>
+    </refsect2>
+  </refsect1>
+
+  <refsect1 id="strata-instance-devpriv"><title>Device-Specific Structure</title>
+    <para>
+The <structname>cyg_strata_dev</structname> structure provides
+information specific to Strata flash devices, as opposed to the
+more generic flash information which goes into the
+<structname>cyg_flash_dev</structname> structure. There are only two
+fields: <structfield>devid</structfield> and
+<structfield>block_info</structfield>.
+    </para>
+    <para>
+<structfield>manufacturer_code</structfield> and
+<structfield>device_code</structfield> are needed only if the driver's
+initialization function is set to
+<function>cyg_strata_init_check_devid_XX</function>. That function
+will extract the actual device info from the flash chip and compare it
+with these fields. If there is a mismatch then subsequent operations
+on the device will fail. Definitions of
+<varname>CYG_FLASH_STRATA_MANUFACTURER_INTEL</varname> and
+<varname>CYG_FLASH_STRATA_MANUFACTURER_STMICRO</varname> are provided
+for convenience.
+    </para>
+    <para>
+The <structfield>bufsize</structfield> field is needed only if a
+buffered program function
+<function>cyg_strata_bufprogram_XX</function> is used. It should give
+the size of the buffer in words. Typically Strata devices have a
+32-byte buffer, so when attached to an 8-bit bus
+<structfield>bufsize</structfield> should be 32 and when attached to a
+16-bit bus it should be 16.
+    </para>
+    <para>
+The <structfield>block_info</structfield> field consists of one or
+more pairs of the block size in bytes and the number of blocks of that
+size. The order must match the actual hardware device since the flash
+code will use the table to determine the start and end locations of
+each block. The table can be initialized in one of three ways:
+    </para>
+    <orderedlist>
+      <listitem><para>
+If the driver initialization function is set to
+<function>cyg_strata_init_nop</function> or
+<function>cyg_strata_init_check_devid_XX</function> then the block
+information should be provided statically. This is appropriate if the
+board will also be manufactured using the same flash chip.
+      </para></listitem>
+      <listitem><para>
+If <function>cyg_strata_init_cfi_XX</function> is used then this
+will fill in the block info table. Hence there is no need for static
+initialization.
+      </para></listitem>
+      <listitem><para>
+If a platform-specific initialization function is used then either
+this should fill in the block info table, or the info should be
+provided statically.
+      </para></listitem>
+    </orderedlist>
+    <para>
+The size of the <structfield>block_info</structfield> table is
+determined by the configuration option
+<varname>CYGNUM_DEVS_FLASH_STRATA_V2_ERASE_REGIONS</varname>.
+This has a default value of 2, which should suffice for nearly all
+Strata flash devices. If more entries are needed then the platform
+HAL's CDL script should require a larger value.
+    </para>
+    <para>
+If the <structname>cyg_strata_dev</structname> structure is
+statically initialized then it can be <literal>const</literal>. This
+saves a small amount of memory in ROM startup applications. If the
+structure may be updated at run-time, either by
+<function>cyg_strata_init_cfi_XX</function> or by a
+platform-specific initialization routine, then it cannot be
+<literal>const</literal>.
+    </para>
+  </refsect1>
+
+  <refsect1 id="strata-instance-flash"><title>Flash Structure</title>
+    <para>
+Internally the flash code works in terms of
+<structname>cyg_flash_dev</structname> structures, and the platform
+HAL should define one of these. The structure should be placed in the
+<literal>cyg_flashdev</literal> table. The following fields need to be
+provided:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><structfield>funs</structfield></term>
+        <listitem><para>
+This should point at the table of functions.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><structfield>start</structfield></term>
+        <listitem><para>
+The base address of the flash in the address map. On
+some board the flash may be mapped into memory several times, for
+example it may appear in both cached and uncached parts of the address
+space. The <structfield>start</structfield> field should correspond to
+the cached address.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><structfield>end</structfield></term>
+        <listitem><para>
+The address of the last byte in the flash. It can
+either be statically initialized, or
+<function>cyg_strata_init_cfi_XX</function> will calculate
+its value at run-time.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><structfield>num_block_infos</structfield></term>
+        <listitem><para>
+This should be the number of entries in the
+<structfield>block_info</structfield> table. It can either be
+statically initialized or it will be filled in by
+<function>cyg_strata_init_cfi_XX</function>.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><structfield>block_info</structfield></term>
+        <listitem><para>
+The table with the block information is held in the
+<structname>cyg_strata_dev</structname> structure, so this field
+should just point into that structure.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><structfield>priv</structfield></term>
+        <listitem><para>
+This field is reserved for use by the device driver. For the Strata
+driver it should point at the appropriate
+<structname>cyg_strata_dev</structname> structure. 
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+The <structname>cyg_flash_dev</structname> structure contains a number
+of other fields which are manipulated only by the generic flash code.
+Some of these fields will be updated at run-time so the structure
+cannot be declared <literal>const</literal>.
+    </para>
+  </refsect1>
+
+  <refsect1 id="strata-instance-serial"><title>Multiple Devices</title>
+    <para>
+A board may have several flash devices in parallel, for example two
+16-bit devices on a 32-bit bus. It may also have several such banks
+to increase the total amount of flash. If each device provides 2MB,
+there could be one bank of 2 parallel flash devices at 0xFF800000 and
+another bank at 0xFFC00000, giving a total of 8MB. This setup can be
+described in several ways. One approach is to define two
+<structname>cyg_flash_dev</structname> structures. The table of
+function pointers can usually be shared, as can the
+<structname>cyg_strata_dev</structname> structure. Another approach
+is to define a single <structname>cyg_flash_dev</structname>
+structure but with a larger <structfield>block_info</structfield>
+table, covering the blocks in both banks of devices. The second
+approach makes more efficient use of memory.
+    </para>
+    <para>
+Many variations are possible, for example a small slow flash device
+may be used for initial bootstrap and holding the configuration data,
+while there is also a much larger and faster device to hold a file
+system. Such variations are usually best described by separate
+<structname>cyg_flash_dev</structname> structures.
+    </para>
+    <para>
+If more than one <structname>cyg_flash_dev</structname> structure is
+instantiated then the platform HAL's CDL script should implement the
+CDL interface <varname>CYGHWR_IO_FLASH_DEVICE</varname> once for every
+device past the first. Otherwise the generic code may default to the
+case of a single flash device and optimize for that.
+    </para>
+  </refsect1>
+
+  <refsect1 id="strata-instance-platform"><title>Platform-Specific Macros</title>
+    <para>
+The Strata driver source code includes the header files
+<filename class="headerfile">cyg/hal/hal_arch.h</filename> and
+<filename class="headerfile">cyg/hal/hal_io.h</filename>, and hence
+indirectly the corresponding platform header files (if defined).
+Optionally these headers can define macros which are used inside the
+driver, thus giving the HAL limited control over how the driver works.
+    </para>
+  </refsect1>
+
+  <refsect1 id="strata-instance-cache"><title>Cache Management</title>
+    <para>
+By default the strata driver assumes that the flash can be accessed
+uncached, and it will use the HAL
+<function>CYGARC_UNCACHED_ADDRESS</function> macro to map the cached
+address in the <structfield>start</structfield> field of the
+<structname>cyg_flash_dev</structname> structure into an uncached
+address. If for any reason this HAL macro is inappropriate for the
+flash then an alternative macro
+<function>HAL_STRATA_UNCACHED_ADDRESS</function> can be defined
+instead. However fixing the
+<function>CYGARC_UNCACHED_ADDRESS</function> macro is normally the
+better solution.
+    </para>
+    <para>
+If there is no way of bypassing the cache then the platform HAL should
+implement the CDL interface
+<varname>CYGHWR_DEVS_FLASH_STRATA_V2_CACHED_ONLY</varname>. The flash
+driver will now disable and re-enable the cache as required. For
+example a program operation will involve the following:
+    </para>
+    <programlisting width=72>
+    STRATA_INTSCACHE_STATE;
+    STRATA_INTSCACHE_BEGIN();
+    while ( ! finished ) {
+        program data
+    }
+    STRATA_INTSCACHE_END();
+    </programlisting>
+    <para>
+The default implementations of these INTSCACHE macros are as follows:
+<varname>STATE</varname> defines any local variables that may be
+needed, e.g. to save the current interrupt state;
+<function>BEGIN</function> disables interrupts, synchronizes the data
+caches, disables it, and invalidates the current contents;
+<function>END</function> re-enables the cache and then
+interrupts. The cache is only disabled when interrupts are disabled,
+so there is no possibility of an interrupt handler running or a
+context switch occurring while the cache is disabled, potentially
+leaving the system running very slowly. The data cache synchronization
+ensures that there are no dirty cache lines, so when the cache is
+disabled the low-level flash write code will not see stale data in
+memory. The invalidate ensures that at the end of the operation
+higher-level code will not pick up stale cache contents instead of the
+newly written flash data.
+    </para>
+    <para>
+Some implementations of the HAL cache macros may not provide the exact
+semantics required by the flash driver. For example
+<function>HAL_DCACHE_DISABLE</function> may have an unwanted side
+effect, or it may do more work than is needed here. The driver will
+check for alternative macros
+<function>HAL_STRATA_INTSCACHE_STATE</function>,
+<function>HAL_STRATA_INTSCACHE_BEGIN</function> and
+<function>HAL_STRATA_INTSCACHE_END</function>, using these instead of
+the defaults.
+    </para>
+  </refsect1>
+
+</refentry>
+
+<refentry id="strata-api-other">
+  <refmeta>
+    <refentrytitle>Strata-Specific Functions</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Strata</refname>
+    <refpurpose>driver-specific functions</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+#include &lt;cyg/io/strata_dev.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+        <funcdef>void <function>cyg_strata_read_devid_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+        <paramdef>cyg_uint32* <parameter>manufacturer</parameter></paramdef>
+        <paramdef>cyg_uint32* <parameter>device</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_strata_unlock_all_j3_XX</function></funcdef>
+        <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="strata-api-other-description">
+    <title>Description</title>
+    <para>
+The driver provides two sets of functions specific to Strata devices
+and not accessible via the standard eCos flash API. Both may be used
+safely before the flash subsystem is initialized using
+<function>cyg_flash_init</function>. 
+    </para>
+    <para>
+<function>cyg_strata_read_devid_XX</function> can be used to get the
+manufacturer and device codes. Typically it is called from a
+platform-specific driver initialization routine, allowing the platform
+HAL to adapt to the actual device present on the board. This may be
+useful if a board may get manufactured with several different and
+somewhat incompatible chips, although usually
+<function>cyg_strata_init_cfi</function> is the better approach. It
+may also be used during testing and porting to check that the chip is
+working correctly.
+    </para>
+    <para>
+<function>cyg_strata_unlock_all_j3_XX</function> is only useful with
+28FxxxJ3 chips and compatibles. These do not allow individual blocks
+to be unlocked. Hence the standard block unlock functionality is
+expensive: it requires checking the locked state of every block,
+unlocking every block, and then relocking all the blocks that should
+still be blocked. Worse, unlocking every block is a time-consuming
+operation, taking approximately a second, that needs to run with
+interrupts disabled. For many applications it is better to just ignore
+the chip's locking capabilities and run with all blocks permanently
+unlocked. Invoking <function>cyg_strata_unlock_all_j3_XX</function>
+during manufacture or when the board is commissioned achieves this.
+      </para>
+  </refsect1>
+</refentry>
+
+</part>
