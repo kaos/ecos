@@ -1,3 +1,9 @@
+2008-11-18  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* tests/tm_basic.cxx (max): Actually the meaning was right before,
+	it was just the name that was wrong. So revert below, and change 
+	name to min.
+
 2008-11-14  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/tm_basic.cxx (max): Was wrong way round. Resolves issue

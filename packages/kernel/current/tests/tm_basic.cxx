@@ -209,8 +209,8 @@ void run_counter_tests(void);
 void run_flag_tests(void);
 void run_alarm_tests(void);
 
-#ifndef max
-#define max(n,m) ((m) > (n) ? (m) : (n))
+#ifndef min
+#define min(X,Y) ((X) < (Y) ? (X) : (Y))
 #endif
 
 // Wait until a clock tick [real time clock] has passed.  This should keep it
@@ -1825,20 +1825,20 @@ void tm_basic_main( void )
 
     // Sanity
 #ifdef WORKHORSE_TEST
-    ntest_threads = max(512, ntest_threads);
-    nmutexes = max(1024, nmutexes);
-    nsemaphores = max(1024, nsemaphores);
-    nmboxes = max(1024, nmboxes);
-    ncounters = max(1024, ncounters);
-    nalarms = max(1024, nalarms);
+    ntest_threads = min(512, ntest_threads);
+    nmutexes = min(1024, nmutexes);
+    nsemaphores = min(1024, nsemaphores);
+    nmboxes = min(1024, nmboxes);
+    ncounters = min(1024, ncounters);
+    nalarms = min(1024, nalarms);
 #else
-    ntest_threads = max(64, ntest_threads);
-    nmutexes = max(32, nmutexes);
-    nsemaphores = max(32, nsemaphores);
-    nmboxes = max(32, nmboxes);
-    ncounters = max(32, ncounters);
-    nflags = max(32, nflags);
-    nalarms = max(32, nalarms);
+    ntest_threads = min(64, ntest_threads);
+    nmutexes = min(32, nmutexes);
+    nsemaphores = min(32, nsemaphores);
+    nmboxes = min(32, nmboxes);
+    ncounters = min(32, ncounters);
+    nflags = min(32, nflags);
+    nalarms = min(32, nalarms);
 #endif
 
     new_thread(run_all_tests, 0);
