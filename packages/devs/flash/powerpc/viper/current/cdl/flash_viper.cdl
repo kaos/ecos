@@ -57,8 +57,6 @@ cdl_package CYGPKG_DEVS_FLASH_VIPER {
     active_if	  CYGPKG_IO_FLASH
     requires	  CYGPKG_HAL_POWERPC_VIPER
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       viper_flash.c
 
     # Arguably this should do in the generic package

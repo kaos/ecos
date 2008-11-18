@@ -1,3 +1,9 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+        * cdl/flash_ts6.cdl:
+        Don't implement CYGHWR_IO_FLASH_DEVICE here. Leave it for
+        the chip driver.
+
 2002-12-12  Gary Thomas  <gthomas@ecoscentric.com>
 2002-12-12  Patrick Doyle <wpd@delcomsys.com>
 

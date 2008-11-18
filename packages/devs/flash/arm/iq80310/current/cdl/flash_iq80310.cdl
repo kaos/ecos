@@ -58,6 +58,7 @@ cdl_package CYGPKG_DEVS_FLASH_ARM_XSCALE_IQ80310 {
     requires	  CYGPKG_HAL_ARM_XSCALE_IOP310
 
     implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_DEVICE_LEGACY
     implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
 
     include_dir   .

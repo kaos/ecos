@@ -1,3 +1,12 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/sa1100mm_flash.c:
+	Explicitly include <cyg/io/flash_dev.h> rather than just
+	defining _FLASH_PRIVATE_. (From bartv in flash_v2 branch)
+
+	* cdl/flash_sa1100mm.cdl: Indicate that this driver uses
+	the legacy flash device API.
+
 2003-09-12  Jani Monoses <jani@iv.ro>
 
 	* src/flash_erase_block.c (flash_erase_block): 

@@ -56,8 +56,6 @@ cdl_package CYGPKG_DEVS_FLASH_EC555 {
     active_if	  CYGPKG_IO_FLASH
     requires	  CYGPKG_HAL_POWERPC_EC555
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       powerpc_ec555_flash.c
 
     # Arguably this should do in the generic package

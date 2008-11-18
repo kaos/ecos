@@ -53,8 +53,8 @@
 #include <pkgconf/hal_arm.h>
 #include <cyg/hal/hal_intr.h>
 
-#define _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
+#include <cyg/io/flash_dev.h>
 
 #include "flash_arm_lpc2xxx.h"
 

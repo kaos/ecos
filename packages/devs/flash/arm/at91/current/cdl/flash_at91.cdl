@@ -49,15 +49,16 @@
 # ====================================================================
 
 cdl_package CYGPKG_DEVS_FLASH_AT91 {
-    display       "at91 FLASH memory support"
+    display       "AT91 FLASH memory support"
 
     parent        CYGPKG_IO_FLASH
     active_if	  CYGPKG_IO_FLASH
 
     implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_DEVICE_LEGACY
 
     include_dir   .
-    description   "FLASH memory device support for at91 EFC"
+    description   "FLASH memory device support for AT91 EFC"
     compile       at91_flash.c
     
     cdl_option    CYGBLD_DEV_FLASH_AT91_LOCKING {

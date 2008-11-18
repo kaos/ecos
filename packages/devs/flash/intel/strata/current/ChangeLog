@@ -1,3 +1,10 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/strata.c: leave _FLASH_PRIVATE_ to the private strata.h
+	(Change from bartv 2004-12-02, merged from flash_v2 branch).
+	* cdl/flash_strata.cdl: Indicate that this driver uses
+	the legacy flash device API.
+
 2005-01-14  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* src/flash_query.c (flash_query): Fix switching the flash back to

@@ -55,8 +55,6 @@ cdl_package CYGPKG_DEVS_FLASH_MIPS_VRC437X {
     active_if     CYGPKG_IO_FLASH
     requires      CYGPKG_HAL_MIPS_VR4300_VRC437X
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       mips_vrc437x_flash.c
 
     # Arguably this should do in the generic package

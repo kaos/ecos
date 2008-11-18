@@ -56,8 +56,6 @@ cdl_package CYGPKG_DEVS_FLASH_SH_HS7729PCI {
     active_if	  CYGPKG_IO_FLASH
     requires	  CYGPKG_HAL_SH_SH7729_HS7729PCI
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       sh_hs7729pci_flash.c
 
     # Arguably this should do in the generic package

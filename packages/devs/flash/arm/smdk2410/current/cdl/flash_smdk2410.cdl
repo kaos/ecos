@@ -57,8 +57,6 @@ cdl_package CYGPKG_DEVS_FLASH_ARM_SMDK2410 {
     active_if     CYGPKG_IO_FLASH
     requires      CYGPKG_HAL_ARM_ARM9_SMDK2410
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       smdk2410_flash.c
 
     # Arguably this should do in the generic package

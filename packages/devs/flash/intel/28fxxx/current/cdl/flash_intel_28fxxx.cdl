@@ -58,6 +58,7 @@ cdl_package CYGPKG_DEVS_FLASH_INTEL_28FXXX {
     active_if     CYGINT_DEVS_FLASH_INTEL_28FXXX_REQUIRED
 
     implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_DEVICE_LEGACY
 
     include_dir   cyg/io
 

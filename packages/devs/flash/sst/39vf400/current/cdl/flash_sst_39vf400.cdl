@@ -56,8 +56,6 @@ cdl_package CYGPKG_DEVS_FLASH_SST_39VF400 {
     active_if	  CYGPKG_IO_FLASH
     active_if     CYGINT_DEVS_FLASH_SST_39VF400_REQUIRED
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     include_dir   cyg/io
 }
 

@@ -1,3 +1,14 @@
+2004-11-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/arm_e7t_flash.c: use updated CYG_FLASH_DRIVER() macro for
+	completely static initialization.
+
+2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_e7t.cdl:
+	* src/arm_e7t_flash.c: Make use of the new sst driver which uses 
+	the new flash driver API.
+
 2003-11-04  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/flash_e7t.cdl: 

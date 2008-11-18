@@ -1,3 +1,12 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/ebsa285_flash.c:
+	Explicitly include <cyg/io/flash_dev.h> rather than just
+	defining _FLASH_PRIVATE_. (From bartv in flash_v2 branch)
+
+	* cdl/flash_ebsa285.cdl: Indicate that this driver uses
+	the legacy flash device API.
+
 2003-09-14  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flash_query.c (flash_query): Casts to stop warnings.

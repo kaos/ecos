@@ -1,3 +1,23 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* Merge from flash_v2 branch:
+	
+ 2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth.c: explicitly include <cyg/io/flash_dev.h> rather than
+	just defining _FLASH_PRIVATE_
+	* tests/flash2.c (cyg_user_start): update as per the v2 testcase
+
+ 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/flash_synth.cdl: fix testcase definitions
+
+ 2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_synth.cdl: Indicate we need the legacy device API.
+	* cdl/flash_synth.cdl: 
+	* tests/flash2.c: Added a second test case for the new API.
+
 2005-08-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/flash1.c (cyg_user_start): Fix a compiler warning about
@@ -18,7 +38,7 @@
 
 2003-11-20  Jani Monoses <jani@iv.ro>
 	
-	tests/flash1.c: Update flash_init() call to reflect
+	* tests/flash1.c: Update flash_init() call to reflect
 	new prototype.
 	
 2002-01-23  Jonathan Larmour  <jlarmour@redhat.com>

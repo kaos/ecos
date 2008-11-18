@@ -56,8 +56,6 @@ cdl_package CYGPKG_DEVS_FLASH_FRV_PDK403 {
     active_if	  CYGPKG_IO_FLASH
     requires	  CYGPKG_HAL_FRV_MB93093
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       pdk403_flash.c
 
     # Arguably this should do in the generic package

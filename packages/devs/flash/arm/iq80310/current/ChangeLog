@@ -1,3 +1,12 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/iq80310_flash.c: 	Explicitly include <cyg/io/flash_dev.h>
+	rather than just defining _FLASH_PRIVATE_.
+	(From bartv in flash_v2 branch)
+
+	* cdl/flash_iq80310.cdl: Indicate that this driver uses
+	the legacy flash device API.
+
 2003-09-16  Jani Monoses <jani@iv.ro>
 
 	* src/flash_lock_block.c (flash_lock_block): 

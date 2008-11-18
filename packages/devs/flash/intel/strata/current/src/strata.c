@@ -54,7 +54,6 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 
-#define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
 
 #include "strata.h"

@@ -57,8 +57,8 @@
 #include <errno.h>
 #include <string.h>
 
-#define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
+#include <cyg/io/flash_dev.h>
 
 #include "synth.h"
 
@@ -130,7 +130,7 @@ flash_hwr_init(void)
         return FLASH_ERR_HWR;
     }
     flash_info.start = cyg_dev_flash_synth_base;
-    flash_info.end = (void *)(((char *)cyg_dev_flash_synth_base) +
+    flash_info.end = (void *)(((char *)cyg_dev_flash_synth_base) -1 +
         (CYGNUM_FLASH_SYNTH_BLOCKSIZE * CYGNUM_FLASH_SYNTH_NUMBLOCKS));
 
     return FLASH_ERR_OK;

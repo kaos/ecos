@@ -56,8 +56,6 @@ cdl_package CYGPKG_DEVS_FLASH_SH_SE77X9 {
     active_if	  CYGPKG_IO_FLASH
     requires	  CYGPKG_HAL_SH_SH77X9_SE77X9
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       sh_se77x9_flash.c
 
     # Arguably this should do in the generic package

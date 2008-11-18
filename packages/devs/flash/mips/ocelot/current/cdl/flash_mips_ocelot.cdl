@@ -55,8 +55,6 @@ cdl_package CYGPKG_DEVS_FLASH_MIPS_OCELOT {
     active_if     CYGPKG_IO_FLASH
     requires      CYGPKG_HAL_MIPS_RM7000_OCELOT
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       mips_ocelot_flash.c
 
     # Arguably this should do in the generic package

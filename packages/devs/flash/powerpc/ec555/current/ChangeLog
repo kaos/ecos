@@ -1,3 +1,9 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+        * cdl/flash_ec555.cdl:
+        Don't implement CYGHWR_IO_FLASH_DEVICE here. Leave it for
+        the chip driver.
+
 2004-04-08  Bob Koninckx  <bob.koninckx@o-3s.com>
 
 	* src/powerpc_ec555_flash.c: Adapted flash start address to new

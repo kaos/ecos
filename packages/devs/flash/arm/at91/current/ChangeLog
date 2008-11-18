@@ -1,3 +1,11 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/at91_flash.c: Explicitly include <cyg/io/flash_dev.h> rather
+	than just defining _FLASH_PRIVATE_
+
+	* cdl/flash_at91.cdl: Indicate that this driver uses
+	the legacy flash device API.
+
 2008-11-03  Gabor Toeroek <tgabor84@gmail.com>
 
 	* src/at91_flash.c (flash_hwr_init): Add partial support for

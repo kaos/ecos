@@ -1,3 +1,9 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+        * cdl/flash_xsengine.cdl:
+        Don't implement CYGHWR_IO_FLASH_DEVICE here. Leave it for
+        the chip driver.
+
 2005-02-23  Kurt Stremerch  <kurt.stremerch@exys.be>
 
         * src/xsengine_flash.c: 

@@ -1,3 +1,8 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/flash_atmel_at29cxxxx.cdl: Indicate that this driver uses
+	the legacy flash device API.
+
 2003-10-02  Roland Cassebohm  <r.cassebohm@visionsystems.de>
 
 	* include/flash_at29cxxxx.inl: Improves driver, to work with 16 bit

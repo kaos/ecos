@@ -1,3 +1,12 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash_arm_lpc2xxx.c:
+	Explicitly include <cyg/io/flash_dev.h> rather than just
+	defining _FLASH_PRIVATE_. (From bartv in flash_v2 branch)
+
+	* cdl/flash_arm_lpc2xxx.cdl: Indicate that this driver uses
+	the legacy flash device API.
+
 2007-07-12  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
 
 	* lpc2xxx: driver for on-chip flash memory

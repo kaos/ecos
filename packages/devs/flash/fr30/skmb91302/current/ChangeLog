@@ -1,3 +1,9 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+        * cdl/flash_skmb91302.cdl:
+        Don't implement CYGHWR_IO_FLASH_DEVICE here. Leave it for
+        the chip driver.
+
 2008-07-01  Lars Poeschel  <larsi@wh2.tu-dresden.de>
 
 	* src/skmb91302_flash.c: Changed CYGNUM_FLASH_BASE to 0x1000000

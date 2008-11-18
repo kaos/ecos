@@ -53,6 +53,7 @@ cdl_package CYGPKG_DEVS_FLASH_ARM_LPC2XXX {
     active_if   CYGPKG_IO_FLASH
     requires    CYGPKG_HAL_ARM_LPC2XXX
     implements  CYGHWR_IO_FLASH_DEVICE
+    implements  CYGHWR_IO_FLASH_DEVICE_LEGACY
 
     # These chips use two erase block sizes, the access to flash is
     # limited to the last few of the 8k blocks. I don't have a chip

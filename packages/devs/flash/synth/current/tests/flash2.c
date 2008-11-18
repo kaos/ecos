@@ -52,9 +52,10 @@ static char copyright[] =
 "//                      "
 "//####DESCRIPTIONEND####"
 "//"
-"//=========================================================================="
+"//==========================================================================&"
 ;
 
+#include <pkgconf/devs_flash_synth.h>
 #include <cyg/io/flash.h>
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>
@@ -63,9 +64,6 @@ static char copyright[] =
 
 #ifndef CYGINT_ISO_STRING_STRFUNCS
 # define NA_MSG "Need string functions for test"
-#endif
-#ifndef CYGSEM_IO_FLASH_LEGACY_API
-# define NA_MSG "Need legacy IO FLASH API for test"
 #endif
 
 #ifdef NA_MSG
@@ -82,35 +80,48 @@ void cyg_user_start(void)
 void cyg_user_start(void)
 {
     int ret;
-    char data[1024];
-    void *flash_start, *flash_end;
-    int block_size, blocks;
-    char *prog_start;
+    cyg_flashaddr_t flash_start=0, flash_end=0;
+    cyg_flash_info_t info;
+    int block_size=0, blocks=0;
+    cyg_flashaddr_t prog_start;
     unsigned char * ptr;
-
+    cyg_uint32 i=0;
+    cyg_uint32 j;
+    
     CYG_TEST_INIT();
   
-    ret=flash_init((_printf *)diag_printf);
+    ret=cyg_flash_init((cyg_flash_printf *)diag_printf);
   
-    CYG_TEST_PASS_FAIL((ret == FLASH_ERR_OK),"flash_init");
+    CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_init");
 
-    flash_dev_query(data);
-    CYG_TEST_PASS_FAIL(!strncmp(data,"Linux Synthetic Flash",sizeof(data)),
-                       "flash_query"); 
-
-    ret = flash_get_limits(NULL,&flash_start,&flash_end);
-    CYG_TEST_PASS_FAIL((ret == FLASH_ERR_OK),"flash_get_limits");
-
-    ret = flash_get_block_info(&block_size, &blocks);
-    CYG_TEST_PASS_FAIL((ret == FLASH_ERR_OK),"flash_get_block_info");
-
+    do {
+      ret = cyg_flash_get_info(i, &info);
+      if (ret == CYG_FLASH_ERR_OK) {
+        diag_printf("INFO: Nth=%d, start=%p, end=%p\n",
+                    i, info.start, info.end);
+        if (i == 0) {
+          flash_start = info.start;
+          flash_end = info.end;
+          block_size = info.block_info[0].block_size;
+          blocks = info.block_info[0].blocks;
+        }
+        for (j=0;j < info.num_block_infos; j++) {
+          diag_printf("INFO:\t block_size %d, blocks %d\n",
+                      info.block_info[j].block_size,
+                      info.block_info[j].blocks);
+        }
+      }
+      i++;
+    } while (ret != CYG_FLASH_ERR_INVALID);
+    
     /* Erase the whole flash. Not recommended on real hardware since this
      will probably erase the bootloader etc!!! */
-    ret=flash_erase(flash_start,block_size * blocks,NULL);
-    CYG_TEST_PASS_FAIL((ret == FLASH_ERR_OK),"flash_erase1");
+    ret=cyg_flash_erase(flash_start,block_size * blocks,NULL);
+    CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_erase1");
 
     /* check that its actually been erased, and test the mmap area */
-    for (ptr=flash_start,ret=0; ptr < (unsigned char *)flash_end; ptr++) {
+    for (ptr=(unsigned char *)flash_start,ret=0; 
+         ptr <= (unsigned char *)flash_end; ptr++) {
         if (*ptr != 0xff) {
             ret++;
         }
@@ -118,11 +129,12 @@ void cyg_user_start(void)
   
     CYG_TEST_PASS_FAIL((ret == 0),"flash empty check");
 
-    ret = flash_program(flash_start,&copyright,sizeof(copyright),NULL);
-    CYG_TEST_PASS_FAIL((ret == FLASH_ERR_OK),"flash_program1");
+    ret = cyg_flash_program(flash_start,&copyright,sizeof(copyright),NULL);
+    CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_program1");
   
     /* Check the contents made it into the flash */
-    CYG_TEST_PASS_FAIL(!strncmp(flash_start,copyright,sizeof(copyright)),
+    CYG_TEST_PASS_FAIL(!strncmp((void *)flash_start,
+                                copyright,sizeof(copyright)),
                        "flash program contents");
 
     /* .. and check nothing else changed */
@@ -136,15 +148,19 @@ void cyg_user_start(void)
     CYG_TEST_PASS_FAIL((ret == 0),"flash program overrun check");
 
     /* Program over a block boundary */
-    prog_start = (char *)flash_start + block_size - sizeof(copyright)/2;
-    ret = flash_program(prog_start,&copyright,sizeof(copyright),NULL);
-    CYG_TEST_PASS_FAIL((ret == FLASH_ERR_OK),"flash_program2");
+    prog_start = flash_start + block_size - sizeof(copyright)/2;
+    ret = cyg_flash_program(prog_start,&copyright,sizeof(copyright),NULL);
+    CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_program2");
   
     /* Check the first version is still OK */
-    CYG_TEST_PASS_FAIL(!strncmp(flash_start,copyright,sizeof(copyright)),
+    CYG_TEST_PASS_FAIL(!strncmp((void *)flash_start,
+                                copyright,
+                                sizeof(copyright)),
                        "Original contents");
   
-    CYG_TEST_PASS_FAIL(!strncmp(prog_start,copyright,sizeof(copyright)),
+    CYG_TEST_PASS_FAIL(!strncmp((void *)prog_start,
+                                copyright,
+                                sizeof(copyright)),
                        "New program contents");
 
     /* Check the bit in between is still erased */
@@ -157,13 +173,13 @@ void cyg_user_start(void)
     CYG_TEST_PASS_FAIL((ret == 0),"flash erase check1");
   
     /* Erase the second block and make sure the first is not erased */
-    ret=flash_erase((void *)((unsigned)flash_start+block_size),
-                    block_size,NULL);
-    CYG_TEST_PASS_FAIL((ret == FLASH_ERR_OK),"flash_erase2");
+    ret=cyg_flash_erase(flash_start+block_size,block_size,NULL);
+    CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_erase2");
 
     /* Check the erase worked */
     for (ptr=(unsigned char *)flash_start+block_size,ret=0; 
-         ptr < (unsigned char *)flash_start+block_size*2; ptr++) {
+         ptr < (unsigned char *)flash_start+block_size*2; 
+         ptr++) {
         if (*ptr != 0xff) {
             ret++;
         }
@@ -172,11 +188,13 @@ void cyg_user_start(void)
     CYG_TEST_PASS_FAIL((ret == 0), "flash erase check2");
   
     /* Lastly check the first half of the copyright message is still there */
-    CYG_TEST_PASS_FAIL(!strncmp(prog_start,copyright,sizeof(copyright)/2),
+    CYG_TEST_PASS_FAIL(!strncmp((void *)prog_start,
+                                copyright,
+                                sizeof(copyright)/2),
                        "Block 1 OK");
 
 #if 0
-    /* This test it fatal! Its not run by default!
+    /* This test is be fatal! Its not run by default!
      Check the flash is read only, by trying to write to it. We expect
      to get an exception */
 
@@ -188,4 +206,4 @@ void cyg_user_start(void)
 
 #endif /* ifndef NA_MSG */
 
-/* EOF flash1.c */
+/* EOF flash2.c */

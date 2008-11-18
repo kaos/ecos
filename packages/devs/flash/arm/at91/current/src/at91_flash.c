@@ -57,8 +57,8 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/infra/cyg_ass.h>
 
-#define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
+#include <cyg/io/flash_dev.h>
 
 #include <string.h>
 

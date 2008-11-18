@@ -1,3 +1,13 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/edb7xxx_flash.c:
+	Explicitly include <cyg/io/flash_dev.h> rather than just
+	defining _FLASH_PRIVATE_. (From bartv in flash_v2 branch)
+
+	* cdl/flash_edb7xxx.cdl (CYGPKG_DEVS_FLASH_EP72XX): Indicate that
+	this part of the driver (i.e. not EDB7312) uses the legacy flash
+	device API.
+
 2003-11-20  Jani Monoses <jani@iv.ro>
 	
 	* cdl/flash_edb7xxx.cdl:

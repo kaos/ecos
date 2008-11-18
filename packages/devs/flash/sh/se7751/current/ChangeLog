@@ -1,3 +1,9 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+        * cdl/flash_sh_se7751.cdl:
+        Don't implement CYGHWR_IO_FLASH_DEVICE here. Leave it for
+        the chip driver.
+
 2001-07-09  Jesper Skov  <jskov@redhat.com>
 
 	* Added flash support for SE7751.

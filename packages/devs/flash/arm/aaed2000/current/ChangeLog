@@ -1,3 +1,9 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+        * cdl/flash_arm_aaed2000.cdl:
+        Don't implement CYGHWR_IO_FLASH_DEVICE here. Leave it for
+        the chip driver.
+
 2001-11-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/flash_arm_aaed2000.cdl: Removed ARM Boot Monitor protection

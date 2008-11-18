@@ -56,8 +56,6 @@ cdl_package CYGPKG_DEVS_FLASH_MN10300_STB {
     active_if	  CYGPKG_IO_FLASH
     requires	  CYGPKG_HAL_MN10300_AM33_STB
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       mn10300_stb_flash.c
 
     # Arguably this should do in the generic package

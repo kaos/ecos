@@ -56,7 +56,7 @@ cdl_package CYGPKG_DEVS_FLASH_ARM_E7T {
     requires      CYGPKG_HAL_ARM_E7T
     requires      CYGHWR_IO_FLASH_DEVICE
     
-    compile       arm_e7t_flash.c
+    compile       -library=libextras.a arm_e7t_flash.c
 
     # Arguably this should do in the generic package
     # but then there is a logic loop so you can never enable it.

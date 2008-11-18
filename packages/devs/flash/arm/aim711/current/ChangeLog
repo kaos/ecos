@@ -1,3 +1,13 @@
+2004-11-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/arm_aim711_flash.c: use updated CYG_FLASH_DRIVER() macro for
+	completely static initialization.
+
+2004-07-16  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/arm_aim711_flash.c: Make us of the new sst driver which uses
+	the new flash device driver API.
+
 2003-10-02  Roland Cassebohm  <r.cassebohm@visionsystems.de>
 
 	* src/arm_aim711_flash.c: 

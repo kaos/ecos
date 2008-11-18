@@ -55,8 +55,6 @@ cdl_package CYGPKG_DEVS_FLASH_OPENRISC_ORP {
     active_if     CYGPKG_IO_FLASH
     requires      CYGPKG_HAL_OPENRISC_ORP
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       openrisc_orp_flash.c
 
     # Arguably this should do in the generic package

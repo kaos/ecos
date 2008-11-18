@@ -67,6 +67,7 @@ cdl_package CYGPKG_DEVS_FLASH_EDB7XXX {
         calculated    1
         no_define
         implements    CYGHWR_IO_FLASH_DEVICE
+        implements    CYGHWR_IO_FLASH_DEVICE_LEGACY
     
         compile       edb7xxx_flash.c flash_query.c flash_program_buf.c flash_erase_block.c
     

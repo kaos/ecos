@@ -1,3 +1,9 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+        * cdl/flash_ts1000.cdl:
+        Don't implement CYGHWR_IO_FLASH_DEVICE here. Leave it for
+        the chip driver.
+
 2002-10-18  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* cdl/flash_ts1000.cdl: Package renamed for consistency.

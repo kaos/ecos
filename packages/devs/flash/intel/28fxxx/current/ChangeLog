@@ -1,3 +1,8 @@
+2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/flash_intel_28fxxx.cdl: Indicate that this driver uses
+	the legacy flash device API.
+
 2008-09-04  Dave Lawrence <dlawrence@ad-holdings.co.uk>
 
 	* include/flash_28fxxx.inl: 

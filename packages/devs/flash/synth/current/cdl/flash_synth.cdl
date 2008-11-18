@@ -56,6 +56,7 @@ cdl_package CYGPKG_DEVS_FLASH_SYNTH {
     requires      CYGINT_ISO_ERRNO_CODES
 
     implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_DEVICE_LEGACY
 
     include_dir   .
     include_files ; # none _exported_ whatsoever
@@ -121,7 +122,7 @@ cdl_package CYGPKG_DEVS_FLASH_SYNTH {
         display "Synth flash tests"
         flavor  data
         no_define
-        calculated { "tests/flash1.c"}
+        calculated { "tests/flash1 tests/flash2"}
             description   "
                 This option specifies the set of tests for the synth flash package."
     }
