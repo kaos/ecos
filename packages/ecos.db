@@ -248,6 +248,14 @@ package CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX {
            flash memory devices."
 }
 
+package CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH {
+    alias       { "Atmel DataFlash support" flash_dataflash dataflash }
+    directory   devs/flash/atmel/dataflash
+    script      devs_flash_atmel_dataflash.cdl
+    hardware
+    description "This package contains hardware support for Atmel DataFlash."
+}
+
 package CYGPKG_DEVS_FLASH_ARM_PID {
 	alias 		{ "Support for flash memory on ARM/PID board" flash_arm_pid }
 	directory	devs/flash/arm/pid
@@ -5531,7 +5539,7 @@ target linux {
         alias		{ "Linux synthetic target" i386linux }
 	packages        { CYGPKG_HAL_SYNTH
                       CYGPKG_HAL_SYNTH_I386
-                      CYGPKG_DEVS_FLASH_SYNTH
+                      CYGPKG_DEVS_FLASH_SYNTH_V2
                       CYGPKG_DEVS_ETH_ECOSYNTH
                       CYGPKG_DEVS_WATCHDOG_SYNTH
                       CYGPKG_DEVS_WALLCLOCK_SYNTH      
