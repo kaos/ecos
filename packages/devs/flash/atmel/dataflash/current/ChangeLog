@@ -1,0 +1,96 @@
+2005-06-29  Jani Monoses <ani@iv.ro>
+
+	* include/dataflash.h: Allow the package to be compiled without
+	io/flash. Return correct value from cyg_dataflash_get_page_count()
+
+2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/dataflash.h,
+	src/devs_flash_atmel_dataflash_flash_dev_funs.c: include
+	<cyg/io/flash_dev.h> explicitly rather than using _FLASH_PRIVATE_
+
+2004-11-29  Bart Veer  <bartv@ecoscentric.com>
+
+	(df_flash_hwr_map_error): this is now internal to the driver, no
+	longer needed by the generic flash code.
+	* src/devs_flash_atmel_dataflash_flash_dev_funs.c: use the dummy
+	query/lock/unlock functions provided by the generic flash code
+
+2004-11-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/dataflash.h, src/devs_flash_atmel_dataflash.c,
+	src/devs_flash_atmel_dataflash_flash_dev_funs.c: merge the config
+	and priv structures, removing the duplicate spi_dev data in the
+	process. Adjust device driver API as per changes to the generic
+	flash code.
+	* src/devs_flash_atmel_dataflash_flash_dev_funs.c (df_flash_init):
+	Rename cyg_block_info to cyg_flash_block_info
+
+2004-11-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/devs_flash_atmel_dataflash.cdl: CYGHWR_IO_FLASH_DEVICE_V2 is
+	now implicit
+
+2004-11-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/devs_flash_atmel_dataflash.cdl: data flash requires indirect
+	read support in the main flash code.
+
+2004-10-07  Savin Zlobec  <savin@elatec.si> 
+
+        * include/dataflash.h:
+        * src/devs_flash_atmel_dataflash.c:
+        Changed the API to be more consistent, included error
+        reporting and added blocking/non blocking mode of operation.
+        * src/devs_flash_atmel_dataflash_flash_dev_funs.c:
+        Synced with new API and set the block size to DataFlash's
+        native page size.
+
+2004-10-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/devs_flash_atmel_dataflash.cdl: Remove
+	CYGSEM_IO_FLASH_READ_INDIRECT which only legacy drivers should use
+	when they provide a flash_read_buf function. For V2 drivers
+	providing a read function in the device structure is sufficient.
+
+2004-09-07  Savin Zlobec  <savin@elatec.si> 
+
+        * cdl/devs_flash_atmel_dataflash.cdl:
+        * include/dataflash.h:
+        * src/devs_flash_atmel_dataflash.c:  
+        * src/devs_flash_atmel_dataflash_flash_dev_funs.c:
+        Atmel DataFlash driver implementation.   	 
+
+
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================
