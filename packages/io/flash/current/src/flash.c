@@ -223,10 +223,16 @@ cyg_flash_init(cyg_flash_printf *pf)
   int err;
   struct cyg_flash_dev * dev;
   
-  if (init) return CYG_FLASH_ERR_OK;
-
   CYG_ASSERT(&(cyg_flashdevtab[CYGHWR_IO_FLASH_DEVICE]) == &cyg_flashdevtab_end, "incorrect number of flash devices");
   
+  if (init) {
+      // In case the printf function has changed.
+      for (dev = &cyg_flashdevtab[0]; dev != &cyg_flashdevtab_end; dev++) {
+          dev->pf = pf;
+      }
+      return CYG_FLASH_ERR_OK;
+  }
+
   for (dev = &cyg_flashdevtab[0]; dev != &cyg_flashdevtab_end; dev++) {
     dev->pf = pf;
     LOCK_INIT(dev);

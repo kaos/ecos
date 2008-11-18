@@ -1,3 +1,10 @@
+2008-11-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (cyg_flash_init): Allow repeated calls to
+	change the printf function for all devices. There are
+	times you don't any output, eg you are downloading an
+	image over the serial port.
+
 2008-08-29  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/flashiodev.c (flashiodev_init): Assign
