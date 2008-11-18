@@ -1,0 +1,215 @@
+2008-09-24  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/am29xxxxx_aux.c (am29_hw_program): fix handling of parallel
+	chips. Get the debug diagnostics to build cleanly.
+
+2008-05-13  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/am29xxxxx_aux.c (am29_hw_query): Allow devices to return
+	device IDs of larger than a byte.
+
+2007-07-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/am29xxxxx.c, src/am29xxxxx_aux.c: add 2ram entry and exit
+	hooks to give HALs some extra control over the low-level flash
+	operations.
+
+2007-06-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/am29xxxxx_aux.c: issue a memory barrier after every command
+	that gets sent to the flash, to avoid problems with pipelines that
+	mess about with write ordering.
+
+2007-05-31  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/am29xxxxx.c: skip data cache manipulation on architectures
+	which do not have a data cache.
+
+2007-05-29  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/flash_am29xxxxx_v2.cdl
+	(CYGHWR_DEVS_FLASH_AMD_AM29XXXXX_V2_RESET_NEEDS_RESUME): New option.
+	Allow Flash devices to indicate that they should be sent a "resume"
+	command on startup.
+	* src/am29xxxxx_aux.c (am29_hw_force_all_suspended_resume): New
+	function to implement above CDL.
+	(cyg_am29xxxxx_init_check_dev): Call the new function.
+	(cyg_am29xxxxx_init_cfi): Ditto.
+	(am29_hw_cfi): manufacturer_id and vendor private areas need only
+	lowest byte taken, to handle multiple parallel devices.
+
+2007-03-29  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/am29xxxxx_aux.c (am29_hw_erase): use DQ7 to detect
+	termination instead of DQ6. This avoids hardware problems where
+	the toggling of DQ6 is not detected.
+
+2007-03-05  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/am29xxxxx_aux.c (am29_hw_cfi): Added missing AM29_SWAP() to
+	fetch of offset of vendor specific data.
+
+2006-09-27  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/am29xxxxx_aux.c (am29_hw_cfi): Added generic code to deal
+	with flash parts that may specify their erase regions in reverse
+	order to reality. Removed older code that was too specific to
+	particular devices.
+	A few changes to the diagnostics in various places.
+
+	* cdl/flash_am29xxxxx_v2.cdl: Replaced
+	CYGHWR_DEVS_FLASH_AMD_AM29XXXXX_V2_AT49_CFI with
+	CYGHWR_DEVS_FLASH_AMD_AM29XXXXX_V2_CFI_BOGOSITY. This option
+	performs much the same purpose, but is generic to many more flash
+	parts.
+
+2006-08-31  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/am29xxxxx_aux.c: Added support for ST flash parts which have
+	similar, but not identical, peculiarities in their CFI data to the
+	Atmel parts supported earlier.
+
+2006-08-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/am29xxxxx.c: Provide a default HAL_MEMORY_BARRIER()
+	define if the HAL hasn't provided one.
+	* src/am29xxxxx_aux.c: Use HAL_MEMORY_BARRIER() any time the
+	flash is reset back to read array mode. Some processors
+	need to have their write buffers flushed.
+
+2006-06-29  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/flash_am29xxxxx_v2.cdl:
+	* src/am29xxxxx_aux.c:
+	Added configurable delay between each word during
+	programming. Some targets seem to need this.
+	Also added some simple diagnostics.
+
+2006-05-15  John Dallaway  <jld@ecoscentric.com>
+
+	* doc/am29xxxxx.sgml: Fix missing </refentry> tag.
+	* cdl/flash_am29xxxx_v2.cdl: Reference package documentation.
+
+2005-09-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/am29xxxxx.c, src/am29xxxxx_aux.c: add AM29_SWAP() support for
+	platforms where the bus connection is wired up strangely.
+
+	* src/am29xxxxx_aux.c, cdl/flash_am29xxxxx_v2.cdl: add optional
+	support for certain Atmel chips which have a peculiar
+	implementation of CFI.
+
+2005-08-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/flash_am29xxxx_v2.cdl: Provide new
+	CYGIMP_DEVS_FLASH_AMD_AM29XXXXX_V2_LEAVE_INTERRUPTS_ENABLED
+	and CYGHWR_DEVS_FLASH_AMD_AM29XXXXX_V2_CACHED_ONLY options
+	to provide better control of when to enable/disable interrupts
+	or caches. Taken from the Strata flash example.
+	* include/am29xxxxx_dev.h: Declare cyg_at49xxxx_softlock, _hardlock
+	and _unlock variants.
+	* src/am29xxxxx.c: Define AT49 locking commands.
+	Provide AM29_UNCACHE_ADDRESS in line with the Strata driver,
+	to be controlled by the above new CDL options, in place of
+	AM29_P2V.
+	* src/am29xxxxx_aux.c: Provide AT49 lock status definition.
+	Provide AT49 softlock/hardlock/unlock API functions and
+	underlying implementation functions.
+	Adopt AM29_UNCACHED_ADDRESS rename.
+	* doc/am29xxxxx.sgml: Update documentation to cover AT49xxxx
+	locking operations and above new CDL options.
+	
+2005-06-12  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/am29xxxxx_aux.c (cyg_am29xxxxx_program): remove unnecessary
+	loops variable
+	* cdl/flash_am29xxxxx_v2.cdl: minor reorganization to put the
+	important config option first
+	* doc/am29xxxxx.sgml: document the important config options
+
+2005-02-23  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/am29xxxxx.sgml: bring up to date.
+
+2005-01-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/am29xxxxx_aux.c (am29_hw_erase): Handle interleaved
+	(parallel) flash correctly when one device finishes before another.
+	(am29_hw_program): Similar.
+	(cyg_am29xxxxx_program): Use assert correctly.
+	
+	* src/am29xxxxx.c (AM29_NEXT_DATUM_32): Use cyg_uint32, not
+	cyg_uint16.
+	
+2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/am29xxxxx.c, include/am29xxxxx_dev.h: <cyg/io/flash_priv.h>
+	no longer exists, use <cyg/io/flash_dev.h> instead.
+
+2004-11-29  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/am29xxxxx_dev.h, src/am29xxxxx.c: eliminate
+	hwr_map_error() support, no longer needed
+	
+	* include/am29xxxxx_dev.h, src/am29xxxxx.c, src/am29xxxxx_aux.c:
+	The dummy init/query/lock/unlock functions have been moved to the
+	generic flash package. That also now exports an anonymizer
+	function.
+
+2004-11-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/flash_am29xxxxx_v2.cdl, src/am29xxxxx.c,
+	src/am29xxxxx_aux.c: this driver can manage the flash and
+	interrupts itself, without support from the generic flash code.
+
+2004-11-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/am29xxxxx_dev.h, src/am29xxxxx.c, src/am29xxxxx_aux.c,
+	doc/am29xxxxx.sgml: implement changes to the interface between the
+	generic flash code and the device drivers.
+	* include/am29xxxxx_dev.h: rename cyg_block_info to
+	cyg_flash_block_info
+
+2004-11-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/am29xxxxx.sgml: describe CDL implications for custom locking
+	functions and additional devices.
+	
+	* cdl/flash_am29xxxxx_v2.cdl: CYGHWR_IO_FLASH_DEVICE_V2 is now
+	implicit
+
+2004-11-05  Bart Veer  <bartv@ecoscentric.com>
+
+	* New AM29xxxxx flash driver created
+
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2004, 2005, 2006, 2007, 2008 eCosCentric Limited
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================

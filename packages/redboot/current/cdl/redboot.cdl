@@ -8,6 +8,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2005, 2006, 2008 eCosCentric Limited
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ## Copyright (C) 2002, 2003, 2004, 2005 Gary Thomas
 ##
@@ -676,6 +677,16 @@ cdl_package CYGPKG_REDBOOT {
               ** Disable this only with great care **"
         }
     
+        cdl_option CYGNUM_REDBOOT_FLASH_BASE {
+            display       "Base address of flash device redboot should use"
+            flavor        booldata
+            description   "
+                This option controls how redboot finds the flash
+                device. Setting this option to an address will
+                cause redboot to use that address as the base of the 
+                flash device."
+        }
+
         cdl_component CYGPKG_REDBOOT_FLASH {
             display       "Allow RedBoot to support FLASH programming"
             flavor        bool
@@ -894,6 +905,18 @@ cdl_package CYGPKG_REDBOOT {
                       expected that this area contains
                       (non-RedBoot-based) POST code or some other boot
                       monitor that executes before RedBoot."
+                }
+
+                cdl_option CYGNUM_REDBOOT_FLASH_RESERVED_DEVICES {
+                    display         "List of Flash devices that are reserved"
+                    flavor          booldata
+                    default_value   0
+                    description     "This option lists the base addresses of any Flash
+                                     devices that should not be managed by the flash
+                                     image system. In particular, this means that these
+                                     devices will not be considered when looking for free
+                                     space in which to create new files. It should consist
+                                     of a comma-separated list of (virtual) addresses."
                 }
             }
     

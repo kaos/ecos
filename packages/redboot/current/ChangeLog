@@ -1,3 +1,23 @@
+2008-11-16  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/redboot.cdl, src/flash.c, src/fconfig.c:
+	Flash-related eCosCentric changes to these files (including a
+	merge of the flashv2 work) have been merged. Changes have been
+	directly interleaved below on the correct dates.
+
+2008-11-14  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (fis_lock): Revert patch of 2005-10-05 which disabled
+	locking entirely if FIS was disabled. Was better fixed by patch of
+	2006-02-17.
+	(fis_list): Revert patch of 2007-04-03 to avoid skipping entries
+	at 0x0. Replaced by anoncvs patch of 2007-06-02 for consistency.
+
+2008-09-11  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/flash.c (fis_create, fis_write, fis_erase): Change alignment
+	test to cope with flash blocks that are not a power of 2 in size.
+
 2008-06-18  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/fconfig.c, src/flash.c, src/io.c, src/load.c, src/main.c,
@@ -21,6 +41,11 @@
 	* src/xyzModem.c: Ditto.
 	* src/load.c: Ditto.
 	* src/flash.c: Ditto.
+
+2007-11-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (fis_create): Allow length to be inferred if same
+	mem address given as prior load address.
 
 2007-08-28  Gary Thomas  <gary@mlbassoc.com>
 
@@ -58,10 +83,27 @@
 	(do_mount): silence warning. Include accidentally omitted printf arg.
 	(do_list): silence warning.
 
+2007-04-03  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c (fis_list): don't skip entries at location 0x0
+
 2007-01-22  Peter Korsgaard  <peter.korsgaard@barco.com>
 
 	* src/load.c (do_load): Reset entry address before load so
 	go/exec commands will fail after an incomplete upload.
+
+2006-12-18  John Dallaway  <jld@ecoscentric.com>
+
+	* src/flash.c, src/fconfig.c: Eliminate some compiler warnings.
+
+2006-12-06  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (find_free): When eliminating collapsed free chunks,
+	don't decrement num_chunks as a side effect every loop!
+
+2006-12-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c, src/main.c: eliminate some compiler warnings.
 
 2006-11-28  David Fernandez  <dfernandez@cct.co.uk>
 
@@ -84,6 +126,16 @@
 	* src/load.c: Only call valid_address() if
 	CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS is enabled.
 
+2006-11-01  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (fis_create): Ensure flash_addr is always inferred
+	to come from unused space if not set.
+
+2006-10-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (fis_create): If not copying, no reason to insist
+	on a flash address being set.
+
 2006-09-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/redboot.cdl: Fix description of CYGSEM_REDBOOT_DISK_IDE.
@@ -97,6 +149,19 @@
 
 	* src/flash.c (fis_start_update_directory): Fix build error when
 	redundant FIS selected and locking is not enabled/supported.
+
+2006-06-16  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/flash.c (flash_reserved): Value for the macro used when this
+	feature is disabled should be false not true.
+
+2006-06-09  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/redboot.cdl:
+	* src/flash.c (flash_reserved): Added config option,
+	CYGNUM_REDBOOT_FLASH_RESERVED_DEVICES, and code to check for a
+	list of reserved flash devices that should not be used for FIS
+	file allocation.
 
 2006-05-24  Gary Thomas  <gary@mlbassoc.com>
 
@@ -129,6 +194,24 @@
 	* src/net/tcp.c (__tcp_write_block): Fix calculation of actual
 	total number of bytes sent (from Wolfgang Koebler)
 
+2006-03-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (find_free): Fix typo in last change.
+
+2006-03-16  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (find_free): Fix indentation.
+	Trivial optimisation when free chunk collapsed.
+	When splitting chunks, be sure to insert not overwrite - there may be
+	a subsequent free chunk.
+	Even if out of free chunks when splitting, be sure to mark end of this
+	chunk as used, to avoid it inappropriately being reported as free.
+
+2006-03-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c (find_free): fix boundary condition when an fis img
+	is right at the end of memory.
+
 2006-02-25  Oliver Munz  <munz@speag.ch>
 	    Andrew Lunn  <andrew.lunn@ascom.ch>
 	
@@ -153,6 +236,32 @@
 	* src/flash.c (fis_update_directory): When reading/writing flash
 	use the full size of the fis directory, not just one block.
 
+2006-01-26  John Dallaway  <jld@ecoscentric.com>
+
+	* src/flash.c (_flash_info): Tidy presentation of flash block info.
+
+2006-01-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (fis_init): Default data_length = FIS partition
+	size for special partitions.
+
+2005-12-22  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (find_free): adjust base only for appropriate device.
+	(fis_free): Fix up case for !CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
+	to correctly scan for blank regions.
+	Remove obsolete version of same.	
+	(fis_find_free): Adapt fis_free changes for this.
+
+2005-12-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (fis_free): Rewrite to improve support
+	for multiple flash devices. Still not really right - needs
+	wider changes.
+	(fis_find_free): Better support multiple flash devices.
+	Far from perfect yet though. Minor improvement on what
+	was there before though.
+
 2005-11-23  Peter Korsgaard  <peter.korsgaard@barco.com>
 
 	* src/gunzip.c (do_gunzip): Fixed diag_printf format string warnings.
@@ -160,6 +269,24 @@
 2005-10-17  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/iomem.c (do_iopeek): Correct number of options.
+
+2005-10-05  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/flash.c: Changes to various ifdefs to allow FCONFIG to be
+	used independently of FIS. It was always intended that this be
+	possible, but over time it suffered a little bitrot.
+
+2005-09-30  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/redboot.cdl: Move CYGNUM_REDBOOT_FLASH_BASE out of
+	CYGPKG_REDBOOT_FLASH component so that it can be used from RBL
+	when CYGPKG_REDBOOT_FLASH is disabled.
+
+2005-09-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c: put flag into .bss rather than .data, avoids
+	problems if soft reset involves branching to the entry point and
+	.data does not get reinitialized.
 
 2005-09-13  Jonathan Larmour  <jifl@eCosCentric.com>
 
@@ -311,21 +438,35 @@
 	* src/cksum.c (do_cksum): Ditto
 	* src/dump.c  (do_dump): Ditto	
 
-2005-04-07  Peter Korsgaard  <jacmet@sunsite.dk>
-
-	* cdl/redboot.cdl, doc/redboot_cmds.sgml, src/gunzip.c: Added
-	gunzip command to uncompress GZIP compressed data.	
-
 2005-04-11  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/flash.c (find_free): Correctly split chunks in two when
 	not final chunk.
+
+2005-04-07  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* cdl/redboot.cdl, doc/redboot_cmds.sgml, src/gunzip.c: Added
+	gunzip command to uncompress GZIP compressed data.	
 
 2005-03-07 Alexander Neundorf <alexander.neundorf@jenoptik.com>
 
         * src/net/arp.c: use correct sizeof(rt->enet_addr) in
 	__arp_lookup()
 	
+2005-02-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c (fis_create): if -r is not specified, set the ram
+	base address in the fis directory to the current load address.
+	This assumes the data is currently in the right place, as should
+	be the case after e.g. loading an elf executable.
+
+2005-02-11  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (find_free): Correct fis free calculations to account
+	for chunk regions ending 1 byte before fis fis regions.
+	(fis_find_free): Allow for difference of end from start being one
+	less than size of region.
+
 2005-01-26  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/fs/fileio.c (do_mkdir, do_deldir, do_del, do_write): Added
@@ -382,6 +523,56 @@
 	* src/fs/fileio.c (do_write): Added O_TRUNC to the open call to
 	ensure that the file is resized to fit the new data.
 
+2004-11-24  Bart Veer  <bartv@ecoscentric.com>
+
+	* Merge from flash V2 branch
+	
+  2004-11-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c (check_code_overlaps): cyg_flash_code_overlaps() has
+	been removed, so use a RedBoot-specific function instead
+
+  2004-11-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c (do_flash_init): info.end already holds the last
+	flash byte, no need to adjust.
+
+  2004-10-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c (do_flash_init): Fix compiler warning about an
+	unused variable.
+
+  2004-10-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c (do_flash_init): We need info independent of
+	CYGNUM_REDBOOT_FLASH_BASE being set or not.
+	
+  2004-09-14  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/redboot.cdl: Change CYGNUM_REDBOOT_FLASH_BASE to a booldata
+	so we don't always look at address 0 for the flash!
+
+  2004-08-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c (do_flash_init): cyg_flash_get_limits has been removed.
+	Reimplement this functionality using other calls.
+
+  2004-08-13  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/redboot.cdl: Fixed the type of CYGNUM_REDBOOT_FLASH_BASE
+	* src/flash.c (fis_[un]lock): Fix compiler warnings
+
+  2004-08-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c (do_flash_init): Removed the MIPS br0ken condition
+	which i wrongly added. My problem was actually a / 0. This roundup
+	is needed otherwise the workspace goes off the end of the RAM.
+
+  2004-08-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c:
+	* src/fconfig.c: Make use of the new flash API.
+
 2004-11-24  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/fs/fileio.c: Significantly reorganized to present an
@@ -404,6 +595,11 @@
 	* include/redboot.h: Added some extra initialization
 	priorities. Added prototypes for redboot_exec() and err_printf().
 
+2004-11-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c (find_free): allow for flash blocks larger than the
+	RedBoot MIN_IMAGE_SIZE
+
 2004-11-09  Ian Campbell  <icampbell@arcom.com>
 
 	* cdl/redboot.cdl, doc/redboot_cmds.sgml, src/iomem.c: Add support
@@ -417,6 +613,14 @@
 	* src/flash.c (find_free, fis_free, fis_find_free): Don't ignore
         an extra CYGBLD_REDBOOT_MIN_IMAGE_SIZE amount from the start.
         This fixes the case where nothing uses the start of flash.
+
+2004-11-05  John Dallaway  <jld@ecoscentric.com>
+
+	* src/flash.c (fis_create): Eliminate MIPS compiler workaround
+	which causes problems with multiple use of flash blocks and appears
+	to be unnecessary with GCC 3.2.1.
+
+	* src/flash.c (fis_write): Eliminate MIPS compiler workaround.
 
 2004-11-04  Peter Korsgaard  <jacmet@sunsite.dk>
 
@@ -526,6 +730,11 @@
 	collapsed chunk from chunk table. Found by Laurent Gonzalez
 	(fis_load): Fixed a compiler warning.
 
+2004-06-11  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/flash.c (fis_create): Made unlock/lock operations dependent
+	on CYGHWR_IO_FLASH_BLOCK_LOCKING.
+
 2004-05-31  Jani Monoses <jani@iv.ro>
 
 	* src/main.c:
@@ -541,6 +750,13 @@
 	 
 	* src/main.c: Make it build without CYGSEM_REDBOOT_FLASH_ALIASES.
 	
+2004-05-07  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/flash.c (fis_create): Added unlock and lock operations
+	around programming of flash region. Some flash parts power up with
+	all locks on, so we have to unlock, and we might as well play safe
+	and keep everything locked.
+
 2004-05-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/flash.c (fis_load): CRC check on load was broken (the CDL
@@ -3920,6 +4136,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -3943,9 +4160,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

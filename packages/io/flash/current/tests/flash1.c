@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2004 Gary Thomas
+// Copyright (C) 2004, 2005 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -61,6 +62,14 @@
 #include <cyg/io/flash.h>
 #include <cyg/hal/hal_if.h>
 
+#ifndef CYGSEM_IO_FLASH_LEGACY_API
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA("Only usable with legacy API");
+}
+#else
 externC void
 cyg_start( void )
 {
@@ -75,6 +84,8 @@ cyg_start( void )
     cyg_uint32 *lp1, *lp2;
     int i, len;
     cyg_bool passed, ok;
+
+    CYG_TEST_INIT();
 
 #if 0
     int j;
@@ -124,16 +135,27 @@ cyg_start( void )
     diag_printf("... Using test buffers at %p and %p\n", (void *)test_buf1, (void *)test_buf2);
     flash_test_start = (void *)(flash_start + CYGNUM_IO_FLASH_TEST_OFFSET);
 
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING    
+    // Unlock test
+    diag_printf("... Unlock test\n");
+    ok = true;
+    if ((stat = flash_unlock(flash_test_start, 
+                             CYGNUM_IO_FLASH_TEST_LENGTH, &err_addr)) != CYG_FLASH_ERR_OK) {
+        diag_printf("FLASH: unlock failed: %s\n", flash_errmsg(stat));
+        ok = false;
+    }    
+#endif
+    
     // Erase test
     diag_printf("... Erase test\n");
     ok = true;
     if ((stat = flash_erase(flash_test_start, 
-                            CYGNUM_IO_FLASH_TEST_LENGTH, &err_addr)) != FLASH_ERR_OK) {
+                            CYGNUM_IO_FLASH_TEST_LENGTH, &err_addr)) != CYG_FLASH_ERR_OK) {
         diag_printf("FLASH: erase failed: %s\n", flash_errmsg(stat));
         ok = false;
     }    
     if (ok && (stat = flash_read(flash_test_start, (void *)test_buf1,
-                           CYGNUM_IO_FLASH_TEST_LENGTH, &err_addr)) != FLASH_ERR_OK) {
+                           CYGNUM_IO_FLASH_TEST_LENGTH, &err_addr)) != CYG_FLASH_ERR_OK) {
         diag_printf("FLASH: read/verify after erase failed: %s\n", flash_errmsg(stat));
         ok = false;
     }    
@@ -150,7 +172,7 @@ cyg_start( void )
     len = CYGNUM_IO_FLASH_TEST_LENGTH;
     flash_addr = flash_test_start;
     while (len > 0) {
-        if ((stat = flash_read(flash_addr, (void *)test_buf1, 0x200, &err_addr)) != FLASH_ERR_OK) {
+        if ((stat = flash_read(flash_addr, (void *)test_buf1, 0x200, &err_addr)) != CYG_FLASH_ERR_OK) {
             diag_printf("FLASH: read[short]/verify after erase failed: %s\n", flash_errmsg(stat));
             ok = false;
             break;
@@ -184,12 +206,12 @@ cyg_start( void )
     }
     ok = true;
     if (ok && (stat = flash_program(flash_test_start, (void *)test_buf1,
-                                    CYGNUM_IO_FLASH_TEST_LENGTH, &err_addr)) != FLASH_ERR_OK) {
+                                    CYGNUM_IO_FLASH_TEST_LENGTH, &err_addr)) != CYG_FLASH_ERR_OK) {
         diag_printf("FLASH: write failed: %s\n", flash_errmsg(stat));
         ok = false;
     }    
     if (ok && (stat = flash_read(flash_test_start, (void *)test_buf2,
-                                    CYGNUM_IO_FLASH_TEST_LENGTH, &err_addr)) != FLASH_ERR_OK) {
+                                    CYGNUM_IO_FLASH_TEST_LENGTH, &err_addr)) != CYG_FLASH_ERR_OK) {
         diag_printf("FLASH: read/verify after write failed: %s\n", flash_errmsg(stat));
         ok = false;
     }    
@@ -209,7 +231,7 @@ cyg_start( void )
     lp1 = (cyg_uint32 *)test_buf1;
     lp2 = (cyg_uint32 *)test_buf2;
     while (len > 0) {
-        if ((stat = flash_read(flash_addr, lp2, 0x200, &err_addr)) != FLASH_ERR_OK) {
+        if ((stat = flash_read(flash_addr, lp2, 0x200, &err_addr)) != CYG_FLASH_ERR_OK) {
             diag_printf("FLASH: read[short]/verify after erase failed: %s\n", flash_errmsg(stat));
             ok = false;
             break;
@@ -227,16 +249,28 @@ cyg_start( void )
             }
         }
     }
-
+    
     if (!ok) {
         CYG_TEST_INFO("FLASH write/verify failed");
     }
 
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+    // Lock test
+    diag_printf("... Lock test\n");
+    ok = true;
+    if ((stat = flash_lock(flash_test_start, 
+                           CYGNUM_IO_FLASH_TEST_LENGTH, &err_addr)) != CYG_FLASH_ERR_OK) {
+        diag_printf("FLASH: unlock failed: %s\n", flash_errmsg(stat));
+        ok = false;
+    }    
+#endif
+    
     if (passed) {
         CYG_TEST_PASS_FINISH("FLASH test1");
     } else {
         CYG_TEST_FAIL_FINISH("FLASH test1");
     }
 }
+#endif
 
 // EOF flash1.c
