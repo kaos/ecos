@@ -1,0 +1,145 @@
+# ====================================================================
+#
+#      flash_synth.cdl
+#
+#      FLASH memory - Synthetic flash driver for Synthetic target
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+##
+## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+## at http://sources.redhat.com/ecos/ecos-license/
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      andrew.lunn@ascom.ch
+# Contributors:   jlarmour
+# Date:           2000-10-30
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_FLASH_SYNTH_V2 {
+    display       "Synthetic FLASH memory support"
+
+    parent        CYGPKG_IO_FLASH
+    active_if	  CYGPKG_IO_FLASH
+    requires      CYGINT_ISO_ERRNO_CODES
+
+    implements    CYGHWR_IO_FLASH_DEVICE
+
+    include_dir   cyg/flash
+    description   "FLASH memory device support for Synthetic target"
+    compile       -library=libextras.a synth.c 
+	
+    cdl_option CYGMEM_FLASH_SYNTH_V2_BASE {
+      display       "Base address of flash"
+      flavor        data
+      default_value 0
+      description  "
+              Controls where in the synth target memory map the 
+              flash is mapped. WARNING: This must be somewhere 
+              the host Linux kernel is prepaired to mmap a file. It
+              must be page aligned. For hosts with recent x86 Linux kernels,
+              a value of 0x40000000 is likely appropriate. When 0
+              the driver will automatically use whatever address the kernel
+              provides it with."
+    }
+
+    cdl_option CYGNUM_FLASH_SYNTH_V2_BLOCKSIZE {
+	display        "Size of one block of synth flash"
+	flavor	       data
+	default_value  65536
+        legal_values   512 to 999999
+	description    "
+	        This controls the size of one block of flash. This is 
+		the minimum size that can be erased."
+    }		
+
+    cdl_option CYGNUM_FLASH_SYNTH_V2_NUMBLOCKS {
+	display        "Number of blocks in the synth flash"
+	flavor	       data
+	default_value  15
+	description    "
+	        This controls how many main blocks there are in the flash"
+    }
+
+    cdl_option CYGNUM_FLASH_SYNTH_V2_NUMBOOT_BLOCKS {
+        display        "Number of boot blocks in the synth flash"
+        flavor         data
+        default_value  8
+        description    "
+                This controls the number of boot blocks the synthetic
+                device has. A value of zero disables the support of boot blocks"
+    }
+
+    cdl_option CYGNUM_FLASH_SYNTH_V2_BOOT_BLOCKSIZE {
+        display        "Size of the boot blocks in the synth flash"
+        flavor         data
+        default_value  8192
+        description    "
+                This controls the size of boot blocks the synthetic
+                device has"
+    }
+        
+    cdl_option CYGNUM_FLASH_SYNTH_V2_BOOT_BLOCK_BOTTOM {
+        display        "Is the boot blocks at the bottom of the flash"
+        flavor         bool
+        default_value  1
+        description    "
+                This controls where the boot blocks are. If true the boot
+                blocks are at the bottom of the memory space, otherwise
+                they are at the top of the memory space."
+    }       
+        
+    cdl_option CYGDAT_FLASH_SYNTH_V2_FILENAME {
+	display        "Name of file emulating synth flash"
+	flavor	       data
+	default_value  { "\"synthv2.flash\"" }
+	description    "
+	        This is the name of the file which holds the contents of
+		the flash. It is mmap'ed into memory and written for flash
+		program & erase operations. It will be created if it does
+                not exist."
+    }
+
+    cdl_option CYGPKG_DEVS_FLASH_SYNTH_V2_TESTS {
+        display "Synth flash tests"
+        flavor  data
+        no_define
+        calculated { "tests/flash1.c tests/flash2.c tests/flash3.c"}
+            description   "
+                This option specifies the set of tests for the synth flash package."
+    }
+}
+
+# EOF flash_synth.cdl

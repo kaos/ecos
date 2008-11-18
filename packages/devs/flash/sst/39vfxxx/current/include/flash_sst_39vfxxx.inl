@@ -11,6 +11,8 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 Andrew Lunn
+// Copyright (C) 2006 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -43,7 +45,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, jskov, rcassebohm
+// Contributors: gthomas, jskov, rcassebohm, Andrew Lunn
 // Date:         2001-02-21
 // Purpose:      
 // Description:  
@@ -57,11 +59,11 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_cache.h>
+#include <cyg/infra/cyg_ass.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
-
 
 //----------------------------------------------------------------------------
 // Common device details.
@@ -85,7 +87,6 @@
 // Platform code must define the below
 // #define CYGNUM_FLASH_INTERLEAVE      : Number of interleaved devices (in parallel)
 // #define CYGNUM_FLASH_SERIES          : Number of devices in series
-// #define CYGNUM_FLASH_BASE            : Address of first device
 // And select one of the below device variants
 
 #ifdef CYGPKG_DEVS_FLASH_SST_39VF080
@@ -202,56 +203,30 @@
 //----------------------------------------------------------------------------
 // Functions that put the flash device into non-read mode must reside
 // in RAM.
-void flash_query(void* data) __attribute__ ((section (".2ram.flash_query")));
-int  flash_erase_block(void* block, unsigned int size) 
-    __attribute__ ((section (".2ram.flash_erase_block")));
-int  flash_program_buf(void* addr, void* data, int len)
-    __attribute__ ((section (".2ram.flash_program_buf")));
+static size_t sst_query(struct cyg_flash_dev *dev, void* data, size_t len)
+  __attribute__ ((section (".2ram.flash_query")));
+static int sst_erase_block(struct cyg_flash_dev *dev, cyg_flashaddr_t block_base)
+  __attribute__ ((section (".2ram.flash_erase_block")));
+static int sst_program(struct cyg_flash_dev *dev, cyg_flashaddr_t base, 
+            const void* data, size_t length)
+  __attribute__ ((section (".2ram.flash_program_buf")));
 
 
 //----------------------------------------------------------------------------
 // Initialize driver details
-int
-flash_hwr_init(void)
+static int
+sst_init(struct cyg_flash_dev *dev)
 {
-    flash_data_t id[2];
+  flash_data_t id[2];
 
-    flash_dev_query(id);
+  dev->funs->flash_query(dev,id,sizeof(id));
 
-    // Check that flash_id data is matching the one the driver was
-    // configured for.
-    if (id[0] != CYGNUM_FLASH_ID_MANUFACTURER
-        || id[1] != CYGNUM_FLASH_ID_DEVICE)
-        return FLASH_ERR_DRV_WRONG_PART;
-
-    // Hard wired for now
-    flash_info.block_size = FLASH_BLOCK_SIZE;
-    flash_info.blocks = FLASH_NUM_REGIONS;
-    flash_info.start = (void *)CYGNUM_FLASH_BASE;
-    flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (FLASH_NUM_REGIONS * FLASH_BLOCK_SIZE * CYGNUM_FLASH_SERIES));
-    return FLASH_ERR_OK;
-}
-
-//----------------------------------------------------------------------------
-// Map a hardware status to a package error
-int
-flash_hwr_map_error(int e)
-{
-    return e;
-}
-
-
-//----------------------------------------------------------------------------
-// See if a range of FLASH addresses overlaps currently running code
-bool
-flash_code_overlaps(void *start, void *end)
-{
-    extern unsigned char _stext[], _etext[];
-
-    return ((((unsigned long)&_stext >= (unsigned long)start) &&
-             ((unsigned long)&_stext < (unsigned long)end)) ||
-            (((unsigned long)&_etext >= (unsigned long)start) &&
-             ((unsigned long)&_etext < (unsigned long)end)));
+  // Check that flash_id data is matching the one the driver was
+  // configured for.
+  if (id[0] != CYGNUM_FLASH_ID_MANUFACTURER
+      || id[1] != CYGNUM_FLASH_ID_DEVICE)
+    return CYG_FLASH_ERR_DRV_WRONG_PART;
+  return CYG_FLASH_ERR_OK;
 }
 
 //----------------------------------------------------------------------------
@@ -261,14 +236,16 @@ flash_code_overlaps(void *start, void *end)
 // device(s) in series. It is assumed that any devices in series
 // will be of the same type.
 
-void
-flash_query(void* data)
+static size_t
+sst_query(struct cyg_flash_dev *dev, void* data, size_t len)
 {
     volatile flash_data_t *ROM;
     flash_data_t* id = (flash_data_t*) data;
     int i;
+    
+    CYG_ASSERT(len == 2, "Invalid length");
 
-    ROM = (volatile flash_data_t*) CYGNUM_FLASH_BASE;
+    ROM = (volatile flash_data_t*) dev->start;
 
     ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
     ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
@@ -288,24 +265,26 @@ flash_query(void* data)
 
     // FIXME: 10ms delay
     for (i = 10000; i > 0; i--);
+    
+    return len;
 }
 
 //----------------------------------------------------------------------------
 // Erase Block
-int
-flash_erase_block(void* block, unsigned int len)
+static int
+sst_erase_block(struct cyg_flash_dev *dev, cyg_flashaddr_t block_base)
 {
     volatile flash_data_t* ROM;
-    volatile flash_data_t* addr_ptr = (volatile flash_data_t*) block;
+    volatile flash_data_t* addr_ptr = (volatile flash_data_t*) block_base;
+    int len = dev->block_info[0].block_size;
+    int res = CYG_FLASH_ERR_OK;
 
-    int res = FLASH_ERR_OK;
-
-    while ((FLASH_ERR_OK == res) && (len > 0)) {
+    while ((CYG_FLASH_ERR_OK == res) && (len > 0)) {
 	int timeout;
         flash_data_t state, prev_state;
 
         // Base address of device(s) being programmed. 
-        ROM = (volatile flash_data_t*)((unsigned long)block & ~(FLASH_DEVICE_SIZE-1));
+        ROM = (volatile flash_data_t*)((unsigned long)block_base & ~(FLASH_DEVICE_SIZE-1));
 
         // Program data [byte] - 6 step sequence
         ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
@@ -324,37 +303,36 @@ flash_erase_block(void* block, unsigned int len)
                 break;
             }
             if (--timeout == 0) {
-                res = FLASH_ERR_DRV_TIMEOUT;
+                res = CYG_FLASH_ERR_DRV_TIMEOUT;
                 break;
             }
             prev_state = state;
         }
-
         // Verify loaded data bytes
         while (len > 0) {
             if (*addr_ptr != FLASH_BlankValue) {
                 // Only update return value if erase operation was OK
-                if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
+                if (CYG_FLASH_ERR_OK == res) res = CYG_FLASH_ERR_DRV_VERIFY;
                 break;
             }
             addr_ptr++;
             len -= sizeof(*addr_ptr);
         }
     }
-
-    return FLASH_ERR_OK;
+    return CYG_FLASH_ERR_OK;
 }
 
 //----------------------------------------------------------------------------
 // Program Buffer
-int
-flash_program_buf(void* addr, void* data, int len)
+static int
+sst_program(struct cyg_flash_dev *dev, cyg_flashaddr_t base, 
+            const void* data, size_t length)
 {
     volatile flash_data_t* ROM;
-    volatile flash_data_t* addr_ptr = (volatile flash_data_t*) addr;
+    volatile flash_data_t* addr_ptr = (volatile flash_data_t*) base;
     volatile flash_data_t* data_ptr = (volatile flash_data_t*) data;
-
-    int res = FLASH_ERR_OK;
+    size_t len = length;
+    int res = CYG_FLASH_ERR_OK;
 
 #if 0
     CYG_ASSERT((unsigned long)data_ptr & (sizeof(flash_data_t)-1) == 0, 
@@ -362,13 +340,12 @@ flash_program_buf(void* addr, void* data, int len)
     CYG_ASSERT((unsigned long)addr_ptr & (CYGNUM_FLASH_INTERLEAVE*sizeof(flash_data_t)-1) == 0, 
                "Addr not properly aligned (to first interleaved device)");
 #endif
-
-    while ((FLASH_ERR_OK == res) && (len > 0)) {
+    while ((CYG_FLASH_ERR_OK == res) && (len > 0)) {
 	int timeout;
         flash_data_t state, prev_state;
 
         // Base address of device(s) being programmed. 
-        ROM = (volatile flash_data_t*)((unsigned long)addr & ~(FLASH_DEVICE_SIZE-1));
+        ROM = (volatile flash_data_t*)((unsigned long)base & ~(FLASH_DEVICE_SIZE-1));
 
         // Program data [byte] - 4 step sequence
         ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
@@ -385,7 +362,7 @@ flash_program_buf(void* addr, void* data, int len)
                 break;
             }
             if (--timeout == 0) {
-                res = FLASH_ERR_DRV_TIMEOUT;
+                res = CYG_FLASH_ERR_DRV_TIMEOUT;
                 break;
             }
             prev_state = state;
@@ -394,18 +371,26 @@ flash_program_buf(void* addr, void* data, int len)
         // Verify loaded data bytes
         if (*addr_ptr != *data_ptr) {
             // Only update return value if program operation was OK
-            if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
-                break;
+            if (CYG_FLASH_ERR_OK == res) res = CYG_FLASH_ERR_DRV_VERIFY;
+            break;
         }
         addr_ptr++;
         data_ptr++;
         len -= sizeof(*data_ptr);
     }
 
-
     // Ideally, we'd want to return not only the failure code, but also
     // the address/device that reported the error.
     return res;
 }
+
+static const CYG_FLASH_FUNS(cyg_sst_funs,
+	               sst_init,
+	               sst_query,
+	               sst_erase_block,
+	               sst_program,
+	               NULL,              // read
+	               cyg_flash_devfn_lock_nop,
+	               cyg_flash_devfn_unlock_nop);
 
 #endif // CYGONCE_DEVS_FLASH_SST_39VFXXX_INL

@@ -1,61 +1,61 @@
+2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/synth.h, src/synth.c: explicitly include
+	<cyg/io/flash_dev.h> rather than just defining _FLASH_PRIVATE_
+
 2004-11-29  Bart Veer  <bartv@ecoscentric.com>
 
-	* include/flash_sst_39vfxxx.inl: eliminate hwr_map_error(), no
-	longer needed by the generic flash code.
-	* include/flash_sst_39vfxxx.inl: use the dummy lock/unlock
-	functions provided by the generic flash code.
-
-2004-11-25  Bart Veer  <bartv@ecoscentric.com>
-
-	* cdl/flash_sst_39vfxxx.cdl: this V2 driver relies on the generic
-	flash code to handle the cache
+	* src/synth.c: eliminate hwr_map_error() support, no longer needed
+	
+	* src/synth.c: use the dummy lock/unlock functions provided by the
+	generic flash package.
 
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
-	
-	* include/flash_sst_39vfxxx.inl: assume static initialization and
-	adjust const's in various parameters
-	* include/flash_sst_39vfxxx.inl: rename cyg_block_info to
-	cyg_flash_block_info
+
+	* include/synth.h, src/synth.c, tests/flash3.c: merge the config
+	and priv structures. Adjust device driver API as per changes to
+	the generic flash code.
+	* tests/flash2.c, tests/flash3.c: do not depend on both synthetic
+	flash drivers being loaded.
+	* include/synth.h (struct cyg_flash_synth_priv): rename
+	cyg_block_info to cyg_flash_block_info
+
+2004-11-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* tests/flash1.c (cyg_user_start):
+	CYGSEM_IO_FLASH_LEGACY_DEVICE_API has been removed, use
+	CYGHWR_IO_FLASH_DEVICE_LEGACY instead
+	* cdl/flash_synth.cdl: CYGHWR_IO_FLASH_DEVICE_V2 is now implicit
 
 2004-09-14  Andrew Lunn  <andrew.lunn@ascom.ch>
 
-	* include/flash_sst_39vfxxx.inl: Set the end address to the last
-	valid address in flash, not the first invalid address.
+	* src/synth.c (synth_flash_erase_block): Remove asserts which are
+	no longer true.
 
-2004-08-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+2004-09-09  Andrew Lunn  <andrew.lunn@ascom.ch>
 
-	* include/flash_sst_39vfxxx.inl: The structure declared by
-	CYG_FLASH_FUNS should be static so we can instantiate the
-	driver multiple times.
+	* src/flash_synth.c: Allow the use of arbitary sized block.
+	* test/flash3.c: Allow the use of small blocks
 
-2004-08-04  Andrew Lunn  <andrew.lunn@ascom.ch>
+2004-08-21  Andrew Lunn  <andrew.lunn@ascom.ch>
 
-	* include/flash_sst_39vfxxx.inl: Added support for the SST39VF160
-	device.
+	* tests/flash[23].c: Removed calls to cyg_flash_get_block_info()
+	and cyg_flash_get_limits() which have been removed. 
 
-2004-07-16  Andrew Lunn  <andrew.lunn@ascom.ch>
+2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
 
-	* include/flash_sst_39vfxxx.inl: Modified the driver to make use
-	of the new flash device API.
+	* cdl/flash_synth.cdl: Indicate we use the V2 device API.
 
-2006-12-21  Wang Cui <iucgnaw@msn.com>
+2004-07-17  Andrew Lunn  <andrew.lunn@ascom.ch>
 
-	* include/flash_sst_39vfxxx.inl: Add supported devices:
-	SST39VF160, SST39VF1601, SST39VF1602, SST39VF320, SST39VF3201,
-	SST39VF3202, SST39VF6401, SST39VF6402,
-
-2003-10-02  Roland Caﬂebohm <r.cassebohm@visionsystems.de>
-
-	* include/flash_sst_39vfxxx.inl: 
-	* cdl/flash_sst_39vfxxx.cdl: New package cloned from at29xxxx driver.
-	Supported devices: SST39VF080, SST39VF016 and SST39VF400.
-
+	* First version. Implements synthetic flash using the new flash
+	API.
+ 	
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2006 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -85,3 +85,7 @@
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================
+	
+	
+
+

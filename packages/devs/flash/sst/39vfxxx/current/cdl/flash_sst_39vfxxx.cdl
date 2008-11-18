@@ -57,6 +57,7 @@ cdl_package CYGPKG_DEVS_FLASH_SST_39VFXXX {
     active_if     CYGINT_DEVS_FLASH_SST_39VFXXX_REQUIRED
 
     implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_DEVICE_NEEDS_CACHE_HANDLED
 
     include_dir   cyg/io
 }
