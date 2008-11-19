@@ -1,3 +1,8 @@
+2008-11-12  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* src/stm32_wallclock.cxx: Using new CYGHWR_HAL_STM32_BD_PROTECT
+	macro.
+
 2008-11-05  Simon Kallweit  <simon.kalweit@intefo.ch>
 
 	* cdl/wallclock_stm32.cdl:

@@ -138,7 +138,7 @@ Cyg_WallClock::init_hw_seconds(void)
     }
 
     // Disable backup domain protection
-    CYGHWR_HAL_STM32_BD_UNPROTECT(1);
+    CYGHWR_HAL_STM32_BD_PROTECT(0);
     
 #if defined(CYGHWR_DEVS_WALLCLOCK_STM32_RTC_SOURCE_LSI)
     // Start up LSI clock
@@ -197,7 +197,7 @@ Cyg_WallClock::init_hw_seconds(void)
     config_mode(0);
     
     // Restore backup domain protection
-    CYGHWR_HAL_STM32_BD_UNPROTECT(0);
+    CYGHWR_HAL_STM32_BD_PROTECT(1);
 }
 
 cyg_uint32
@@ -226,7 +226,7 @@ Cyg_WallClock::set_hw_seconds(cyg_uint32 secs)
     CYG_ADDRESS rtc = CYGHWR_HAL_STM32_RTC;
 
     // Disable backup domain protection
-    CYGHWR_HAL_STM32_BD_UNPROTECT(1);
+    CYGHWR_HAL_STM32_BD_PROTECT(0);
     
     // Enter configuration mode
     config_mode(1);
@@ -239,6 +239,6 @@ Cyg_WallClock::set_hw_seconds(cyg_uint32 secs)
     config_mode(0);
     
     // Restore backup domain protection
-    CYGHWR_HAL_STM32_BD_UNPROTECT(0);
+    CYGHWR_HAL_STM32_BD_PROTECT(1);
 }
 #endif
