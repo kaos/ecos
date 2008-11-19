@@ -1,3 +1,8 @@
+2008-11-19  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_ram.ldi (hal_startup_stack):
+	Adjust initial stack to top of external SRAM.
+
 2008-10-10  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/pkgconf/mlt_cortexm_stm3210e_eval_rom.ldi:

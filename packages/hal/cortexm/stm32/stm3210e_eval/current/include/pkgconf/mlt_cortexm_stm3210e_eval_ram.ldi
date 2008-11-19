@@ -32,4 +32,4 @@ SECTIONS
 
 hal_vsr_table = 0x20000000;
 hal_virtual_vector_table = hal_vsr_table + 128*4;
-hal_startup_stack = 0x68040000;
+hal_startup_stack = 0x68100000;
