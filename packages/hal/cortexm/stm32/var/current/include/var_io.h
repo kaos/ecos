@@ -591,7 +591,7 @@ __externC void hal_stm32_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 // Functions and macros to reset the backup domain as well as
 // enable/disable backup domain write protection.
 
-__externC void hal_stm32_bd_unprotect( int disable );
+__externC void hal_stm32_bd_protect( int protect );
 
 #define CYGHWR_HAL_STM32_BD_RESET()                                         \
     CYG_MACRO_START                                                         \
@@ -600,8 +600,8 @@ __externC void hal_stm32_bd_unprotect( int disable );
     HAL_WRITE_UINT32(CYGHWR_HAL_STM32_RCC+CYGHWR_HAL_STM32_RCC_BDCR, 0);    \
     CYG_MACRO_END
 
-#define CYGHWR_HAL_STM32_BD_UNPROTECT(__unprotect )                         \
-    hal_stm32_bd_unprotect( __unprotect )
+#define CYGHWR_HAL_STM32_BD_PROTECT(__protect )                         \
+    hal_stm32_bd_protect( __protect )
 
 //=============================================================================
 // FSMC

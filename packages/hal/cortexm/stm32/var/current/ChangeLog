@@ -1,3 +1,10 @@
+2008-11-12  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* include/var_io.h: Changed CYGHWR_HAL_STM32_BD_UNPROTECT to
+	CYGHWR_HAL_STM32_BD_PROTECT, inverting the argument.
+	* src/stm32_misc.c: Changed hal_stm32_bd_unprotect() to
+	hal_stm32_bd_protect(), inverting the argument.
+
 2008-11-11  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/var_io.h: Add power control definitions.
