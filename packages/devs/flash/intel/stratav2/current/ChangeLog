@@ -1,3 +1,7 @@
+2008-11-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/flash_strata_v2.cdl: Fix doc link.
+
 2008-11-13  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/flash_strata_v2.inl:
