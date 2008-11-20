@@ -1,0 +1,198 @@
+2008-11-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* whole package. Replace the original M68K port.
+
+2008-11-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_m5272c3.cdl, doc/m5272c3.sgml, include/plf.inc,
+	include/plf_io.h, src/platform.c: minor clean-ups.
+
+2007-09-14  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_m5272c3.cdl, misc/redboot_DBUG.ecm,
+	misc/redboot_RAM.ecm, misc/redboot_ROM.ecm,
+	misc/redboot_ROMFFE.ecm : the V2 AMD driver requires an erase
+	burst duration of at least 400 to operate reliably.
+
+2007-07-27  John Dallaway  <jld@ecoscentric.com>
+
+        * misc/cfpe-stub.gdb: New GDB command file for debugging via
+        m68k-elf-cfpe-stub.
+
+	* cdl/hal_m68k_m5272c3.cdl: Reference per-package documentation.
+
+2007-07-25  John Dallaway  <jld@ecoscentric.com>
+
+        * cdl/hal_m68k_m5272c3.cdl: Define CYGHWR_MEMORY_LAYOUT as
+        required by the eCos Configuration Tool.
+
+2006-09-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/plf.inc: processor HAL now uses more verbose names in
+	the init macros.
+
+	* include/plf_io.h: no need to define MBAR, the processor HAL now
+	has a default.
+
+	* cdl/hal_m68k_m5272c3.cdl, include/plf_stub.h (removed): allow
+	the architectural HAL to provide plf_stub.h
+
+2006-09-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_m5272c3.cdl: lots of changes for all the reasons
+	below.
+
+	* src/platform.c: eliminate nearly all initialization. Some of
+	this now happens higher up in the processor, variant or
+	architectural HAL. The processor HAL now implements a proper reset
+	so we can assume the on-chip devices are in a default state.
+
+	* include/plf_io.h: diagnostics definitions now use the variant
+	HAL defaults.
+
+	* include/plf_arch.h: can now be #include'd by assembler.
+
+	* src/flash.c (was source/m5272c3_flash.c): now uses V2 flash
+	driver.
+	
+	* src/platform/asm.S: no longer needed.
+ 
+	* include/plf_intr, include/plf.inc: stacks are now provided by
+	the architectural HAL.
+
+	* include/plf.inc: Initialization uses the processor HAL macros.
+
+	* misc/redboot_DBUG.ecm, misc/redboot_RAM.ecm,
+	  misc/redboot_ROM.ecm, misc/redboot_ROMFFE.ecm: regenerate
+	  
+	* include/pkgconf/mlt_m5272c3.h, include/pkgconf/mlt_m5272c3.ldi:
+	Simplified linker scripts using the new architectural support
+	
+	* include/pkgconf/mlt_m68k_m5272c3_dbug.h,
+  	  include/pkgconf/mlt_m68k_m5272c3_dbug.ldi, 
+	  include/pkgconf/mlt_m68k_m5272c3_ram.h,
+	  include/pkgconf/mlt_m68k_m5272c3_ram.ldi, 
+	  include/pkgconf/mlt_m68k_m5272c3_rom.h,
+	  include/pkgconf/mlt_m68k_m5272c3_rom.ldi, 
+	  include/pkgconf/mlt_m68k_m5272c3_romffe.hi, 
+	  include/pkgconf/mlt_m68k_m5272c3_romffe.ldi:
+	All replaced by mlt_m5272c3.h and mlt_m5272c3.ldi 
+
+2004-08-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_m5272c3.cdl: minor change following serial driver
+	change, specify that RTS and CTS are connected on both UARTs
+
+2004-06-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_m5272c3.cdl: CYGNUM_HAL_M68K_M5272C3_SCR, ethernet
+	should always have priority over the cpu, in case you are
+	debugging over ethernet.
+
+2004-06-24  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_m5272c3.cdl: HAL_M68K_VSR_COUNT has been moved to
+	the processor HAL
+
+2004-06-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_m5272c3.cdl: increase default startup stack size.
+	Doing a printf() in a static constructor while debugging over
+	ethernet could overflow.
+
+2004-05-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/platform.c (hal_m68k_m5272c3_init): set up the GPIO
+	directions, then the control bits, to eliminate a small window
+	where a GPIO pin might be incorrectly set as an output
+	Fix the exception handling initialization.
+
+	* cdl/hal_m68k_m5272c3.cdl: fix default SCR value for better
+	performance. 
+
+2004-02-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/m5272c3.sgml: romffe startup has now been tested
+
+	* src/platform.c (hal_m68k_m5272c3_init): minor fix to UART
+	initialization code
+
+	* cdl/hal_m68k_m5272c3.cdl: fix typo in board name.
+
+2004-01-07  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/m5272c3.sgml, misc/redboot_ROMFFE.ecm:
+	Add .ecm file for building RedBoot to run from the first block of
+	flash.
+
+2003-11-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/m5272c3_flash.c: remove spurious comment
+
+2003-09-14  John Dallaway  <jld@ecoscentric.com>
+
+	* misc/bdm.gdb: Add BDM macro file for use with GDB.
+
+2003-07-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_m5272c3.cdl:
+	Use a larger denominator. Small values cause problems for
+	time-related calculations elsewhere.
+
+2003-07-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/m5272c3.sgml: Add documentation
+
+2003-07-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_m5272c3.cdl:
+	Fix some mentions of mcf5272c3 to m5272c3
+
+2003-07-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_m5272c3.cdl:
+	Make the default system clock configurable.
+
+2003-07-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/platform_asm.S: 
+	* include/plf_intr.h: 
+	* include/plf.inc:
+	Interrupt stack is now optional and both the stack base and top
+	need to be exported.
+
+2003-06-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* New version of the M68K support
+
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2003, 2004, 2006, 2007, 2008 Free Software Foundation, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================

@@ -1,0 +1,382 @@
+# ====================================================================
+#
+#      hal_m68k_m5272c3.cdl
+#
+#      Freescale m5272c3 evaluation board HAL package configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 2003,2004,2006,2007,2008 Free Software Foundation, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):     bartv
+# Date:          2003-06-04
+#
+#####DESCRIPTIONEND####
+#========================================================================
+
+cdl_package CYGPKG_HAL_M68K_M5272C3 {
+    display         "Freescale M5272C3 evaluation board"
+    doc             ref/hal-m68k-m5272c3-part.html
+    parent          CYGPKG_HAL_M68K_MCF5272
+    include_dir     cyg/hal
+    description "This package provides platform support for the Freescale
+        M5272C3 evaluation board."
+    
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_m68k_m5272c3.h>"
+        puts $::cdl_system_header "#define HAL_PLATFORM_CPU	\"Freescale MCF5272\""
+        puts $::cdl_system_header "#define HAL_PLATFORM_BOARD	\"M5272C3\""
+        puts $::cdl_system_header "#define HAL_PLATFORM_EXTRA	\"\""
+    }
+    compile         platform.c
+    implements      CYGINT_HAL_M68K_USE_STANDARD_PLATFORM_STUB_SUPPORT
+
+    implements      CYGHWR_DEVS_FLASH_AMD_AM29XXXXX_V2_CACHED_ONLY
+    compile         -library=libextras.a flash.c
+    define_proc {
+        puts $cdl_system_header "#define CYGHWR_MEMORY_LAYOUT_LDI <pkgconf/mlt_m5272c3.ldi>"
+        puts $cdl_system_header "#define CYGHWR_MEMORY_LAYOUT_H   <pkgconf/mlt_m5272c3.h>"
+    }
+
+    cdl_component CYG_HAL_STARTUP {
+        display         "Startup type"
+        flavor          data
+        legal_values    {"RAM" "ROM" "ROMFFE" "DBUG"}
+        default_value   {"RAM"}
+        no_define
+        define          -file system.h CYG_HAL_STARTUP
+
+        description   "
+            The eCos port to the M5272C3 evaluation board can be used in four
+            ways. ROM startup should be used when the application will be written
+            into flash at location 0xFFF00000, alongside the existing dBUG ROM
+            monitor, and the board is made to boot from that location via
+            jumper 13. Typically RedBoot will use a ROM startup, and some applications
+            may do so as well. RAM startup should be used for application development,
+            if RedBoot is used as the ROM monitor. DBUG startup can be used to develop
+            software with the existing dBUG ROM monitor. ROMFFE is for applications
+            that will be written to flash at location 0xFFE00000, overwriting the
+            existing dBUG ROM monitor."
+        
+        cdl_option CYGSEM_HAL_ROM_MONITOR {
+            display       "Behave as a ROM monitor"
+            parent        CYGPKG_HAL_ROM_MONITOR
+            default_value { is_loaded(CYGPKG_REDBOOT) }
+            description "
+                This option configures the M5272C3 platform HAL to act as a
+                ROM monitor."
+
+            implements CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+            implements CYGINT_HAL_DEBUG_GDB_STUBS
+            implements CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+        }
+        
+        cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
+            display       "Coexist with a ROM monitor"
+            parent        CYGPKG_HAL_ROM_MONITOR
+            flavor        booldata
+            legal_values  { "GDB_stubs" }
+            default_value { CYG_HAL_STARTUP == "RAM" ? "GDB_stubs" : 0 }
+            requires      { CYG_HAL_STARTUP == "RAM" }
+
+            description "
+                In a typical setup the M5272C3 boots from flash into the
+                RedBoot ROM monitor, which then provides support for gdb
+                debugging and for diagnostics. The application will leave
+                certain exception vectors to RedBoot, and typically the
+                diagnostics port will also be controlled by RedBoot rather
+                than directly by the application."
+
+            implements CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+        }
+    }
+
+    # Real-time clock/counter specifics
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants."
+        flavor        none
+        no_define
+        description   "Set the default system clock."
+
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+            default_value 10000
+            description "
+                In most eCos configurations this option is used to control the
+                system clock. It specifies the number of microseconds between
+                clock ticks, so the default value of 10000 corresponds to
+                10 milliseconds or 100 timer interrupts per second. The value
+                is used to program the timer reference register of the mcf5272's
+                timer 3."
+        }
+        
+        cdl_option CYGHWR_HAL_SYSTEM_CLOCK_HZ {
+            display         "System clock speed in Hz"
+            flavor          data
+            legal_values    { 48000000 66000000 }
+            default_value   66000000
+            define_proc {
+                puts $cdl_header "#define CYGHWR_HAL_SYSTEM_CLOCK_MHZ (CYGHWR_HAL_SYSTEM_CLOCK_HZ / 1000000)"
+            }
+            description    "
+               This option identifies the system clock that the processor uses.
+               The value is used to set the system timer and calculate baud rates."
+        }
+
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            calculated	  CYGNUM_HAL_RTC_DENOMINATOR * 1000 * CYGNUM_HAL_RTC_PERIOD
+            description "
+                This option is used by eCos to convert clock ticks to conventional
+                time units. CYGNUM_HAL_RTC_NUMERATOR divided by CYGNUM_HAL_RTC_DENOMINATOR
+                should be the number of nanoseconds per clock tick."
+        }
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            calculated	  100
+            description "
+                This option is used by eCos to convert clock ticks to conventional
+                time units. CYGNUM_HAL_RTC_NUMERATOR divided by CYGNUM_HAL_RTC_DENOMINATOR
+                should be the number of nanoseconds per clock tick."
+        }
+    }
+    
+    # Provide the extra information needed by the variant and processor HALs
+    implements      CYGINT_HAL_M68K_MCFxxxx_DIAGNOSTICS_USE_DEFAULT 
+    requires        !CYGHWR_HAL_M68K_MCFxxxx_UART0_RS485_RTS
+    requires        !CYGHWR_HAL_M68K_MCFxxxx_UART1_RS485_RTS
+    
+    cdl_option CYGNUM_HAL_M68K_MCFxxxx_DIAGNOSTICS_DEFAULT_BAUD {
+        display     "Default diagnostics baud rate"
+        flavor      data
+        parent      CYGPKG_HAL_M68K_MCFxxxx_DIAGNOSTICS
+        calculated  { (CYG_HAL_STARTUP == "DBUG") ? "19200" : "38400" }
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_BOARD_PINS {
+        display     "Board pin connectivity"
+        flavor      data
+        parent      CYGPKG_HAL_M68K_MCF5272_HARDWARE
+        
+        calculated {
+            "a0_usb_tp a1_usb_rp a2_usb_rn a3_usb_tn a4_usb_susp a5_usb_txen a6_usb_rxd  a7_in " .
+            "a8_in     a9_in     a10_in    a11_in    a12_in      a13_in      a14_in      a15_in " .
+            "b0_txd0  b1_rxd0    b2_cts0   b3_rts0   b4_in       b5_in       b6_in       b7_in " .
+            "b8_etxd3 b9_etxd2   b10_etxd1 b11_erxd3 b12_erxd2   b13_erxd1   b14_erxer   b15_e_mdc " .
+            "c0_in    c1_in      c2_in     c3_in     c4_in       c5_in       c6_in       c7_in " .
+            "c8_in    c9_in      c10_in    c11_in    c12_in      c13_in      c14_in      c15_in " .
+            "d0_none  d1_rxd1    d2_cts1   d3_rts1   d4_txd1     d5_none     d6_none     d7_none"
+        }
+    }
+    
+    # Memory registers. These are all reparented below the variant HAL, but
+    # defined here to provide suitable defaults.
+    cdl_option CYGNUM_HAL_M68K_MCF5272_CACR {
+        display	        "Cache control register"
+        parent          CYGPKG_HAL_M68K_MCFxxxx_REGISTERS
+        flavor	        data
+        default_value   0x80000100
+        description "
+            This option specifies the initial value used for the cache control
+            register. Subsequently the HAL cache macros will only manipulate
+            the CENB cache enable bit and the CINVA cache invalidate bit."
+    }
+
+    cdl_option CYGNUM_HAL_M68K_MCF5272_ROMBAR {
+        display		    "ROM base address register value"
+        parent  	    CYGPKG_HAL_M68K_MCFxxxx_REGISTERS
+        flavor   	    data
+        default_value	0x21000034
+        description "
+            This option is the value used to initialize the ROMBAR register
+            which controls the location of the on-chip ROM in the memory
+            map and what types of access are permitted. By default the
+            internal ROM is disabled since neither eCos nor RedBoot use it
+            and leaving it disabled reduces power consumption."
+    }
+    
+    cdl_option CYGNUM_HAL_M68K_MCF5272_RAMBAR {
+        display		    "RAM base address register value"
+        parent  	    CYGPKG_HAL_M68K_MCFxxxx_REGISTERS
+        flavor   	    data
+        default_value	0x20000001
+        requires        { 0x20000000 == (CYGNUM_HAL_M68K_MCF5272_RAMBAR & 0xFFFFF000) }
+        description "
+            This option is the value used to initialize the RAMBAR register
+            which controls the location of the on-chip SRAM in the memory
+            map and what types of access are permitted. By default the
+            internal SRAM is mapped to location 0x20000000, enabled, and
+            all types of access are permitted. Neither eCos nor RedBoot
+            use the internal SRAM, instead it is left entirely for the
+            application."
+    }
+
+    cdl_option CYGNUM_HAL_M68K_MCF5272_ACR0 {
+        display		    "Access control register 0"
+        parent		    CYGPKG_HAL_M68K_MCFxxxx_REGISTERS
+        flavor		    data
+        default_value	0x0000E020
+        description "
+            This option is the value used to initialize the ACR0 register.
+            The default value controls access to SDRAM at location 0,
+            enabling caching and buffered writes."
+    }
+    
+    cdl_option CYGNUM_HAL_M68K_MCF5272_ACR1 {
+        display		    "Access control register 1"
+        parent		    CYGPKG_HAL_M68K_MCFxxxx_REGISTERS
+        flavor		    data
+        default_value	0xFF00E000
+        description "
+            This option is the value used to initialize the ACR0 register.
+            The default value controls access to the external flash memory
+            at location 0xFFE00000, enabling caching."
+    }
+
+    cdl_option CYGNUM_HAL_M68K_MCF5272_SCR {
+        display		    "System configuration register"
+        parent		    CYGPKG_HAL_M68K_MCFxxxx_REGISTERS
+        flavor		    data
+        default_value	0x0003
+        description "
+            This option is the value used to the initialize the System
+            Configuration Register in the System Integration Module.
+            This register controls bus arbitration and the hardware
+            watchdog."
+    }
+
+    cdl_component CYGBLD_GLOBAL_OPTIONS {
+        display     "Global build options"
+        flavor      none
+        no_define
+        parent      CYGPKG_NONE
+
+        description   "Global build  options including  control over  compiler
+                    flags, linker flags and choice of toolchain."
+
+        cdl_option CYGBLD_GLOBAL_COMMAND_PREFIX {
+            display         "Global command prefix"
+            flavor          data
+            no_define
+            default_value   { "m68k-elf" }
+
+            description "This option specifies  the command prefix  used when invoking the build tools."
+        }
+
+        cdl_option CYGBLD_GLOBAL_CFLAGS {
+            display         "Global compiler flags"
+            flavor          data
+            no_define
+            default_value { "-mcpu=5272 -malign-int -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fomit-frame-pointer" }
+            description       "This option controls the global compiler  flags
+                            which are used to compile all packages by default.
+                            Individual  packages  may  define  options   which
+                            override these global flags."
+        }
+
+        cdl_option CYGBLD_GLOBAL_LDFLAGS {
+            display         "Global linker flags"
+            flavor          data
+            no_define
+            default_value   { "-mcpu=5272 -g -nostdlib -Wl,--gc-sections -Wl,-static" }
+
+            description       "This option controls  the global linker  flags.
+                            Individual  packages  may  define  options   which
+                            override these global flags."
+        }
+    }
+    
+    cdl_component CYGHWR_MEMORY_LAYOUT {
+        display "Memory layout"
+        flavor data
+        no_define
+        calculated { "mlt_m5272c3" }
+    }
+
+    cdl_component CYGPKG_REDBOOT_HAL_OPTIONS {
+        display		"RedBoot HAL options"
+        flavor		none
+        no_define
+        parent		CYGPKG_REDBOOT
+        active_if	CYGPKG_REDBOOT
+        description "
+            This component holds target-specific options for RedBoot,
+            mainly rules for generating images in the appropriate format."
+
+        cdl_option CYGBLD_M5272C3_REDBOOT_DBUG {
+            display	    "Build an srecord file for use with the dBUG monitor"
+            flavor	    none
+            no_define
+            active_if	{ "DBUG" == CYG_HAL_STARTUP }
+            make -priority 325 {
+                <PREFIX>/bin/redboot.dbug.srec : <PREFIX>/bin/redboot.elf
+                $(OBJCOPY) -O srec $< $@
+            }
+        }
+
+        cdl_option CYGBLD_M5272C3_REDBOOT_RAM {
+            display	    "Build a binary RedBoot image to run in RAM"
+            flavor  	none
+            no_define
+            active_if	{ "RAM" == CYG_HAL_STARTUP }
+            make -priority 325 {
+                <PREFIX>/bin/redboot.ram.bin : <PREFIX>/bin/redboot.elf
+                $(OBJCOPY) -O binary $< $@
+            }
+        }
+
+        cdl_option CYGBLD_M5272C3_REDBOOT_ROM {
+            display	    "Build a binary RedBoot image to run in flash at 0xFFF00000"
+            flavor	    none
+            no_define
+            active_if	{ "ROM" == CYG_HAL_STARTUP }
+            make -priority 325 {
+                <PREFIX>/bin/redboot.rom.bin : <PREFIX>/bin/redboot.elf
+                $(OBJCOPY) -O binary $< $@
+            }
+        }
+
+        cdl_option CYGBLD_M5272C3_REDBOOT_ROMFFE {
+            display	    "Build a binary RedBoot image to run in flash at 0xFFE00000"
+            flavor	    none
+            no_define
+            active_if	{ "ROMFFE" == CYG_HAL_STARTUP }
+            make -priority 325 {
+                <PREFIX>/bin/redboot.romffe.bin : <PREFIX>/bin/redboot.elf
+                $(OBJCOPY) -O binary $< $@
+            }
+        }
+    }
+}

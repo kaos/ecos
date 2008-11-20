@@ -1,0 +1,40 @@
+#define __LDI__ 1
+#include <pkgconf/hal_m68k_m5272c3.h>
+#include <pkgconf/mlt_m5272c3.h>
+
+MEMORY
+{
+    ram     : ORIGIN = CYGMEM_REGION_ram,   LENGTH = CYGMEM_REGION_ram_SIZE
+    flash   : ORIGIN = CYGMEM_REGION_flash, LENGTH = CYGMEM_REGION_flash_SIZE
+    iram    : ORIGIN = CYGMEM_REGION_iram,  LENGTH = CYGMEM_REGION_iram_SIZE
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    SECTION_ram_vectors( ram, 0x00000000)
+
+#if   defined(CYG_HAL_STARTUP_ROM)
+
+    SECTION_m68k_start (    flash, 0xFFF00000)
+    SECTION_code (          flash, .)
+    SECTION_iram(           iram,  CYGMEM_REGION_iram,  AT(_hal_code_section_end))
+    SECTION_data(           ram,   _hal_ram_vectors_section_end, AT(_hal_iram_section_end_lma))
+
+#elif defined(CYG_HAL_STARTUP_ROMFFE)
+
+    SECTION_m68k_start (    flash, 0xFFE00000)
+    SECTION_code (          flash, .)
+    SECTION_iram(           iram,  CYGMEM_REGION_iram,  AT(_hal_code_section_end))
+    SECTION_data(           ram,   _hal_ram_vectors_section_end, AT(_hal_iram_section_end_lma))
+
+#elif defined(CYG_HAL_STARTUP_RAM) || defined(CYG_HAL_STARTUP_DBUG)
+    /* The first 128K of RAM are reserved for RedBoot */
+    SECTION_m68k_start (    ram,    0x00020000 )
+    SECTION_code (          ram,    . )
+    SECTION_iram(           iram,   CYGMEM_REGION_iram, AT(_hal_code_section_end))
+    SECTION_data(           ram,    _hal_iram_section_end_lma, LMA_EQ_VMA)
+#endif
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x4);
+    SECTIONS_END
+}

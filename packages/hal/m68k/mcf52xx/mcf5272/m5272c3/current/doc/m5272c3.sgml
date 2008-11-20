@@ -1,0 +1,808 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     m5272c3.sgml                                                -->
+<!--                                                                 -->
+<!--     m5272c3 platform HAL documentation.                         -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- Copyright (C) 2003,2004,2008                                    -->
+<!--   Free Software Foundation, Inc.                                -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Contact(s):  bartv                                              -->
+<!-- Date:        2003/07/15                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="hal-m68k-m5272c3-part"><title>Freescale M5272C3 Board Support</title>
+
+<!-- {{{ Overview                       -->
+
+<refentry id="m68k-m5272c3">
+  <refmeta>
+    <refentrytitle>Overview</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>eCos Support for the Freescale M5272C3 Board</refname>
+    <refpurpose>Overview</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="m68k-m5272c3-description"><title>Description</title>
+    <para>
+The Freescale M5272C3 board has an MCF5272 ColdFire processor, 4MB of
+external SDRAM, 2MB of external flash memory, and connectors plus
+required support chips for all the on-chip peripherals. By default the
+board comes with its own dBUG ROM monitor, located in the bottom half
+of the flash.
+    </para>
+    <para>
+For typical eCos development a RedBoot image is programmed into the
+top half of the flash memory, and the board is made to boot this image
+rather than the existing dBUG monitor. RedBoot provides gdb stub
+functionality so it is then possible to download and debug eCos
+applications via the gdb debugger. This can happen over either a
+serial line or over ethernet.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-hardware"><title>Supported Hardware</title>
+    <para>
+In a typical setup the bottom half of the flash memory is reserved for
+the dBUG ROM monitor and is not accessible to eCos. That leaves four
+flash blocks of 256K each. Of these one is used for the RedBoot image
+and another is used for managing the flash and holding RedBoot fconfig
+values. The remaining two blocks at 0xFFF40000 and 0xFFF80000 can be
+used by application code.
+    </para>
+    <para>
+By default eCos will only support the four megabytes of external SDRAM
+present on the initial versions of the board, accessible at location
+0x00000000. Later versions come with 16MB. If all 16MB of memory are
+required then the ACR0 register needs to be changed. The default value
+is controlled by the configuration option
+<varname>CYGNUM_HAL_M68K_M5272C3_ACR0</varname>, but this option is
+only used during ROM startup so in a typical setup it would be
+necessary to rebuild and update RedBoot. Alternatively the register
+can be updated by application code, preferably using a high priority
+static constructor to ensure that the extra memory is visible before
+any code tries to use that memory. It will also be necessary to change
+the memory layout so that the linker knows about the additional
+memory.
+    </para>
+    <para>
+By default the 4K of internal SRAM is mapped to location 0x20000000
+using the RAMBAR register. This is not used by eCos or by RedBoot so
+can be used by application code. The M68K architectural HAL has an
+<filename>iram1.c</filename> testcase to illustrate the linker script
+support for this. The internal 16K of ROM is left
+disabled by default because its contents are of no use to most
+applications. The on-chip peripherals are mapped at 0x10000000 via the
+MBAR register.
+    </para>
+    <para>
+There is a serial driver <varname>CYGPKG_DEVS_SERIAL_MCFxxxx</varname>
+which supports both on-chip UARTs. One of the UARTs, usually uart0,
+can be used by RedBoot for communication with the host. If this UART
+is needed by the application, either directly or via the serial
+driver, then it cannot also be used for RedBoot communication. Another
+communication channel such as ethernet should be used instead. The
+serial driver package is loaded automatically when configuring for the
+M5272C3 target.
+    </para>
+    <para>
+There is an ethernet driver <varname>CYGPKG_DEVS_ETH_MCFxxxx</varname>
+for the on-chip ethernet device. This driver is also loaded
+automatically when configuring for the M5272C3 target. The M5272C3
+board does not have a unique MAC address, so a suitable address has to
+be programmed into flash via RedBoot's <command>fconfig</command>
+command.
+    </para>
+    <para>
+eCos manages the on-chip interrupt controller. Timer 3 is used to
+implement the eCos system clock, but timers 0, 1 and 2 are unused and
+left for the application. The GPIO pins are manipulated only as needed
+to get the UARTs and ethernet working. eCos will reset the remaining
+on-chip peripherals (DMA, USB, PLCI, QSPI and PWM) during system
+startup or soft reset but will not otherwise manipulate them.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-tools"><title>Tools</title>
+    <para>
+The M5272C3 port is intended to work with GNU tools configured for an
+m68k-elf target. The original port was done using m68k-elf-gcc version
+3.2.1, m68k-elf-gdb version 5.3, and binutils version 2.13.1.
+    </para>
+    <para>
+By default eCos is built using the compiler flag
+<option>-fomit-frame-pointer</option>. Omitting the frame pointer
+eliminates some work on every function call and makes another register
+available, so the code should be smaller and faster. However without a
+frame pointer m68k-elf-gdb is not always able to identify stack
+frames, so it may be unable to provide accurate backtrace information.
+Removing this compiler flag from the configuration option
+<varname>CYGBLD_GLOBAL_CFLAGS</varname> avoids such debug problems.
+    </para>
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Hardware setup                 -->
+
+<refentry id="m68k-m5272c3-setup">
+  <refmeta>
+    <refentrytitle>Setup</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Setup</refname>
+    <refpurpose>Preparing the M5272C3 board for eCos Development</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="m68k-m5272c3-setup-overview"><title>Overview</title>
+    <para>
+In a typical development environment the M5272C3 board boots from
+flash into the RedBoot ROM monitor. eCos applications are configured
+for a RAM startup, and then downloaded and run on the board via the
+debugger m68k-elf-gdb. Preparing the board therefore involves
+programming a suitable RedBoot image into flash memory.
+    </para>
+    <para>
+The following RedBoot configurations are supported:
+    </para>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <thead>
+          <row>
+            <entry>Configuration</entry>
+            <entry>Description</entry>
+            <entry>Use</entry>
+            <entry>File</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>ROM</entry>
+            <entry>RedBoot running from the board's flash</entry>
+            <entry>redboot_ROM.ecm</entry>
+            <entry>redboot_rom.bin</entry>
+          </row>
+          <row>
+            <entry>dBUG</entry>
+            <entry>Used for initial setup</entry>
+            <entry>redboot_DBUG.ecm</entry>
+            <entry>redboot_dbug.srec</entry>
+          </row>
+          <row>
+            <entry>RAM</entry>
+            <entry>Used for upgrading ROM version</entry>
+            <entry>redboot_RAM.ecm</entry>
+            <entry>redboot_ram.bin</entry>
+          </row>
+          <row>
+            <entry>ROMFFE</entry>
+            <entry>RedBoot running from the board's flash at 0xFFE00000</entry>
+            <entry>redboot_ROMFFE.ecm</entry>
+            <entry>redboot_romffe.bin</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+For serial communications all versions run with 8 bits, no parity, and
+1 stop bit. The dBUG version runs at 19200 baud. The ROM and RAM
+versions run at 38400 baud. These baud rates can be changed via the
+configuration option
+<varname>CYGNUM_HAL_M68K_MCFxxxx_DIAGNOSTICS_BAUD</varname> and
+rebuilding RedBoot. By default RedBoot will use the board's terminal
+port, corresponding to uart0, but this can also be changed via the
+configuration option
+<varname>CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT</varname>. On an
+M5272C3 platform RedBoot also supports ethernet communication and
+flash management.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-setup-first"><title>Initial Installation</title>
+    <para>
+This process assumes that the board still has its original dBUG ROM
+monitor and does not require any special debug hardware. It leaves the
+existing ROM monitor in place, allowing the setup process to be
+repeated just in case that should ever prove necessary.
+    </para>
+    <para>
+Programming the RedBoot rom monitor into flash memory requires an
+application that can manage flash blocks. RedBoot itself has this
+capability. Rather than have a separate application that is used only
+for flash management during the initial installation, a special
+RAM-resident version of RedBoot is loaded into memory and run. This
+version can then be used to load the normal flash-resident version of
+RedBoot and program it into the flash.
+    </para>
+    <para>
+The first step is to connect an RS232 cable between the M5272C3
+terminal port and the host PC. A suitable cable is supplied with the
+board. Next start a terminal emulation application such as
+HyperTerminal or minicom on the host PC and set the serial
+communication parameters to 19200 baud, 8 data bits, no parity, 1 stop
+bit (8N1) and no flow control (handshaking). Make sure that the jumper
+next to the flash chip is set for bootstrap from the bottom of flash,
+location 0xFFE00000. The details of this jumper depend on the revision
+of the board, so the supplied board documentation should be consulted
+for more details. Apply power to the board and you should see a
+<prompt>dBUG&gt;</prompt> prompt.
+    </para>
+    <para>
+Once dBUG is up and running the RAM-resident version of RedBoot can be
+downloaded: 
+    </para>
+    <screen>
+dBUG&gt; dl
+Escape to local host and send S-records now...
+    </screen>
+    <para>
+The required S-records file is <filename>redboot_dbug.srec</filename>,
+which is normally supplied with the eCos release in the <filename
+class="directory">loaders</filename> directory. If it needs to be
+rebuilt then instructions for this are supplied <link
+linkend="m68k-m5272c3-setup-rebuild">below</link>. The file should be
+sent to the target as raw text using the terminal emulator:
+    </para>
+    <screen>
+S-record download successful!
+dBUG&gt;
+    </screen>
+    <para>
+It is now possible to run the RAM-resident version of RedBoot:
+    </para>
+    <screen>
+dBUG&gt; go 0x20000
++FLASH configuration checksum error or invalid key
+Ethernet eth0: MAC address 00:00:00:00:00:03
+Can't get BOOTP info for device!
+
+RedBoot(tm) bootstrap and debug environment [DBUG]
+Non-certified release, version v2_0_1 - built 09:55:34, Jun 24 2003
+
+Platform: M5272C3 (Freescale MCF5272)
+Copyright (C) 2000, 2001, 2002, Red Hat, Inc.
+
+RAM: 0x00000000-0x00400000, 0x0003f478-0x003bd000 available
+FLASH: 0xffe00000 - 0x00000000, 8 blocks of 0x00040000 bytes each.
+RedBoot&gt;
+    </screen>
+    <para>
+At this stage the RedBoot flash management initialization has not yet
+happened so the warning about the configuration checksum error is
+expected. To perform this initialization use the
+<command>fis&nbsp;init&nbsp;-f</command> command:
+    </para>
+    <screen>
+RedBoot&gt; fis init -f
+About to initialize [format] FLASH image system - continue (y/n)? y
+*** Initialize FLASH Image System
+... Erase from 0xfff40000-0xfffc0000: ..
+... Erase from 0x00000000-0x00000000:
+... Erase from 0xfffc0000-0xffffffff: .
+... Program from 0x003bf000-0x003ff000 at 0xfffc0000: .
+RedBoot&gt;
+    </screen>
+    <para>
+The flash chip on the M5272C3 board is slow at erasing flash blocks so
+this operation can take some time. At the end the block of flash at
+location 0xFFFC0000 holds information about the various flash blocks,
+allowing other flash management operations to be performed. The next
+step is to set up RedBoot's non-volatile configuration values:
+    </para>
+    <screen>
+RedBoot&gt; fconfig -i
+Initialize non-volatile configuration - continue (y/n)? y
+Run script at boot: false
+Use BOOTP for network configuration: true
+DNS server IP address:
+GDB connection port: 9000
+Force console for special debug messages: false
+Network hardware address [MAC]: 0x00:0x00:0x00:0x00:0x00:0x03
+Network debug at boot time: false
+Update RedBoot non-volatile configuration - continue (y/n)? y
+... Erase from 0xfffc0000-0xffffffff: .
+... Program from 0x003bf000-0x003ff000 at 0xfffc0000: .
+RedBoot&gt;
+    </screen>
+    <para>
+For most of these configuration variables the default value is
+correct. If there is no suitable BOOTP service running on the local
+network then BOOTP should be disabled, and instead RedBoot will prompt
+for a fixed IP address, netmask, and addresses for the local gateway
+and DNS server. The other exception is the network hardware address,
+also known as MAC address. All boards should be given a unique MAC
+address, not the one in the above example. If there are two boards on
+the same network trying to use the same MAC address then the resulting
+behaviour is undefined.
+    </para>
+    <para>
+It is now possible to load the flash-resident version of RedBoot.
+Because of the way that flash chips work it is better to first load it
+into RAM and then program it into flash.
+    </para>
+    <screen>
+RedBoot&gt; load -r -m ymodem -b %{freememlo}
+    </screen>
+    <para>
+The file <filename>redboot_rom.bin</filename> should now be uploaded
+using the terminal emulator. The file is a raw binary and should be
+transferred using the Y-modem protocol.
+    </para>
+    <screen>
+Raw file loaded 0x0003f800-0x000545a3, assumed entry at 0x0003f800
+xyzModem - CRC mode, 2(SOH)/84(STX)/0(CAN) packets, 5 retries
+RedBoot&gt;
+    </screen>
+    <para>
+Once RedBoot has been loaded into RAM it can be programmed into flash:
+    </para>
+    <screen>
+RedBoot&gt; fis create RedBoot -b %{freememlo}
+An image named 'RedBoot' exists - continue (y/n)? y
+... Erase from 0xfff00000-0xfff40000: .
+... Program from 0x0003f800-0x0007f800 at 0xfff00000: .
+... Erase from 0xfffc0000-0xffffffff: .
+... Program from 0x003bf000-0x003ff000 at 0xfffc0000: .
+RedBoot&gt;
+    </screen>
+    <para>
+The flash-resident version of RedBoot has now programmed at location
+0xFFF00000, and the flash info block at 0xFFFC0000 has been updated.
+The initial setup is now complete. Power off the board and set the
+flash jumper to boot from location 0xFFF00000 instead of 0xFFE00000.
+Also set the terminal emulator to run at 38400 baud (the usual baud
+rate for RedBoot), and power up the board again.
+    </para>
+    <screen>
++Ethernet eth0: MAC address 00:00:00:00:00:03
+Can't get BOOTP info for device!
+
+RedBoot(tm) bootstrap and debug environment [ROM]
+Non-certified release, version v2_0_1 - built 09:57:50, Jun 24 2003
+
+Platform: M5272C3 (Freescale MCF5272)
+Copyright (C) 2000, 2001, 2002, Red Hat, Inc.
+
+RAM: 0x00000000-0x00400000, 0x0000b400-0x003bd000 available
+FLASH: 0xffe00000 - 0x00000000, 8 blocks of 0x00040000 bytes each.
+RedBoot&gt;
+    </screen>
+    <para>
+When RedBoot issues its prompt it is also ready to accept connections
+from m68k-elf-gdb, allowing eCos applications to be downloaded and
+debugged.
+    </para>
+    <para>
+Occasionally it may prove necessary to update the installed RedBoot
+image. This can be done simply by repeating the above process, using
+dBUG to load the dBUG version of RedBoot
+<filename>redboot_dbug.srec</filename>. Alternatively the existing
+RedBoot install can be used to load a RAM-resident version,
+<filename>redboot_ram.bin</filename>.
+    </para>
+    <para>
+The ROMFFE version of RedBoot can be installed at location 0xFFE00000,
+replacing dBUG. This may be useful if the system needs more flash
+blocks than are available with the usual ROM RedBoot. Installing this
+RedBoot image will typically involve a BDM-based utility.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-setup-rebuild"><title>Rebuilding RedBoot</title>
+    <para>
+Should it prove necessary to rebuild a RedBoot binary, this is done
+most conveniently at the command line. The steps needed to rebuild the
+dBUG version of RedBoot are:
+    </para>
+    <screen>
+$ mkdir redboot_dbug
+$ cd redboot_dbug
+$ ecosconfig new m5272c3 redboot
+$ ecosconfig import $ECOS_REPOSITORY/hal/m68k/mcf52xx/mcf5272/m5272c3/v2_0_1/misc/redboot_DBUG.ecm
+$ ecosconfig resolve
+$ ecosconfig tree
+$ make
+    </screen>
+    <para>
+At the end of the build the <filename
+class="directory">install/bin</filename> subdirectory should contain
+the required file <filename>redboot_dbug.srec</filename>.
+    </para>
+    <para>
+Rebuilding the RAM and ROM versions involves basically the same
+process. The RAM version uses the file
+<filename>redboot_RAM.ecm</filename> and generates a file
+<filename>redboot_ram.bin</filename>. The ROM version uses the file
+<filename>redboot_ROM.ecm</filename> and generates a file
+<filename>redboot_rom.bin</filename>. 
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-bdm"><title>BDM</title>
+    <para>
+An alternative to debugging an application on top of Redboot is to use
+a BDM hardware debug solution. On the eCos side this requires building
+the configuration for RAM startup and
+with <varname>CYGSEM_HAL_USE_ROM_MONITOR</varname> disabled. Note that
+a RAM build of RedBoot automatically has the latter configuration
+option disabled, so it is possible to run a RAM RedBoot via BDM and
+bypass the dBUG stages of the installation process.
+    </para>
+    <para>
+On the host-side the details depend on exactly which BDM solution is
+in use. Typically it will be necessary to initialize the hardware
+prior to downloading the eCos application, either via a configuration
+file or by using gdb macros. The
+file <filename>misc/bdm.gdb</filename> in the platform HAL defines
+example gdb macros.
+    </para>
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Config                         -->
+
+<refentry id="m68k-m5272c3-config">
+  <refmeta>
+    <refentrytitle>Configuration</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Configuration</refname>
+    <refpurpose>Platform-specific Configuration Options</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="m68k-m5272c3-config-overview"><title>Overview</title>
+    <para>
+The M5272C3 platform HAL package is loaded automatically when eCos is
+configured for an M5272C3 target. It should never be necessary to load
+this package explicitly. Unloading the package should only happen as a
+side effect of switching target hardware.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-config-startup"><title>Startup</title>
+    <para>
+The M5272C3 platform HAL package supports four separate startup types:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term>RAM</term>
+        <listitem><para>
+This is the startup type which is normally used during application
+development. The board has RedBoot programmed into flash at location
+0xFFF00000 and boots from that location.
+<application>m68k-elf-gdb</application> is then used to load a RAM
+startup application into memory and debug it. It is assumed that the
+hardware has already been initialized by RedBoot. By default the
+application will use eCos' virtual vectors mechanism to obtain certain
+services from RedBoot, including diagnostic output.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>ROM</term>
+        <listitem><para>
+This startup type can be used for finished applications which will
+be programmed into flash at location 0xFFF00000. The application will
+be self-contained with no dependencies on services provided by other
+software. eCos startup code will perform all necessary hardware
+initialization.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>ROMFFE</term>
+        <listitem><para>
+This is a variant of the ROM startup type which can be used if the
+application will be programmed into flash at location 0xFFE00000,
+overwriting the board's dBUG ROM monitor.
+        </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>DBUG</term>
+        <listitem><para>
+This is a variant of the RAM startup which allows applications to be
+loaded via the board's dBUG ROM monitor rather than via RedBoot. It
+exists mainly to support the dBUG version of RedBoot which is needed
+during hardware setup. Once the application has started it will take
+over all the hardware, and it will not depend on any services provided
+by dBUG. This startup type does not provide gdb debug facilities.
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-config-redboot"><title>RedBoot and Virtual Vectors</title>
+    <para>
+If the application is intended to act as a ROM monitor, providing
+services for other applications, then the configuration option
+<varname>CYGSEM_HAL_ROM_MONITOR</varname> should be set. Typically
+this option is set only when building RedBoot.
+    </para>
+    <para>
+If the application is supposed to make use of services provided by a
+ROM monitor, via the eCos virtual vector mechanism, then the
+configuration option <varname>CYGSEM_HAL_USE_ROM_MONITOR</varname>
+should be set. By default this option is enabled when building for a
+RAM startup, disabled otherwise. It can be manually disabled for a RAM
+startup, making the application self-contained, as a testing step
+before switching to ROM startup.
+    </para>
+    <para>
+If the application does not rely on a ROM monitor for diagnostic
+services then one of the serial ports will be claimed for HAL
+diagnostics. By default eCos will use the terminal port, corresponding
+to uart0. The auxiliary port, uart1, can be selected instead via the
+configuration option
+<varname>CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT</varname>. The baud
+rate for the selected port is controlled by
+<varname>CYGNUM_HAL_M68K_MCFxxxx_DIAGNOSTICS_BAUD</varname>.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-config-flash"><title>Flash Driver</title>
+    <para>
+The platform HAL package contains flash driver support. By default
+this is inactive, and it can be made active by loading the generic
+flash package <varname>CYGPKG_IO_FLASH</varname>.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-config-registers"><title>Special Registers</title>
+    <para>
+The MCF5272 processor has a number of special registers controlling
+the cache, on-chip RAM and ROM, and so on. The platform HAL provides a
+number of configuration options for setting these, for example
+<varname>CYGNUM_HAL_M68K_M5272C3_RAMBAR</varname> controls the initial
+value of the RAMBAR register. These options are only used during a ROM
+or ROMFFE startup. For a RAM startup it will be RedBoot that
+initializes these registers, so if the default values are not
+appropriate for the target application then it will be necessary to
+rebuild RedBoot with new settings for these options. Alternatively it
+should be possible to reprogram some or all of the registers early on
+during startup, for example by using a high-priority static
+constructor.
+    </para>
+    <para>
+One of the special registers, MBAR, cannot be controlled via a
+configuration option. Changing the value of this register could have
+drastic effects on the system, for example moving the on-chip
+peripherals to a different location in memory, and it would be very
+easy to end up with inconsistencies between RedBoot and the eCos
+application. Instead the on-chip peripherals are always mapped to
+location 0x10000000.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-config-clock"><title>System Clock</title>
+    <para>
+By default the system clock interrupts once every 10ms, corresponding
+to a 100Hz clock. This can be changed by the configuration option
+<varname>CYGNUM_HAL_RTC_PERIOD</varname>, the number of microseconds
+between clock ticks. Other clock-related settings are recalculated
+automatically if the period is changed.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-config-flags"><title>Compiler Flags</title>
+    <para>
+The platform HAL defines the default compiler and linker flags for all
+packages, although it is possible to override these on a per-package
+basis. Most of the flags used are the same as for other architectures
+supported by eCos. There are three flags specific to this port:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><option>-mcpu=5272</option></term>
+        <listitem><para>
+The <application>m68k-elf-gcc</application> compiler supports many
+variants of the M68K architecture, from the original 68000 onwards.
+For an MCF5272 processor <option>-mcpu=5272</option> should be used.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-malign-int</option></term>
+        <listitem><para>
+This option forces <application>m68k-elf-gcc</application> to align
+integer and floating point data to a 32-bit boundary rather than a
+16-bit boundary. It should improve performance. However the resulting
+code is incompatible with most published application binary interface
+specifications for M68K processors, so it is possible that this option
+causes problems with existing third-party object code.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-fomit-frame-pointer</option></term>
+        <listitem><para>
+Traditionally the <varname>%A6</varname> register was used as a
+dedicated frame pointer, and the compiler was expected to generate
+link and unlink instructions on procedure entry and exit. These days
+the compiler is perfectly capable of generating working code without a
+frame pointer, so omitting the frame pointer often saves some work
+during procedure entry and exit and makes another register available
+for optimization. However without a frame pointer register the
+<application>m68k-elf-gdb</application> debugger is not always able to
+interpret a thread stack, so it cannot reliably give a backtrace.
+Removing <option>-fomit-frame-pointer</option> from the default flags
+will make debugging easier, but the generated code may be worse.
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+ 
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Port                           -->
+
+<refentry id="m68k-m5272c3-port">
+  <refmeta>
+    <refentrytitle>The HAL Port</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>HAL Port</refname>
+    <refpurpose>Implementation Details</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="m68k-m5272c3-port-overview"><title>Overview</title>
+    <para>
+This documentation explains how the eCos HAL specification has been
+mapped onto the M5272C3 hardware, and shold be read in conjunction
+with that specification. The M5272C3 platform HAL package complements
+the M68K architectural HAL, the MCFxxxx variant HAL, and the MCF5272
+processor HAL. It provides functionality which is specific to the
+target board.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-port-startup"><title>Startup</title>
+    <para>
+Following a hard or soft reset the HAL will initialize or
+reinitialize most of the on-chip peripherals. There is an exception
+for RAM startup applications which depend on a ROM monitor for certain
+services: the UARTs and the ethernet device will not be reinitialized
+because they may be in use by RedBoot for communication with the host.
+    </para>
+    <para>
+For a ROM or ROMFFE startup the HAL will perform additional
+initialization, setting up the external DRAM and programming the
+various internal registers. The values used for most of these
+registers are <link
+linkend="m68k-m5272c3-config-registers">configurable</link>. Full
+details can be found in the exported headers <filename
+class="headerfile">cyg/hal/plf.inc</filename>
+and <filename class="headerfile">cyg/hal/proc.inc</filename>.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-port-linker"><title>Linker Scripts and Memory Maps</title>
+    <para>
+The platform HAL package provides the memory layout information needed
+to generate the linker script. The key memory locations are as follows:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term>external SDRAM</term>
+        <listitem><para>
+This is mapped to location 0x00000000. The first 384 bytes are used
+for hardware exception vectors. The next 256 bytes are normally used
+for the eCos virtual vectors, allowing RAM-based applications to use
+services provided by the ROM monitor. For ROM and ROMFFE startup all
+remaining SDRAM is available. For RAM and DBUG startup available SDRAM
+starts at location 0x00020000, with the bottom 128K reserved for use
+by either the RedBoot or dBUG ROM monitors.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>on-chip peripherals</term>
+        <listitem><para>
+These are accessible at location 0x10000000 onwards, as per the
+defined symbol <varname>HAL_MCFxxxx_MBAR</varname>. This address
+cannot easily be changed during development because both the ROM
+monitor and the application must use the same address. The
+<varname>%mbar</varname> system register is initialized appropriately
+during a ROM or ROMFFE startup.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>on-chip SRAM</term>
+        <listitem><para>
+The 4K of internal SRAM are normally mapped at location 0x20000000.
+The <varname>%rambar</varname> register is initialized 
+during a ROM startup using the value of the configuration
+option <varname>CYGNUM_HAL_M68K_M5272C3_RAMBAR</varname>. Neither eCos
+nor RedBoot use the internal SRAM so all of it is available to
+application code.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>on-chip ROM</term>
+        <listitem><para>
+Usually this is left disabled since its contents are of no interest to
+most applications. If it is enabled then it is usually mapped at
+location 0x21000000. The <varname>%rombar</varname> register is
+initialized during a ROM startup using the value of the configuration
+option <varname>CYGNUM_HAL_M68K_M5272C3_ROMBAR</varname>.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>off-chip Flash</term>
+        <listitem><para>
+This is located at the top of memory, location 0xFFE00000 onwards. For
+ROM and RAM startups it is assumed that a jumper is used to disable
+the bottom half of the flash, so location 0xFFE00000 is actually a
+mirror of 0xFFF00000. For ROMFFE and DBUG startups all of the flash is
+visible. By default the flash block at location 0xFFF00000 is used to
+hold RedBoot or another ROM startup application, and the block at
+location 0xFFFC00000 is used to hold flash management data and the
+RedBoot <command>fconfig</command> variables. The blocks at
+0xFFF400000 and 0xFFF80000 can be used by application code.
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-port-clock"><title>Clock Support</title>
+    <para>
+The platform HAL provides configuration options for the eCos system
+clock. This always uses the hardware timer 3, which should not be used
+directly by application code. The gprof-based profiling code uses
+timer 2, so that is only available when not profiling. Timers 0 and 1
+are never used by eCos so application code is free to manipulate these
+as required. The actual HAL macros for managing the clock are provided
+by the MCF5272 processor HAL. The specific numbers used are a
+characteristic of the platform because they depend on the processor
+speed.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-port-other-hal"><title>Other Issues</title>
+    <para>
+The M5272C3 platform HAL does not affect the implementation of other
+parts of the eCos HAL specification. The MCF5272 processor HAL, the
+MCFxxxx variant HAL, and the M68K architectural HAL documentation
+should be consulted for further details.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-m5272c3-port-other"><title>Other Functionality</title>
+    <para>
+The platform HAL package also provides a flash driver for the off-chip
+AMD AM29PL160C flash chip. This driver is inactive by default, and
+only becomes active if the configuration includes the generic flash
+support <varname>CYGPKG_IO_FLASH</varname>.
+    </para>
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+
+</part>
