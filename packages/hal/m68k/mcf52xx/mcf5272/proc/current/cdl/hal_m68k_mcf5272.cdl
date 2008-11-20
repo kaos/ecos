@@ -1,0 +1,228 @@
+# ====================================================================
+#
+#      hal_m68k_mcf5272.cdl
+#
+#      Processor settings for a Freescale mcf5272
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 2003,2004,2006,2007,2008 Free Software Foundation, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+#######DESCRIPTIONBEGIN####
+#
+# Author(s):     bartv
+# Date:          2003-06-04
+#
+#####DESCRIPTIONEND####
+#========================================================================
+
+cdl_package CYGPKG_HAL_M68K_MCF5272 {
+    display         "MCF5272 ColdFire variant HAL"
+    doc             ref/hal-m68k-mcf5272.html
+    parent          CYGPKG_HAL_M68K_MCFxxxx
+    requires        CYGPKG_HAL_M68K_MCFxxxx
+    implements      CYGINT_HAL_M68K_VARIANT_CACHE
+    implements      CYGINT_HAL_M68K_VARIANT_IRAM
+    hardware
+    include_dir     cyg/hal
+
+    description   "The mcf5272 M68k/ColdFire processor HAL package provides
+                generic support for this processor."
+    
+    compile     mcf5272.c
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_PROC_H   <pkgconf/hal_m68k_mcf5272.h>"
+    }
+
+    cdl_component CYGPKG_HAL_M68K_MCF5272_HARDWARE {
+        display     "Board-specific details"
+        flavor      none
+
+        cdl_component CYGHWR_HAL_M68K_MCF5272_GPIO {
+            display     "Configure GPIO pins"
+            flavor      none
+            active_if   CYGHWR_HAL_M68K_MCF5272_BOARD_PINS
+            script      gpio.cdl
+
+            description "
+              MCF5272 processors have 48 multi-purpose pins which can
+              be used for on-chip peripherals or for general purpose I/O.
+              Provided the platform HAL provides the appropriate information
+              the processor HAL will automatically set up each pin early on
+              during system initialization."
+        }
+
+        cdl_component CYGHWR_HAL_M68K_MCFxxxx_UART0 {
+            display     "UART0 details"
+            flavor      bool
+            default_value { (CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB0 == "txd0") || (CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB1 == "rxd0") }
+            description "
+              MCF5272 processors have three built-in UARTs which can be
+              used for HAL diagnostics or through the serial driver
+              CYGPKG_DEVS_SERIAL_MCFxxxx. By default support for each
+              UART is enabled if the relevant GPIO configuration options
+              are appropriate, disabled otherwise. Users can override this if
+              necessary, for example if the pins should come up in GPIO mode
+              but may be switched to UART mode later on."
+            
+            cdl_option CYGHWR_HAL_M68K_MCFxxxx_UART0_RTS {
+                display     "UART0 RTS connected"
+                flavor      bool
+                default_value  { CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB3 == "rts0" }
+                implements 	CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+                description "
+                  This option enables support elsewhere in the system
+                  when the UART0 RTS signal is connected to a processor pin."
+            }
+            
+            cdl_option CYGHWR_HAL_M68K_MCFxxxx_UART0_CTS {
+                display     "UART0 CTS connected"
+                flavor      bool
+                default_value  { CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB2 == "cts0" }
+                implements 	CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+                description "
+                  This option enables support elsewhere in the system
+                  when the UART0 CTS signal is connected to a processor pin."
+            }
+
+            cdl_option CYGHWR_HAL_M68K_MCFxxxx_UART0_RS485_RTS {
+                display         "UART0 RS485 support"
+                flavor          bool
+                default_value   0
+                active_if       CYGHWR_HAL_M68K_MCFxxxx_UART0_RTS
+                requires        { CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT != "uart0" }
+                description "
+                  If the UART0 signals are connected to an RS485 transceiver instead of
+                  an RS232 transceiver and the UART0 RTS line activates that transceiver
+                  then this option can be enabled. It primarily affects h/w flow control
+                  and transmit code within the generic mcfxxxx serial driver."
+            }
+        }
+        
+        cdl_component CYGHWR_HAL_M68K_MCFxxxx_UART1 {
+            display     "UART1 details"
+            flavor      bool
+            default_value { (CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD4 == "txd1") || (CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD1 == "rxd1") }
+            description "
+              MCF5272 processors have two built-in UARTs which can be
+              used for HAL diagnostics or through the serial driver
+              CYGPKG_DEVS_SERIAL_MCFxxxx. By default support for each
+              UART is enabled if the relevant GPIO configuration options
+              are appropriate, disabled otherwise. Users can override this if
+              necessary, for example if the pins should come up in GPIO mode
+              but may be switched to UART mode later on."
+
+            cdl_option CYGHWR_HAL_M68K_MCFxxxx_UART1_RTS {
+                display     "UART1 RTS connected"
+                flavor      bool
+                default_value  { CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD3 == "rts1" }
+                implements 	CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+                description "
+                  This option enables support elsewhere in the system
+                  when the UART1 RTS signal is connected to a processor pin."
+            }
+            
+            cdl_option CYGHWR_HAL_M68K_MCFxxxx_UART1_CTS {
+                display     "UART1 CTS connected"
+                flavor      bool
+                default_value  { CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD2 == "cts1" }
+                implements 	CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+                description "
+                  This option enables support elsewhere in the system
+                  when the UART1 CTS signal is connected to a processor pin."
+            }
+
+            cdl_option CYGHWR_HAL_M68K_MCFxxxx_UART1_RS485_RTS {
+                display         "UART1 RS485 support"
+                flavor          bool
+                default_value   0
+                active_if       CYGHWR_HAL_M68K_MCFxxxx_UART1_RTS
+                requires        { CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT != "uart1" }
+                description "
+                  If the UART1 signals are connected to an RS485 transceiver instead of
+                  an RS232 transceiver and the UART1 RTS line activates that transceiver
+                  then this option can be enabled. This primarily affects h/w flow control
+                  and transmit code within the generic mcfxxxx serial driver."
+            }
+        }
+    }
+    
+    cdl_option CYGIMP_HAL_M68K_MCF5272_IDLE {
+        display         "Idle thread behaviour"
+        flavor          data
+        legal_values    { "run" "sleep" "stop" }
+        default_value   { is_loaded(CYGPKG_CPULOAD) ? "run" : "sleep" }
+        description "
+            The processor can automatically enter a low power mode whenever
+          the system is idle. In run mode the cpu just spins. In sleep mode
+          the cpu clock is disabled but peripherals continue running, and any
+          interrupt will wake up the cpu. In stop mode the on-chip peripherals
+          are shut down as well and an external interrupt is required. The
+          MCF5272 provides finer-grained control over power management via
+          the PMR power management register but the processor HAL leaves
+          this to the application."
+    }
+    
+    cdl_option CYGFUN_HAL_M68K_MCF5272_PROFILE_TIMER {
+        display         "Support profiling"
+        active_if       CYGPKG_PROFILE_GPROF
+        default_value   1
+        implements      CYGINT_PROFILE_HAL_TIMER
+        compile         mcf5272_profile.S
+
+        description "
+          The MCF5272 processor HAL can provide support for gprof-based
+          profiling. This uses timer TMR2 to generate regular interrupts,
+          and the interrupt handler records the PC at the time of the
+          interrupt."
+    }
+
+    cdl_option CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MIN {
+        display     "Lowest permitted interrupt priority"
+        flavor      data
+        calculated  1
+        description "
+            In the MCF5272 processor HAL interrupt priorities are mapped
+            directly onto M68K IPL levels, so valid priorities are in the
+            range 1 to 7. However IPL level 7 is non-maskable so should not
+            be used by typical eCos code."
+    }
+
+    cdl_option CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MAX {
+        display     "Lowest permitted interrupt priority"
+        flavor      data
+        calculated  6
+        description "
+            In the MCF5272 processor HAL interrupt priorities are mapped
+            directly onto M68K IPL levels, so valid priorities are in the
+            range 1 to 7. However IPL level 7 is non-maskable so should not
+            be used by typical eCos code."
+    }
+}

@@ -1,0 +1,715 @@
+# ====================================================================
+#
+#      gpio.cdl
+#
+#      GPIO settings for a Freescale mcf5272
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 2006,2008 Free Software Foundation, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+#######DESCRIPTIONBEGIN####
+#
+# Author(s):     bartv
+# Date:          2006-07-10
+#
+#####DESCRIPTIONEND####
+#========================================================================
+
+cdl_component CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA {
+    display     "Configure port A pins"
+    flavor      none
+    no_define
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA0 {
+        display         "Configure pin PA0"
+        flavor          data
+        legal_values    { "usb_tp" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a0_usb_tp")  ? "usb_tp"  :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a0_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a0_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a0_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA0 can be configured as the USB TP signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA1 {
+        display         "Configure pin PA1"
+        flavor          data
+        legal_values    { "usb_rp" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a1_usb_rp")  ? "usb_rp"  :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a1_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a1_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a1_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA1 can be configured as the USB RP signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA2 {
+        display         "Configure pin PA2"
+        flavor          data
+        legal_values    { "usb_rn" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a2_usb_rn")  ? "usb_rn"  :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a2_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a2_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a2_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA2 can be configured as the USB RN signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA3 {
+        display         "Configure pin PA3"
+        flavor          data
+        legal_values    { "usb_tn" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a3_usb_tn")  ? "usb_tn"  :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a3_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a3_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a3_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA3 can be configured as the USB TN signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA4 {
+        display         "Configure pin PA4"
+        flavor          data
+        legal_values    { "usb_susp" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a4_usb_susp")    ? "usb_susp"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a4_in")          ? "in"          :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a4_out0")        ? "out0"        :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a4_out1")        ? "out1"        :
+            "invalid"
+        }
+        description "
+            Pin PA4 can be configured as the USB suspend signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA5 {
+        display         "Configure pin PA5"
+        flavor          data
+        legal_values    { "usb_txen" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a5_usb_txen")    ? "usb_txen"  :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a5_in")          ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a5_out0")        ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a5_out1")        ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA5 can be configured as the USB TxEn signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA6 {
+        display         "Configure pin PA6"
+        flavor          data
+        legal_values    { "usb_rxd" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a6_usb_rxd") ? "usb_rxd" :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a6_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a6_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a6_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA6 can be configured as the USB RxD signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA7 {
+        display         "Configure pin PA7"
+        flavor          data
+        legal_values    { "qspi_cs3" "dout3" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a7_qspi_cs3")    ? "qspi_cs3"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a7_dout3")       ? "dout3"       :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a7_in")          ? "in"          :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a7_out0")        ? "out0"        :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a7_out1")        ? "out1"        :
+            "invalid"
+        }
+        description "
+            Pin PA7 can be configured as the QSPI chip select 3 signal, the
+            PLIC DOUT3 signal, a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA8 {
+        display         "Configure pin PA8"
+        flavor          data
+        legal_values    { "fsc0_fsr0" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a8_fsc0_fsr0")   ? "fsc0_fsr0"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a8_in")          ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a8_out0")        ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a8_out1")        ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA8 can be configured as the PLIC frame sync FSR0/FSC0 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA9 {
+        display         "Configure pin PA9"
+        flavor          data
+        legal_values    { "dgnt0" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a9_dgnt0")   ? "dgnt0"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a9_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a9_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a9_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA9 can be configured as the PLIC D-Channel grant signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA10 {
+        display         "Configure pin PA10"
+        flavor          data
+        legal_values    { "dreq0_tp" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a10_dreq0")   ? "dreq0"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a10_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a10_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a10_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA10 can be configured as the PLIC D-Channel request signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA11 {
+        display         "Configure pin PA11"
+        flavor          data
+        legal_values    { "qspi_cs1" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a11_qspi_cs1")   ? "qspi_cs1"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a11_in")         ? "in"          :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a11_out0")       ? "out0"        :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a11_out1")       ? "out1"        :
+            "invalid"
+        }
+        description "
+            Pin PA11 can be configured as the QSPI CS1 chip select signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA12 {
+        display         "Configure pin PA12"
+        flavor          data
+        legal_values    { "dfsc2" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a12_dfsc2")   ? "dfsc2"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a12_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a12_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a12_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA12 can be configured as the PLIC delayed frame sync 2 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA13 {
+        display         "Configure pin PA13"
+        flavor          data
+        legal_values    { "dfsc3" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a13_dfsc3")   ? "dfsc3"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a13_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a13_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a13_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA13 can be configured as the PLIC delayed frame sync 3 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA14 {
+        display         "Configure pin PA14"
+        flavor          data
+        legal_values    { "dreq1" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a14_dreq1")   ? "dreq1"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a14_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a14_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a14_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA14 can be configured as the PLIC D-channel request 1 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTA_PA15 {
+        display         "Configure pin PA15"
+        flavor          data
+        legal_values    { "dgnt1" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a15_dgnt1")  ? "dgnt1"  :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a15_in")     ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a15_out0")   ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "a15_out1")   ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PA15 can be configured as the PLIC D-channel grant 1 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+}
+
+cdl_component CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB {
+    display     "Configure port B pins"
+    flavor      none
+    no_define
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB0 {
+        display         "Configure pin PB0"
+        flavor          data
+        legal_values    { "txd0" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b0_txd0")    ? "txd0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b0_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b0_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b0_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB0 can be configured as the UART0 tx signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB1 {
+        display         "Configure pin PB1"
+        flavor          data
+        legal_values    { "rxd0" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b1_rxd0")    ? "rxd0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b1_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b1_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b1_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB1 can be configured as the UART0 rx signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB2 {
+        display         "Configure pin PB2"
+        flavor          data
+        legal_values    { "cts0" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b2_cts0")    ? "cts0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b2_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b2_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b2_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB2 can be configured as the UART0 CTS signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB3 {
+        display         "Configure pin PB3"
+        flavor          data
+        legal_values    { "rts0" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b3_rts0")    ? "rts0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b3_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b3_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b3_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB3 can be configured as the UART0 RTS signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB4 {
+        display         "Configure pin PB4"
+        flavor          data
+        legal_values    { "clk0" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b4_clk0")    ? "clk0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b4_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b4_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b4_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB4 can be configured as the UART0 clock signal, a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB5 {
+        display         "Configure pin PB5"
+        flavor          data
+        legal_values    { "ta" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b5_ta")      ? "ta"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b5_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b5_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b5_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB5 can be configured as the bus control transfer acknowledge
+            signal, a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB6 {
+        display         "Configure pin PB6"
+        flavor          data
+        legal_values    { "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b6_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b6_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b6_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB6 can be configured as a GPIO input, or
+            a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB7 {
+        display         "Configure pin PB7"
+        flavor          data
+        legal_values    { "tout0" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b7_tout0")   ? "tout0"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b7_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b7_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b7_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB7 can be configured as the timer output 0 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB8 {
+        display         "Configure pin PB8"
+        flavor          data
+        legal_values    { "etxd3" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b8_etxd3")       ? "etxd3"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b8_in")          ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b8_out0")        ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b8_out1")        ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB8 can be configured as the ethernet TxD3 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB9 {
+        display         "Configure pin PB9"
+        flavor          data
+        legal_values    { "etxd2" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b9_etxd2")   ? "etxd2"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b9_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b9_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b9_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB9 can be configured as the ethernet TxD2 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB10 {
+        display         "Configure pin PB10"
+        flavor          data
+        legal_values    { "etxd1" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b10_etxd1")   ? "etxd1"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b10_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b10_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b10_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB10 can be configured as the ethernet TxD1signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB11 {
+        display         "Configure pin PB11"
+        flavor          data
+        legal_values    { "erxd3" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b11_erxd3")  ? "erxd3"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b11_in")     ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b11_out0")   ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b11_out1")   ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB11 can be configured as the ethernet RxD3 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB12 {
+        display         "Configure pin PB12"
+        flavor          data
+        legal_values    { "erxd2" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b12_erxd2")   ? "erxd2"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b12_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b12_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b12_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB12 can be configured as the ethernet RxD2 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB13 {
+        display         "Configure pin PB13"
+        flavor          data
+        legal_values    { "erxd1" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b13_erxd1")   ? "erxd1"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b13_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b13_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b13_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB13 can be configured as the ethernet RxD1 signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB14 {
+        display         "Configure pin PB14"
+        flavor          data
+        legal_values    { "erxer" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b14_erxer")   ? "erxer"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b14_in")      ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b14_out0")    ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b14_out1")    ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB14 can be configured as the ethernet RxER signal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTB_PB15 {
+        display         "Configure pin PB15"
+        flavor          data
+        legal_values    { "e_mdc" "in" "out0" "out1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b15_e_mdc")  ? "e_mdc"  :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b15_in")     ? "in"      :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b15_out0")   ? "out0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "b15_out1")   ? "out1"    :
+            "invalid"
+        }
+        description "
+            Pin PB15 can be configured as the ethernet E_MDCsignal,
+            a GPIO input, or a GPIO output (initial value 0 or 1)."
+    }
+}
+
+cdl_component CYGHWR_HAL_M68K_MCF5272_GPIO_PORTC {
+    display     "Configure port C pins"
+    flavor      none
+    no_define
+
+    for { set pin 0 } { $pin < 16 } { incr pin } {
+        cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTC_PC[set pin] {
+            display         "Configure pin PC[set pin]"
+            flavor          data
+            legal_values    { "in" "out0" "out1" }
+            default_value   \
+                is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, \"c[set pin]_in\")      ? \"in\"      :   \
+                is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, \"c[set pin]_out0\")    ? \"out0\"    :   \
+                is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, \"c[set pin]_out1\")    ? \"out1\"    :   \
+                \"invalid\"
+            description "
+            Pin PC[set pin] can be configured as a GPIO input, or a GPIO output (initial value 0 or 1)."
+        }
+    }
+}
+
+cdl_component CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD {
+    display     "Configure port D pins"
+    flavor      none
+    no_define
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD0 {
+        display         "Configure pin PD0"
+        flavor          data
+        legal_values    { "none" "dcl0" "clk1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d0_none")   ? "none"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d0_dcl0")   ? "dcl0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d0_clk1")   ? "clk1"    :
+            "invalid"
+        }
+        description "
+            Pin PD0 can be configured as the IDL clock 0 signal, the UART1
+            clock signal, or left at high impedance."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD1 {
+        display         "Configure pin PD1"
+        flavor          data
+        legal_values    { "none" "din0" "rxd1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d1_none")    ? "none"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d1_din0")    ? "din0"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d1_rxd1")    ? "rxd1"    :
+            "invalid"
+        }
+        description "
+            Pin PD1 can be configured as the IDL input 0 signal, the UART1
+            rx signal, or left at high impedance."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD2 {
+        display         "Configure pin PD2"
+        flavor          data
+        legal_values    { "none" "cts1" "qspi_cs2" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d2_none")        ? "none"        :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d2_cts1")        ? "cts1"        :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d2_qspi_cs2")    ? "qspi_cs2"    :
+            "invalid"
+        }
+        description "
+            Pin PD2 can be configured as the UART1 CTS signal, the QSPI chip
+            select 2 signal, or left at high impedance."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD3 {
+        display         "Configure pin PD3"
+        flavor          data
+        legal_values    { "none" "rts1" "int5" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d3_none")    ? "none"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d3_rts1")    ? "rts1"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d3_int5")    ? "int5"    :
+            "invalid"
+        }
+        description "
+            Pin PD3 can be configured as the UART1 RTS signal, an external
+            interrupt input, or left at high impedance."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD4 {
+        display         "Configure pin PD4"
+        flavor          data
+        legal_values    { "none" "dout0" "txd1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d4_none")    ? "none"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d4_dout0")   ? "dout0"   :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d4_txd1")    ? "txd1"    :
+            "invalid"
+        }
+        description "
+            Pin PD4 can be configured as the IDL serial data output 0 signal,
+            the UART1 TX signal, or left at high impedance."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD5 {
+        display         "Configure pin PD5"
+        flavor          data
+        legal_values    { "none" "din3" "int4" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d5_none")    ? "none"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d5_din3")    ? "din3"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d5_int4")    ? "int4"    :
+            "invalid"
+        }
+        description "
+            Pin PD5 can be configured as the IDL input 3 signal, an
+            external interrupt input, or left at high impedance."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD6 {
+        display         "Configure pin PD6"
+        flavor          data
+        legal_values    { "none" "pwm_out1" "tout1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d6_none")        ? "none"        :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d6_pwm_out1")    ? "pwm_out1"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d6_tout1")       ? "tout1"       :
+            "invalid"
+        }
+        description "
+            Pin PD6 can be configured as the PWM output 1 signal, the
+            timer 1 output signal, or left at high impedance."
+    }
+
+    cdl_option CYGHWR_HAL_M68K_MCF5272_GPIO_PORTD_PD7 {
+        display         "Configure pin PD7"
+        flavor          data
+        legal_values    { "none" "pwm_out2" "tin1" }
+        default_value   {
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d7_none")        ? "none"        :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d7_pwm_out2")    ? "pwm_out2"    :
+            is_substr(CYGHWR_HAL_M68K_MCF5272_BOARD_PINS, "d7_tin1")        ? "tin1"        :
+            "invalid"
+        }
+        description "
+            Pin PD7 can be configured as the PWM output 2 signal,
+            the timer 1 input signal, or left at high impedance."
+    }
+}

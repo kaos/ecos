@@ -1,0 +1,227 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     mcf5272.sgml                                                -->
+<!--                                                                 -->
+<!--     mcf5272 processor HAL documentation.                        -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- Copyright (C) 2003,2008                                         -->
+<!--   Free Software Foundation, Inc.                                -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Contact(s):  bartv                                              -->
+<!-- Date:        2003/07/15                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="hal-m68k-mcf5272"><title>Freescale MCF5272 Processor Support</title>
+
+<refentry id="m68k-mcf5272">
+  <refmeta>
+    <refentrytitle>The MCF5272 ColdFire Processor</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname><varname>CYGPKG_HAL_M68K_MCF5272</varname></refname>
+    <refpurpose>eCos Support for the Freescale MCF5272 Processor</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="m68k-mcf5272-description"><title>Description</title>
+    <para>
+The MCF5272 is one member of the Freescale MCFxxxx ColdFire range of
+processors. It comes with a number of on-chip peripherals including 2
+UARTs, ethernet, and USB slave. The processor HAL package
+<varname>CYGPKG_HAL_M68K_MCF5272</varname> provides support for
+features that are specific to the MCF5272. It complements the M68K
+architectural HAL package <varname>CYGPKG_HAL_M68K</varname> and the
+variant HAL package <varname>CYGPKG_HAL_M68K_MCFxxxx</varname>. An
+eCos configuration should also include a platform HAL package, for
+example <varname>CYGPKG_HAL_M68K_M5272C3</varname> to support
+board-level details like the external memory chips.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-mcf5272-config"><title>Configuration</title>
+    <para>
+The MCF5272 processor HAL package should be loaded automatically when
+eCos is configured for appropriate target hardware. It should never be
+necessary to load this package explicitly. Unloading the package
+should only happen as a side effect of switching target hardware.
+    </para>
+    <para>
+The component <varname>CYGPKG_HAL_M68K_MCF5272_HARDWARE</varname>
+contains configuration options for the available hardware. This
+includes all GPIO pin settings, with defaults provided by the
+platform HAL. In turn the pin settings are used to determine defaults
+for other hardware settings, for example which of the two on-chip
+uarts are usable. Users can override these settings if necessary,
+subject to any constraints imposed by the platform HAL, but care has
+to be taken that the resulting configuration still matches the actual
+hardware.
+    </para>
+    <para>
+The option <varname>CYGIMP_HAL_M68K_MCF5272_IDLE</varname> controls
+what happens in configurations containing the eCos kernel when the
+idle thread runs, i.e. when there is nothing for the processor to do
+until the next interrupt comes in. Usually the processor made to
+sleep, halting the cpu but leaving all peripherals active.
+    </para>
+    <para>
+The package contains a single configuration option
+<varname>CYGFUN_HAL_M68K_MCF5272_PROFILE_TIMER</varname>. This
+controls the support for gprof-based profiling. By default it is
+active and enabled if the configuration contains the gprof profiling
+package, otherwise inactive. The relevant code uses hardware timer 2,
+so that timer is no longer available for application code. If the
+timer is required but a platform HAL provides an alternative
+implementation of the profiling support then this option can be
+disabled.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-mcf5272-port"><title>The HAL Port</title>
+    <para>
+This section describes how the MCF5272 processor HAL package
+implements parts of the eCos HAL specification. It should be read in
+conjunction with similar sections from the architectural and variant
+HAL documentation.
+    </para>
+
+    <refsect2 id="m68k-mcf5272-port-io"><title>HAL I/O</title>
+      <para>
+The header
+file <filename class="headerfile">cyg/hal/proc_io.h</filename>
+specifies which generic MCFxxxx devices are present, and provides
+details of MCF5272-specific devices. This header file is automatically
+included by the architectural
+header <filename class="headerfile">cyg/hal/hal_io.h</filename>, so
+typically application code and other packages will just include the
+latter.
+      </para>
+      <para>
+It should be noted that the Freescale documentation is occasionally
+confusing when it comes to numbering devices. For example the four
+on-chip timers are numbered TMR0 to TMR3, but in the interrupt
+controller the corresponding interrupts are numbered TMR1 to TMR4. The
+eCos port consistently starts numbering at 0, so these interrupts have
+been renamed TMR0 to TMR3.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcf5272-port-interrupts"><title>Interrupt Handling</title>
+      <para>
+The header file <filename
+class="headerfile">cyg/hal/proc_intr.h</filename> provides VSR and ISR
+vector numbers for all interrupt sources. The VSR vector number, for
+example <varname>CYGNUM_HAL_VECTOR_TMR0</varname>, should be used
+for calls like <function>cyg_interrupt_get_vsr</function>. It
+corresponds directly to the M68K exception number. The ISR vector
+number, for example <varname>CYGNUM_HAL_ISR_TMR0</varname>, should be
+used for calls like <function>cyg_interrupt_create</function>. This
+header file is automatically included by the architectural header
+<filename class="headerfile">cyg/hal/hal_intr.h</filename>, and other
+packages and application code will normally just include the latter.
+      </para>
+      <para>
+The eCos HAL macros <function>HAL_INTERRUPT_MASK</function>,
+<function>HAL_INTERRUPT_UNMASK</function>,
+<function>HAL_INTERRUPT_SET_LEVEL</function>,
+<function>HAL_INTERRUPT_ACKNOWLEDGE</function>, and
+<function>HAL_INTERRUPT_CONFIGURE</function> are implemented by the
+processor HAL. The mask and unmask operations are straightforward,
+simply manipulating the on-chip interrupt controller. The acknowledge
+and configure macros are only relevant for external interrupts:
+internal interrupts generated by on-chip devices do not need to be
+acknowledged. The set-level operation, used implicitly by higher level
+code such as <function>cyg_interrupt_create</function>, is mapped on
+to M68K IPL levels so interrupts can be given a priority between 1
+and 7. Priority 7 corresponds to non-maskable interrupts and must be
+used with care: such interrupts cannot be managed safely by the usual
+eCos ISR and DSR mechanisms; instead application code will have to
+install a custom VSR and manage the entire interrupt.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcf5272-port-clock"><title>Clock Support</title>
+      <para>
+The processor HAL provides support for the eCos system clock. This
+always uses hardware timer 3, which should not be used directly by
+application code. If gprof-based profiling is in use then that will
+use hardware timer 2. Timers 0 and 1 are never used by eCos so
+application code is free to manipulate these as required.
+      </para>
+      <para>
+Some of the configuration options related to the system clock, for
+example <varname>CYGNUM_HAL_RTC_PERIOD</varname>, are actually
+contained in the platform HAL rather than the processor HAL. These
+options need to take into account the processor clock speed, a
+characteristic of the platform rather than the processor.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcf5272-port-cache"><title>Cache Handling</title>
+      <para>
+The MCF5272 has a small instruction cache of 1024 bytes. This is fully
+supported by the processor HAL. There is no data cache.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcf5272-port-idle"><title>Idle Thread Support</title>
+      <para>
+The configuration
+option <varname>CYGIMP_HAL_M68K_MCF5272_IDLE</varname> controls what
+happens when the kernel idle thread runs. The default behaviour is to
+put the processor to sleep until the next interrupt.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcf5272-port-profiling"><title>Profiling Support</title>
+      <para>
+The MCF5272 processor HAL provides a profiling timer for use with the
+gprof profiling package. This uses hardware timer 2, so application
+code should not manipulate this timer if profiling is enabled. The
+M68K architectural HAL implements the <function>mcount</function>
+function so profiling is fully supported on all MCF5272-based platforms.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcf5272-port-other-hal"><title>Other Issues</title>
+      <para>
+The MCF5272 processor HAL does not affect the implementation of data
+types, stack size definitions, linker scripts, SMP support, system
+startup, or debug support. The architectural HAL's bit index
+instructions are used rather than the MCFxxxx variant HAL's versions
+since the MCF5272 does not implement the ff1 and bitrev instructions.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcf5272-port-other"><title>Other Functionality</title>
+      <para>
+The MCF5272 processor HAL only implements functionality defined in the
+eCos HAL specification and does not export any additional functions.
+      </para>
+    </refsect2>
+  </refsect1>
+</refentry>
+
+</part>

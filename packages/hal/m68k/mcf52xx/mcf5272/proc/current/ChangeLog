@@ -1,8 +1,186 @@
+2008-11-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* whole package. Replace the original M68K port.
+
+2008-11-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_mcd5272.cdl, cdl/gpio.cdl, include/proc_arch.h,
+	include/proc_cache.h, include/proc.inc, include/proc_intr.h,
+	include/proc_io.h, src/mcf5272.c, src/mcf5272_profile.S: minor
+	clean-ups. 
+
+2008-09-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_arch.h: allow platform HALs to override the
+	PROC_INIT() macro.
+
+2007-07-27  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/hal_m68k_mcf52xx.cdl: Reference per-package documentation.
+
+2006-10-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_io.h (HAL_MCF52xx_ETHx_TXBD_DEF): fix naming of the
+	TXBD error conditions.
+
+2006-10-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc.inc: add utility macros for low-level bootstrap
+	(flash remapping etc.) to simplify most platform HALs.
+
+2006-09-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/gpio.cdl, cdl/hal_m68k_mcf52xx.cdl, src/gpio.c :
+	Rationalize pin naming.
+
+2006-09-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc.inc: take care to OR in the CSBR0 BW bits as per
+	the pin sampling on reset. Use more verbose names to distinguish
+	between registers and their values.
+
+	* include/proc_io.h (HAL_MCF52xx_MBAR): provide a default
+	definition if the platform HAL has not specified one.
+
+2006-09-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_mcf5272.cdl: GPIO is now largely handled by the
+	processor HAL instead of the platform HAL. Diagnostics are now
+	handled by the variant HAL.
+
+	* src/mcf5272.c: add processor initialization code. The processor
+	HAL now largely takes care of GPIO pins, interrupts and
+	exceptions, so less has to be done by the platform HAL.
+
+	* src/mcf5272_profile.S: fix typo.
+
+	* include/proc_io.h: update to match variant HAL changes. The
+	processor HAL now picks up variant HAL definitions for the UARTs,
+	ethernet and QSPI which are largely compatible with the 5282.
+
+	* include/proc_intr.h: use HAL_DELAY_US() from the architectural
+	HAL. Add a reset macro which activates the watchdog.
+
+	*  include/proc_cache.h: use updated register definitions.
+
+	* include/proc_arch.h: add processor init function and idle thread
+	action.
+
+	* include/proc.inc: add macros for handling the flash remapping,
+	system registers, and memory initialization.
+
+	* src/spi.c: instantiate the on-chip SPI bus device here.
+
+	* tests/iram1.c: new testcase for MCF5272 on-chip RAM
+
+	* cdl/gpio.cdl, src/gpio.c: make it easier for platform HALs to
+	define the GPIO pin connectivity.
+
+2006-09-06  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/proc_io.h (HAL_MCF5272_QSPI_QCRn_QSPI_CS_CSn): Added
+	this macro to permit easier definition of demultiplexed SPI chip
+	selects.
+
+2005-04-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_m68k_mcf5272.cdl: Define a HAL processor variant header in
+	<pkgconf/system.h>
+
+2005-02-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_intr.h (HAL_CLOCK_INITIALIZE): fix initialization
+	values. Both the prescaler and the period were off by one.
+	Reported by Matthew Miller.
+
+	* src/mcf5272.c (hal_enable_profile_timer): similar adjustment for
+	the profile timer.
+
+2005-02-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_intr.h: implement HAL_CLOCK_LATENCY()
+
+2004-10-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_io.h (HAL_MCF5272_PBCNT_PBCNT5_TA): add missing
+	GPIO pin definition
+
+2004-06-24  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc.inc, src/mcf5272.c: move cacr and icr_pri shadow
+	copies from .data to .fixed_vectors, so that they can be shared
+	between RedBoot and the application.
+
+2004-06-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_intr.h (HAL_DELAY_US): try to give accurate timings
+	irrespective of whether or not the icache is enabled
+
+2004-05-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_io.h: add more SPI-related definitions
+
+2004-03-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_io.h (HAL_MCF52xx_ETH0_PROC_INIT): only connect the
+	phy pins if the ethernet driver expects a phy.
+
+	* cdl/hal_m68k_mcf5272.cdl: add calculated options for the legal
+	ISR priority range.
+
+2004-02-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_io.h: move cacr/acr/rambar/rombar definitions from
+	variant to processor HAL. Add processor-specific ethernet
+	initialization macro to allow the ethernet driver to be shared
+	between different coldfire processors. Add new HAL_MCF52xx() macro
+	to facilitate device driver sharing.
+
+	* include/proc_cache.h: cacr defines are now processor-specific,
+	rather than defined by the 52xx variant HAL.
+
+	* include/proc.inc: rework ISR vector extraction macros, to save
+	an instruction in the main VSR
+
+2003-11-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/mcf5272.c: fix typo in header
+
+2003-09-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf5272.sgml, cdl/hal_m68k_mcf5272.sgml,
+	include/proc_intr.h, src/mcf5272.c, src/mcf5272_profile.S:
+	Implement a profiling timer.
+
+2003-07-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf5272.sgml: fix various typos etc.
+
+2003-07-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf5272.sgml: Add documentation
+
+2003-07-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_io.h:
+	Make some UART definitions MCF52xx rather than MCF5272, so that
+	the generic driver can test for these and adapt to what the
+	current MCF52xx processor actually supports
+
+2003-07-05  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/proc_intr.h (HAL_MCF5272_EXTERNAL_INTERRUPTS):
+	Fix handling of external interrupts
+
+2003-06-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* New version of the M68K support
+
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -26,9 +204,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================
