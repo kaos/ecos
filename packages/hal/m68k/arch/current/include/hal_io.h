@@ -8,11 +8,10 @@
 //      HAL device IO register support.
 //
 //=============================================================================
-//####ECOSGPLCOPYRIGHTBEGIN####
-// -------------------------------------------
+//###ECOSGPLCOPYRIGHTBEGIN####
+//-------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-//
+// Copyright (C) 2003,2006,2008 Free Software Foundation, Inc.
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
 // Software Foundation; either version 2 or (at your option) any later version.
@@ -35,19 +34,25 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
+//####DESCRIPTIONBEGIN####
+//
+// Author(s): 	bartv
+// Date:	2003-06-04
+//####DESCRIPTIONEND####
+//=============================================================================
 
+#if !defined(__ASSEMBLER__) && !defined(__LDI__)
 #include <cyg/infra/cyg_type.h>
+#endif
+#include <cyg/hal/var_io.h>
 
+#if !defined(__ASSEMBLER__) && !defined(__LDI__)
 //-----------------------------------------------------------------------------
 // IO Register address.
 // This type is for recording the address of an IO register.
-
 typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 
 //-----------------------------------------------------------------------------
@@ -140,6 +145,8 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
         ((volatile CYG_WORD32 *)(_register_))[_j_] = (_buf_)[_i_];      \
     }                                                                   \
     CYG_MACRO_END
+
+#endif
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_HAL_IO_H

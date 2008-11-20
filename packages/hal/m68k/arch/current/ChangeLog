@@ -1,13 +1,326 @@
-2004-04-22  Jani Monoses <jani@iv.ro>
+2008-11-18  Bart Veer  <bartv@ecoscentric.com>
 
-	 * cdl/hal_m68k.cdl :
-	 Invoke tail with stricter syntax that works in latest coreutils. 
+	* whole package. Replace the original M68K port.
+
+2008-11-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/m68k.sgml, cdl/hal_m68k.cdl, include/arch.inc,
+	src/hal_arch.S, src/m68k.ld, src/m68k_stub.c: minor clean-ups.
+
+2008-09-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_arch.S: in the interrupt VSR only lock the scheduler in
+	kernel configurations.
+
+	* include/hal_intr.h (hal_interrupt_handlers): add a define'd
+	alias for cyg_hal_interrupt_handlers, needed by objloader.
+
+2008-05-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/hal_arch.h: add bset and bclr utility macros.
+
+2008-02-28  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_arch.S: call DSRs even in non-kernel configurations.
+
+	* include/arch.inc: include some debug info in assembler functions
+
+	* cdl/hal_m68k.cdl, tests/iram1.c: add test for on-chip memory and
+	the iram linker script section.
+
+2008-02-14  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/hal_io.h: cope with being #include'd from inside a
+	linker script.
+
+	* include/hal_intr.h: fix HAL_VSR_SET() macro for
+	autoincrement/decrement pointer argument. Fix HAL_DELAY_US()
+	support for cached vs. uncached execution.
+
+2007-02-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/plf_stub.h (HAL_STUB_PLATFORM_INIT_SERIAL): do not both with
+	plf_comms_init() if the virtual vector init code has already taken
+	care of it.
+
+2006-12-21  Bart Veer  <bartv@ecoscentric.com>
+
+	*  src/m68k.ld: ensure the ctors table is properly aligned.
+
+2006-12-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/m68k.ld: default to placing _stext at the start of
+	.m68k_startup instead of .text, but allow platforms to override
+	this.
+
+	* src/vectors.S: minor code size optimizations to the startup
+	code.
+
+2006-12-03  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/vectors.S: allow platforms to suppress the exception vector
+	entries in .ram_vectors while preserving the virtual vectors and
+	any variant/processor/platform-specific data.
+
+	* include/hal_cache.h: allow indirect inclusion from assembler
+	files.
+
+2006-10-12  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/m68k.ld (SECTION_iram): fix alignment problems when the
+	on-chip code is not a multiple of 4 bytes
+
+2006-10-11  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/m68k.ld: Removed a stray '.' from _EH_FRAME1_. Added
+	_region_ argument to _EH_FRAME1_ and _GCC_EXCEPT_TABLE1_.
+
+2006-09-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/m68k.sgml: update to reflect recent changes in the M68K
+	HALs.
+
+2006-09-25  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/hal_m68k.cdl: Restore CYGBLD_LINKER_SCRIPT - required by the
+	eCos Configuration Tool.
+
+2006-09-13  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/vectors.S: Place hal_m68k_exception_reset in its own
+	section, to avoid its section being at 0x0 which confuses
+	GDB.
+
+2006-09-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k.cdl: there is no need for the linker script to be
+	an option.
+	
+	* cdl/hal_m68k.cdl, src/plf_stub.h: allow the architectural HAL to
+	provide plf_stub.h at the platform HAL's request, to avoid lots of
+	duplication of the same header.
+
+2006-09-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/m68k.ld: greatly simplify M68K linker script support. Add
+	support for on-chip RAM.
+
+	* src/vectors.S: tidy up. Add support for on-chip RAM.
+
+	* src/hal_m68k.c: move hal_if_init() up the hierarchy
+
+	* include/hal_io.h: can now be safely #include'd by assembler
+	files.
+
+	* include/hal_arch.h: change gdb stub target_register_t definition
+	to avoid compiler warning.
+
+2006-09-05  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/vectors.S: fix fencepost bug in BSS initialization
+
+	* src/m68k.ld: discard exception-related sections unless libstdcxx
+	is in the configuration.
+
+	* src/hal_m68k.c: remove idle thread action function, now defaults
+	to just an empty macro.
+
+	* src/hal_arch.S: tidy up comment.
+
+	* include/hal_intr.h: HAL_VSR_SET() is now optional.
+
+	* include/hal_cache.h: fix default cache definitions.
+
+	* include/hal_arch.h: allow lower-level HAL to provide the LSBIT
+	and MSBIT macros. Do not initialize interrupts in a thread context
+	when building RedBoot, so loaded applications start with ints
+	disabled.
+
+	* cdl/hal_m68k.cdl: fix custom build rules for proper dependency
+	handling.
+	
+
+2006-07-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/m68k.ld, src/vectors.S: distinguish cleanly between the
+	exception vectors and the startup code. Add support for mcf52xx
+	cfm flash security settings.
+
+	* src/hal_m68k.c: rationalize hal_arch_default_isr() &
+	hal_default_isr() functions
+
+	* cdl/hal_m68k.cdl, src/hal_arch.S, include/arch.inc: default to
+	providing startup/interrupt stack in the architectural HAL
+
+	* include/hal_intr.h: default to providing HAL_DELAY_US() in the
+	architectural HAL
+	
+2006-06-26  Jonathan Larmour  <jifl@ecoscentric.com>
+
+	* cdl/hal_m68k.cdl: Use correct syntax for modern GNU tail.
+
+2006-03-10  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/hal_m68k.cdl: Add reference to M68k architecture documentation.
+
+2006-02-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/hal_intr.h (HAL_ENABLE_INTERRUPTS): fix
+	DEFAULT_IPL_LEVEL usage.
+
+2005-06-10  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/m68k.ld: gcc_except_table subsections don't need to be
+	kept.
+
+2005-06-03  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/m68k.ld: gcc_except_table needs to be marked KEEP.
+
+2005-05-23  Jonathan Larmour  <jifl@eCosCentric.com>
+2005-05-23  Bart Veer  <bartv@eCosCentric.com>
+
+	* src/hal_arch.S (hal_m68k_exception_handler): Zero frame pointer
+	to improve GDB backtraces.
+	(hal_interrupt_stack_call_pending_DSRs): Ditto.
+	* src/vectors.S (hal_m68k_exception_reset): Use shorter suba.l
+	instruction to zero frame pointer.	
+
+2005-02-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/m68k.ld: Use CYGBLD_HAL_LINKER_GROUPED_LIBS from the common HAL
+	for GROUP() list now.
+
+2004-10-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_m68k.c (hal_m68k_startup): add more init macros if the
+	platform needs them.
+	* doc/m68k.sgml: document the various init macros
+
+2004-09-22  John Dallaway  <jld@ecoscentric.com>
+
+	* src/m68k.ld: Add got, frame and RELOCS sections. Accommodate .bss*
+
+2004-06-24  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/vectors.S: extend fixed_vectors with sections for the
+	variant, processor and platform HALs. This makes it easier to
+	share data between RedBoot and the application.
+
+	* src/hal_m68k.c (hal_m68k_startup): support init routines
+	provided by the variant and processor HALs.
+
+2004-02-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/vectors.S: give .fixed_vectors the right section attributes,
+	and fix comment.
+
+	* src/hal_arch.S (hal_m68k_interrupt_vsr): use new macro
+	hal_context_extract_isr_vector_shl2, saving an instruction in the
+	main interrupt handling path.
+
+	* doc/m68k.sgml: document new macro
+	hal_context_extract_isr_vector_shl2 
+
+2004-01-09  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/hal_m68k.cdl:
+	Correct capitalisation of "Variant details" string.
+
+2004-01-05  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_m68k.c (cyg_hal_invoke_constructors):
+	This function should not be static. In some configurations it may
+	get called from the libc startup code.
+
+2003-09-30  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_arch.S: __profile_mcount() was referenced even if the
+	profiling package was absent. This was only a problem when
+	building without linker garbage collection.
+
+2003-09-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k.cdl, src/hal_arch.S, doc/m68k.sgml:
+	The architectural HAL now provides mcount profiling support.
+
+2003-08-01  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_arch.S: rework VSR and
+	hal_interrupt_stack_call_pending_DSRs so that interrupts are only
+	re-enabled while running the DSR, not elsewhere in the interrupt
+	handling code. Currently this is the only way to guarantee that
+	stack usage remains bounded.
+
+	* src/hal_m68k.c: define new variable hal_m68k_dsr_ipl_level,
+	the IPL level that should be used when running DSRs.
+
+	* include/hal_intr.h: HAL_INTERRUPT_STACK_CALL_PENDING_DSRS() is
+	now defined even when not running with an interrupt stack, so that
+	DSRs still run with interrupts enabled.
+
+	* doc/m68k.sgml: Minor updates following changes to the interrupt
+	handling.
+
+	* include/hal_arch.h (HAL_THREAD_INIT_CONTEXT): A thread would be
+	initialized with the wrong status register value if the default
+	IPL level was not zero
+
+2003-07-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/m68k.sgml: Fix various typos etc.
+
+2003-07-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/m68k.sgml: update documentation.
+
+2003-07-06  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_arch.S: Add support for kernel interrupt
+	instrumentation.
+
+2003-07-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_arch.S:
+	Rework interrupt and exception VSR's to make the use of an
+	interrupt stack optional, and to allow interrupt nesting to be
+	disabled.
+
+	* src/hal_m68k.c: 
+	* src/vectors.S:
+	hal_m68k_interrupt_nesting count is no longer required. Instead
+	the stack pointer itself is compared with the interrupt stack base
+	and top when deciding whether or not to switch to the interrupt
+	stack. 
+
+	* include/hal_intr.h:
+	HAL_INTERRUPT_STACK_CALL_PENDING_DSRS() is only provided if there
+	is an interrupt stack
+
+	* include/hal_arch.h:
+	Adjust stack sizes for different interrupt-related configurations
+	
+	* cdl/hal_m68k.cdl:
+	Interrupt stacks and nesting are now optional as on other
+	architectures.
+
+2003-06-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/hal_arch.h:
+	Eliminate a build warning.
+
+	* include/hal_intr.h:
+	Provide default implementation of HAL_TRANSLATE_VECTOR()
+
+2003-06-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* New version of the M68K support
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -31,9 +344,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

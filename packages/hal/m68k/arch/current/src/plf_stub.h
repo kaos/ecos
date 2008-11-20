@@ -1,38 +1,17 @@
-#ifndef CYGONCE_HAL_HAL_DIAG_H
-#define CYGONCE_HAL_HAL_DIAG_H
+#ifndef CYGONCE_HAL_PLF_STUB_H
+#define CYGONCE_HAL_PLF_STUB_H
 
 //=============================================================================
 //
-//      hal_diag.h
+//      plf_stub.h
 //
-//      HAL Support for Kernel Diagnostic Routines
+//      Generic platform header for GDB stub support.
 //
 //=============================================================================
-//####UNSUPPORTEDBEGIN####
-//
-// -------------------------------------------
-// This source file has been contributed to eCos/Red Hat. It may have been
-// changed slightly to provide an interface consistent with those of other
-// files.
-//
-// The functionality and contents of this file is supplied "AS IS"
-// without any form of support and will not necessarily be kept up
-// to date by Red Hat.
-//
-// All inquiries about this file, or the functionality provided by it,
-// should be directed to the 'ecos-discuss' mailing list (see
-// http://ecos.sourceware.org/ecos/intouch.html for details).
-//
-// Maintained by:  <Unmaintained>
-// -------------------------------------------
-//
-//####UNSUPPORTEDEND####
-//=============================================================================
-//####ECOSGPLCOPYRIGHTBEGIN####
-// -------------------------------------------
+//###ECOSGPLCOPYRIGHTBEGIN####
+//-------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-//
+// Copyright (C) 2003,2006,2007,2008 Free Software Foundation, Inc.
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
 // Software Foundation; either version 2 or (at your option) any later version.
@@ -55,35 +34,39 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):   bartv
+// Date:        2003-06-04
+//
+//####DESCRIPTIONEND####
+//=============================================================================
 
 #include <pkgconf/hal.h>
+#include <cyg/infra/cyg_type.h>         // CYG_UNUSED_PARAM
+#include <cyg/hal/hal_arch.h>
 
-#include <cyg/infra/cyg_type.h>
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+//----------------------------------------------------------------------------
+// Define some platform specific communication details. This is mostly
+// handled by hal_if now, but we need to make sure the comms tables are
+// properly initialized.
 
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS
+# define HAL_STUB_PLATFORM_INIT_SERIAL()        CYG_EMPTY_STATEMENT
+#else
+externC void cyg_hal_plf_comms_init(void);
+# define HAL_STUB_PLATFORM_INIT_SERIAL()        cyg_hal_plf_comms_init()
+#endif
+
+# define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud)  CYG_UNUSED_PARAM(int, (baud))
+# define HAL_STUB_PLATFORM_INTERRUPTIBLE        0
+# define HAL_STUB_PLATFORM_INIT()               CYG_EMPTY_STATEMENT
+
+#endif
 //-----------------------------------------------------------------------------
-// functions implemented in hal_diag.c
-
-externC void hal_diag_init(void);
-
-externC void hal_diag_write_char(cyg_int8 c);
-
-externC cyg_int8 hal_diag_read_char(void);
-
-//-----------------------------------------------------------------------------
-
-#define HAL_DIAG_INIT() hal_diag_init()
-
-#define HAL_DIAG_WRITE_CHAR(_c_) hal_diag_write_char(_c_)
-
-#define HAL_DIAG_READ_CHAR(_c_) ((_c_) = hal_diag_read_char())
-
-//-----------------------------------------------------------------------------
-// end of hal_diag.h
-#endif // CYGONCE_HAL_HAL_DIAG_H
-
+#endif // CYGONCE_HAL_PLF_STUB_H
+// End of plf_stub.h

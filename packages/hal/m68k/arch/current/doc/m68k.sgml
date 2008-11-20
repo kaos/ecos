@@ -1,0 +1,878 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     m68k.sgml                                                   -->
+<!--                                                                 -->
+<!--     m68k architectural documentation.                           -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- Copyright (C) 2003,2004,2006,2008                               -->
+<!--   Free Software Foundation, Inc.                                -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Contact(s):  bartv                                              -->
+<!-- Date:        2003/06/04                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="hal-m68k-arch"><title>M68000 Architectural Support</title>
+
+<!-- {{{ Overview                       -->
+
+<refentry id="m68k">
+  <refmeta>
+    <refentrytitle>Overview</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Overview</refname>
+    <refpurpose>eCos Support for the M68K Family of Processors</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="m68k-description"><title>Description</title>
+    <para>
+The original Motorola 68000 processor was released in 1979, and
+featured the following:
+    </para>
+    <itemizedlist>
+      <listitem><para>
+Eight general purpose 32-bit data registers, %D0 to %D7. Seven 32-bit
+address registers %A0 to %A6, with %A7 dedicated as the stack pointer.
+A 16-bit status register.
+      </para></listitem>
+      <listitem><para>
+A linear address space, limited to 24-bits because the chip package
+only had 24 address pins. Hence the processor could address 16
+megabytes of memory.
+      </para></listitem>
+      <listitem><para>
+No separate address space for I/O operations. Instead devices are
+accessed just like memory via the main address and data buses.
+      </para></listitem>
+      <listitem><para>
+16-bit external data bus, even though the data registers were 32 bits
+wide.
+      </para></listitem>
+      <listitem><para>
+A CISC variable-length instruction set with no less than 14 different
+addressing modes (although of course the terms RISC and CISC were not
+yet in common use).
+      </para></listitem>
+      <listitem><para>
+Separate supervisor and user modes. The processor actually has two
+distinct stack pointer registers %A7, and the mode determines which one
+gets used.
+      </para></listitem>
+      <listitem><para>
+An interrupt subsystem with support for vectored and prioritized
+interrupts.
+      </para></listitem>
+    </itemizedlist>
+    <para>
+The 68000 processor was used in several microcomputers of its time,
+including the original Apple Macintosh, the Commodore Amiga, and the
+Atari ST. Over the years numerous variants have been developed. The
+core instruction set has remained essentially unchanged. Some of the
+variants have additional instructions. The development of MMUs led to
+changes in exception handling. In more recent variants, notably the
+Freescale ColdFire family, some infrequently used instructions and
+addressing modes have been removed.
+    </para>
+    <itemizedlist>
+      <listitem><para>
+The 68008 reduced the widths of the external data and address buses to
+8 bits and 20 bits respectively, giving the processor slow access to
+only one megabyte.
+      </para></listitem>
+      <listitem><para>
+The 68010 (1982) added virtual memory support.
+      </para></listitem>
+      <listitem><para>
+In the 68020 (1984) both the address and data buses were made 32-bits wide. A
+256-byte instruction cache was added, as were some new instructions
+and addressing modes.
+      </para></listitem>
+      <listitem><para>
+The 68030 (1987) included an on-chip mmu and a 256-byte data cache.
+      </para></listitem>
+      <listitem><para>
+The 68040 (1991) added hardware floating point (previous processors relied on
+an external coprocessor or on software emulation). It also had larger
+caches and an improved mmu.
+      </para></listitem>
+      <listitem><para>
+The 68060 (1994) involved an internally very different superscalar
+implementation of the architecture, but few changes at the interface
+level. It also contained support for power management.
+      </para></listitem>
+      <listitem><para>
+There have been numerous 683xx variants for embedded use, with
+on-chip peripherals like UARTs and timers. The cpu core of these
+variants is also known as cpu32.
+      </para></listitem>
+      <listitem><para>
+The MCFxxxx ColdFire series (1995) resembles a stripped-down 68060,
+with some instructions and addressing modes removed to allow for a
+much smaller and more efficient implementation. Various hardware units
+such as the and FPU and MMU have become optional.
+      </para></listitem>
+    </itemizedlist>
+
+    <para>
+eCos only provides support for some of these variants, although it
+should be possible to add support for additional variants with few or
+no changes to the architectural HAL package.
+    </para>
+    <para>
+The architectural HAL provides support for those features which are
+common to all members of the 68000 and ColdFire families, and for
+certain features which are present on some but not all members. A
+typical eCos configuration will also contain: a variant HAL package
+with support code for a family of processors, for example MCFxxxx;
+possibly a processor HAL package with support for one specific
+processor, for example the MCF5272; and a platform HAL
+which contains the code needed for a specific hardware platform such
+as the m5272c3.
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Configuration                  -->
+
+<refentry id="m68k-configuration">
+  <refmeta>
+    <refentrytitle>Configuration</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Options</refname>
+    <refpurpose>Configuring the M68K Architectural Package</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="m68k-config-load"><title>Loading and Unloading the Package</title>
+    <para>
+The M68K architectural HAL package <varname>CYGPKG_HAL_M68K</varname>
+should be loaded automatically when eCos is configured for M68K-based
+target hardware. It should never be necessary to load this package
+explicitly. Unloading the package should only happen as a side effect
+of switching target hardware. <varname>CYGPKG_HAL_M68K</varname>
+serves primarily as a container for lower-level HALs and has only a
+small number of configuration options.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-config-stacks"><title>Stacks</title>
+    <para>
+By default the architectural HAL provides a single block of memory to
+act as both the startup stack and the interrupt stack. The variant,
+processor or platform HAL may override this. For example if there are
+several banks of RAM with different performance characteristics it may
+be desirable to place the interrupt stack in fast RAM rather than in
+ordinary RAM.
+    </para>
+    <para>
+The assembler startup code sets the stack pointer to the startup stack
+before switching to C code. This stack used for all HAL
+initialization, running any C++ static constructors defined either by
+eCos or by the application, and the <function>cyg_start</function>
+entry point. In configurations containing the eCos kernel
+<function>cyg_start</function> will enable interrupts, activate the
+scheduler and threads will then run on their own stacks. In non-kernel
+single-threaded applications the whole system continues to run on the
+startup stack.
+    </para>
+    <para>
+When an interrupt occurs the default behaviour is to switch to a
+separate interrupt stack. This behaviour is controlled by the common
+HAL configuration option
+<varname>CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK</varname>.
+It reduces the stack requirements of all threads in the system, at the
+cost of some extra instructions during interrupt handling. In kernel
+configurations the startup stack is no longer used once the scheduler
+starts running so its memory can be reused for the interrupt stack. To
+handle the possibility of nested interrupts the interrupt handling
+code will detect if it is already on the interrupt stack, so in
+non-kernel configurations it is also safe to use the same area of
+memory for both startup and interrupt stacks. This leads to the
+following scenarios:
+    </para>
+    <orderedlist>
+      <listitem><para>
+If interrupt stacks are enabled via
+<varname>CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK</varname>
+and the interrupt stack is not provided by the variant, processor or
+platform HAL then a single block of memory will be used for both
+startup and interrupt stacks. The size of this block is determined by
+the common HAL configuration option
+<varname>CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE</varname>, with a
+default value
+<varname>CYGNUM_HAL_DEFAULT_INTERRUPT_STACK_SIZE</varname> provided by
+the M68K architectural HAL.
+      </para></listitem>
+      <listitem><para>
+If the use of an interrupt stack is disabled then the M68K
+architectural HAL will provide just the startup stack, unless this is
+done by the variant, processor or platform HAL. The size of the
+startup stack is controlled by
+<varname>CYGNUM_HAL_M68K_STARTUP_STACK_SIZE</varname>.
+      </para></listitem>
+      <listitem><para>
+Otherwise the interrupt and/or startup stacks are provided by other
+packages and it is up to those packages to provide configuration
+options for setting the sizes.
+      </para></listitem>
+    </orderedlist>
+  </refsect1>
+
+  <refsect1 id="m68k-config-fpu"><title>Floating Point Support</title>
+    <para>
+There are many variants of the basic M68K architecture. Some of these
+have hardware floating point support. Originally this came in the form
+of a separate 68881 coprocessor, but with modern variants it will be
+part of the main processor chip. If the processor does not have
+hardware floating point then software emulation will be used instead.
+    </para>
+    <para>
+If the processor on the target hardware has a floating point unit then
+the variant or processor HAL will implement the CDL interface
+<varname>CYGINT_HAL_M68K_VARIANT_FPU</varname>. This allows the
+architectural HAL and other packages to do the right thing on
+different hardware.
+    </para>
+    <para>
+Saving and restoring hardware floating point context increases
+interrupt and dispatch latency, code size, and data size. If the
+application does not actually use floating point then these overheads
+are unnecessary, and can be suppressed by disabling the configuration
+option <varname>CYGIMP_HAL_M68K_FPU_SAVE</varname>. Some applications
+do use floating point but only in one thread. In that scenario it is
+also unnecessary to save the floating point context during interrupts
+and context switches, so the configuration option can be disabled.
+    </para>
+    <para>
+The exact behaviour of the hardware floating point unit is determined
+by the floating point control register <varname>%fpcr</varname>. By
+default this is initialized to 0, giving IEE754 standard behaviour,
+but another initial value can be specified using the configuration
+option <varname>CYGNUM_HAL_M68K_FPU_CR_DEFAULT</varname>. For details
+of the various bits in this control register see appropriate hardware
+documentation. eCos assumes that the control register does not change
+on a per-thread basis and hence the register is not saved or restored
+during interrupt handling or a context switch.
+    </para>
+    <warning>
+      <para>
+At the time of writing eCos has not run on an M68K processor with
+hardware floating point so the support for this is untested.
+      </para>
+    </warning>
+  </refsect1>
+
+  <refsect1 id="m68k-config-other"><title>Other Options</title>
+    <para>
+There are configuration options to change the compiler flags used for
+building this packages. 
+The M68K architectural HAL package does not define any other
+configuration options that can be manipulated by the user. It does
+define a number of interfaces such as
+<varname>CYGINT_HAL_M68K_USE_STANDARD_PLATFORM_STUB_SUPPORT</varname>
+which can be used by lower levels of the M68K HAL hierarchy to enable
+certain functionality within the architectural package. Usually these
+are of no interest to application developers.
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ HAL Porting Details            -->
+
+<refentry id="m68k-port">
+  <refmeta>
+    <refentrytitle>The HAL Port</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>HAL Port</refname>
+    <refpurpose>Implementation Details</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="m68k-port-description"><title>Description</title>
+    <para>
+This documentation explains how the eCos HAL specification has been
+mapped onto M68K hardware, and should be read in conjunction with
+that specification. It also describes how variant, processor and
+platform HALs can modify the default behaviour.
+    </para>
+    <para>
+eCos support for any given target will involve either three or four
+HAL packages: the architectural HAL, the platform HAL, the variant
+HAL, and optionally a processor HAL. This package, the architectural
+HAL, provides code and definitions that are applicable to all M68K
+processors. The platform HAL provides support for one specific
+board, for example an M5272C3 evaluation board, or possibly for a
+number of almost-identical boards. The processor HAL, if present,
+serves mainly to provide details of on-chip peripherals including the
+interrupt controller. The variant HAL provides functionality that is
+common to a group of processors, for example all MCFxxxx processors
+have very similar UARTs and hence can share HAL diagnostic code.
+There is no fixed specification of what should go into the variant HAL
+versus the processor HAL. For simplicity the description below only
+refers to variant HALs, but the work may actually happen in a
+processor HAL instead.
+    </para>
+    <para>
+As a design goal lower-level HALs can always override functionality
+that is normally provided higher up. For example the architectural HAL
+will provide the required eCos <function>HAL_LSBIT_INDEX</function>
+and <function>HAL_MSBIT_INDEX</function> macros, but these can be
+provided lower down instead. Many but not all ColdFire processors have
+the <literal>ff1</literal> and <literal>bitrev</literal> instructions
+which allow for a more efficient implementation than the default
+architectural ones. In some areas such as handling context switching
+the architectural HAL will usually provide the basic functionality but
+it may be extended by lower HALs, for example to add support for the
+multiply-accumulate units present in certain ColdFire processors.
+    </para>
+    <para>
+The architectural HAL provides header files <filename
+class="headerfile">cyg/hal/hal_arch.h</filename>, <filename
+class="headerfile">cyg/hal/hal_intr.h</filename>, <filename
+class="headerfile">cyg/hal/hal_cache.h</filename>, <filename
+class="headerfile">cyg/hal/hal_io.h</filename> and <filename
+class="headerfile">cyg/hal/arch.inc</filename>. These automatically
+include an equivalent header file from the variant HAL, for example
+<filename class="headerfile">cyg/hal/var_arch.h</filename>. The
+variant HAL header will in turn include processor and
+platform-specific headers. This means that application developers and
+other packages can simply include the architectural HAL headers
+without needing to know about variants or platforms. It also allows
+the variant and platform HALs to override architectural settings.
+    </para>
+    <para>
+The port assumes that eCos and application code always runs in
+supervisor mode, with full access to all hardware and special
+registers.
+    </para>
+
+    <refsect2 id="m68k-port-types"><title>Data Types</title>
+      <para>
+For eCos purposes all M68K processors are big-endian and 32-bit, so
+the default data types in <filename
+class="headerfile">cyg/infra/cyg_type.h</filename> are used. Some
+variants have external bus widths less than 32-bit, but this does not
+affect the architectural HAL.
+      </para>
+      <para>
+When porting to another variant it is possible to override some or all
+of the type definitions. The variant HAL needs to implement the CDL
+interface <varname>CYGINT_HAL_M68K_VARIANT_TYPES</varname> and provide
+a header file <filename
+class="headerfile">cyg/hal/var_basetype.h</filename>.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-startup"><title>Startup and Exception Vectors</title>
+      <para>
+The conventional bootstrap mechanism involves a table of exception
+vectors at the base of memory. The first two words of this table give
+the initial program counter and stack pointer. In a typical embedded
+system the hardware is arranged such that non-volatile flash memory is
+found at location 0x0 so it is the start of flash that contains the
+exception vectors and the boot code. The table of exception vectors is
+used subsequently for interrupt handling and for hardware exceptions
+such as attempts to execute an illegal instruction. There are a number
+of common scenarios:
+      </para>
+      <orderedlist>
+        <listitem><para>
+On systems with very limited memory flash may remain mapped at
+location 0 and the table of exception vectors remains mapped there as
+well. The M68K architecture defines the table to have 256 entries and
+hence it occupies 1K of memory, but in reality many of the entries are
+unused so part of the table may get used for code instead. Since the
+whole exception vector table is in read-only memory parts of the eCos
+interrupt and exception handling mechanisms have to be statically
+initialized and macros like <function>HAL_VSR_SET</function> are not
+available.
+        </para></listitem>
+        <listitem><para>
+As a minor variation of the previous case, flash remains at location 0
+but the table of exception vectors gets remapped elsewhere in the
+address space, usually RAM. This allows
+<function>HAL_VSR_SET</function> to operate normally but at the cost
+of increased memory usage. The exception vector table in flash only
+contains two entries, for the initial program counter and stack
+pointer. The exception vector table in RAM typically gets initialized
+at run-time.
+        </para></listitem>
+        <listitem><para>
+On systems with more memory it is conventional to rearrange the
+address map during bootstrap. The flash gets relocated, typically to
+near the end of the address space, and RAM gets placed at location 0
+instead. The exception vector table stays at location 0 but is now in
+RAM and gets initialized at run-time. The bootstrap exception vector
+table in flash again only needs two entries. A variation places the
+RAM elsewhere in the address space and moves the exception vector
+table there, leaving location 0 unused. This provides some protection
+against null pointer accesses in errant code.
+        </para>
+        <para>
+As a further complication, larger systems typically support different
+startup types. The application can be linked against a ROM startup
+configuration and placed directly in flash, as before. Alternatively
+there may be a ROM monitor such as RedBoot in the flash, taking care
+of initial bootstrap. The user's application is linked against a RAM
+startup configuration, loaded into RAM via the ROM monitor, and
+debugged using functionality provided by the ROM monitor. Yet another
+possibility involves a RAM startup application but it gets loaded and
+run via a hardware debug technology such as BDM, and the ROM monitor
+is either missing or not used.
+        </para></listitem>
+      </orderedlist>
+      <para>
+The exact hardware details, the various startup types, the steps
+needed for low-level hardware initialization, and so on are not known
+to the architectural HAL. Hence although the architectural HAL does
+provide the basic framework for startup, much of the work is done via
+macros provided by lower-level HAL packages and those macros are
+likely to depend on various configuration options. Rather than try to
+enumerate all the various combinations here it is better to look at
+the actual code in <filename>vectors.S</filename> and in appropriate
+variant, processor or platform HALs. <filename>vectors.S</filename> is
+responsible for any low-level initialization that needs to happen.
+This includes setting up a standard C environment with the stack
+pointer set to the startup stack in working RAM, making sure all
+statically initialized global variables have the correct values, and
+that all uninitialized global variables are zeroed. Once the C
+environment has been set up the code jumps to
+<function>hal_m68k_c_startup</function> in file
+<filename>hal_m68k.c</filename> which completes the initialization and
+jumps to the application entry point.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-interrupts"><title>Interrupt Handling</title>
+      <para>
+The M68K architecture reserves a 1K area of memory for 256 exception
+vectors. These are used for internal and external interrupts,
+exceptions, software traps, and special operations such as reset
+handling. Some of the vectors have well-defined uses. However when it
+comes to interrupt handling the details will depend on the processor
+variant and on the platform, and the appropriate package documentation
+should be consulted for full details. Most platforms will not use the
+full set of 256 vectors, instead re-using some of this memory for
+other purposes.
+      </para>
+      <para>
+By default the exception vectors are located at location 0, but some
+variants allow the vectors to be located elsewhere. This is managed by
+an M68K-specific macro <varname>CYG_HAL_VSR_TABLE</varname>. The
+default value is 0, but a variant HAL can provide an alternative value.
+      </para>
+      <para>
+The standard eCos macros <function>HAL_VSR_GET</function> and
+<function>HAL_VSR_SET</function> just manipulate one of the 256
+entries in the table of exception vectors. Hence it is usually
+possible to replace the default handlers for exceptions and traps in
+addition to interrupt handlers.
+<filename class="headerfile">hal_intr.h</filename>
+provides <literal>#define</literal>'s for the more common exception
+vectors, and additional ones can be provided by the platform or
+variant. It is the responsibility of the platform or variant HAL to
+initialize the table, and to provide the
+<function>HAL_VSR_SET_TO_ECOS_HANDLER</function> macro since that
+requires knowledge of the default table entries.
+      </para>
+      <para>
+It should be noted that in some configurations the table of exception
+vectors may reside in read-only memory so entries cannot be changed.
+If so then the <function>HAL_VSR_SET</function> and
+<function>HAL_VSR_SET_TO_ECOS_HANDLER</function> macros will not be
+defined. Portable code may need to consider this possibility and test
+for the existence of these macros before using them.
+      </para>
+      <para>
+The architectural HAL provides an entry point
+<function>hal_m68k_interrupt_vsr</function> in the file
+<filename>hal_arch.S</filename>. When an interrupt occurs the original
+68000 pushed the program counter and the status register on to the
+stack, and then called the VSR via the exception table. On newer
+variants some additional information is pushed, including details of
+the interrupt source. <function>hal_m68k_interrupt_vsr</function>
+assumes the latter and can be used directly as the VSR on these newer
+variants. On older variants a small trampoline is needed which pushes
+the additional information and then jumps to the generic VSR.
+Interpreting the additional information is handled via an assembler
+macro <function>hal_context_extract_isr_vector_shl2</function> 
+which should be defined by the variant, matching the behaviour of the
+hardware or the trampoline.
+      </para>
+      <para>
+At the architecture level there is no fixed mapping between VSR and
+ISR vectors. Instead that is left to the variant or platform HAL. The
+architectural HAL does provide default implementations of
+<function>HAL_INTERRUPT_ATTACH</function>,
+<function>HAL_INTERRUPT_DETACH</function> and
+<function>HAL_INTERRUPT_IN_USE</function> since these just involve
+updating a static table.
+      </para>
+      <para>
+By default the interrupt state control macros
+<function>HAL_DISABLE_INTERRUPTS</function>,
+<function>HAL_RESTORE_INTERRUPTS</function>,
+<function>HAL_ENABLE_INTERRUPTS</function> and
+<function>HAL_QUERY_INTERRUPTS</function> are implemented by the
+architectural HAL, and simply involve updating the status register.
+Disabling interrupts involves setting the three IPL bits to 0x07.
+Enabling interrupts involves setting those bits to a smaller value,
+<varname>CYGNUM_HAL_INTERRUPT_DEFAULT_IPL_LEVEL</varname>, which
+defaults to 0. 
+      </para>
+      <para>
+<function>HAL_DISABLE_INTERRUPTS</function> has no effect on
+non-maskable interrupts. This causes a problem because parts of the
+system assume that all normal interrupt sources are affected by this
+macro. If the target hardware can raise non-maskable interrupts then
+it is the responsibility of application code to install a suitable VSR
+and handle non-maskable interrupts entirely within the application,
+bypassing the usual eCos ISR and DSR mechanisms.
+      </para>
+      <para>
+The architectural HAL does not provide any support for the interrupt
+controller management macros like
+<function>HAL_INTERRUPT_MASK</function>. These can only be implemented
+on a per-variant, per-processor or per-platform basis.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-exceptions"><title>Exception Handling</title>
+      <para>
+Synchronous exception handling is done in much the same way as
+interrupt handling. The architectural HAL provides a generic entry
+point <function>hal_m68k_exception_vsr</function>. On some variants
+this can be used directly as the exception VSR, on others it will be
+called via a small trampoline.
+      </para>
+      <para>
+The details of exception handling vary widely from one variant to the
+next. Some variants push a great deal of additional information on to
+the stack for certain exceptions, but not all. The pushed program
+counter may correspond to the specific instruction that caused the
+exception, or the next instruction, or there may be only a loose
+correlation because of buffered writes. The architectural HAL makes no
+attempt to cope with all these differences, although some variants may
+provide more advanced support. Otherwise if an exception needs to be
+handled in a very specific way then it is up to the application to
+install a suitable VSR and handle the exception directly.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-stacks"><title>Stacks and Stack Sizes</title>
+      <para>
+<filename class="headerfile">cyg/hal/hal_arch.h</filename> defines
+values for minimal and recommended thread stack sizes,
+<varname>CYGNUM_HAL_STACK_SIZE_MINIMUM</varname> and
+<varname>CYGNUM_HAL_STACK_SIZE_TYPICAL</varname>. These values are
+specific to the current configuration, and are affected mainly by
+options related to interrupt handling.
+      </para>
+      <para>
+By default eCos uses a separate interrupt stack, although this can be
+disabled through the configuration option
+<varname>CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK</varname>.
+When an interrupt or exception occurs eCos will save the context on
+the current stack and then switch to the interrupt stack before
+calling the appropriate ISR interrupt handler. This means that thread
+stacks can be significantly smaller because there is no need to worry
+about interrupt handling overheads, just the thread context. However
+switching the stack does require some extra work and hence increases
+the interrupt latency. Disabling the interrupt stack removes this
+processing overhead but requires larger stack sizes. It depends on
+the application whether or not this is a sensible trade off.
+      </para>
+      <para>
+By default eCos does not allow nested interrupts, but this can be
+controlled via the configuration option
+<varname>CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING</varname>.
+Supporting nested interrupts requires larger thread stacks, especially
+if the separate interrupt stack is also disabled. 
+      </para>
+      <para>
+Although the M68K has enough registers for typical operation, the
+calling conventions are memory-oriented. In particular all arguments
+are pushed on the stack rather than held in registers, and the return
+address is also pushed rather than ending up in a link register. To
+allow for this the recommended minimum stack sizes are a little bit
+larger than for some other architectures. Variant HALs cannot directly
+affect these stack sizes. However the sizes do depend in part on the
+size of a thread context, so if for example the processor supports
+hardware floating point and support for that is enabled then the stack
+sizes will increase.
+      </para>
+      <para>
+Usually the M68K architectural HAL will provide a single block of
+memory which acts as both the startup and interrupt stack, and there
+are <link linkend="m68k-config-stacks">configuration options</link> to
+control the size of this block. Alternatively a variant, processor or
+platform HAL may define either or both of
+<varname>_HAL_M68K_STARTUP_STACK_</varname> and
+<varname>_HAL_M68K_INTERRUPT_STACK_BASE_</varname> if for some reason
+the stacks should not be placed in ordinary RAM.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-context"><title>Thread Contexts and Setjmp/Longjmp</title>
+      <para>
+A typical thread context consists of the following:
+      </para>
+      <orderedlist>
+        <listitem><para>
+The integer context. This consists of the data registers
+<varname>%d0</varname> to <varname>%d7</varname> and the address
+registers <varname>%a0</varname> to <varname>%a6</varname>, The stack
+pointer register <varname>%a7</varname> does not have to be saved
+explicitly since it is implicit in the pointer to the saved context.
+        </para>
+        <para>
+The caller-save registers are <varname>%d0</varname>,
+<varname>%d1</varname>, <varname>%a0</varname>,
+<varname>%a1</varname>, <varname>%a7</varname> and the status
+register. The remaining registers are callee-save. Function arguments
+are always passed on the stack. The result is held in
+<varname>%d0</varname>.
+        </para></listitem>
+        <listitem><para>
+Floating point context, consisting of eight 64-bit floating point
+registers <varname>%fp0</varname> to <varname>%fp7</varname> and two
+support registers <varname>%fpsr</varname> and
+<varname>%fpiar</varname>. Support for this is only relevant if the
+processor variant has a hardware floating point unit, and even then
+saving floating point context is optional and can be disabled using a
+configuration option <varname>CYGIMP_HAL_M68K_FPU_SAVE</varname>. The
+control register <varname>%fpcr</varname> is not saved as part of the
+context. It is assumed that a single <varname>%fpcr</varname> value,
+usually <literal>0</literal>, will be used throughout the application.
+        </para>
+        <para>
+The architectural HAL provides support for the hardware floating point
+unit. The variant or processor HAL should implement the CDL interface
+<varname>CYGINT_HAL_M68K_VARIANT_FPU</varname> if this hardware unit
+is actually present.
+        </para></listitem>
+        <listitem><para>
+Some M68K variants have additional hardware units, for example the
+multiply-accumulate units in certain ColdFire processors. The
+architectural HAL allows the context to be extended through various
+macros such as <varname>HAL_CONTEXT_OTHER</varname>.
+        </para></listitem>
+        <listitem><para>
+The status register <varname>%sr</varname> and the program counter.
+These are special because when an interrupt occurs the hardware
+automatically pushes these onto the stack, but exactly what gets
+pushed depends on the variant.
+        </para></listitem>
+      </orderedlist>
+      <para>
+<function>setjmp</function> and <function>longjmp</function> only deal
+with the integer and fpu contexts. It is assumed that any special
+hardware units will only be used by application code, not by the
+compiler. Hence it is the responsibility of application code to
+define and implement appropriate setjmp semantics for these units.
+The variant HAL package can override the default implementations if
+necessary.
+      </para>
+      <para>
+When porting to a new M68K variant, if this has a hardware floating
+point unit then the variant HAL should implement the CDL interface
+<varname>CYGINT_HAL_M68K_VARIANT_FPU</varname>, thus enabling support
+provided by the architectural HAL. If the variant has additional
+hardware units involving state that should be preserved during a
+context switch or when an interrupt occurs, the variant HAL should
+define a number of macros. The header file <filename
+class="headerfile">cyg/hal/var_arch.h</filename> should define
+<varname>HAL_CONTEXT_OTHER</varname>,
+<varname>HAL_CONTEXT_OTHER_SIZE</varname>, and
+<varname>HAL_CONTEXT_OTHER_INIT</varname>, either directly or via
+<filename class="headerfile">cyg/hal/proc_arch.h</filename>. The
+assembler header file <filename
+class="headerfile">cyg/hal/var.inc</filename> should define a number
+of macros such as <function>hal_context_other_save_caller</function>.
+For details of these macros see the architectural
+<filename>hal_arch.S</filename> file.
+      </para>
+      <para>
+Variants also need to define exactly how the status register and
+program counter are saved onto the stack when an interrupt or
+exception occurs. This is handled through C macros
+<varname>HAL_CONTEXT_PCSR_SIZE</varname>,
+<varname>HAL_CONTEXT_PCSR_RTE_ADJUST</varname>, and
+<function>HAL_CONTEXT_PCSR_INIT</function>, and a number of assembler
+macros such as <function>hal_context_pcsr_save_sr</function>. Again
+the architectural files <filename
+class="headerfile">cyg/hal/hal_arch.h</filename> and
+<filename>hal_arch.S</filename> provide more details of these.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-bitindex"><title>Bit Indexing</title>
+      <para>
+For performance reasons the <function>HAL_LSBIT_INDEX</function> and
+<function>HAL_MSBIT_INDEX</function> macros are implemented using
+assembler functions. A variant HAL can override the default
+definitions if, for example, the variant has special instructions to
+perform these operations.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-idle"><title>Idle Thread Processing</title>
+      <para>
+The default <function>HAL_IDLE_THREAD_ACTION</function> implementation
+is a no-op. A variant HAL may override this, for example to put the
+processor into sleep mode. Alternative implementations should consider
+exactly how this macro gets used in eCos kernel code.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-clock"><title>Clock Support</title>
+      <para>
+The architectural HAL cannot provide the required clock support
+because it does not know what timer hardware may be available on the
+target hardware. Instead this is left to either the variant or
+platform HAL, depending on whether the processor has a suitable
+on-chip timer or whether an off-chip timer has to be used.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-io"><title>HAL I/O</title>
+      <para>
+The M68K architecture does not have a separate I/O bus. Instead all
+hardware is assumed to be memory-mapped. Further it is assumed that
+all peripherals on the memory bus are wired appropriately for a
+big-endian processor and that there is no need for any byte swapping.
+Hence the various HAL macros for performing I/O simply involve
+pointers to volatile memory.
+      </para>
+      <para>
+The variant, processor and platform equivalents of the <filename
+class="headerfile">cyg/hal/hal_io.h</filename> header will typically
+also provide details of some or all of the peripherals, for example
+register offsets and the meaning of various bits in those registers.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-cache"><title>Cache Handling</title>
+      <para>
+If the processor has a cache then the variant HAL should implement the
+CDL interface <varname>CYGINT_HAL_M68K_VARIANT_CACHE</varname>. This
+causes the architectural header <filename
+class="headerfile">cyg/hal/hal_cache.h</filename> to pick up
+appropriate definitions from <filename
+class="headerfile">cyg/hal/var_cache.h</filename>. The architectural
+header will provide null defaults for anything not defined by the
+variant.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-ldscript"><title>Linker Scripts</title>
+      <para>
+The architectural HAL will generate the linker script for eCos
+applications. This involves the architectural file
+<filename>m68k.ld</filename> and a <filename>.ldi</filename> memory
+layout file provided lower down, typically by the platform HAL. It is
+the LDI file which specifies the types and amount of memory available
+and which places code and data in appropriate places, but most of the
+hard work is done via macros provided by the architectural
+<filename>m68k.ld</filename> file. 
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-diag"><title>Diagnostic Support</title>
+      <para>
+The architectural HAL does not implement diagnostic support. Instead
+this is left to the variant or platform HAL, depending on whether
+suitable peripherals are available on-chip or off-chip.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-smp"><title>SMP Support</title>
+      <para>
+The M68K port does not have SMP support.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-gdb"><title>Debug Support</title>
+      <para>
+The M68K architectural HAL package provides basic support only for gdb
+stubs. There is no support for more advanced debug features like
+hardware watchpoints.
+      </para>
+      <para>
+The generic gdb support in the common HAL requires a platform header
+<filename class="headerfile">&lt;cyg/hal/plf_stub.h</filename>. In
+practice there is rarely any need for the contents of this file to
+change between platforms so the architectural HAL can provide a
+suitable default. It will do so if the CDL interface
+<varname>CYGINT_HAL_M68K_USE_STANDARD_PLATFORM_STUB_SUPPORT</varname>
+is implemented.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-delay"><title>HAL_DELAY_US Macro</title>
+      <para>
+The architectural HAL provides a default implementation of the
+standard <function>HAL_DELAY_US</function> macro using a simply busy
+loop. To use this support a lower-level HAL should define
+<varname>_HAL_M68K_DELAY_US_LOOPS_</varname>, typically a small number
+of about 20 but it will need to be calibrated during the porting
+process. If the processor has a cache then the lower-level HAL may
+also define <varname>_HAL_M68K_DELAY_US_LOOPS_UNCACHED_</varname> for
+the case when a delay loop is triggered while the cache is disabled.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-profiling"><title>Profiling Support</title>
+      <para>
+The M68K architectural HAL implements the <function>mcount</function>
+function, allowing profiling tools like
+<application>gprof</application> to determine the application's call
+graph. It does not implement the profiling timer. Instead that
+functionality needs to be provided by the variant or platform HAL.
+The implementation of <function>mcount</function> requires a dedicated
+frame pointer register so code should be compiled without the
+<option>-fomit-frame-pointer</option> flag.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-port-other"><title>Other Functionality</title>
+      <para>
+The M68K architectural HAL only implements the functionality provided
+by the eCos HAL specification and does not export any extra
+functionality. 
+      </para>
+    </refsect2>
+
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+
+</part>

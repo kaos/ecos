@@ -6,72 +6,255 @@
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
-## -------------------------------------------
-## This file is part of eCos, the Embedded Configurable Operating System.
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-##
-## eCos is free software; you can redistribute it and/or modify it under
-## the terms of the GNU General Public License as published by the Free
-## Software Foundation; either version 2 or (at your option) any later version.
-##
-## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
-## WARRANTY; without even the implied warranty of MERCHANTABILITY or
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-## for more details.
-##
-## You should have received a copy of the GNU General Public License along
-## with eCos; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-##
-## As a special exception, if other files instantiate templates or use macros
-## or inline functions from this file, or you compile this file and link it
-## with other works to produce a work based on this file, this file does not
-## by itself cause the resulting work to be covered by the GNU General Public
-## License. However the source code for this file must still be made available
-## in accordance with section (3) of the GNU General Public License.
-##
-## This exception does not invalidate any other reasons why a work based on
-## this file might be covered by the GNU General Public License.
-##
-## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-## at http://sources.redhat.com/ecos/ecos-license/
-## -------------------------------------------
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 2003,2004,2006,2008 Free Software Foundation, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+# -------------------------------------------
 #####ECOSGPLCOPYRIGHTEND####
 # ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):     bartv
+# Date:          2003-06-04
+#
+#####DESCRIPTIONEND####
+#========================================================================
 
 cdl_package CYGPKG_HAL_M68K {
     display "m68k architecture"
     parent        CYGPKG_HAL
+    doc           ref/hal-m68k-arch.html
     hardware
-    include_dir   cyg/hal
-    define_header hal_m68k.h
     description   "
-           The m68k architecture HAL package provides generic
-           support for this processor architecture. It is also
-           necessary to select a specific target platform HAL
-           package."
-
-    cdl_interface CYGINT_HAL_M68K_VARIANT {
-        display  "Number of variant implementations in this configuration"
-        requires 1 == CYGINT_HAL_M68K_VARIANT
+        The m68k architecture HAL package provides generic
+        support for 68000 and ColdFire processors."
+    
+    include_dir   cyg/hal
+    compile hal_m68k.c hal_arch.S m68k_stub.c
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_m68k.h>"
     }
-
-    compile       hal_startup.c hal_misc.c m68k_stub.c hal_arch.S
-
     make {
-        <PREFIX>/lib/target.ld: <PACKAGE>/src/m68k.ld
-        $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
+        <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
+        $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(ACTUAL_CFLAGS) -c -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail -n +2 target.tmp >> $(notdir $@).deps
+        @tail -n +2 vectors.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
-        @rm target.tmp
+        @rm vectors.tmp
     }
 
-    cdl_option CYGBLD_LINKER_SCRIPT {
-        display "Linker script"
-        flavor data
-	no_define
-        calculated  { "src/m68k.ld" }
+    # callgraph profiling, i.e. compiling with -pg, is supported. However
+    # -pg is incompatible with -fomit-frame-pointer
+    implements CYGINT_PROFILE_HAL_MCOUNT
+    requires { ! (is_substr(CYGBLD_GLOBAL_CFLAGS, " -pg") && is_substr(CYGBLD_GLOBAL_CFLAGS, "-fomit-frame-pointer")) }
+    
+    cdl_option CYGNUM_HAL_DEFAULT_INTERRUPT_STACK_SIZE {
+        display     "Default size for the startup and interrupt stack"
+        description "
+            The M68K HAL uses a single stack for system startup and for handling
+          interrupts and exceptions. The size of this stack is configurable via
+          the common HAL's CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE option, but
+          this architectural HAL provides a default value."
+        flavor      data
+        calculated  { is_enabled(CYGNUM_HAL_M68K_PLATFORM_DEFAULT_INTERRUPT_STACK_SIZE) ?
+            CYGNUM_HAL_M68K_PLATFORM_DEFAULT_INTERRUPT_STACK_SIZE :
+            (CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING ? 4096 : 2048) }
     }
 
+    cdl_option CYGNUM_HAL_M68K_STARTUP_STACK_SIZE {
+        display     "Stack size to use during startup"
+        active_if   !CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+        flavor      data
+        default_value   2048
+        description "
+            By default eCos runs with a separate interrupt stack, which also gets
+          used during system startup. This saves memory because it is not necessary
+          to allow for interrupt overheads on every thread stack, but adds a number
+          of instructions to the interrupt processing code. If the interrupt stack
+          is disabled then a separate startup stack is needed. That stack will be
+          used for running system initialization and for running some application
+          code including cyg_start() and C++ static constructions."
+    }
+    
+    cdl_component CYGPKG_HAL_M68K_VARIANT {
+        display "Variant details"
+        flavor  none
+        description "
+            Various subsystems like the floating point and memory management
+            units are available on some but not all 68000 processors. Variant
+            HAL packages will list which of these subsystems are actually
+            present."
+
+        cdl_interface CYGINT_HAL_M68K_VARIANT_TYPES {
+            display "Data types"
+            flavor  bool
+            description "
+                This interface will be implemented if the specific processor
+                being used requires non-default data type definitions."
+        }
+        
+        cdl_interface CYGINT_HAL_M68K_VARIANT_FPU {
+            display "Floating point unit"
+            flavor  bool
+            description "
+                This interface will be implemented if the specific processor
+                being used has floating point hardware."
+        }
+
+        if { 0 } {
+            # No MMU support available yet
+            cdl_interface CYGINT_HAL_M68K_VARIANT_MMU {
+                display "Floating point unit"
+                flavor  bool
+                description "
+                    This interface will be implemented if the specific processor
+                    being used has a memory management unit."
+            }
+        }
+
+        cdl_interface CYGINT_HAL_M68K_VARIANT_CACHE {
+            display "Cache"
+            flavor  bool
+            description "
+                This interface will be implemented if the specific processor
+                being used has an instruction cache, a data cache, or both."
+        }
+
+        cdl_interface CYGINT_HAL_M68K_VARIANT_IRAM {
+            display     "On-chip RAM"
+            flavor      bool
+            description "
+                This interface will be implemented if the specific processor
+              being used has on-chip RAM."
+        }
+        
+        cdl_interface CYGINT_HAL_M68K_USE_STANDARD_PLATFORM_STUB_SUPPORT {
+            display     "Use standard platform gdb stub support"
+            flavor      bool
+            make -priority 1 {
+                <PREFIX>/include/cyg/hal/plf_stub.h : <PACKAGE>/src/plf_stub.h
+                @cp $< $@
+            }
+            description "
+                For platforms where target-side gdb stub support may be used the
+              platform HAL is expected to provide a header file <cyg/hal/plf_stub.h>.
+              In practice the same header file is applicable to nearly all platforms
+              so the M68K architectural HAL will provide this header when the platform
+              HAL requests this interface."
+        }
+    }
+
+    cdl_component CYGPKG_HAL_M68K_FPU {
+        display     "Support for the floating point unit"
+        active_if   CYGINT_HAL_M68K_VARIANT_FPU
+        flavor      none
+        description "
+            If the target processor has a hardware floating point unit then
+            this component defines additional configuration options related
+            to that unit."
+
+        cdl_option CYGIMP_HAL_M68K_FPU_SAVE {
+            display         "Save FPU state during context switch"
+            default_value   1
+            description "
+                By default the floating point context gets saved during a
+                context switch. This can be suppressed if the application
+                does not actually perform any floating point arithmetic, or
+                if it only does so from one thread."
+        }
+
+        cdl_option CYGNUM_HAL_M68K_FPU_CR_DEFAULT {
+            display     "Default value for the FPU control register"
+            flavor      data
+            default_value   0
+            legal_values    0 to 0x0FFFF
+            description "
+                The FPU control register controls rounding modes, precision,
+                and exceptions. The default value of 0 gives IEE754 standard
+                behaviour. It is assumed that the control register's value is
+                not changed while the system is running, and hence does not
+                have to be saved or restored during a thread switch or when
+                an interrupt happens."
+        }
+    }
+
+    cdl_component CYGPKG_HAL_M68K_OPTIONS {
+        display     "Architectural HAL build options"
+        flavor      none
+        description "
+            Package-specific build options including control over compiler
+          flags used only when building this package, and details of which
+          tests are built."
+
+        cdl_option CYGPKG_HAL_M68K_CFLAGS_ADD {
+            display         "Additional compiler flags"
+            flavor          data
+            no_define
+            default_value   { "" }
+            description   "
+                This option modifies the set of compiler flags for building
+              the architectural HAL package. These flags are used in addition
+              to the set of global flags."
+        }
+        
+        cdl_option CYGPKG_HAL_M68K_CFLAGS_REMOVE {
+            display         "Suppressed compiler flags"
+            flavor          data
+            no_define
+            default_value   { "" }
+            description   "
+                This option modifies the set of compiler flags for building
+              the architectural HAL package. These flags are removed from
+              the set of global flags if present."
+        }
+        
+        cdl_option CYGPKG_HAL_M68K_TESTS {
+            display         "Architectural HAL tests"
+            flavor          data
+            no_define
+            calculated      { (CYGINT_HAL_M68K_VARIANT_IRAM ? "tests/iram1" : "") .
+                ""
+            }
+            description   "
+                This option specifies the set of tests for the M68K architectural HAL."
+        }
+        
+        cdl_option CYGBLD_LINKER_SCRIPT {
+            display "Linker script"
+            flavor data
+            no_define
+            calculated  { "src/m68k.ld" }
+            make {
+                <PREFIX>/lib/target.ld: <PACKAGE>/src/m68k.ld
+                $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(ACTUAL_CFLAGS) -o $@ $<
+                @echo $@ ": \\" > $(notdir $@).deps
+                @tail -n +2 target.tmp >> $(notdir $@).deps
+                @echo >> $(notdir $@).deps
+                @rm target.tmp
+            }
+        }
+    }
 }

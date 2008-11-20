@@ -8,11 +8,10 @@
 //      Standard types for this architecture.
 //
 //=============================================================================
-//####ECOSGPLCOPYRIGHTBEGIN####
-// -------------------------------------------
+//###ECOSGPLCOPYRIGHTBEGIN####
+//-------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-//
+// Copyright (C) 2003,2008 Free Software Foundation, Inc.
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
 // Software Foundation; either version 2 or (at your option) any later version.
@@ -35,30 +34,32 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
+//####DESCRIPTIONBEGIN####
+//
+// Author(s): 	bartv
+// Date:	2003-06-04
+//####DESCRIPTIONEND####
+//=============================================================================
 
-// Include variant specific types.
-#include <cyg/hal/var_basetype.h>
-
-// Include the standard variable sizes.
-#include <cyg/hal/gen_types.h>
+#include <pkgconf/hal_m68k.h>
+#ifdef CYGINT_HAL_M68K_VARIANT_TYPES
+# include <cyg/hal/var_basetype.h>
+#endif
 
 //-----------------------------------------------------------------------------
-// Characterize the architecture
-
-#define CYG_BYTEORDER   CYG_MSBFIRST    // Big endian
+// Characterize the architecture: big-endian
+#ifndef CYG_BYTEORDER
+# define CYG_BYTEORDER   CYG_MSBFIRST
+#endif
 
 //-----------------------------------------------------------------------------
-// 68k does not usually use labels with underscores. Some labels generated
-// by the linker do, so add an underscore where required.
+// 68k does not usually use labels with underscores. 
+#define CYG_LABEL_NAME(_name_) _name_
 
-#define CYG_LABEL_NAME(_name_) _##_name_
-
+// ----------------------------------------------------------------------------
 // The 68k architecture uses the default definitions of the base types,
 // so we do not need to define any here.
 
@@ -67,25 +68,12 @@
 // Most 68k variants use a 4 byte alignment.
 // A few variants (68000) may override this setting to use a 2 byte alignment.
 #ifndef CYGARC_ALIGNMENT
-#define CYGARC_ALIGNMENT 4
+# define CYGARC_ALIGNMENT 4
 #endif
 // the corresponding power of two alignment
 #ifndef CYGARC_P2ALIGNMENT
-#define CYGARC_P2ALIGNMENT 2
-#endif
-
-
-//-----------------------------------------------------------------------------
-// Define a compiler-specific rune for saying a function doesn't return
-
-//      WARNING: There is a bug in some versions of gcc for the m68k that does
-// not handle the noreturn attribute  correctly.  It is  safe to just  disable
-// this attribute.
-
-#ifndef CYGBLD_ATTRIB_NORET
-# define CYGBLD_ATTRIB_NORET
+# define CYGARC_P2ALIGNMENT 2
 #endif
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_BASETYPE_H
-
