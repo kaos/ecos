@@ -1,3 +1,9 @@
+2008-11-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* misc/redboot_ROMRAM_visionsystems.ecm:
+	CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE has been expunged from the
+	common HAL.
+
 2004-06-07  Roland Cassebohm <roland.cassebohm@visionsystems.de>
 
         * src/aim711_misc.c: 

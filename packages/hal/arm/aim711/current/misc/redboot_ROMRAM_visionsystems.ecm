@@ -100,10 +100,6 @@ cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US {
     user_value 1
 };
 
-cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE {
-    user_value 1
-};
-
 cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DATA {
     user_value 1
 };
