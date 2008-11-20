@@ -10,9 +10,9 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2008 Free Software Foundation, Inc.
 ## Copyright (C) 2004, 2005 eCosCentric Limited
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2008 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -4152,60 +4152,67 @@ evaluation board."
 # m68k packages
 
 package CYGPKG_HAL_M68K {
-    alias       { "m68k common HAL" hal_m68k m68k_hal m68k_arch_hal }
+    alias       { "M68K common HAL" hal_m68k m68k_hal m68k_arch_hal }
     directory   hal/m68k/arch
     script      hal_m68k.cdl
     hardware
 
-        description   "The m68k  architecture  HAL  package  provides  generic
-                    support for  this  processor  architecture.   It  is  also
-                    necessary  to  select  a  specific  target  platform   HAL
-                    package."
-
+    description   "The M68K architecture HAL package provides generic
+                   support for this architecture."
 }
 
-package CYGPKG_HAL_M68K_MCF52xx {
-    alias       { "68k/Coldfire version 2 core variant HAL"
-                   hal_m68k_mcf52xx
-                   m68k_mcf52xx_hal }
+package CYGPKG_HAL_M68K_MCFxxxx {
+    alias       { "M68K/ColdFire variant HAL" hal_m68k_mcfxxxx m68k_mcfxxxx_hal }
     directory   hal/m68k/mcf52xx/var
     script      hal_m68k_mcf52xx.cdl
     hardware
 
-    description   "The 68k/Coldfire version 2  core  variant  HAL  package
-                  provides generic support for the version 2 Coldfire  core.
-                  It is also necessary to select a specific target  platform
-                  HAL package."
+    description   "The M68k/ColdFire variant  HAL  package provides generic
+                  support for Freescale ColdFire  cores."
 }
 
-package CYGPKG_HAL_M68K_MCF52xx_MCF5272 {
-    alias       { "mcf5272 68k/Coldfire processor variant HAL"
-                  hal_m68k_mcf52xx_mcf5272
-                      m68k_mcf52xx_mcf5272_hal }
+package CYGPKG_HAL_M68K_MCF5272 {
+    alias       { "mcf5272 68k/ColdFire processor variant HAL" hal_m68k_mcf5272 m68k_mcf5272_hal }
     directory   hal/m68k/mcf52xx/mcf5272/proc
-    script      hal_m68k_mcf52xx_mcf5272.cdl
+    script      hal_m68k_mcf5272.cdl
     hardware
 
-    description   "The mcf5272 68k/Coldfire processor variant HAL  package
-                  provides generic support for this processor  architecture.
-                  It is also necessary to select a specific target  platform
-                  HAL package."
-
+    description   "The mcf5272 processor variant HAL package provides generic
+                   support for this processor."
 }
 
-package CYGPKG_HAL_M68K_MCF52xx_MCF5272_MCF5272C3 {
-    alias       { "Motorola mcf5272c3 evaluation board platform HAL"
-                  hal_m68k_mcf52xx_mcf5272_mcf5272c3
-                      m68k_mcf52xx_mcf5272_mcf5272c3_hal }
-    directory   hal/m68k/mcf52xx/mcf5272/mcf5272c3/plf
-    script      hal_m68k_mcf52xx_mcf5272_mcf5272c3.cdl
+package CYGPKG_HAL_M68K_M5272C3 {
+    alias       { "Freescale m5272c3 evaluation board platform HAL"
+        hal_m68k_m5272c3 m68k_m5272c3_hal }
+    directory   hal/m68k/mcf52xx/mcf5272/m5272c3
+    script      hal_m68k_m5272c3.cdl
     hardware
 
-    description   "The Motorola  mcf5272c3 evaluation  board platform  HAL
+    description   "The Freescale  m5272c3 evaluation  board platform  HAL
                   package should be used when targeting the actual  hardware
-                  for the Motorola mcf5272c3 evaluation board platform."
-
+                  for the Freescale m5272c3 evaluation board platform."
 }
+
+package CYGPKG_DEVS_ETH_MCFxxxx {
+    alias       { "MCFxxxx ethernet driver" devs_eth_mcfxxxx mcfxxxx_eth_driver }
+    hardware
+    directory   devs/eth/m68k/mcf5272
+    script      mcf5272_eth.cdl
+    description "
+            This packages provides an ethernet driver for the on-chip
+        device provided by MCFxxxx ColdFire processors."
+}
+
+package CYGPKG_DEVS_SERIAL_MCFxxxx {
+    alias       { "MCFxxxx serial device driver" devs_serial_mcfxxxx mcfxxxx_serial_driver }
+    hardware
+    directory   devs/serial/m68k/mcf52xx
+    script      ser_mcf52xx.cdl
+    description "
+            This package provides serial drivers for the on-chip UART's
+            provided by MCFxxxx ColdFire processors."
+}
+
 # --------------------------------------------------------------------------
 # ColdFire packages
 
@@ -6048,22 +6055,22 @@ Cosmo CEB-V850 evaluation board fitted with a NEC V850/SA1 or NEC V850/SB1."
 # --------------------------------------------------------------------------
 # m68k targets
 
-target mcf5272c3 {
-    alias { "Motorola mcf5272c3 evaluation board" }
-	packages {
+target m5272c3 {
+    alias { "Freescale m5272c3 evaluation board" m5272c3 }
+    packages {
         CYGPKG_HAL_M68K
-        CYGPKG_HAL_M68K_MCF52xx
-        CYGPKG_HAL_M68K_MCF52xx_MCF5272
-        CYGPKG_HAL_M68K_MCF52xx_MCF5272_MCF5272C3
-        CYGPKG_DEVS_ETH_MCF5272
-        CYGPKG_IO_SERIAL_MCF5272_UART
+        CYGPKG_HAL_M68K_MCFxxxx
+        CYGPKG_HAL_M68K_MCF5272
+        CYGPKG_HAL_M68K_M5272C3
+        CYGPKG_DEVS_ETH_MCFxxxx
+        CYGPKG_DEVS_SERIAL_MCFxxxx
+        CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2
     }
 
-    description   "The mcf5272c3 target provides  the packages  needed to  run
-                eCos on the Motorola mcf5272c3 evaluation board."
-
+    description   "The m5272c3 target provides  the packages  needed to  run
+                eCos on the Freescale m5272c3 evaluation board."
 }
- 
+
 # --------------------------------------------------------------------------
 # ColdFire targets
 
@@ -6075,10 +6082,9 @@ target coldfire_m5272c3 {
         CYGPKG_HAL_COLDFIRE_M5272C3
         CYGPKG_IO_SERIAL_COLDFIRE_MCF5272
     }
-    description   "
-        The M5272C3 target provides the packages needed to run eCos on
-        the Freescale M5272C3 evaluation board."
 
+    description   "The coldfire_m5272c3 target provides  the packages  needed to  run
+                eCos on the Freescale m5272c3 evaluation board."
 }
 
 # --------------------------------------------------------------------------
