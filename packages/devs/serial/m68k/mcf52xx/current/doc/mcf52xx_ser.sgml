@@ -1,0 +1,209 @@
+<!-- DOCTYPE refentry  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     mcfxxxx_ser.sgml                                            -->
+<!--                                                                 -->
+<!--     mcfxxxx serial driver documentation.                        -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- Copyright (C) 2003,2004,2006,2008                               -->
+<!--   Free Software Foundation, Inc.                                -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Contact(s):  bartv                                              -->
+<!-- Date:        2003/07/15                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="devs-ser-m68k-mcfxxxx-part"><title>Freescale MCFxxxx Serial Driver</title>
+
+<refentry id="devs-ser-m68k-mcfxxxx">
+  <refmeta>
+    <refentrytitle>MCFxxxx Serial Driver</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname><varname>CYGPKG_DEVS_SERIAL_MCFxxxx</varname></refname>
+    <refpurpose>eCos Support for the MCFxxxx On-chip Serial Devices</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="devs-ser-m68k-mcfxxxx-description"><title>Description</title>
+    <para>
+All members of the Freescale MCFxxxx ColdFire family of processors
+contain a number of on-chip UARTs for serial communication. They all
+use very similar hardware. There are some variations such as different
+fifo sizes, and some processors contain extra functionality such as
+autobaud detection, but a single eCos device driver can cope with most
+of these differences. The
+<varname>CYGPKG_DEVS_SERIAL_MCFxxxx</varname> package provides this
+driver. It will use definitions provided by the variant HAL
+<varname>CYGPKG_HAL_M68K_MCFxxxx</varname>, the processor HAL and the
+platform HAL.
+    </para>
+    <para>
+The driver provides partial support for hardware flow control and for
+serial line status. Only CTS/RTS hardware flow control is supported
+since the UART does not provide DTR/DSR lines. Similarly only line
+breaks, and certain communication errors are supported for line status
+since the UART does not provide other lines such as DCD or RI. On some
+platforms it should be possible to emulate these lines using GPIO
+pins, but currently there is no support for this.
+    </para>
+    <para>
+Once application code accesses a UART through the serial driver, for
+example by opening a device <literal>/dev/ser0</literal>, the driver
+assumes that it has sole access to the hardware. This means that the
+UART should not be used for any other purpose, for example HAL
+diagnostics or gdb debug traffic. Instead such traffic has to go via
+another communication channel such as ethernet.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-ser-m68k-mcfxxxx-config"><title>Configuration Options</title>
+    <para>
+    The MCFxxxx serial driver should be loaded automatically when
+selecting a platform containing a suitable processor, and it should
+never be necessary to load it explicitly. The driver as a whole is
+inactive unless the generic serial support,
+<varname>CYGPKG_IO_SERIAL_DEVICES</varname>, is enabled. Exactly which
+UART or UARTs are accessible on a given platform is determined by the
+platform because even if the processor contains a UART the platform
+may not provide a connector. Support for a given UART, say uart0, is
+controlled by a configuration option
+<varname>CYGPKG_DEVS_SERIAL_MCFxxxx_SERIAL0</varname>. The device
+driver configuration option in turn depends on a HAL configuration
+option <varname>CYGHWR_HAL_M68K_MCFxxxx_UART0</varname> to indicate
+that the UART is actually present and connected on the target
+hardware. If a given UART is of no interest to an application
+developer then it is possible to save some memory by disabling this
+option.
+    </para>
+    <para>
+For every enabled UART there are a further four configuration options:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><varname>CYGDAT_DEVS_SERIAL_MCFxxxx_SERIAL0_NAME</varname></term>
+        <listitem><para>
+Each serial device should have a unique name so that application code
+can open it. The default device names are <literal>/dev/ser0</literal>,
+<literal>/dev/ser1</literal>, and so on. It is only necessary to change
+these if the platform contains additional off-chip UARTs with clashing
+names.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><varname>CYGNUM_DEVS_SERIAL_MCFxxxx_SERIAL0_ISR_PRIORITY</varname></term>
+        <listitem><para>
+By default the driver arranges for the UARTs to interrupt at a low
+interrupt priority. Usually there will be no need to change this
+because the driver does not actually do very much processing at ISR
+level, and anyway UARTs are not especially fast devices so do not
+require immediate attention. On some Coldfires with MCF5282-compatible
+interrupt controllers care has to be taken that all interrupt
+priorities are unique.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><varname>CYGNUM_DEVS_SERIAL_MCFxxxx_SERIAL0_BAUD</varname></term>
+        <listitem><para>
+Each UART will be initialized to a given baud rate. The default baud
+rate is 38400 because in most scenarios this is fast enough yet
+does not suffer from excess data corruption. Lower baud rates can be
+used if the application will operate in an electrically noisy
+environment, or higher baud rates up to 230400 can be used if
+38400 does not provide sufficient throughput. 
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><varname>CYGNUM_DEVS_SERIAL_MCFxxxx_SERIAL0_BUFSIZE</varname></term>
+        <listitem><para>
+The serial driver will maintain software buffers for incoming and
+outgoing data. The former allows data to continue to arrive even if
+the application is still busy processing the previous transfer, and
+thus potentially improves throughput. The latter allows the
+application to transmit data without immediately blocking until the
+transfer is complete, often eliminating the need for a separate
+thread. The size of these buffers can be controlled via this
+configuration option, or alternatively these buffers can be disabled
+completely to save memory.
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+There are additional options in the generic serial I/O package
+<varname>CYGPKG_IO_SERIAL</varname> which will affect this driver. For
+example <varname>CYGPKG_IO_SERIAL_FLOW_CONTROL</varname> and its
+sub-options determine what flow control mechanism (if any) should be
+used.
+    </para>
+    <para>
+This package also defines some configuration options related to
+testing. Usually these options are of no interest to application
+developers and can be ignored.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-ser-m68k-mcfxxxx-porting"><title>Porting</title>
+    <para>
+The generic driver needs some information from other packages about
+the exact hardware, for example how many UARTs are available and where
+in memory they can be accessed.
+    </para>
+    <orderedlist>
+      <listitem><para>
+Another package, usually the processor HAL, should provide one or more
+options <varname>CYGHWR_HAL_M68K_MCFxxxx_UART0</varname>,
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART1</varname> or
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART2</varname>. These may be
+calculated or user-configurable depending on the processor.
+      </para></listitem>
+      <listitem><para>
+The device driver will also look for symbol definitions
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART0_RTS</varname> and
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART0_CTS</varname>, and the
+equivalents for the other UARTs, to determine whether or not these
+handshake lines are connected. These may be configuration options or
+they may be statically defined in a HAL I/O header file. The platform
+HAL should also implement the generic serial package's interface
+<varname>CYGINT_IO_SERIAL_FLOW_CONTROL_HW</varname> if appropriate.
+      </para></listitem>
+      <listitem><para>
+If RTS is connected then the driver will also look for a symbol
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART0_RS485_RTS</varname>. This
+enables partial support for RS485 communication in that the device
+driver will arrange for the RTS line to be asserted during a transmit.
+The driver has no support for more advanced RS485 functionality such
+as multidrop.
+      </para></listitem>
+    </orderedlist>
+    <para>
+In addition the driver assumes the standard MCFxxxx HAL macros are
+defined for the UART base addresses and the registers. The driver
+primarily targets MCF5282-compatible UARTs but there is also some
+support for functionality available on other members of the Coldfire
+range, for example the MCF5272's fractional baud rate support.
+    </para>
+  </refsect1>
+
+</refentry>
+</part>

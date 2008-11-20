@@ -1,0 +1,184 @@
+# ====================================================================
+#
+#      ser_mcfxxxx.cdl
+#
+#      Serial driver for mcfxxxx coldfire processors
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 2003,2004,2006,2008 Free Software Foundation, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND#####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      bartv
+# Contributors:
+# Date:           2003-06-4
+#
+#####DESCRIPTIONEND####
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_SERIAL_MCFxxxx {
+    display       "Serial driver for the coldfire mcfxxxx family"
+    doc           ref/devs-ser-m68k-mcfxxxx-part.html
+
+    parent        CYGPKG_IO_SERIAL_DEVICES
+    active_if     CYGPKG_IO_SERIAL
+    active_if     CYGPKG_HAL_M68K_MCFxxxx
+
+    requires      CYGPKG_ERROR
+
+    description   "
+           This package provides a serial device driver for the on-chip
+           UART's in MCFxxxx ColdFire processors."
+    compile       -library=libextras.a   ser_mcf52xx.c
+    define_proc {
+        puts $::cdl_system_header "/***** serial driver proc output start *****/"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_DEVICE_HEADER <pkgconf/devs_serial_mcfxxxx.h>"
+        puts $::cdl_system_header "/*****  serial driver proc output end  *****/"
+    }
+
+    # Support up to three on-chip UART's. The number varies between
+    # processor variants, and on some platforms some of the UART's
+    # may not be connected to save board space or to obtain more
+    # GPIO lines. Also h/w handshake lines may or may not be connected.
+    for { set ::uart 0 } { $::uart < 3 } { incr ::uart } {
+        
+        cdl_component CYGPKG_DEVS_SERIAL_MCFxxxx_SERIAL[set ::uart] {
+            display		    "Allow access to the on-chip uart[set ::uart] via a serial driver"
+            flavor		    bool
+            active_if		CYGHWR_HAL_M68K_MCFxxxx_UART[set ::uart]
+            default_value	1
+            implements		CYGINT_IO_SERIAL_LINE_STATUS_HW
+            
+            description "
+                If the application needs to access the on-chip uart[set ::uart]
+                via an eCos serial driver then this option should be enabled."
+
+            cdl_option CYGDAT_DEVS_SERIAL_MCFxxxx_SERIAL[set ::uart]_NAME {
+                display		"Device name for uart [set ::uart]"
+                flavor 		data
+                default_value	[format {"\"/dev/ser%d\""} $::uart]
+                description	"
+                    This option controls the name that an eCos application
+                    should use to access this device via cyg_io_lookup(),
+                    open(), or similar calls."
+            }
+
+            cdl_option CYGNUM_DEVS_SERIAL_MCFxxxx_SERIAL[set ::uart]_ISR_PRIORITY {
+                display		"Interrupt priority for this device"
+                flavor		data
+                default_value	is_loaded(CYGNUM_HAL_M68K_MCFxxxx_ISR_DEFAULT_PRIORITY_UART[set ::uart]) ? \
+                    CYGNUM_HAL_M68K_MCFxxxx_ISR_DEFAULT_PRIORITY_UART[set ::uart] : \
+                    CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MIN
+                legal_values	CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MAX
+                description "
+                    By default uart [set ::uart] is given an interrupt priority of 1,
+                    in other words it will interrupt at IPL level 1. The device can
+                    be made to interrupt at a higher priority but this is rarely
+                    useful since nearly all processing happens at DSR level rather
+                    than ISR level."
+            }
+            
+            cdl_option CYGNUM_DEVS_SERIAL_MCFxxxx_SERIAL[set ::uart]_BAUD {
+                display		"Default baud rate for uart [set ::uart]"
+                flavor		data
+                default_value	38400
+                legal_values    { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
+                    4800 7200 9600 14400 19200 38400 57600 115200 230400
+                }
+                description "This option determines the initial baud rate for uart [set ::uart]"
+            }
+
+            cdl_option CYGNUM_DEVS_SERIAL_MCFxxxx_SERIAL[set ::uart]_BUFSIZE {
+                display		"Buffer size for the uart [set ::uart] serial driver"
+                flavor		booldata
+                default_value	128
+                legal_values	16 to 8192
+                description "
+                    Typically the device driver will run in interrupt mode and will
+                    perform some buffering of both incoming and outgoing data. This
+                    option controls the size of both input and output buffer. If
+                    the device will be used only in polled mode then this option
+                    can be disabled."
+            }
+        }
+    }
+
+    cdl_component CYGPKG_DEVS_SERIAL_MCFxxxx_OPTIONS {
+        display "Serial device driver build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_DEVS_SERIAL_MCFxxxx_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building these serial device drivers. These flags are
+                used in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_DEVS_SERIAL_MCFxxxx_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building these serial device drivers. These flags are
+                removed from the set of global flags if present."
+        }
+    }
+
+    cdl_component CYGPKG_DEVS_SERIAL_MCFxxxx_TESTING {
+        display    "Testing parameters"
+        flavor     none
+        define_proc {
+            puts $::cdl_header "#define CYGPRI_SER_TEST_CRASH_ID \"mcfxxxx\""
+        }
+
+        cdl_option CYGPRI_SER_TEST_SER_DEV {
+            display       "Serial device used for testing"
+            flavor        data
+            default_value { "\"/dev/ser0\"" }
+        }
+        cdl_option CYGPRI_SER_TEST_TTY_DEV {
+            display       "TTY device used for testing"
+            flavor        data
+            default_value { "\"/dev/tty0\"" }
+        }
+    }
+}

@@ -1,0 +1,123 @@
+2008-11-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/ser_mcf52xx.cdl, doc/mcf52xx_ser.sgml, src/ser_mcf52xx.c:
+	minor clean-ups.
+
+2008-05-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/ser_mcf52xx.c: provide more flow control capability
+	information to higher levels.
+
+2006-09-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf52xx_ser.sgml: update docs to reflect changes in the
+	hal/m68k hierarchy.
+
+	* src/ser_mcf52xx.c: Motorola -> Freescale.
+
+2006-09-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/ser_mcf52xx.c: update to use new var_io.h definitions.
+
+2006-09-05  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/ser_mcf52xx.c, cdl/ser_mcf52xx.cdl:
+	Trigger off options/components in the processor HAL rather than
+	on interfaces in the device driver. The latter were essentially
+	duplicates of the former so no longer served a purpose.
+
+2006-07-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/ser_mcf52xx.cdl, src/ser_mcf52xx.c: separate out RTS/CTS
+	handling. Cope with various changes in the mcf52xx variant HAL for
+	better support of the ColdFire range of processors.
+
+2006-03-10  John Dallaway  <jld@ecoscentric.com>
+
+        * cdl/ser_mcf52xx.cdl: Add reference to package documentation.
+
+2004-08-03  John Dallaway  <jld@ecoscentric.com>
+
+        * cdl/ser_mcf52xx.cdl: Use any port for serial testing.
+	
+2004-08-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/ser_mcf52xx.cdl, src/ser_mcf52xx.c, doc/mcf52xx_ser.sgml:
+	Make it easier for platform HALs to control what functionality is
+	enabled, e.g. whether or not RTS/CTS are connected.
+
+2004-03-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf52xx_ser.sgml: update following port to mcf5282
+
+2004-03-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/ser_mcf52xx.cdl: look for default ISR priorities supplied by
+	the HAL.
+
+2004-02-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/ser_mcf52xx.c, cdl/ser_mcf52xx.cdl: add support for an
+	optional third UART.
+
+2003-08-01  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf52xx_ser.sgml: Document use of rx fifo
+
+	* src/ser_mcf52xx.c:
+	Use rx fifo where available. Add some statistics gathering.
+
+2003-07-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf52xx_ser.sgml: fix various typos etc.
+
+2003-07-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf52xx_ser.sgml: Add documentation.
+
+2003-07-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/ser_mcf52xx.c (mcf52xx_serial_set_config):
+	Reject DSR/DTR flow control more gracefully.
+
+2003-07-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/ser_mcf52xx.cdl, src/ser_mcf52xx.c:
+	Add support for hardware handshaking.
+	Make better use of the fifos to reduce interrupts.
+
+2003-06-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* New version of the M68K support
+
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2003, 2004, 2006 eCosCentric Limited
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================
