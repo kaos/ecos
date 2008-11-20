@@ -179,11 +179,12 @@ cdl_package CYGPKG_LIBM {
     }
 
     # OTHER CONFIGURATION SETTINGS
-    cdl_option X_TLOSS {
+    cdl_option CYGNUM_LIBM_X_TLOSS {
         display       "Bessel function limit of significance"
         flavor        data
         default_value 1.41484755040568800000e+16;  # pi*(2**52)
         legal_values  1 to 1e308;  # FIXME
+        define        X_TLOSS
         description   "
             For the Bessel functions (j0(), j1(), jn(),
             y0(), y1(), yn()) this option defines the
