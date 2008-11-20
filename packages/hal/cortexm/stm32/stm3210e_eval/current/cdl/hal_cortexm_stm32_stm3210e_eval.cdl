@@ -46,7 +46,6 @@
 
 cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
     display       "ST STM3210E EVAL Development Board HAL"
-    doc           ecospro-ref/hal-cortexm-stm3210e_eval-part.html
     parent        CYGPKG_HAL_CORTEXM_STM32
     define_header hal_cortexm_stm32_stm3210e_eval.h
     include_dir   cyg/hal
