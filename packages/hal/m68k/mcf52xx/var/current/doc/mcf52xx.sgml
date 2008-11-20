@@ -1,0 +1,483 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     mcfxxxx.sgml                                                -->
+<!--                                                                 -->
+<!--     mcfxxxx variant HAL documentation.                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- Copyright (C) 2003,2004,2006,2008                               -->
+<!--   Free Software Foundation, Inc.                                -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Contact(s):  bartv                                              -->
+<!-- Date:        2003/07/15                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="hal-m68k-mcfxxxx"><title>Freescale MCFxxxx Variant Support</title>
+
+<refentry id="m68k-mcfxxxx">
+  <refmeta>
+    <refentrytitle>MCFxxxx ColdFire Processors</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname><varname>CYGPKG_HAL_M68K_MCFxxxx</varname></refname>
+    <refpurpose>eCos Support for Freescale MCFxxxx Processors</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="m68k-mcfxxxx-description"><title>Description</title>
+    <para>
+The Freescale ColdFire family is a range of processors including the
+MCF5206 and the MCF5282. From a programmer's perspective these
+processors all share basically the same processor core, albeit with
+minor differences in the instruction set. They differ in areas like
+performance, on-chip peripherals and caches. Even when it comes to
+peripherals there is a lot of commonality. For example many but not
+all Coldfire processors use the same basic interrupt controller(s) as
+the MCF5282. Similarly the on-chip UARTs tend to use the same basic
+design although there are variations in the number of UARTs, the fifo
+sizes, and in certain details.
+    </para>
+    <para>
+    The MCFxxxx variant HAL package
+<varname>CYGPKG_HAL_M68K_MCFxxxx</varname> provides support for
+various features that are common to many but not all Coldfire
+processors. This includes HAL diagnostics via an on-chip UART and
+interrupt controller management for those processors which have
+MCF5282-compatible controllers. The variant HAL complements the M68K
+architectural HAL package. An eCos configuration should also include a
+processor-specific HAL package such as
+<varname>CYGPKG_HAL_M68K_MCF5272</varname> to support the
+chip-specific peripherals and cache details, and a platform HAL
+package such as <varname>CYGPKG_HAL_M68K_M5272C3</varname> to support
+board-level details like external memory chips. The processor or
+platform HAL can override the functionality provided by the variant
+HAL.
+    </para>
+  </refsect1>
+
+  <refsect1 id="m68k-mcfxxxx-config"><title>Configuration</title>
+    <para>
+The MCFxxxx variant HAL package should be loaded automatically when
+eCos is configured for appropriate target hardware. It should never be
+necessary to load this package explicitly. Unloading the package
+should only happen as a side effect of switching target hardware.
+    </para>
+    <para>
+On most ColdFire platforms the variant HAL will provide the HAL
+diagnostics support via one of the UARTs. Some platforms may provide
+their own HAL diagnostics facility, for example output via an LCD. The
+variant HAL diagnostics support is active if the processor or platform
+implements the
+<varname>CYGINT_HAL_M68K_MCFxxxx_DIAGNOSTICS_USE_DEFAULT</varname>
+interface. It is also active only in configurations which do not rely
+on an underlying rom monitor such as RedBoot:
+if <varname>CYGSEM_HAL_USE_ROM_MONITOR</varname> is enabled then the
+default diagnostics channel will automatically be inherited from
+RedBoot. The variant HAL then provides a number of configuration
+options related to diagnostics:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><varname>CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT</varname></term>
+        <listitem><para>
+This selects the destination for HAL diagnostics. The number of UARTs
+available depends on the processor, and on any given board some of the
+UARTs may not be connected. Hence the variant HAL looks for
+configuration options
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART0</varname>, 
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART1</varname> and
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART2</varname> to see which on-chip
+UARTs are actually available on the processor and target hardware, and
+uses this information to let the user select a UART.
+        </para>
+        <para>
+When a UART is in use as the HAL diagnostics channel, that UART
+should not be used for any other purpose. In particular application
+code should avoid using it for I/O via the serial driver.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><varname>CYGNUM_HAL_M68K_MCFxxxx_DIAGNOSTICS_BAUD</varname></term>
+        <listitem><para>
+When a UART is selected for HAL diagnostics this option specifies the
+default baud rate. The most common setting is 38400. That provides a
+compromise between performance and reliability, especially in
+electrically noisy environments such as an industrial environment or a
+test farm. Some platforms may define
+<varname>CYGNUM_HAL_M68K_MCFxxxx_DIAGNOSTICS_DEFAULT_BAUD</varname>
+to handle scenarios where another default baud rate is preferable,
+typically for compatibility with existing software.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><varname>CYGNUM_HAL_M68K_MCFxxxx_DIAGNOSTICS_ISRPRI</varname></term>
+        <listitem><para>
+Usually the HAL diagnostics channel is driven in polled mode but in
+some scenarios interrupts are required. For example, when debugging an
+application over a serial line on top of the gdb stubs provided by
+RedBoot, the user should be able to interrupt the application with a
+control-C. The application will not be polling the HAL diagnostics
+UART at this point so instead the eCos interrupt management code
+interacts with the gdb stubs to do the right thing. This configuration
+option selects the interrupt priority. It should be noted that on some
+processors with MCF5282-compatible interrupt controllers all
+priorities for enabled interrupts should be unique, and it is the
+responsibility of application developers to ensure this condition is
+satisfied. 
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1 id="m68k-mcfxxxx-port"><title>The HAL Port</title>
+    <para>
+This section describes how the MCFxxxx variant HAL package implements
+parts of the eCos HAL specification. It should be read in conjunction
+with similar sections from the architectural and processor HAL
+documentation.
+    </para>
+
+    <refsect2 id="m68k-mcfxxxx-port-io"><title>HAL I/O</title>
+      <para>
+The <filename class="headerfile">cyg/hal/var_io.h</filename> header
+provides various definitions for on-chip peripherals, where the
+current processor has peripherals compatible with the MCF5282's.
+This header is automatically included by the architectural
+<filename class="headerfile">cyg/hal/hal_io.h</filename> so other
+packages and application code will usually only include the latter.
+      </para>
+      <para>
+It is up to the processor HAL to specify exactly what <filename
+class="headerfile">var_io.h</filename> should export. For example the
+MCF5213's <filename class="headerfile">proc_io.h</filename> header
+contains the following:
+      </para>
+      <programlisting width=72>
+# define HAL_MCFxxxx_HAS_MCF5282_INTC               1
+# define HAL_MCFxxxx_INTC0_BASE                     (HAL_MCF521x_IPSBAR + 0x00000C00)
+      </programlisting>
+      <para>
+This enables support within the variant HAL for a single
+MCF5282-compatible interrupt controller, and cases <filename
+class="headerfile">var_io.h</filename> to export symbols such as:
+      </para>
+      <programlisting width=72>
+#ifdef HAL_MCFxxxx_HAS_MCF5282_INTC
+// Two 32-bit interrupt mask registers
+# define HAL_MCFxxxx_INTCx_IMRH                     0x0008
+# define HAL_MCFxxxx_INTCx_IMRL                     0x000C
+&hellip;
+# define HAL_MCFxxxx_INTCx_ICRxx_IL_MASK            (0x07 << 3)
+# define HAL_MCFxxxx_INTCx_ICRxx_IL_SHIFT           3
+      </programlisting>
+      <para>
+Symbols such as <varname>HAL_MCFxxxx_INTCx_IMRH</varname> can be used
+to access the relevant hardware registers via
+<function>HAL_READ_UINT32</function> and
+<function>HAL_WRITE_UINT32</function>. Symbols like
+<varname>HAL_MCFxxxx_INTCx_ICRxx_IL_MASK</varname> can be used to
+generate or decode the contents of the hardware registers.
+      </para>
+      <para>
+The header file does mostly use a naming convention, but is not
+guaranteed to be totally consistent. There may also be discrepancies
+with the documentation because the manuals for the various Coldfire
+processors are not always consistent about their naming schemes.
+All I/O definitions provided by the variant HAL will start with
+<literal>HAL_MCFxxxx_</literal>, followed by the name of the
+peripheral. If a peripheral is likely to be a singleton, for example
+an on-chip flash unit, then the name is unadorned. If there may be
+several instances of the peripheral then the name will be followed by
+a lower case x. For example:
+      </para>
+      <programlisting width=72>
+# define HAL_MCFxxxx_CFM_CR                         0x0000
+&hellip;
+# define HAL_MCFxxxx_UARTx_UMR                      0x00
+      </programlisting>
+      <para>
+Register names will be relative to some base address such as
+<varname>HAL_MCFxxxx_CFM_BASE</varname> or
+<varname>HAL_MCFxxxx_UART0_BASE</varname>, so code accessing a
+register would look like:
+      </para>
+      <programlisting width=72>
+    HAL_READ_UINT32(HAL_MCFxxxx_CFM_BASE + HAL_MCFxxxx_CFM_PROT, reg);
+    &hellip;
+    HAL_WRITE_UINT8(base + HAL_MCFxxxx_UARTx_UTB, '*');
+      </programlisting>
+      <para>
+Usually the register names are singletons, but in some cases such as
+the interrupt controller priority registers there may be multiple
+instances of the register and the names will be suffixed
+appropriately. For example
+<varname>HAL_MCFxxxx_INTCx_ICRxx_IL_MASK</varname> indicates the field
+<literal>IL</literal> within one of the <literal>ICR</literal>
+registers within one of the interrupt controllers.
+      </para>
+      <para>
+As mentioned earlier the processor HAL's <filename
+class="headerfile">proc_io.h</filename> will control which definitions
+are exported by <filename class="headerfile">var_io.h</filename>.
+Sometimes the processor HAL will then go on to undefine or redefine
+some of the symbols, to reflect incompatibilities between the
+processor's devices and the equivalent devices on the MCF5282. There
+may also be additional symbols for the devices, and there will be
+additional definitions for any processor-specific hardware. In
+particular GPIO pin handling is handled by the processor HAL, not by
+the variant HAL. Application developers should examine <filename
+class="headerfile">proc_io.h</filename> as well as
+<filename class="headerfile">var_io.h</filename> and the
+processor-specific documentation to see exactly what I/O definitions
+are provided. When porting to a new Coldfire processor it is best to
+start with an existing processor HAL and copy
+code as appropriate. A search for <literal>_HAS_</literal> in
+<filename class="headerfile">var_io.h</filename> will also be
+informative.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcfxxxx-port-context"><title>Thread Contexts and Setjmp/Longjmp</title>
+      <para>
+All MCFxxxx processors support interrupts and exceptions in a uniform
+way. When an interrupt or exception occurs the hardware pushes the
+current program counter, the status register, and an additional 16-bit
+word containing information about the interrupt source, for a total of
+64 bits. Hence the PCSR part of a thread context consists of two
+32-bit integers, and the variant HAL provides appropriate C and
+assembler macros to examine and manipulate these.
+      </para>
+      <para>
+Not all MCFxxxx processors have hardware floating point, so support
+for this is left to the processor HAL package. Some MCFxxxx processors
+have additional hardware units such as a multiply-accumulator, but
+these are not currently supported by eCos.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcfxxxx-port-diag"><title>HAL Diagnostics</title>
+      <para>
+The various MCFxxxx processors usually have one or more UARTs based on
+very similar hardware. The variant HAL package can provide HAL
+diagnostic support using such a UART. There are some minor differences
+such as fifo sizes, and the UARTs will be accessed at different memory
+locations. These differences are handled by a small number of macros
+provided by the processor and platform HAL.
+      </para>
+      <para>
+The MCFxxxx variant HAL only provides HAL diagnostic support via a
+UART if the processor or platform HAL does not provide an alternative
+implementation. That copes with situations where the on-chip UARTs are
+not actually accessible on the target board and an alternative
+communication channel must be used.
+      </para>
+      <para>
+If the variant HAL should implement HAL diagnostics then the processor
+or platform HAL should implement the CDL interface
+<varname>CYGINT_HAL_M68K_MCFxxxx_DIAGNOSTICS_USE_DEFAULT</varname>. It
+should also define one or more of
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART0</varname>,
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART1</varname> and
+<varname>CYGHWR_HAL_M68K_MCFxxxx_UART2</varname>, and ensure that any
+multi-purpose GPIO pins are set correctly. The variant HAL will take
+care of the rest.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcfxxxx-port-cache"><title>Cache Handling</title>
+      <para>
+The various MCFxxxx processors all have very different caches, so
+support for these is deferred to the processor HAL.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcfxxxx-port-exceptions"><title>Exceptions</title>
+      <para>
+All MCFxxxx processors support synchronous exceptions in a uniform
+way, with the hardware pushing sufficient information on to the stack
+to identify the nature of the exception. This means that the architectural
+entry point <function>hal_m68k_exception_vsr</function> can be used as
+the default VSR for all exceptions, with no need for separate
+trampoline functions.
+      </para>
+      <para>
+The variant HAL does not provide any special support for recovering
+from exceptions.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcfxxxx-port-interrupts"><title>Interrupts</title>
+      <para>
+All MCFxxxx processors supports interrupts in a uniform way. When an
+interrupt occurs the hardware pushes sufficient information on to the
+stack to identify the interrupt. Therefore the architectural entry
+point <function>hal_m68k_interrupt_vsr</function> can be used as the
+default VSR for all interrupts, with the variant just supplying a
+small number of macros that allow the generic code to extract details of
+the interrupt source. There is no need for separate trampoline
+functions for every interrupt source.
+      </para>
+      <para>
+On processors which have MCF5282-compatible interrupt and edge port
+modules the variant HAL can provide the
+<function>HAL_INTERRUPT_MASK</function>,
+<function>HAL_INTERRUPT_UNMASK</function>,
+<function>HAL_INTERRUPT_SET_LEVEL</function>,
+<function>HAL_INTERRUPT_ACKNOWLEDGE</function> and
+<function>HAL_INTERRUPT_CONFIGURE</function> macros. There is support
+for processors with a single interrupt controller or with two separate
+interrupt controllers. Otherwise these macros are left to the
+processor HAL. The allocation of interrupt vectors to the various
+on-chip devices is also a characteristic of the processor HAL.
+<filename class="headerfile">proc_intr.h</filename> should be
+consulted for appropriate definitions, for example
+<varname>CYGNUM_HAL_ISR_UART0</varname>.
+      </para>
+      <para>
+The mask and umask operations are straightforward: if the interrupt
+controller has the <literal>SIMR</literal> and <literal>CIMR</literal>
+registers those will be used; otherwise the <literal>IRM</literal>
+registers will be updated by a read-modify-write cycle. The
+acknowledge macro is only relevant for external interrupts coming in
+via the edge port module and will clear the interrupt by writing to
+the <literal>EPIER</literal> register. There is no simple way to clear
+interrupts generated by the on-chip peripherals, so that is the
+responsibility of the various device drivers or of application code.
+The configure macro is only relevant for external interrupts and
+involves manipulating the edge port module.
+      </para>
+      <para>
+The <function>HAL_INTERRUPT_SET_LEVEL</function> macro is used
+implicitly by higher level code such as
+<function>cyg_interrupt_create</function>. With MCF5282-compatible
+interrupt controllers the priority level corresponds to
+the <literal>ICRxx</literal> register. The exact format depends on the
+processor. Interrupt priorities corresponding to IPL level 7 are
+non-maskable. Such interrupts cannot be managed safely by the usual
+eCos ISR and DSR mechanisms. Instead application code will have to
+install a custom VSR and manage the entire interrupt.
+      </para>
+      <para>
+Some MCF5282-compatible interrupt controllers have a major
+restriction: all interrupt priorities within each controller must be
+unique. If two interrupts go off at the same time and have exactly the
+same priority then the controllers' behaviour is undefined. In a
+typical application some of the interrupts will be handled by eCos
+device drivers while others will be handled directly by application
+code. Since eCos cannot know which interrupts may get used, it cannot
+allocate unique priorities. Instead this has to be left to the
+application developer. eCos does provide configuration options such as
+<varname>CYGNUM_KERNEL_COUNTERS_CLOCK_ISR_PRIORITY</varname> and
+<varname>CYGNUM_DEVS_SERIAL_MCFxxxx_SERIAL0_ISR_PRIORITY</varname> to
+provide control over the eCos-managed interrupts, and provides default
+values for these which are unique.
+      </para>
+      <caution><para>
+Non-unique interrupt priorities can lead to very confusing system
+behaviour. For example on an MCF5282, if the PIT3 system clock
+(interrupt 0x3a) and ethernet RX frame (interrupt 0x1b) are
+accidentally given the same priority and go off at the same time, the
+interrupt controller may actually issue an interrupt 0x3b, the bitwise
+or of the two interrupt numbers. That interrupt belongs to the on-chip
+flash module. There may not be an installed handler for that interrupt
+at all, and even if there is a handler it will only manipulate the
+flash hardware and not clear the system clock and ethernet interrupts.
+Hence the system is likely to go into a spin, continually trying to
+service the wrong interrupt. To track down such problems during
+debugging it may prove useful to install a breakpoint on the
+<function>hal_arch_default_isr</function> function.
+      </para></caution>
+    </refsect2>
+
+    <refsect2 id="m68k-mcfxxxx-port-clock"><title>Clock Support</title>
+      <para>
+On processors with an MCF5282-compatible programmable interrupt timer
+module or PIT, the variant HAL can provide the
+<function>HAL_CLOCK_INITIALIZE</function>,
+<function>HAL_CLOCK_RESET</function>,
+<function>HAL_CLOCK_READ</function> and
+<function>HAL_CLOCK_LATENCY</function> macros. These macros are used
+by the eCos kernel to implement the system clock and may be used for
+other purposes in non-kernel configurations. When multiple timers are
+available it is up to the processor or platform HAL to select which
+one gets used for the system clock. It is also up to the processor or
+platform HAL to provide various clock-related configuration options
+such as <varname>CYGNUM_HAL_RTC_PERIOD</varname>. Those options need
+to take into account the processor clock speed, which is usually a
+characteristic of the platform and hence not known to the variant HAL.
+      </para>
+      <para>
+When porting to a new Coldfire processor, the processor or platform
+HAL should define the symbols
+<varname>CYGNUM_HAL_INTERRUPT_RTC</varname>,
+<varname>_HAL_MCFxxxx_CLOCK_PIT_BASE_</varname>, and
+<varname>_HAL_MCFxxxx_CLOCK_PIT_PRE_</varname>. Existing ports can be
+examined for more details.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcfxxxx-port-reset"><title>Reset</title>
+      <para>
+On processors with an MCF5282-compatible reset module or RST, the
+variant HAL can provide the <function>HAL_PLATFORM_RESET</function>
+macro. That macro is typically used by the gdb stubs support inside
+RedBoot to reset the hardware between debug sessions, ensuring that
+each session runs in as close to pristine hardware as possible. The
+macro uses the <literal>SOFTRST</literal> bit of the
+<varname>RCR</varname> register.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcfxxxx-port-bitindex"><title>Bit Indexing</title>
+      <para>
+By default the variant HAL will provide versions of
+<function>HAL_LSBIT_INDEX</function> and
+<function>HAL_MSBIT_INDEX</function> which are more efficient than the
+default ones in the architectural HAL. The implementation uses the
+<command>ff1.l</command> and <command>bitrev.l</command> instructions.
+If the Coldfire processor does not support these instructions then
+the processor HAL should define
+<varname>_HAL_M68K_MCFxxxx_NO_FF1_</varname>.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcfxxxx-port-other-hal"><title>Other Issues</title>
+      <para>
+The MCFxxxx variant HAL does not affect the implementation of data
+types, stack size definitions, idle thread processing, linker scripts,
+SMP support, system startup, or debug support.
+      </para>
+    </refsect2>
+
+    <refsect2 id="m68k-mcfxxxx-port-other"><title>Other Functionality</title>
+      <para>
+The MCFxxxx variant HAL only implements functionality defined in the
+eCos HAL specification and does not export any additional functions.
+      </para>
+    </refsect2>
+  </refsect1>
+</refentry>
+
+</part>

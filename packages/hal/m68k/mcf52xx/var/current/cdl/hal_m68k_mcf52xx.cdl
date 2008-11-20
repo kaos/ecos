@@ -1,70 +1,269 @@
 # ====================================================================
 #
-#      hal_m68k_mcf52xx.cdl
+#      hal_m68k_mcfxxxx.cdl
 #
-#      mcf52xx variant architectural HAL package configuration data
+#      mcfxxxx variant architectural HAL package configuration data
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
-## -------------------------------------------
-## This file is part of eCos, the Embedded Configurable Operating System.
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-##
-## eCos is free software; you can redistribute it and/or modify it under
-## the terms of the GNU General Public License as published by the Free
-## Software Foundation; either version 2 or (at your option) any later version.
-##
-## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
-## WARRANTY; without even the implied warranty of MERCHANTABILITY or
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-## for more details.
-##
-## You should have received a copy of the GNU General Public License along
-## with eCos; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-##
-## As a special exception, if other files instantiate templates or use macros
-## or inline functions from this file, or you compile this file and link it
-## with other works to produce a work based on this file, this file does not
-## by itself cause the resulting work to be covered by the GNU General Public
-## License. However the source code for this file must still be made available
-## in accordance with section (3) of the GNU General Public License.
-##
-## This exception does not invalidate any other reasons why a work based on
-## this file might be covered by the GNU General Public License.
-##
-## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-## at http://sources.redhat.com/ecos/ecos-license/
-## -------------------------------------------
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 2003,2005,2006,2008 Free Software Foundation, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+# -------------------------------------------
 #####ECOSGPLCOPYRIGHTEND####
 # ====================================================================
+#####DESCRIPTIONBEGIN####
+#
+# Author(s):     bartv
+# Date:          2003-06-04
+#
+#####DESCRIPTIONEND####
+#========================================================================
 
-cdl_package CYGPKG_HAL_M68K_MCF52xx {
-    display     "68k/Coldfire version 2 core HAL"
+cdl_package CYGPKG_HAL_M68K_MCFxxxx {
+    display     "M68k/ColdFire variant HAL"
+    doc         ref/hal-m68k-mcfxxxx.html
     parent      CYGPKG_HAL_M68K
     requires    CYGPKG_HAL_M68K
     hardware
-    include_dir   cyg/hal
-    define_header hal_m68k_mcf52xx.h
+    include_dir cyg/hal
+    compile     mcf52xx.c mcf52xx_asm.S
 
-    description   "The  68k/Coldfire  version  2  core  HAL  package  provides
-                generic support for the version  2 Coldfire core.  It is  also
-                necessary to select a specific target platform HAL package."
-
+    description   "The M68k/ColdFire variant HAL package provides
+                generic support for the Freescale ColdFire family of
+                processors."
+    
     define_proc {
-        puts $::cdl_header "#include <pkgconf/hal_m68k.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H   <pkgconf/hal_m68k_mcfxxxx.h>"
     }
 
-    compile     var_startup.c var_misc.c var_arch.S
+    cdl_component CYGPKG_HAL_M68K_MCFxxxx_DIAGNOSTICS {
+        display     "HAL diagnostics support"
+        flavor      none
+        description "
+          The MCFxxxx variant HAL has support for outputting diagnostics via an
+          on-chip UART compatible with the ones found on the MCF5282, or for
+          discarding all diagnostic output. In some development environments the
+          diagnostics channel can also be used for communication between gdb
+          on the host and the gdb stubs on the target. In virtual vector
+          configurations where the application runs on top of RedBoot the
+          diagnostics channel is provided by RedBoot so changing the channel
+          requires reconfiguring RedBoot."
 
-    make {
-        <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
-        $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(CFLAGS) -c -o $@ $<
-        @echo $@ ": \\" > $(notdir $@).deps
-        @tail -n +2 vectors.tmp >> $(notdir $@).deps
-        @echo >> $(notdir $@).deps
-        @rm vectors.tmp
+        cdl_interface CYGINT_HAL_M68K_MCFxxxx_DIAGNOSTICS_USE_DEFAULT {
+            display     "Platform uses default MCFxxxx diagnostics support"
+            flavor      bool
+            description "
+              The MCFxxxx variant HAL has support for outputting diagnostics via
+              an on-chip UART compatible with the ones found on the MCF5282.
+              If a platform can use this default diagnostics support then the
+              platform HAL will implement this interface. If some other mechanism
+              should be used for generating diagnostics output, for example because
+              none of the UARTs are available, then the platform HAL can provide its
+              own facilities."
+            
+            define_proc {
+                puts $::cdl_header "\#define CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS\t1"
+                puts $::cdl_header "\#define CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL\t0"
+                puts $::cdl_header "\#define CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL\t0"
+            }                
+        }
+
+        cdl_option CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT {
+            display         "Port to use for HAL diagnostics"
+            flavor          data
+            compile         hal_diag.c
+            active_if       !CYGSEM_HAL_USE_ROM_MONITOR || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS
+            active_if       CYGINT_HAL_M68K_MCFxxxx_DIAGNOSTICS_USE_DEFAULT
+            legal_values    {
+                (CYGHWR_HAL_M68K_MCFxxxx_UART0 ? "uart0" : "")
+                (CYGHWR_HAL_M68K_MCFxxxx_UART1 ? "uart1" : "")
+                (CYGHWR_HAL_M68K_MCFxxxx_UART2 ? "uart2" : "")
+                "<invalid>"
+            }
+            requires        { CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT != "<invalid>" }
+            default_value   {
+                CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT_DEFAULT ? CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT_DEFAULT :
+                CYGHWR_HAL_M68K_MCFxxxx_UART0 ? "uart0" :
+                CYGHWR_HAL_M68K_MCFxxxx_UART1 ? "uart1" :
+                CYGHWR_HAL_M68K_MCFxxxx_UART2 ? "uart2" :
+                "discard"
+            }
+
+            description "
+              This option controls which of the on-chip UARTs will be used for
+              the HAL diagnostics channel. A UART connected to an RS232 transceiver
+              is required."
+        }
+
+        cdl_option CYGNUM_HAL_M68K_MCFxxxx_DIAGNOSTICS_BAUD {
+            display         "Baud rate to use for HAL diagnostics"
+            flavor          data
+            active_if       CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT
+            legal_values    { 9600 19200 38400 115200 }
+            default_value   { is_enabled(CYGNUM_HAL_M68K_MCFxxxx_DIAGNOSTICS_DEFAULT_BAUD) ?
+                CYGNUM_HAL_M68K_MCFxxxx_DIAGNOSTICS_DEFAULT_BAUD : 38400
+            }
+            # For platforms which implement dynamic baud rates
+            define		    CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
+            description "
+              This option selects the baud rate used for the diagnostics port."
+        }
+
+        cdl_option CYGNUM_HAL_M68K_MCFxxxx_DIAGNOSTICS_ISRPRI {
+            display         "Interrupt priority for HAL diagnostics UART"
+            flavor          data
+            active_if       CYGHWR_HAL_M68K_MCFxxxx_DIAGNOSTICS_PORT
+            active_if       CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+            legal_values	CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MAX
+            default_value   { is_loaded(CYGNUM_HAL_M68K_MCFxxxx_ISR_DEFAULT_PRIORITY_DIAG) ?
+                CYGNUM_HAL_M68K_MCFxxxx_ISR_DEFAULT_PRIORITY_DIAG : CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MAX }
+            description "
+              When the HAL diagnostics channel is used for gdb traffic it may
+              at times be in interrupt-driven rather than polled mode, to allow
+              a ctrl-C to halt the application. This configuration option
+              selects the interrupt priority."
+        }
     }
 
+    
+    # This component will be filled in by the processor/platform HAL's.
+    cdl_component CYGPKG_HAL_M68K_MCFxxxx_REGISTERS {
+        display     "Hardware configuration"
+        flavor      none
+        no_define   
+        description "
+            ColdFire processors usually have a number of on-chip memories: an
+            instruction cache, some RAM, and possibly some ROM. Some aspects of
+            these can be configured by selecting the values for certain key
+            registers, for example the RAMBAR internal ram base register."
+    }
+
+    if { 0 } {
+        cdl_component CYGPKG_HAL_M68K_MCFxxxx_MAC {
+            display     "Support for the MAC unit"
+            active_if   CYGINT_HAL_M68K_MCFxxxx_HARDWARE_MAC
+            flavor      none
+            description "
+            If the target processor has a hardware multiply/accumulate unit then
+            this component defines additional configuration options related
+            to that unit."
+
+            cdl_option CYGIMP_HAL_M68K_MCFxxxx_MAC_SAVE {
+                display         "Save MAC state during context switch"
+                default_value   1
+                description "
+                By default the MAC context gets saved during a context switch and
+                whenever an interrupt occurs. This can be suppressed if the application
+                does not actually use this unit, or if it does so from only one
+                thread."
+            }
+        }
+        
+        cdl_component CYGPKG_HAL_M68K_MCFxxxx_EMAC {
+            display     "Support for the enhanced MAC unit"
+            active_if   CYGINT_HAL_M68K_MCFxxxx_HARDWARE_EMAC
+            flavor      none
+            description "
+            If the target processor has an enhanced multiply/accumulate unit then
+            this component defines additional configuration options related
+            to that unit."
+
+            cdl_option CYGIMP_HAL_M68K_MCFxxxx_EMAC_SAVE {
+                display         "Save EMAC state during context switch"
+                default_value   1
+                description "
+                By default the EMAC context gets saved during a context switch and
+                whenever an interrupt occurs. This can be suppressed if the application
+                does not actually use this unit, or if it does so from only one
+                thread."
+            }
+        }
+    }
+        
+    cdl_component CYGHWR_HAL_M68K_MCFxxxx_HARDWARE {
+        display     "Optional hardware units"
+        flavor      none
+        no_define
+        description "
+            Some ColdFire hardware units such as the multiply/accumulator are
+            optional. This component keeps track of which units are actually
+            available on the current target so that other configuration options
+            and the eCos source code can adapt accordingly."
+        
+        cdl_interface CYGINT_HAL_M68K_MCFxxxx_HARDWARE_MAC {
+            display "Multiply/accumulate unit"
+            flavor  bool
+            description "
+                This interface will be implemented if the specific processor being
+                used has a MAC (multiply/accumulate) unit."
+        }
+        
+        cdl_interface CYGINT_HAL_M68K_MCFxxxx_HARDWARE_EMAC {
+            display "Enhanced multiply/accumulate unit"
+            flavor  bool
+            description "
+                This interface will be implemented if the specific processor being
+                used has an EMAC (enhanced multiply/accumulate) unit."
+        }
+    }
+
+    cdl_component CYGPKG_HAL_M68K_MCFxxxx_SOFTWARE {
+        display     "Optional software units"
+        flavor      none
+        no_define
+        description "
+            The MCFxxxx variant HAL can provide default implementations of some
+          software units such as profiling timer support for ColdFire processors
+          sharing appropriate characteristics."
+
+        cdl_interface CYGINT_HAL_M68K_MCFxxxx_SOFTWARE_PROFILE_TIMER {
+            display     "Use standard profile timer"
+            active_if   CYGPKG_PROFILE_GPROF
+            implements  CYGINT_PROFILE_HAL_TIMER
+            flavor      bool
+
+            description "
+                The MCFxxxx variant HAL can provide gprof profiling timer support
+              on all ColdFire processors with a spare MCF5282-compatible PIT timer."
+        }
+
+        cdl_option CYGNUM_HAL_M68K_MCFxxxx_SOFTWARE_PROFILE_TIMER_ISR_PRIORITY {
+            display         "Profile timer interrupt priority"
+            active_if       CYGINT_HAL_M68K_MCFxxxx_SOFTWARE_PROFILE_TIMER
+            flavor          data
+            legal_values    CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MAX
+            default_value   { is_loaded(CYGNUM_HAL_M68K_MCFxxxx_ISR_DEFAULT_PRIORITY_PROFILING_TIMER) ?
+                CYGNUM_HAL_M68K_MCFxxxx_ISR_DEFAULT_PRIORITY_PROFILING_TIMER : CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MIN }
+            description "
+                This configuration option controls the priority used for the
+              profiling timer interrupts. Typically this should be a high
+              priority, making it possible to get profiling info for lower
+              priority interrupt handlers when nested interrupt handling
+              is enabled."
+        }
+    }
 }
-

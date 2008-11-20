@@ -7,11 +7,10 @@
 //      Architecture variant specific abstractions
 //
 //=============================================================================
-//####ECOSGPLCOPYRIGHTBEGIN####
-// -------------------------------------------
+//###ECOSGPLCOPYRIGHTBEGIN####
+//-------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-//
+// Copyright (C) 2003,2006,2008 Free Software Foundation, Inc.
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
 // Software Foundation; either version 2 or (at your option) any later version.
@@ -34,183 +33,109 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):    bartv
+// Date:         2003-06-04
+//
+//####DESCRIPTIONEND####
+//=============================================================================
 
 #include <pkgconf/hal.h>
+#include <pkgconf/hal_m68k_mcfxxxx.h>
 #include <cyg/infra/cyg_type.h>
-
 #include <cyg/hal/proc_arch.h>
 
-// The ColdFire family of processors has a simplified exception stack
-// frame that looks like the following:
-//
-//             3322222222221111 111111
-//             1098765432109876 5432109876543210
-//          8 +----------------+----------------+
-//            |         Program Counter         |
-//          4 +----------------+----------------+
-//            |Fmt/FS/Vector/FS|      SR        |
-//  SP -->  0 +----------------+----------------+
-//
-// The stack self-aligns to a 4-byte boundary at an exception, with
-// the Fmt/FS/Vector/FS field indicating the size of the adjustment
-// (SP += 0,1,2,3 bytes).
+// ----------------------------------------------------------------------------
+// Context support. ColdFire exceptions/interrupts are simpler than the
+// 68000 variants, with a much more regular exception frame. Usually the
+// hardware simply pushes two longs on to the stack. The program counter
+// is at the top. Then the 16-bit status register. Then some extra
+// information identifying the exception number etc. If the stack was not
+// aligned when the exception occurred) (which should not happen for
+// eCos code) then the hardware will do some extra stack alignment and
+// store this information in a fmt field. That possibility is ignored
+// for now.
 
-// Define the Fmt/FS/Vector/FS word.
-// The first four bits are the format word which tells the
-// RTI instruction how to align the stack.
-#define HAL_MCF52XX_RD_SF_FORMAT_MSK ((CYG_WORD16)0xF000)
-// These bits are the vector number of the exception.
-#define HAL_MCF52XX_RD_SF_VECTOR_MSK ((CYG_WORD16)0x03FC)
-// These are bits 3-2, and 1-0 of the fault status used
-// for bus and address errors.
-#define HAL_MCF52XX_RD_SF_FS32_MSK   ((CYG_WORD16)0x0C00)
-#define HAL_MCF52XX_RD_SF_FS10_MSK   ((CYG_WORD16)0x0003)
-
-// Macros to access fields in the format vector word.
-
-#define HAL_MCF52XX_RD_SF_FORMAT(_fmt_vec_word_)                            \
-    ((((CYG_WORD16)(_fmt_vec_word_)) & HAL_MCF52XX_RD_SF_FORMAT_MSK) >> 12)
-
-#define HAL_MCF52XX_RD_SF_VECTOR(_fmt_vec_word_)                            \
-    ((((CYG_WORD16)(_fmt_vec_word_)) & HAL_MCF52XX_RD_SF_VECTOR_MSK) >> 2)
-
-#define HAL_MCF52XX_RD_SF_FS(_fmt_vec_word_)                                \
-     (((((CYG_WORD16)(_fmt_vec_word_)) & HAL_MCF52XX_RD_SF_FS32_MSK) >> 8)  \
-     | (((CYG_WORD16)(_fmt_vec_word_)) & HAL_MCF52XX_RD_SF_FS10_MSK))
-
-/*****************************************************************************
-     Exception  handler  saved  context.   Some  exceptions  contain  extra
-information following this common exception handler context.
-*****************************************************************************/
-typedef struct
-{
-
-    //   Data regs D0-D7
-
-    #define HAL_EXC_NUM_D_REGS 8
-    CYG_WORD32 d[HAL_EXC_NUM_D_REGS];
-
-    //   Address regs A0-A6
-
-    #define HAL_EXC_NUM_A_REGS 7
-    CYG_ADDRESS a[HAL_EXC_NUM_A_REGS];
-
-    //   Stack Pointer
-
-    CYG_ADDRESS sp;
-
-    //   16-bit format/vector word
-
-    CYG_WORD16 fmt_vec_word;
-
-    //   Status Reg
-
-    CYG_WORD16 sr;
-
-    //   Program Counter
-
+#define HAL_CONTEXT_PCSR            \
+    cyg_uint32  sr_vec;             \
     CYG_ADDRESS pc;
 
-} __attribute__ ((aligned, packed)) HAL_SavedRegisters_exception;
-
-#ifndef HAL_GENERIC_SAVED_CONTEXT
-/*****************************************************************************
-HAL_GENERIC_SAVED_CONTEXT -- Generic saved context structure
-
-     This structure could contain  a normal saved  context or an  exception
-context.
-
-*****************************************************************************/
-#define HAL_GENERIC_SAVED_CONTEXT \
-typedef union \
-{ \
-    HAL_SavedRegisters_normal normal; \
-    HAL_SavedRegisters_exception exception; \
-} __attribute__ ((aligned, packed)) HAL_SavedRegisters;
-#endif // HAL_GENERIC_SAVED_CONTEXT
-
-//-----------------------------------------------------------------------------
-// Thread register state manipulation for GDB support.
-
-// Translate a stack pointer as saved by the thread context macros above into
-// a pointer to a HAL_SavedRegisters structure.
-#define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )  \
-        (_regs_) = (HAL_SavedRegisters *)(_sp_)
-
-// Copy a set of registers from a HAL_SavedRegisters structure into a
-// GDB ordered array.
-
-/* there are 180 bytes of registers on a 68020 w/68881      */
-/* many of the fpa registers are 12 byte (96 bit) registers */
-/*
-#define NUMREGBYTES 180
-enum regnames {D0,D1,D2,D3,D4,D5,D6,D7,
-               A0,A1,A2,A3,A4,A5,A6,A7,
-               PS,PC,
-               FP0,FP1,FP2,FP3,FP4,FP5,FP6,FP7,
-               FPCONTROL,FPSTATUS,FPIADDR
-              };
-*/
-
-#define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ )              \
-    CYG_MACRO_START                                             \
-    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
-    int _i_;                                                    \
-                                                                \
-    for( _i_ = 0; _i_ < HAL_NUM_D_REGS; _i_++ )                 \
-        *_regval_++ = (_regs_)->nml_ctxt.d[_i_];                \
-                                                                \
-    for( _i_ = 0; _i_ < HAL_NUM_A_REGS; _i_++ )                 \
-        *_regval_++ = (_regs_)->nml_ctxt.a[_i_];                \
-                                                                \
-    *_regval_++ = (_regs_)->nml_ctxt.sp;                        \
-    *_regval_++ = (CYG_ADDRWORD) ((_regs_)->nml_ctxt.sr);       \
-    *_regval_++ = (_regs_)->nml_ctxt.pc;                        \
-    /* Undefined registers */                                   \
-    for ( _i_ = 0; _i_ < 8; _i_++ )                             \
-    {                                                           \
-        *((CYG_WORD16*)_regval_)++ = _i_;                       \
-        *((CYG_WORD16*)_regval_)++ = _i_;                       \
-        *((CYG_WORD16*)_regval_)++ = _i_;                       \
-    }                                                           \
-    *_regval_++ = 0xBADC0DE0;                                   \
-    *_regval_++ = 0xBADC0DE1;                                   \
-    *_regval_++ = 0xBADC0DE2;                                   \
+// An exception aligns the stack to a 32-bit boundary, and the fmt part
+// of the exception frame encodes how much adjustment was done. The
+// 0x40000000 specifies 0 bytes adjustment since the code should be
+// running with stacks always aligned.
+#define HAL_CONTEXT_PCSR_INIT(_regs_, _entry_, _sr_)                \
+    CYG_MACRO_START                                                 \
+    (_regs_)->sr_vec    = 0x40000000 | (cyg_uint32)(_sr_);          \
+    (_regs_)->pc        = (CYG_ADDRESS)(_entry_);                   \
     CYG_MACRO_END
 
-// Copy a GDB ordered array into a HAL_SavedRegisters structure.
-#define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )             \
-    CYG_MACRO_START                                             \
-    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
-    int _i_;                                                    \
-                                                                \
-    for( _i_ = 0; _i_ < HAL_NUM_D_REGS; _i_++ )                 \
-        (_regs_)->nml_ctxt.d[_i_] = *_regval_++;                \
-                                                                \
-    for( _i_ = 0; _i_ < HAL_NUM_A_REGS; _i_++ )                 \
-        (_regs_)->nml_ctxt.a[_i_] = *_regval_++;                \
-                                                                \
-    (_regs_)->nml_ctxt.sp = *_regval_++;                        \
-    (_regs_)->nml_ctxt.sr = (CYG_WORD16) (*_regval_++);         \
-    (_regs_)->nml_ctxt.pc = *_regval_++;                        \
+#define HAL_CONTEXT_PCSR_GET_SR(_regs_, _sr_)                       \
+    CYG_MACRO_START                                                 \
+    _sr_ = (_regs_)->sr_vec & 0x0000FFFF;                           \
     CYG_MACRO_END
 
-/* ************************************************************************ */
-/* These routines write to  the special purpose  registers in the  ColdFire */
-/* core.  Since these registers are write-only in the supervisor model,  no */
-/* corresponding read routines exist.                                       */
+#define HAL_CONTEXT_PCSR_GET_PC(_regs_, _pc_)                       \
+    CYG_MACRO_START                                                 \
+    _pc_    = (_regs_)->pc;                                         \
+    CYG_MACRO_END
 
-externC void mcf52xx_wr_vbr(CYG_WORD32);
-externC void mcf52xx_wr_cacr(CYG_WORD32);
-externC void mcf52xx_wr_acr0(CYG_WORD32);
-externC void mcf52xx_wr_acr1(CYG_WORD32);
-externC void mcf52xx_wr_rambar(CYG_WORD32);
+#define HAL_CONTEXT_PCSR_SET_SR(_regs_, _sr_)                       \
+    CYG_MACRO_START                                                 \
+    (_regs_)->sr_vec = ((_regs_)->sr_vec & 0xFFFF0000) | (_sr_);    \
+    CYG_MACRO_END
+
+#define HAL_CONTEXT_PCSR_SET_PC(_regs_, _pc_)                       \
+    CYG_MACRO_START                                                 \
+    (_regs_)->pc = (CYG_ADDRESS)(_pc_);                             \
+    CYG_MACRO_END
+
+#define HAL_CONTEXT_PCSR_GET_EXCEPTION(_regs_, _code_)              \
+    CYG_MACRO_START                                                 \
+    (_code_) = (((_regs_)->sr_vec) >> 18) & 0x000000FF;             \
+    CYG_MACRO_END
+
+// ----------------------------------------------------------------------------
+// LSBIT/MSBIT. Most ColdFires have ff1 and bitrev instructions which
+// allow for more efficient implementations than the default ones in
+// the architectural HAL.
+#ifndef _HAL_M68K_MCFxxxx_NO_FF1_
+# define HAL_LSBIT_INDEX(_index_, _mask_)       \
+    CYG_MACRO_START                             \
+    cyg_uint32  _tmp_   = (_mask_);             \
+    int  _idx_;                                 \
+    if (0 == _tmp_) {                           \
+        _idx_ = -1;                             \
+    } else {                                    \
+        __asm__ volatile (                      \
+            "move.l %1, %0 ; \n"                \
+            "bitrev.l %0 ; \n"                  \
+            "ff1.l    %0 ; \n"                  \
+            : "=d" (_idx_)                      \
+            : "d"  (_mask_)                     \
+            );                                  \
+    }                                           \
+    _index_ = _idx_;                            \
+    CYG_MACRO_END
+
+# define HAL_MSBIT_INDEX(_index_, _mask_)       \
+    CYG_MACRO_START                             \
+    cyg_uint32  _tmp_   = (_mask_);             \
+    int         _idx_;                          \
+    __asm__ volatile (                          \
+        "move.l %1, %0 ; \n"                    \
+        "ff1.l  %0\n"                           \
+        : "=d" (_idx_)                          \
+        : "d"  (_tmp_)                          \
+        );                                      \
+    _index_ = 31 - _idx_;                       \
+    CYG_MACRO_END
+
+#endif
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_VAR_ARCH_H

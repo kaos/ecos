@@ -1,13 +1,162 @@
-2004-04-22  Jani Monoses <jani@iv.ro>
+2008-11-18  Bart Veer  <bartv@ecoscentric.com>
 
-	 * cdl/hal_m68k_mcf52xx.cdl :
-	 Invoke tail with stricter syntax that works in latest coreutils. 
+	* whole package. Replace the original M68K port.
+
+2008-11-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_mcf52xx.cdl, doc/mcf52xx.sgml, include/hal_diag.h,
+	include/var_arch.h, include/var_cache.h, include/var_intr.h,
+	include/var_io.h, src/hal_diag.c, src/mcf52xx_asm.S: minor
+	clean-ups.
+
+2008-09-01  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h (HAL_MCF52xx_QSPIx_QCRn_QSPI_CS_CSn): fix typo
+
+2008-05-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h (HAL_MCF52xx_GPTx_PORT): fix typo.
+
+2008-03-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h: add definitions for 32-bit CAN devices, PWM,
+	RTC, MDHA, RNG and SKHA modules which are now common to many
+	ColdFire processors.
+
+2008-02-28  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_mcf52xx.cdl, src/mcf52xx.c, src/mcf52xx_asm.S: add
+	variant-level support for a profiling timer using an
+	mcf5282-compatible PIT.
+
+2008-02-14  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h, include/var_intr.h: add support for interrupt
+	controllers with set/clear mask registers.
+
+2007-03-21  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_intr.h (HAL_INTERRUPT_SET_LEVEL): Two-controller
+	version of this macro was same as single controller version. Fixed
+	to deal with two controllers.
+
+2007-02-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_diag.c (hal_mcf52xx_diag_uart_init): in configurations
+	where the diag init code can get called multiple times, detect
+	this and skip reinitializations.
+
+2006-12-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_m68k_mcf52xx.cdl: add virtual vector support for dynamic
+	baud rates, for those platforms which support it.
+
+2006-12-03  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_intr.h: fix support for processors with two
+	interrupt controllers.
+
+2006-10-02  John Dallaway  <jld@ecoscentric.com>
+
+	* doc/mcf52xx.sgml: Fix minor typographical errors.
+
+2006-09-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf52xx.sgml: Bring up to date following recent changes in
+	M68K HALs.
+
+2006-09-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h: fix ethernet and uart definitions. Add
+	QSPI_CS_CSn().
+
+	* include/var_arch.h: fix typo
+
+	* src/hal_diag.c, include/hal_diag.h, cdl/hal_m68k_mcf52xx.cdl:
+	Sort out interaction with virtual vectors. 
+
+2006-09-05  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h: Use HZ rather than MHZ to calculate SPI baud
+	rates. 
+
+	* include/var_intr.h: HAL_VSR_SET() is now optional.
+
+	* include/var_arch.h: improved versions of the LSBIT() and MSBIT()
+	HAL macros.
+
+	* src/hal_diag.c, include/hal_diag.h, cdl/hal_m68k_mcf52xx.cdl:
+	Generalize HAL diagnostics support.
+
+2006-08-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h: provide definitions for most of the mcf5282
+	on-chip devices, since these are now regularly encountered on
+	other ColdFires so the definitions can be shared.
+
+	* include/var_intr.h: provide default implementations of various
+	interrupt/clock/reset macros for processors that have
+	mcf5282-compatible on-chip devices.
+
+	* include/var.inc: provide default implementations of
+	hal_context_extract_isr_vector here instead of the processor HALs
+
+	* src/hal_diag.c, include/hal_diag.h: generalize the diagnostics
+	support, including a bitbucket option.
+
+2006-03-10  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/hal_m68k_mcf52xx.cdl: Add reference to MCF52xx variant
+	documentation.
+
+2005-04-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_m68k_mcf52xx.cdl: Define a HAL variant header in
+	<pkgconf/system.h>
+
+2004-03-03  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/hal_diag.c (hal_mcf52xx_serial_control): Add support for
+	RedBoot's baudrate command, if appropriate for the platform.
+
+2004-02-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h: move cacr/acr/rambar/rombar definitions to the
+	processor HAL. These are not as generic as initially thought.
+
+	* include/var.inc: make it easier for processors to override
+	savestate settings.
+
+	* doc/mcf52xx.sgml: update to reflect MCF5282 support
+
+2003-08-01  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var.inc: hal_context_extract_sr is no longer needed and
+	has been removed.
+
+2003-07-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf52xx.sgml: fix various typos etc.
+
+2003-07-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf52xx.sgml: Add documentation
+
+2003-07-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h:
+	Move some UART definitions to the processor HAL because they are
+	not available on all MCF52xx processors
+
+2003-06-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* New version of the M68K support
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -31,9 +180,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================
