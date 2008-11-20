@@ -1,3 +1,7 @@
+2008-11-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/flash_am29xxxxx_v2.cdl: Fix doc link.
+
 2008-09-24  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/am29xxxxx_aux.c (am29_hw_program): fix handling of parallel

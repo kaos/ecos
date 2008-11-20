@@ -46,7 +46,7 @@
 
 cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2 {
     display	"AMD am29xxxxx flash memory support"
-    doc         ecospro-ref/devs-flash-am29xxxxx.html
+    doc         ecos-ref/devs-flash-am29xxxxx.html
     parent	CYGPKG_IO_FLASH
     active_if	CYGPKG_IO_FLASH
     implements	CYGHWR_IO_FLASH_DEVICE
