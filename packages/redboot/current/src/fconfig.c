@@ -838,6 +838,11 @@ flash_lookup_config(char *key)
         if (strcmp(key, CONFIG_OBJECT_KEY(dp)) == 0) {
             return dp;
         }
+        // Sanity check to prevent RedBoot going into an infinite loop when
+        // there is something dodgy in the fconfig area.
+        if (len <= 0) {
+            break;
+        }
         dp += len;
     }
 //    diag_printf("Can't find config data for '%s'\n", key);

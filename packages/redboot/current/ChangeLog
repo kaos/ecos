@@ -1,3 +1,8 @@
+2008-11-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/fconfig.c (flash_lookup_config): add a sanity check to
+	reduce the risk of RedBoot going into an infinite loop.
+
 2008-11-16  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/redboot.cdl, src/flash.c, src/fconfig.c:
