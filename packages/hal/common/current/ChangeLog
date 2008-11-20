@@ -1,3 +1,8 @@
+2008-11-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal.cdl, include/hal_if.h, src/hal_if.c: expunge
+	CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE and the corresponding code.
+
 2008-05-20  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/thread-packets.c (threadmatch): Silence pointer signedness

@@ -248,7 +248,6 @@ cdl_package CYGPKG_HAL {
                 default_value { CYG_HAL_STARTUP != "RAM" || !CYGSEM_HAL_USE_ROM_MONITOR }
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_RESET
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US
-                requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DATA
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS
                 description   "
@@ -321,15 +320,6 @@ cdl_package CYGPKG_HAL {
                 description   "
                     This option will cause the delay_us
                     virtual vector to be claimed."
-            }
-
-            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE {
-                display       "Claim cache virtual vectors"
-                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
-                                || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT }
-                description   "
-                    This option will cause the cache virtual vectors
-                    to be claimed."
             }
 
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DATA {

@@ -351,8 +351,8 @@ __call_COMM1(IF_GETC_TIMEOUT, cyg_bool, __comm_if_getc_timeout_t, cyg_uint8 *)
 #define CYGNUM_CALL_IF_KILL_VECTOR                4
 #define CYGNUM_CALL_IF_CONSOLE_PROCS              5
 #define CYGNUM_CALL_IF_DEBUG_PROCS                6
-#define CYGNUM_CALL_IF_FLUSH_DCACHE               7
-#define CYGNUM_CALL_IF_FLUSH_ICACHE               8
+#define CYGNUM_CALL_IF_available_7                9
+#define CYGNUM_CALL_IF_available_8                9
 #define CYGNUM_CALL_IF_available_9                9
 #define CYGNUM_CALL_IF_available_10               10
 #define CYGNUM_CALL_IF_available_11               11
@@ -413,8 +413,6 @@ typedef bsp_handler_t *__call_if_dbg_vector_t;
 typedef bsp_handler_t __call_if_kill_vector_t;
 typedef hal_virtual_comm_table_t *__call_if_console_procs_t;
 typedef hal_virtual_comm_table_t *__call_if_debug_procs_t;
-typedef void (__call_if_flush_dcache_t)(void *__p, int __nbytes);
-typedef void (__call_if_flush_icache_t)(void *__p, int __nbytes);
 typedef int (__call_if_set_debug_comm_t)(int __comm_id);
 typedef int (__call_if_set_console_comm_t)(int __comm_id);
 typedef void* __call_if_dbg_data_t;
@@ -590,16 +588,6 @@ __data_VV(CYGNUM_CALL_IF_KILL_VECTOR, __call_if_kill_vector_t)
 __data_VV(CYGNUM_CALL_IF_CONSOLE_PROCS, __call_if_console_procs_t)
 #define CYGACC_CALL_IF_CONSOLE_PROCS_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_CONSOLE_PROCS]=(CYG_ADDRWORD)(_x_)
-
-#define CYGACC_CALL_IF_FLUSH_DCACHE(_p_, _n_) \
- ((__call_if_flush_dcache_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_DCACHE])((_p_), (_n_))
-#define CYGACC_CALL_IF_FLUSH_DCACHE_SET(_x_) \
- hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_DCACHE]=(CYG_ADDRWORD)(_x_)
-
-#define CYGACC_CALL_IF_FLUSH_ICACHE(_p_, _n_) \
- ((__call_if_flush_icache_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_ICACHE])((_p_), (_n_))
-#define CYGACC_CALL_IF_FLUSH_ICACHE_SET(_x_) \
- hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_ICACHE]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_DEBUG_PROCS() \
  CYGACC_DATA_VV(__call_if_debug_procs_t, CYGNUM_CALL_IF_DEBUG_PROCS)

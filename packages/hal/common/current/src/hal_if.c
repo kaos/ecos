@@ -527,35 +527,6 @@ set_console_comm(int __comm_id)
 }
 #endif
 
-//----------------------------------
-// Cache functions
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE
-
-static void
-flush_icache(void *__p, int __nbytes)
-{
-    CYGARC_HAL_SAVE_GP();
-#ifdef HAL_ICACHE_FLUSH
-    HAL_ICACHE_FLUSH( __p , __nbytes );
-#elif defined(HAL_ICACHE_INVALIDATE)
-    HAL_ICACHE_INVALIDATE();
-#endif
-    CYGARC_HAL_RESTORE_GP();
-}
-
-static void
-flush_dcache(void *__p, int __nbytes)
-{
-    CYGARC_HAL_SAVE_GP();
-#ifdef HAL_DCACHE_FLUSH
-    HAL_DCACHE_FLUSH( __p , __nbytes );
-#elif defined(HAL_DCACHE_INVALIDATE)
-    HAL_DCACHE_INVALIDATE();
-#endif
-    CYGARC_HAL_RESTORE_GP();
-}
-#endif
-
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
 //-----------------------------------------------------------------------------
 // GDB console output mangler (O-packetizer)
@@ -1054,12 +1025,6 @@ hal_if_init(void)
 #endif
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US
     CYGACC_CALL_IF_DELAY_US_SET(delay_us);
-#endif
-
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE
-    // Cache functions
-    CYGACC_CALL_IF_FLUSH_ICACHE_SET(flush_icache);
-    CYGACC_CALL_IF_FLUSH_DCACHE_SET(flush_dcache);
 #endif
 
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
