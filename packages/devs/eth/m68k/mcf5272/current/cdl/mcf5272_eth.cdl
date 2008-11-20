@@ -1,0 +1,192 @@
+# ====================================================================
+#
+#	mcfxxxx_eth.cdl
+#
+#	Ethernet driver for Freescale MCFxxxx ColdFires
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 2003,2004,2006,2007,2008 Free Software Foundation, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      bartv
+# Date:           2003-06-04
+#
+#####DESCRIPTIONEND####
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_ETH_MCFxxxx {
+    display	    "MCFxxxx ethernet driver"
+    doc         ref/devs-eth-m68k-mcfxxxx-part.html
+    parent	    CYGPKG_IO_ETH_DRIVERS
+    active_if	CYGPKG_IO_ETH_DRIVERS
+    active_if	CYGPKG_HAL_M68K_MCFxxxx
+    include_dir cyg/io/eth
+    
+    implements	CYGHWR_NET_DRIVERS
+    implements	CYGHWR_NET_DRIVER_ETH0
+    implements	CYGINT_IO_ETH_MULTICAST
+    requires    CYGPKG_INFRA CYGPKG_HAL CYGPKG_ISOINFRA
+    compile     -library=libextras.a if_mcf5272.c
+    
+    description "
+        This driver supports the on-chip ethernet provided by some
+        Freescale MCFxxxx coldfire processors."
+    
+
+    cdl_option CYGDAT_DEVS_ETH_MCFxxxx_NAME {
+        display		    "Device name for this ethernet device"
+        flavor		    data
+        default_value	{"\"eth0\""}
+        description "
+            This option controls the name of the on-chip ethernet device.
+            By default the on-chip device is labelled eth0, and any
+            additional devices can be named eth1 onwards."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_MCFxxxx_RXBUFFERS {
+        display		    "Number of receive buffers"
+        flavor		    data
+        default_value	4
+        legal_values	2 to 16
+        description "
+            This ethernet driver statically allocates a number of buffers
+            for incoming packets. Usually each buffer requires 1528 bytes.
+            Increasing the number of buffers reduces the probability of packets getting
+            lost under heavy processor or network load. Reducing the number
+            of buffers makes lost packets more likely, potentially causing
+            significant TCP/IP delays."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_MCFxxxx_ISR_RX_PRIORITY {
+        display		"Interrupt priority for incoming packets"
+        flavor		data
+        default_value	{ is_loaded(CYGNUM_HAL_M68K_MCFxxxx_ISR_DEFAULT_PRIORITY_ETH_RX) ?
+            CYGNUM_HAL_M68K_MCFxxxx_ISR_DEFAULT_PRIORITY_ETH_RX :
+            CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MIN }
+        legal_values	CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MAX
+        description "
+            By default the ethernet is given an interrupt priority of 1,
+            in other words it will interrupt at IPL level 1. The device can
+            be made to interrupt at a higher priority but this is rarely
+            useful since nearly all processing happens at thread level
+            or DSR level rather than ISR level."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_MCFxxxx_ISR_TX_PRIORITY {
+        display		"Interrupt priority for packet transmits"
+        flavor		data
+        default_value	{ is_loaded(CYGNUM_HAL_M68K_MCFxxxx_ISR_DEFAULT_PRIORITY_ETH_TX) ?
+            CYGNUM_HAL_M68K_MCFxxxx_ISR_DEFAULT_PRIORITY_ETH_TX :
+            CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MIN }
+        legal_values	CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCFxxxx_ISR_PRIORITY_MAX
+        description "
+            By default the ethernet is given an interrupt priority of 1,
+            in other words it will interrupt at IPL level 1. The device can
+            be made to interrupt at a higher priority but this is rarely
+            useful since nearly all processing happens at thread level
+            or DSR level rather than ISR level."
+    }
+
+    cdl_interface CYGINT_DEVS_ETH_MCFxxxx_PLATFORM_MAC {
+        display		"Platform provides network MAC address"
+        flavor		bool
+    }
+
+    cdl_option CYGDAT_DEVS_ETH_MCFxxxx_PLATFORM_MAC {
+        display		"Default MAC address"
+        active_if	!CYGINT_DEVS_ETH_MCFxxxx_PLATFORM_MAC
+        flavor		data
+        default_value	{ "0x00, 0xFF, 0x12, 0x34, 0x56, 0x78" }
+        description "
+            If the target board does not provide a fixed unique ethernet
+            MAC address assigned by the IEEE then it is necessary to invent one.
+            If RedBoot is in use and provides configuration data held in
+            flash then that will be used. If RedBoot is not in use or if the
+            fconfig flash block does not contain an entry for the MAC address
+            then the code will use a default value, determined by this option.
+            If the local network has multiple boards attached then it is
+            essential that each one has a unique MAC address."
+    }
+
+    cdl_option CYGFUN_DEVS_ETH_MCFxxxx_STATISTICS {
+        display		"Maintain traffic statistics"
+        flavor		bool
+        default_value	CYGPKG_SNMPAGENT
+        description "
+            The MCFxxxx ethernet driver can maintain some statistics
+            about traffic, for example the number of incoming and
+	        outgoing packets. These statistics are intended mainly
+            for SNMP agent software."
+    }
+    
+    cdl_component CYGPKG_DEVS_ETH_MCFxxxx_OPTIONS {
+        display     "Build options"
+        flavor      none
+        description "
+	        Package-specific build options including control over compiler
+            flags used only in building this package."
+
+        cdl_option CYGPKG_DEVS_ETH_MCFxxxx_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            requires {
+                is_substr(CYGBLD_GLOBAL_CFLAGS, "-O1") || is_substr(CYGBLD_GLOBAL_CFLAGS, "-O2") ||
+                is_substr(CYGBLD_GLOBAL_CFLAGS, "-O3") || is_substr(CYGBLD_GLOBAL_CFLAGS, "-Os") ||
+                is_substr(CYGPKG_DEVS_ETH_MCFxxxx_CFLAGS_ADD, "-O1") ||
+                is_substr(CYGPKG_DEVS_ETH_MCFxxxx_CFLAGS_ADD, "-O2") ||
+                is_substr(CYGPKG_DEVS_ETH_MCFxxxx_CFLAGS_ADD, "-O3") ||
+                is_substr(CYGPKG_DEVS_ETH_MCFxxxx_CFLAGS_ADD, "-Os")
+            }
+            default_value { ((is_substr(CYGBLD_GLOBAL_CFLAGS, "-O1") || is_substr(CYGBLD_GLOBAL_CFLAGS, "-O2") ||
+                              is_substr(CYGBLD_GLOBAL_CFLAGS, "-O3") || is_substr(CYGBLD_GLOBAL_CFLAGS, "-Os")) ? "" : "-O2 ") .
+                             "-D_KERNEL -D__ECOS" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are used in addition
+                to the set of global flags. Note that the package cannot
+                be built with -O0: some of the cache-related code depends
+                on certain values being held in registers instead of
+                memory."
+        }
+        cdl_option CYGPKG_DEVS_ETH_MCFxxxx_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are removed from
+                the set of global flags if present."
+        }
+    }
+}

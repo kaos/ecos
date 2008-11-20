@@ -1,0 +1,207 @@
+<!-- DOCTYPE refentry  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     mcfxxxxeth.sgml                                             -->
+<!--                                                                 -->
+<!--     mcfxxxx ethernet driver documentation.                      -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- Copyright (C) 2003,2004,2006,2008                               -->
+<!--   Free Software Foundation, Inc.                                -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Contact(s):  bartv                                              -->
+<!-- Date:        2003/07/15                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="devs-eth-m68k-mcfxxxx-part"><title>Freescale ColdFire Ethernet Driver</title>
+
+<refentry id="devs-eth-m68k-mcfxxxx">
+  <refmeta>
+    <refentrytitle>Freescale ColdFire Ethernet Driver</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname><varname>CYGPKG_DEVS_ETH_MCFxxxx</varname></refname>
+    <refpurpose>eCos Support for Freescale ColdFire On-chip Ethernet Devices</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="devs-eth-m68k-mcfxxxx-description"><title>Description</title>
+    <para>
+Some members of the Freescale ColdFire family of processors come with
+an on-chip ethernet device. This package provides an eCos driver for
+that device. The driver supports both polled mode for use by RedBoot
+and interrupt-driven mode for use by a full TCP/IP stack.
+    </para>
+    <para>
+The original version of the driver was written specifically for the
+MCF5272 processor. It has since been made to work on other members of
+the ColdFire family.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-eth-m68k-mcfxxxx-config"><title>Configuration Options</title>
+    <para>
+This ethernet package should be loaded automatically when
+selecting a target containing a ColdFire processor with on-chip
+ethernet, and it should never be necessary to load it explicitly. If
+the application does not actually require ethernet functionality then
+the package is inactive and the final executable will not suffer any
+overheads from unused functionality. This is determined by the
+presence of the generic ethernet I/O package
+<varname>CYGPKG_IO_ETH_DRIVERS</varname>. Typically the choice of eCos
+template causes the right thing to happen. For example the default
+template does not include any TCP/IP stack so
+<varname>CYGPKG_IO_ETH_DRIVERS</varname> is not included, but the
+net, redboot and lwip_eth templates do include a TCP/IP stack so will
+specify that package and hence enable the ethernet driver.
+    </para>
+    <para>
+All eCos network devices need a unique name. By default the on-chip
+ethernet device is assigned the name <literal>eth0</literal> but
+can be changed through the configuration option
+<varname>CYGDAT_DEVS_ETH_MCFxxxx_NAME</varname>. This is useful if for
+example the target hardware includes a number of additional off-chip
+ethernet devices.
+    </para>
+    <para>
+The hardware requires that incoming ethernet frames are received
+into one of a small number of buffers, arranged in a ring. Once a
+frame has been received and its size is known the driver will pass it
+up to higher-level code for further processing. The number of these
+buffers is configurable via the option
+<varname>CYGNUM_DEVS_ETH_MCFxxxx_RXBUFFERS</varname>. Each receive
+buffer requires 1528 bytes of memory. A smaller number of buffers
+increases the probability that incoming ethernet frames have to be
+discarded. TCP/IP stacks are designed to cope with the occasional lost
+packet, but if too many frames are discarded then this will greatly
+affect performance. A key issue here is that passing the incoming
+frames up to higher-level code typically happens at thread level and
+hence the system behaviour is defined in large part by the priority of
+various threads running in the TCP/IP stack. If application code has
+high-priority threads that take up much of the available cpu time and
+the TCP/IP stack gets little chance to run then there will be little
+opportunity to pass received frames up the stack. Balancing out the
+various thread priorities and the number of receive buffers is the
+responsibility of the application developer.
+    </para>
+    <para>
+By default the ethernet driver will raise interrupts using a low
+priority level. The exact value will depend on the processor being
+used, for example the MCF5282 interrupt controllers impose specific
+constraints on interrupt priorities. The driver does very little at
+interrupt level, instead the real work is done via threads inside the
+TCP/IP stack. Hence the interrupt priority has little or no effect on
+the system's behaviour. If the default priorities are inappropriate for
+some reason then they can be changed through the configuration options
+<varname>CYGNUM_DEVS_ETH_MCFxxxx_ISR_RX_PRIORITY</varname> and
+<varname>CYGNUM_DEVS_ETH_MCFxxxx_ISR_TX_PRIORITY</varname>.
+    </para>
+    <para>
+There is an option related to the default network MAC address,
+<varname>CYGDAT_DEVS_ETH_MCFxxxx_PLATFORM_MAC</varname>. This is
+discussed in more detail <link
+linkend="devs-eth-m68k-mcfxxxx-mac">below</link>.
+    </para>
+    <para>
+Optionally the ethernet driver can maintain statistics about the
+number of incoming and transmitted ethernet frames, receive overruns,
+collisions, and other conditions. Maintaining and providing these
+statistics involves some overhead, and is controlled by the
+configuration option
+<varname>CYGFUN_DEVS_ETH_MCFxxxx_STATISTICS</varname>. Typically these
+statistics are only accessed through SNMP, so by default statistics
+gathering is enabled if the configuration includes
+<varname>CYGPKG_SNMPAGENT</varname> and disabled otherwise.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-eth-m68k-mcfxxxx-mac"><title>MAC Address</title>
+    <para>
+The ColdFire processors do not have a built-in unique network MAC
+address since that would require slightly different manufacturing for
+each chip. All ethernet devices should have a unique address so this
+has to come from elsewhere. There are a number of possibilities:
+    </para>
+    <orderedlist>
+      <listitem><para>
+The platform HAL can provide the address. For example the target board
+may have a small serial EPROM or similar which is initialized during
+board manufacture. The platform HAL can read the serial EPROM during
+system startup and provide the information to the ethernet driver. If
+this is the case then the platform HAL should implement the CDL
+interface <varname>CYGINT_DEVS_ETH_MCFxxxx_PLATFORM_MAC</varname> and
+provide a macro <function>HAL_MCFxxxx_ETH_GET_MAC_ADDRESS</function>
+in the exported header <filename
+class="headerfile">cyg/hal/plf_arch.h</filename>. 
+      </para></listitem>
+      <listitem><para>
+There is a configuration option
+<varname>CYGDAT_DEVS_ETH_MCFxxxx_PLATFORM_MAC</varname> which
+specifies the default MAC address. Manipulating this option is fine if
+the configuration will only be used on a single board. However if
+multiple boards run applications with the same configuration then they
+would all have the same MAC address, and the resulting behaviour is
+undefined.
+      </para></listitem>
+      <listitem><para>
+If the target hardware boots via RedBoot and uses a block of flash to
+hold configuration variables then one of these variables will be the
+MAC address. It can be manipulated at the RedBoot prompt using the
+<command>fconfig</command> command, thus giving each board a unique
+address. An eCos application containing the ethernet driver will
+automatically pick up this address.
+      </para></listitem>
+    </orderedlist>
+    <para>
+When designing a new target board it is recommended that the board
+comes with a unique network address supported by the platform HAL,
+rather than relying on users to change the address. The latter
+approach can be error-prone and will lead to failures that are
+difficult to track down.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-eth-m68k-mcfxxxx-phy"><title>Platform-specific PHY</title>
+    <para>
+The on-chip ethernet hardware relies on an external media independent
+interface (MII), also known as a PHY chip. This separate chip handles
+the low-level details of ethernet communication, for example
+negotiating a link speed with the hub. In most scenarios the PHY chip
+simply does the right thing and needs no support from the ethernet
+driver. If there are special requirements, for example if the board
+has to be hardwired to communicate at 10Mbps rather than autonegotiate
+the link speed, then usually this is handled by fixed logic levels on
+some of the PHY pins or by using jumpers. 
+    </para>
+    <para>
+The eCos ethernet driver assumes that the PHY is already fully
+operational and does not interact with it in any way. If the target
+hardware does require software initialization of the PHY chip then
+usually this will be done in the platform HAL, because the choice of
+PHY chip is a characteristic of the platform.
+    </para>
+  </refsect1>
+
+</refentry>
+</part>

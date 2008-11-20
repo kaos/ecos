@@ -1,0 +1,186 @@
+2008-11-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/mcf5272.cdl, doc/mcf5272_eth.sgml, src/if_mcf5272.c: minor
+	clean-ups.
+
+2008-09-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c (mcf52xx_eth_deliver): avoid cpp warning when
+	building for processors without a data cache.
+
+2008-09-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c, (mcf52xx_eth_init): add
+	support for run-time device dection.
+
+2008-06-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/mcf5272_eth.cdl: add constraints so net tests run with
+	sensible performance.
+
+2008-03-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c: rearrange RX interrupt masking to avoid
+	spurious interrupt exceptions.
+
+2008-03-03  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c: encapsulate stats gathering in a macro.
+
+2008-02-28  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c: cleanup and more coping with unified and
+	copyback caches.
+
+	* cdl/mcf5272_eth.cdl: the ethernet driver must be built with at
+	least -O1 to ensure some data stays in registers when manipulating
+	the cache.
+
+2008-02-14  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c: cope with unified and copyback caches.
+
+2007-04-25  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/mcf5272_eth.cdl: memset/memcpy are part of infra and always
+	declared in isoinfra, so don't need to require CYGPKG_LIBC_STRING.
+	Require CYGPKG_ISOINFRA instead, although that's in every template
+	anyway.
+
+2006-09-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c: remove unnecessary #error
+
+	* cdl/mcf5272_eth.cdl, src/if_mcf5272, doc/mcf5272_eth.sgml:
+	Motorola -> Freescale.
+
+2006-09-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c: more/enhanced diagnostics. Update to use
+	current var_io.h definitions. Add partial support for multiple
+	devices.
+
+2006-03-10  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/mcf5272_eth.cdl: Add reference to package documentation.
+
+2004-10-07  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c (mcf52xx_eth_init): add optional platform init
+	function
+
+2004-06-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c (DEBUG): add some debug/tracing support
+
+2004-05-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c, cdl/mcf5272_eth.cdl: add a dependency
+	on CYGPKG_LIBC_STRING to get memcpy()
+
+2004-04-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c (mcf52xx_eth_init): use the right macro if the
+	platform has its own way of supplying a MAC address.
+
+2004-03-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c (mcf52xx_eth_deliver): make the rx ring scan
+	more robust. The mcf5282 appears to occasionally place incoming
+	frames in unexpected slots.
+
+2004-03-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf5272_eth.sgml: update documentation following port to an
+	mcf5282
+
+2004-03-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c (mcf52xx_eth_poll): update tx poll code to
+	match previous changes. Ignore the MAC address passed to _start(),
+	it is not needed. During _init(), if running on top of RedBoot,
+	check for an outgoing transmit before resetting and wait a bit if
+	necessary.
+
+2004-03-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c: cope with processor variants where tx buffers
+	need to be more aligned than is guaranteed by higher-level code.
+	Provide a MAC address even if virtual vectors are not available,
+	e.g. when debugging via BDM. Reorganize the init code as per the
+	recommendations in the mcf5282 manual. Add statistics counting for
+	the mcf5282. Disable RX interrupts between the ISR and the
+	received packet(s) being processed, since those just add to the
+	load. Use separate ISR priorities for RX and TX.
+
+	* cdl/mcf5272_eth.cdl: At least two rx buffers are needed to cope
+	with oversized incoming frames. ISR priorities now have to be
+	configured separately for RX and TX.
+
+2004-02-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c: The driver now works on coldfire processors
+	other than just the 5272. Use new per-processor initialization
+	macro to set up GPIO pins. Also cope with incompatible renaming
+	of flash configury within hal/common.
+
+	* cdl/mcf5272_eth.cdl: update descriptions to reflect that the
+	driver now works on other coldfire processors as well.
+
+2003-07-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf5272_eth.sgml: fix various typos etc
+
+	* src/if_mcf5272.c (mcf5272_eth_deliver): eliminate warning
+
+	* cdl/mcf5272_eth.cdl: RedBoot now needs more than one buffer.
+
+2003-07-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/mcf5272_eth.sgml: add documentation
+
+2003-07-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/mcf5272_eth.cdl:
+	Increase default number of receive buffers.
+
+	* src/if_mcf5272.c:
+	Implement SNMP statistics
+	Improve handling of overrun conditions
+	Preserve order of incoming packets
+
+2003-06-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* New version of the M68K support
+
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2003, 2004, 2007, 2008 eCosCentric Limited
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================
