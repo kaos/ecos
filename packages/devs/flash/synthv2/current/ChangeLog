@@ -1,3 +1,9 @@
+2008-11-19  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* src/synth.c: Removed cyg_hal_sys_do_mmap() wrapper function.
+	* tests/flash1.c, tests/flash2.c, tests/flash3.c:
+	Fixed a few compiler warnings.
+
 2004-12-02  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/synth.h, src/synth.c: explicitly include

@@ -128,7 +128,7 @@ void cyg_user_start(void)
       ret = cyg_flash_get_info(i, &info);
       if (ret == CYG_FLASH_ERR_OK) {
         diag_printf("INFO: Nth=%d, start=%p, end=%p\n",
-                    i, info.start, info.end);
+                    i, (void *) info.start, (void *) info.end);
         if (i == 0) {
           flash_start = info.start;
           flash_end = info.end;
@@ -137,7 +137,7 @@ void cyg_user_start(void)
         }
         
         for (j=0;j < info.num_block_infos; j++) {
-          diag_printf("INFO:\t block_size %d, blocks %d\n",
+          diag_printf("INFO:\t block_size %zd, blocks %u\n",
                       info.block_info[j].block_size,
                       info.block_info[j].blocks);
         }

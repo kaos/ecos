@@ -64,25 +64,6 @@
 #define MIN(x,y) ((x)<(y) ? (x) : (y))
 #endif
 
-/* Helper function. The Linux system call cannot pass 6 parameters. Instead
-   a structure is filled in and passed as one parameter */
-static int 
-cyg_hal_sys_do_mmap(void *addr, unsigned long length, unsigned long prot, 
-                    unsigned long flags, unsigned long fd, unsigned long off)
-{
-
-    struct cyg_hal_sys_mmap_args args;
-  
-    args.addr = (unsigned long) addr;
-    args.len = length;
-    args.prot = prot = prot;
-    args.flags = flags;
-    args.fd = fd;
-    args.offset = off;
-
-    return (cyg_hal_sys_mmap(&args));
-}           
-
 static int
 synth_flash_init(struct cyg_flash_dev *dev)
 {
@@ -131,7 +112,7 @@ synth_flash_init(struct cyg_flash_dev *dev)
     if (dev->start != 0) {
         flags |= CYG_HAL_SYS_MAP_FIXED;
     }
-    base = (cyg_flashaddr_t)cyg_hal_sys_do_mmap( 
+    base = (cyg_flashaddr_t)cyg_hal_sys_mmap( 
         (void *)dev->start,
         priv->blocks * priv->block_size + 
         priv->boot_block_size * priv->boot_blocks,
