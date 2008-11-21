@@ -1,3 +1,8 @@
+2008-11-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/hal_if.h (CYGNUM_CALL_IF_available_x): fix typo in
+	previous patch.
+
 2008-11-20  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/hal.cdl, include/hal_if.h, src/hal_if.c: expunge

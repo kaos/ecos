@@ -351,8 +351,8 @@ __call_COMM1(IF_GETC_TIMEOUT, cyg_bool, __comm_if_getc_timeout_t, cyg_uint8 *)
 #define CYGNUM_CALL_IF_KILL_VECTOR                4
 #define CYGNUM_CALL_IF_CONSOLE_PROCS              5
 #define CYGNUM_CALL_IF_DEBUG_PROCS                6
-#define CYGNUM_CALL_IF_available_7                9
-#define CYGNUM_CALL_IF_available_8                9
+#define CYGNUM_CALL_IF_available_7                7
+#define CYGNUM_CALL_IF_available_8                8
 #define CYGNUM_CALL_IF_available_9                9
 #define CYGNUM_CALL_IF_available_10               10
 #define CYGNUM_CALL_IF_available_11               11
