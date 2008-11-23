@@ -357,7 +357,7 @@ static const cyg_strata_dev hal_kikoo_flash_priv = {
 };
 
 CYG_FLASH_DRIVER(hal_kikoo_flash,
-                 &amp;hal_kikoo_flash_amd_funs,
+                 &amp;hal_kikoo_flash_strata_funs,
                  0,
                  0x60000000,
                  0x601FFFFF,
