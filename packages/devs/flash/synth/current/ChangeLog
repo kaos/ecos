@@ -1,3 +1,7 @@
+2008-11-19  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* tests/flash2.c: Fixed a few warnings.
+
 2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* Merge from flash_v2 branch:
