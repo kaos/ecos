@@ -80,7 +80,9 @@
 // 2 for added data IO output: get_reg, put_reg
 // 4 for packet allocation/free output
 // 8 for only startup status, so we can tell we're installed OK
-#define DEBUG 0x0
+#ifndef DEBUG
+#  define DEBUG 0x0
+#endif
 
 #if DEBUG & 1
 #define DEBUG_FUNCTION() do { diag_printf("%s\n", __FUNCTION__); } while (0)
@@ -440,10 +442,10 @@ static __inline__ cyg_uint16
 get_reg(cyg_addrword_t base, int regno)
 {
     cyg_uint16 val;
-    HAL_WRITE_UINT16(base+CS8900A_PPTR, regno);
-    HAL_READ_UINT16(base+CS8900A_PDATA, val);
+    CS_OUT(base, CS8900A_PPTR, regno);
+    CS_IN(base, CS8900A_PDATA, val);
 #if DEBUG & 2
-    diag_printf("get_reg(%p, %d) => 0x%04x\n", base, regno, val);
+    diag_printf("get_reg(%p, %d) => 0x%04x\n", (void *)base, regno, val);
 #endif
     return val;
 }
@@ -452,10 +454,10 @@ static __inline__ void
 put_reg(cyg_addrword_t base, int regno, cyg_uint16 val)
 {
 #if DEBUG & 2
-    diag_printf("put_reg(%p, %d, 0x%04x)\n", base, regno, val);
+    diag_printf("put_reg(%p, %d, 0x%04x)\n", (void *)base, regno, val);
 #endif
-    HAL_WRITE_UINT16(base+CS8900A_PPTR, regno);
-    HAL_WRITE_UINT16(base+CS8900A_PDATA, val);
+    CS_OUT(base, CS8900A_PPTR, regno);
+    CS_OUT(base, CS8900A_PDATA, val);
 }
 
 #endif // _CYGONCE_ETH_CL_CS8900_H_

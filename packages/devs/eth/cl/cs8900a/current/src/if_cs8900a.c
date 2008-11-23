@@ -212,7 +212,7 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
     chip_type = get_reg(base, PP_ChipID);
     chip_rev = get_reg(base, PP_ChipRev);
 #if DEBUG & 8
-    diag_printf("CS8900A[%p] - type: 0x%04x, rev: 0x%04x\n", base, chip_type, chip_rev);
+    diag_printf("CS8900A[%p] - type: 0x%04x, rev: 0x%04x\n", (void *)base, chip_type, chip_rev);
 #endif
     if (chip_type != PP_ChipID_CL) {
 #if DEBUG & 8
@@ -353,10 +353,12 @@ cs8900a_start(struct eth_drv_sc *sc, cyg_uint8 *esa, int flags)
     put_reg(base, PP_LineCTL, PP_LineCTL_Rx | PP_LineCTL_Tx);
     // Clear Interrupt Status Queue before enabling interrupts
     do {
-        HAL_READ_UINT16(cpd->base+CS8900A_ISQ, stat);
+        CS_IN(cpd->base, CS8900A_ISQ, stat);
     }  while (stat != 0) ;
     cpd->txbusy = false;
+#ifndef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_8BIT
     put_reg(base, PP_BusCtl, PP_BusCtl_EnableIRQ);
+#endif
 }
 
 // This routine is called to perform special "control" opertions
@@ -473,6 +475,7 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     cyg_uint8 *data;
     cyg_uint16 saved_data = 0, *sdata;
     cyg_uint16 stat;
+    bool force_coping_by_byte;
     bool odd_byte = false;
 
     // Mark xmitter busy
@@ -487,6 +490,12 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     total_len = CYG_SWAP16(total_len);
 #endif
         
+#ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_8BIT
+    force_coping_by_byte = true;
+#else
+    force_coping_by_byte = false;
+#endif
+
     // The hardware indicates that there are options as to when the actual
     // packet transmission will start wrt moving of data into the transmit
     // buffer.  However, impirical results seem to indicate that if the
@@ -498,12 +507,12 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     // not all of the data was provided before the transmission should
     // have completed (i.e. buffer underrun).
     // For now, the solution is to not allow this overlap.
-    //HAL_WRITE_UINT16(cpd->base+CS8900A_TxCMD, PP_TxCmd_TxStart_5)
+    //CS_OUT(cpd->base, CS8900A_TxCMD, PP_TxCmd_TxStart_5)
 
     // Start only when all data sent to chip
-    HAL_WRITE_UINT16(cpd->base+CS8900A_TxCMD, PP_TxCmd_TxStart_Full);
+    CS_OUT(cpd->base, CS8900A_TxCMD, PP_TxCmd_TxStart_Full);
 
-    HAL_WRITE_UINT16(cpd->base+CS8900A_TxLEN, total_len);
+    CS_OUT(cpd->base, CS8900A_TxLEN, total_len);
     // Wait for controller ready signal
     {
         // add timeout per cs8900a bugzilla report 1000281 */
@@ -539,20 +548,20 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 #else
                 saved_data |= ((cyg_uint16)*data++) << 8;
 #endif
-                HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, saved_data);
+                CS_OUT(cpd->base, CS8900A_RTDATA, saved_data);
                 len--;
                 odd_byte = false;
             }
-            if (((CYG_ADDRESS)data & 0x1) == 0) {
+            if (!force_coping_by_byte && ((CYG_ADDRESS)data & 0x1) == 0) {
                 /* Aligned on 16-bit boundary, so output contiguous words. */
                 sdata = (cyg_uint16 *)data;
                 while (len > 1) {
 					// Make sure data get on the bus in Big Endian format
 #if((CYG_BYTEORDER == CYG_MSBFIRST) && defined(CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED) || \
     (CYG_BYTEORDER == CYG_LSBFIRST) && !defined(CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED ))
-                    HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, *sdata++);
+                    CS_OUT(cpd->base, CS8900A_RTDATA, *sdata++);
 #else
-                    HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, CYG_SWAP16(*sdata++));
+                    CS_OUT(cpd->base, CS8900A_RTDATA, CYG_SWAP16(*sdata++));
 #endif
                     len -= sizeof(cyg_uint16);
                 }
@@ -568,7 +577,7 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 #else
                     saved_data |= ((cyg_uint16)*data++) << 8;
 #endif
-                    HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, saved_data);
+                    CS_OUT(cpd->base, CS8900A_RTDATA, saved_data);
                     len -= sizeof(cyg_uint16);
                 }
             }
@@ -585,7 +594,7 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         }
     }
     if (odd_byte) {
-        HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, saved_data);
+        CS_OUT(cpd->base, CS8900A_RTDATA, saved_data);
     }
 }
 
@@ -603,8 +612,18 @@ cs8900a_RxEvent(struct eth_drv_sc *sc, int stat)
 
     if(stat & PP_RxCFG_RxOK) {
         // Only start reading a message if one has been received
-        HAL_READ_UINT16(base+CS8900A_RTDATA, stat);
-        HAL_READ_UINT16(base+CS8900A_RTDATA, len);
+#ifndef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_8BIT
+        CS_IN(base, CS8900A_RTDATA, stat);
+        CS_IN(base, CS8900A_RTDATA, len);
+#else
+        // From AN181 Using the Crystal CS8900A in 8-bit mode.
+        // Note: it is very important to read the RxStatus and RxLength high
+        // order byte first.
+        stat = *(volatile CYG_BYTE *)(base + CS8900A_RTDATA + 1) << 8;
+        stat |= *(volatile CYG_BYTE *)(base + CS8900A_RTDATA);
+        len = *(volatile CYG_BYTE *)(base + CS8900A_RTDATA + 1) << 8;
+        len |= *(volatile CYG_BYTE *)(base + CS8900A_RTDATA);
+#endif
 
 #ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
         len = CYG_SWAP16(len);
@@ -639,7 +658,7 @@ cs8900a_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
         data = (cyg_uint16 *)sg_list[i].buf;
         mlen = sg_list[i].len;
         while (mlen >= sizeof(*data)) {
-            HAL_READ_UINT16(base+CS8900A_RTDATA, val);
+            CS_IN(base, CS8900A_RTDATA, val);
             if (data) {
 #if((CYG_BYTEORDER == CYG_MSBFIRST) && defined(CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED) || \
     (CYG_BYTEORDER == CYG_LSBFIRST) && !defined(CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED ))
@@ -651,7 +670,7 @@ cs8900a_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
             mlen -= sizeof(*data);
         }
         if (mlen) {
-            HAL_READ_UINT16(base+CS8900A_RTDATA, val);
+            CS_IN(base, CS8900A_RTDATA, val);
 #ifndef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED 
             // last odd byte will be in the LSB
             cval = (cyg_uint8)(val);
@@ -699,7 +718,7 @@ cs8900a_poll(struct eth_drv_sc *sc)
     cs8900a_priv_data_t *cpd = (cs8900a_priv_data_t *)sc->driver_private;
     cyg_addrword_t base = cpd->base;
 
-    HAL_READ_UINT16(base+CS8900A_ISQ, event);
+    CS_IN(base, CS8900A_ISQ, event);
     while (event != 0) {
         switch (event & ISQ_EventMask) {
         case ISQ_RxEvent:
@@ -723,7 +742,7 @@ cs8900a_poll(struct eth_drv_sc *sc)
 #endif
             break;
         }
-        HAL_READ_UINT16(base+CS8900A_ISQ, event);
+        CS_IN(base, CS8900A_ISQ, event);
     }
 
     CYGHWR_CL_CS8900A_PLF_INT_CLEAR(cpd);

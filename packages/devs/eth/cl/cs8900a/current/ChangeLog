@@ -1,3 +1,15 @@
+2008-11-07  Sergei Gavrikov <sergei.gavrikov@gmail.com>
+
+	* cdl/cl_cs8900a_eth_drivers.cdl: Added
+	CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_8BIT option to manage chip in 8-bit
+	mode.
+	* include/cs8900.h
+	* src/if_cs8900a.c: Added a support for the 8-bit access for CS8900A.
+	All access to CS8900A registers wrapped via CS_IN, CS_OUT macros (the
+	macros were defined in past, but, still not used).  In common way the
+	macros use the eCos macros: HAL_READ_UINT16, HAL_WRITE_UINT16 , but,
+	in other (rare) conditions they can use 8-bit access too.
+
 2007-09-04  Stephen Finney <shf@pfinc.com>
 
 	* add timeout to potential infinite loop in cs8900a_send per 

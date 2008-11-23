@@ -80,6 +80,22 @@ cdl_package CYGPKG_DEVS_ETH_CL_CS8900A {
             carefully chosen decision, hence this option."
     }
 
+    cdl_option CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_8BIT {
+        display "8-bit data bus"
+        flavor        bool
+        requires      !CYGSEM_DEVS_ETH_CL_CS8900A_WRITE_EEPROM
+        requires      CYGSEM_DEVS_ETH_CL_CS8900A_NOINTS
+        default_value 0
+        description   "
+            The CS8900A can been use in 8-bit mode. From AN181 from
+            Cirrus Logic... Unsupported functions in 8-bit mode:
+            Interrupts are not supported. Polled mode must be used;
+            The DMA engine only uses 16 bit memory access and does not
+            support 8 bit transfers; The packet page pointer has an
+            auto increment feature that cannot be used in 8-bit mode;
+            An EEPROM is not supported."
+    }
+
     cdl_option CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED {
 	display "Byte swapped data bus"
 	flavor  bool
