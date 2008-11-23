@@ -110,7 +110,7 @@ FLASH IO library and the device drivers. </PARA>
 <TITLE>FLASH user API</TITLE>
 
 <PARA>All of the functions described below are declared in the header
-file <filename>&lt;cyg/io/flash.h.h&gt;</filename> which all users of
+file <filename>&lt;cyg/io/flash.h&gt;</filename> which all users of
 the FLASH library should include.</PARA>
 
 <SECT2>
@@ -400,7 +400,7 @@ FLASH io library and the device drivers. </PARA>
 <TITLE>FLASH user API</TITLE>
 
 <PARA>All of the functions described below are declared in the header
-file <filename>&lt;cyg/io/flash.h.h&gt;</filename> which all users of
+file <filename>&lt;cyg/io/flash.h&gt;</filename> which all users of
 the FLASH library should include.</PARA>
 
 
