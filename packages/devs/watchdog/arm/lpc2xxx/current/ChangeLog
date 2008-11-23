@@ -1,3 +1,9 @@
+2008-11-23  Sergei Gavrikov <sergei.gavrikov@gmail.com>
+            Andrew Lunn     <andrew@lunn.ch>
+	
+	* src/watchdog_lpc2xxx.cxx: Since CYG_HAL_ARM_LPC2XXX_PCLK()
+	macro has been removed from lpc2xxx_misc.h, insert a definition here.
+
 2008-09-03  Sergei Gavrikov <sergei.gavrikov@gmail.com>
 
 	* src/watchdog_lpc2xxx.cxx: Since CYG_HAL_ARM_LPC2XXX_PCLK()
