@@ -884,6 +884,16 @@ package CYGPKG_DEVS_FLASH_ARM_LPC2XXX {
            flash memory of the LPC2xxx devices."
 }
 
+package CYGPKG_DEVS_FLASH_ARM_OLPCX2294 {
+        alias           { "Support for Flash memory on Olimex LPC-E2294, LPC-H2294, LPC-L2294-1M boards" flash_olpcx2294 }
+        directory       devs/flash/arm/olpcx2294
+        script          flash_olpcx2294.cdl
+        hardware
+        description "
+        This package contains hardware support for flash memory parts
+        on the Olimex LPC-E2294, LPC-H2294 LPC-L2294-1M platforms."
+}
+
 package CYGPKG_DEVS_TOUCH_IPAQ {
 	alias 		{ "Touch screen support for iPAQ" touch_ipaq }
 	directory	devs/touch/arm/ipaq
@@ -1306,6 +1316,24 @@ package CYGPKG_DEVS_ETH_ARM_PHYCORE229X {
       directory       devs/eth/arm/phycore229x
       script          phycore229x_eth_drivers.cdl
       description     "Ethernet device driver for phyCORE-LPC229x board"
+}
+
+package CYGPKG_DEVS_ETH_ARM_OLPCE2294 {
+        alias           { "Ethernet driver for Olimex LPC-E2294 board" olpce2294_eth_driver }
+        hardware
+        directory       devs/eth/arm/olpce2294
+        script          olpce2294_eth_drivers.cdl
+        description     "
+            Ethernet device driver for Olimex LPC-E2294 board."
+}
+
+package CYGPKG_DEVS_ETH_ARM_OLPCL2294 {
+        alias           { "Ethernet driver for Olimex LPC-L2294-1MB board" olpcl2294_eth_driver }
+        hardware
+        directory       devs/eth/arm/olpcl2294
+        script          olpcl2294_eth_drivers.cdl
+        description     "
+            Ethernet device driver for Olimex LPC-L2294-1MB board."
 }
 
 package CYGPKG_IO_SERIAL_SH_EDK7708 {
@@ -2886,6 +2914,36 @@ package CYGPKG_HAL_ARM_LPC2XXX_LPCMT {
 	description "
 	The lpcmt HAL package provides the support needed to run eCos on an the 
 	LPC-MT evaluation board from Olimex."
+}
+
+package CYGPKG_HAL_ARM_LPC2XXX_OLPCH2294 {
+        alias           { "Olimex LPC-H2294 header board" hal_olpch2294_arm }
+        directory       hal/arm/lpc2xxx/olpch2294
+        script          hal_arm_lpc2xxx_olpch2294.cdl
+        hardware
+        description "
+            The olpch2294 HAL package provides the support needed to
+            run eCos on the Olimex LPC-H2294 header board."
+}
+
+package CYGPKG_HAL_ARM_LPC2XXX_OLPCE2294 {
+        alias           { "Olimex LPC-E2294 development board" hal_olpce2294_arm }
+        directory       hal/arm/lpc2xxx/olpce2294
+        script          hal_arm_lpc2xxx_olpce2294.cdl
+        hardware
+        description "
+            The olpce2294 HAL package provides the support needed to
+            run eCos on Olimex LPC-E2294 development board."
+}
+
+package CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294 {
+        alias           { "Olimex LPC-L2294-1MB development board" hal_olpcl2294_arm }
+        directory       hal/arm/lpc2xxx/olpcl2294
+        script          hal_arm_lpc2xxx_olpcl2294.cdl
+        hardware
+        description "
+            The olpcl2294 HAL package provides the support needed to run
+            eCos on Olimex LPC-L2294-1MB development board."
 }
 
 package CYGPKG_HAL_ARM_MAC7100 {
@@ -4857,6 +4915,59 @@ target ea2468 {
         description "
             The Embedded Artists LPC2468 HAL package provides the support
             needed to run eCos on an Embedded Artists LPC2468 OEM board."
+}
+
+target olpch2294 {
+        alias { "Olimex LPC-H2294 header board" olpch2294 }
+        packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_LPC2XXX
+                   CYGPKG_HAL_ARM_LPC2XXX_OLPCH2294
+                   CYGPKG_DEVS_FLASH_INTEL_28FXXX
+                   CYGPKG_DEVS_FLASH_ARM_OLPCX2294
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_IO_SERIAL_ARM_LPC2XXX
+                   CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX
+        }
+        description "
+            The olpch2294 target provides the packages needed to run
+            eCos on Olimex LPC-H2294 header board."
+}
+
+
+target olpce2294 {
+        alias { "Olimex LPC-E2294 development board" olpce2294 }
+        packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_LPC2XXX
+                   CYGPKG_HAL_ARM_LPC2XXX_OLPCE2294
+                   CYGPKG_DEVS_FLASH_INTEL_28FXXX
+                   CYGPKG_DEVS_FLASH_ARM_OLPCX2294
+                   CYGPKG_DEVS_ETH_CL_CS8900A
+                   CYGPKG_DEVS_ETH_ARM_OLPCE2294
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_IO_SERIAL_ARM_LPC2XXX
+                   CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX
+        }
+        description "
+            The olpce2294 target provides the packages needed to run
+            eCos on Olimex LPC-E2294 development board."
+}
+
+target olpcl2294 {
+        alias { "Olimex LPC-L2294-1MB development board" olpcl2294 }
+        packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_LPC2XXX
+                   CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294
+                   CYGPKG_DEVS_FLASH_INTEL_28FXXX
+                   CYGPKG_DEVS_FLASH_ARM_OLPCX2294
+                   CYGPKG_DEVS_ETH_CL_CS8900A
+                   CYGPKG_DEVS_ETH_ARM_OLPCL2294
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_IO_SERIAL_ARM_LPC2XXX
+                   CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX
+        }
+        description "
+            The olpcl2294 target provides the packages needed to run
+            eCos on Olimex LPC-L2294-1MB development board."
 }
 
 target mace1 {

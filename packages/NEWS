@@ -1,3 +1,8 @@
+* Port to Olimex LPC-L2294-1MB include ethernet and Flash drvers by
+  Sergei Gavrikov
+* Port to Olimex LPC-E2294 include ethernet and Flash drvers by
+  Sergei Gavrikov
+* Port to Olimex LPC-H2294 include a Flash drvers by Sergei Gavrikov
 * Intel Strataflash v2 flash driver contributed by eCosCentric Ltd.
 * New Flash API with lots of new goodies.
 * ADC device driver for EA2468 OEM board

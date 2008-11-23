@@ -1,3 +1,10 @@
+2008-11-23  Sergei Gavrikov <sergei.gavrikov@gmail.com>
+
+	* NEWS:
+	* ecos.db: Ports to LPC-H2294, LPC-E2294, & LPC-L2294-1MB
+	including flash drivers and ethernet drivers where appropriate.
+
+	
 2008-11-20  Bart Veer  <bartv@ecoscentric.com>
 
 	* ecos.db: update M68K HAL packages and add m68k/mcfxxxx serial
