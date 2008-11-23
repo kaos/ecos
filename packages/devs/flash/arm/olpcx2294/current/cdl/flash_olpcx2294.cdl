@@ -53,8 +53,6 @@ cdl_package CYGPKG_DEVS_FLASH_ARM_OLPCX2294 {
                    CYGPKG_HAL_ARM_LPC2XXX_OLPCH2294 || \
                    CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294)
 
-    implements    CYGHWR_IO_FLASH_DEVICE
-
     compile       arm_olpcx2294_flash.c
 
     cdl_interface CYGINT_DEVS_FLASH_INTEL_28FXXX_REQUIRED {
