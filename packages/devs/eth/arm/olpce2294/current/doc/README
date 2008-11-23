@@ -1,0 +1,14 @@
+Olimex LPC-E2294 development board has a Cirrus Logic CS8900A ethernet
+controller had been wired to MPU in 8-bit mode. This mode does have a
+few limitations:
+
+        Interrupts are not supported. Polled mode must be used;
+
+        The DMA engine only uses 16 bit memory access and does not
+        support 8 bit transfers;
+
+        The packet page pointer has an auto increment feature that
+        cannot be used in 8-bit mode;
+
+        EEPROM is not supported.
+
