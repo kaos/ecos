@@ -1,3 +1,7 @@
+2008-11-23  Bart Veer  <bartv@ecoscentric.com>
+
+	*  sgml/doclist: add M68K/ColdFire documentation.
+
 2008-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* sgml/doclist: Add AMD AM29XXXXX and Intel StrataFlash v2 flash

@@ -41,9 +41,15 @@ io/usb/slave/current/doc/usbs.sgml
 io/usb/eth/slave/current/doc/usbseth.sgml
 io/usb/serial/slave/current/doc/usbs_serial.sgml
 hal/synth/arch/current/doc/synth.sgml
+hal/m68k/arch/current/doc/m68k.sgml
+hal/m68k/mcf52xx/var/current/doc/mcf52xx.sgml
+hal/m68k/mcf52xx/mcf5272/proc/current/doc/mcf5272.sgml
+hal/m68k/mcf52xx/mcf5272/m5272c3/current/doc/m5272c3.sgml
 devs/usb/sa11x0/current/doc/usbs_sa11x0.sgml
 devs/usb/nec_upd985xx/current/doc/usbs_upd985xx.sgml
 devs/eth/synth/ecosynth/current/doc/syntheth.sgml
+devs/eth/m68k/mcf5272/current/doc/mcf5272_eth.sgml
+devs/serial/m68k/mcf52xx/current/doc/mcf52xx_ser.sgml
 devs/watchdog/synth/current/doc/synth_watchdog.sgml
 devs/wallclock/dallas/ds1307/current/doc/ds1307.sgml
 devs/disk/generic/mmc/current/doc/disk_mmc.sgml
