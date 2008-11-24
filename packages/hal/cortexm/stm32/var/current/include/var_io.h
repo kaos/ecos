@@ -306,8 +306,8 @@
 #define CYGHWR_HAL_STM32_GPIO_LCKR              0x18
 
 #define CYGHWR_HAL_STM32_GPIO_MODE_IN           VALUE_(0,0)     // Input mode
-#define CYGHWR_HAL_STM32_GPIO_MODE_OUT_10MHz    VALUE_(0,1)     // Output mode, max 10MHz
-#define CYGHWR_HAL_STM32_GPIO_MODE_OUT_2MHz     VALUE_(0,2)     // Output mode, max 2MHz
+#define CYGHWR_HAL_STM32_GPIO_MODE_OUT_10MHZ    VALUE_(0,1)     // Output mode, max 10MHz
+#define CYGHWR_HAL_STM32_GPIO_MODE_OUT_2MHZ     VALUE_(0,2)     // Output mode, max 2MHz
 #define CYGHWR_HAL_STM32_GPIO_MODE_OUT_50MHZ    VALUE_(0,3)     // Output mode, max 50MHz
 
 #define CYGHWR_HAL_STM32_GPIO_CNF_AIN           VALUE_(2,0)     // Analog input
@@ -350,7 +350,7 @@
 // Macros to extract encoded values
 #define CYGHWR_HAL_STM32_GPIO_PORT(__pin)       (CYGHWR_HAL_STM32_GPIOA+((__pin)&0x0000FF00))
 #define CYGHWR_HAL_STM32_GPIO_BIT(__pin)        (((__pin)>>16)&0x1F)
-#define CYGHWR_HAL_STM32_GPIO_CFG(__pin)        ((__pin)&0x1F)
+#define CYGHWR_HAL_STM32_GPIO_CFG(__pin)        ((__pin)&0xF)
 #define CYGHWR_HAL_STM32_GPIO_PULLUP            BIT_(4)
 
 

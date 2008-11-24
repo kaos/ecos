@@ -1,3 +1,15 @@
+2008-11-24  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_intr.h (CYGNUM_HAL_INTERRUPT_DMA1_CHX): Rename DMA0
+	to DMA1 to match ST's numbering elsewhere.
+
+	* include/var_io.h (CYGHWR_HAL_STM32_GPIO_CFG): Remove PULLUP bit
+	from mask. Previous addition was incorrect.
+
+2008-11-24  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* include/var_io.h: Corrected capitalisation.
+	
 2008-11-12  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* include/var_io.h: Changed CYGHWR_HAL_STM32_BD_UNPROTECT to
