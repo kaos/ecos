@@ -57,29 +57,6 @@ extern void hal_plf_hardware_init(void);
 #define HAL_PLF_HARDWARE_INIT() \
 	    hal_plf_hardware_init()
 
-#define IO0PIN (*(volatile unsigned int *)0xE0028000)
-#define IO0SET (*(volatile unsigned int *)0xE0028004)
-#define IO0DIR (*(volatile unsigned int *)0xE0028008)
-#define IO0CLR (*(volatile unsigned int *)0xE002800C)
-
-#define IO1PIN (*(volatile unsigned int *)0xE0028010)
-#define IO1SET (*(volatile unsigned int *)0xE0028014)
-#define IO1DIR (*(volatile unsigned int *)0xE0028018)
-#define IO1CLR (*(volatile unsigned int *)0xE002801C)
-
-#define IO2PIN (*(volatile unsigned int *)0xE0028020)
-#define IO2SET (*(volatile unsigned int *)0xE0028024)
-#define IO2DIR (*(volatile unsigned int *)0xE0028028)
-#define IO2CLR (*(volatile unsigned int *)0xE002802C)
-
-#define IO3PIN (*(volatile unsigned int *)0xE0028030)
-#define IO3SET (*(volatile unsigned int *)0xE0028034)
-#define IO3DIR (*(volatile unsigned int *)0xE0028038)
-#define IO3CLR (*(volatile unsigned int *)0xE002803C)
-
-#define PINSEL0 (*(volatile unsigned int *)0xE002C00)
-#define PINSEL1 (*(volatile unsigned int *)0xE002C04)
-
 #endif // __ASSEMBLER__
 
 //-----------------------------------------------------------------------------

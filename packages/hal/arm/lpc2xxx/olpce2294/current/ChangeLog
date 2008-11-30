@@ -1,3 +1,9 @@
+2008-11-23  Sergei Gavrikov <sergei.gavrikov@gmail.com>
+
+	* include/plf_io.h: Useless and not-portable IO macros removed.
+	* src/olpce2294_misc.c: LCD driver reworked with a use eCos I/O
+          macros.
+
 2008-08-31  Sergei Gavrikov <sergei.gavrikov@gmail.com>
 
 	* LPC-E2294 development board package

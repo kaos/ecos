@@ -196,36 +196,76 @@ static int lcd_linepos = 0;
 // Set RS, R/W to read data
 #define LCD_RS_READ_DATA()                                      \
     CYG_MACRO_START                                             \
-        IO0SET |= MPU_RW;                                       \
-        IO0SET |= MPU_RS;                                       \
+        cyg_uint32 _t_;                                         \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0SET, _t_);    \
+        _t_ |= MPU_RW | MPU_RS;                                 \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0SET, _t_);    \
     CYG_MACRO_END
 
 // Set RS, R/W to read a busy flag and address counter
 #define LCD_RS_READ_STAT()                                      \
     CYG_MACRO_START                                             \
-        IO0SET |= MPU_RW;                                       \
-        IO0CLR |= MPU_RS;                                       \
+        cyg_uint32 _t_;                                         \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0SET, _t_);    \
+        _t_ |= MPU_RW;                                          \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0SET, _t_);    \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
+        _t_ |= MPU_RS;                                          \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
     CYG_MACRO_END
 
 // Set RS, R/W to write data
 #define LCD_RS_WRITE_DATA()                                     \
     CYG_MACRO_START                                             \
-        IO0CLR |= MPU_RW;                                       \
-        IO0SET |= MPU_RS;                                       \
+        cyg_uint32 _t_;                                         \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
+        _t_ |= MPU_RW;                                          \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0SET, _t_);    \
+        _t_ |= MPU_RS;                                          \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0SET, _t_);    \
     CYG_MACRO_END
 
 // Set RS, R/W to write an instruction
 #define LCD_RS_WRITE_CMD()                                      \
     CYG_MACRO_START                                             \
-        IO0CLR |= MPU_RW;                                       \
-        IO0CLR |= MPU_RS;                                       \
+        cyg_uint32 _t_;                                         \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
+        _t_ |= MPU_RW | MPU_RS;                                 \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
     CYG_MACRO_END
 
 #define LCD_ENABLE_HIGH()                                       \
-        IO0SET |= MPU_EN;
+    CYG_MACRO_START                                             \
+        cyg_uint32 _t_;                                         \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0SET, _t_);    \
+        _t_ |= MPU_EN;                                          \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0SET, _t_);    \
+    CYG_MACRO_END
 
 #define LCD_ENABLE_LOW()                                        \
-        IO0CLR |= MPU_EN;
+    CYG_MACRO_START                                             \
+        cyg_uint32 _t_;                                         \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
+        _t_ |= MPU_EN;                                          \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
+    CYG_MACRO_END
 
 // High-level enable pulse
 #define LCD_ENABLE_PULSE()                                      \
@@ -239,17 +279,52 @@ static int lcd_linepos = 0;
 // Read a nibble of data from LCD controller
 #define LCD_READ_NIBBLE( _n_)                                   \
     CYG_MACRO_START                                             \
-        IO0DIR &= ~MPU_DB;                                      \
-        _n_ = (IO0PIN & MPU_DB) >> 4;                           \
-        _n_ &= 15;                                              \
+        cyg_uint32 _t_;                                         \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0DIR, _t_);    \
+        _t_ &= ~MPU_DB;                                         \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0DIR, _t_);    \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0PIN, _t_);    \
+        _n_ = (_t_ & MPU_DB) >> 4; _n_ &= 0x0f;                 \
     CYG_MACRO_END
 
 // Write a nibble of data to LCD controller
 #define LCD_WRITE_NIBBLE( _n_)                                  \
     CYG_MACRO_START                                             \
-        IO0DIR |= MPU_DB;                                       \
-        IO0CLR |= MPU_DB;                                       \
-        IO0SET |= ((_n_) & 15) << 4;                            \
+        cyg_uint32 _t_;                                         \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0DIR, _t_);    \
+        _t_ |= MPU_DB;                                          \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0DIR, _t_);    \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
+        _t_ |= MPU_DB;                                          \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0SET, _t_);    \
+        _t_ |= ((_n_) & 0x0f) << 4;                             \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0SET, _t_);    \
+    CYG_MACRO_END
+
+// Drop LCD on POTS
+#define LCD_DROP_ON_POTS( _n_)                                  \
+    CYG_MACRO_START                                             \
+        cyg_uint32 _t_;                                         \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0DIR, _t_);    \
+        _t_ |= MPU_XX;                                          \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0DIR, _t_);    \
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +        \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
+        _t_ |= MPU_XX;                                          \
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_IO_BASE +       \
+                        CYGARC_HAL_LPC2XXX_REG_IO0CLR, _t_);    \
     CYG_MACRO_END
 
 //--------------------------------------------------------------------------
@@ -328,8 +403,7 @@ _lcd_pots_init (void)
 {
 
     // around power on
-    IO0DIR |= MPU_XX;
-    IO0CLR |= MPU_XX;
+    LCD_DROP_ON_POTS ();
 
     // wait for more than 30 ms after Vdd rises to 4.5 V
     LCD_DELAY_US (32000);
