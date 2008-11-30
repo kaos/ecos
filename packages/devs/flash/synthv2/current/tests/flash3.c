@@ -3,7 +3,7 @@
 static char copyright[] = 
 "//=========================================================================="
 "//"
-"//      flash1.c"
+"//      flash3.c"
 "//"
 "//      Test flash operations for the synth target synth flash driver"
 "//"
@@ -245,4 +245,4 @@ void cyg_user_start(void)
 
 #endif /* ifndef NA_MSG */
 
-/* EOF flash1.c */
+/* EOF flash3.c */

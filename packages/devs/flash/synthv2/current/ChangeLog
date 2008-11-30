@@ -1,3 +1,8 @@
+2008-11-28  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* tests/flash[23].c: Fixed copy'n'paste typos in a naming: flash1 ->
+	flash{2,3}.
+
 2008-11-19  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* src/synth.c: Removed cyg_hal_sys_do_mmap() wrapper function.
