@@ -54,6 +54,22 @@
 #include <cyg/hal/plf_io.h>
 
 //=============================================================================
+// Memory access macros
+
+#ifndef CYGARC_CACHED_ADDRESS
+#  define CYGARC_CACHED_ADDRESS(x)                      (x)
+#endif
+#ifndef CYGARC_UNCACHED_ADDRESS
+#  define CYGARC_UNCACHED_ADDRESS(x)                    (x)
+#endif
+#ifndef CYGARC_PHYSICAL_ADDRESS
+#  define CYGARC_PHYSICAL_ADDRESS(x)                    (x)
+#endif
+#ifndef CYGARC_VIRTUAL_ADDRESS
+#  define CYGARC_VIRTUAL_ADDRESS(x)                     (x)
+#endif
+
+//=============================================================================
 // Watchdog (WD)
 
 #define CYGARC_HAL_LPC2XXX_REG_WD_BASE                   0xE0000000

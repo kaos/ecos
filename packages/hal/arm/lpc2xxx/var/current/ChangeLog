@@ -1,3 +1,8 @@
+2008-12-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+            Andrew Lunn      <andrew@lunn.ch>
+
+	* include/var_io.h: Memory access macros added.
+
 2008-07-21  Uwe Kindler <uwe_kindler@web.de>
 
 	* cdl/hal_arm_lpc2xxx.cdl: Added option
