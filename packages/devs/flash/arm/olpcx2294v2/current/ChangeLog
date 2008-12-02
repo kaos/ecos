@@ -1,0 +1,4 @@
+2008-11-22  Sergei Gavrikov <sergei.gavrikov@gmail.com>
+
+	* Flash driver v2 for LPC-E2294, LPC-H2294, LPC-L2294-1M boards
+	* cdl/flash_olpcx2294.cdl, src/arm_olpcx2294_flash.c: New files.
