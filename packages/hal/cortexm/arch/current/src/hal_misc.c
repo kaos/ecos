@@ -60,6 +60,12 @@
 
 #include <cyg/hal/drv_api.h>
 
+
+#if defined(CYGPKG_KERNEL_INSTRUMENT) &&        \
+    defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
+#include <cyg/kernel/instrmnt.h>
+#endif
+
 //==========================================================================
 
 typedef cyg_uint32 cyg_isr(cyg_uint32 vector, CYG_ADDRWORD data);
@@ -340,7 +346,7 @@ void hal_deliver_interrupt( cyg_uint32 vector )
     
 #if defined(CYGPKG_KERNEL_INSTRUMENT) && \
     defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
-    cyg_instrument(RAISE_INTR, vector, 0 );
+    CYG_INSTRUMENT_INTR(RAISE, vector, 0);
 #endif
 
     isr = (cyg_isr *)hal_interrupt_handlers[vector];

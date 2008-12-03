@@ -1,3 +1,8 @@
+2008-12-03  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/hal_misc.c (hal_deliver_interrupt): Fix instrumentation call
+	to allow it to compile properly.
+
 2008-11-24  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* include/hal_io.c: Fixed MASK_ macro.
