@@ -161,9 +161,9 @@ CYG_MACRO_END
 #define HAL_PCI_TRANSLATE_INTERRUPT( __bus, __devfn, __vec, __valid)            \
 CYG_MACRO_START                                                                 \
 	HAL_PCI_CFG_READ_UINT8((__bus),(__devfn),CYG_PCI_CFG_INT_LINE,(__vec)); \
-	if(__vec<=15) __valid=1;                                                \
+	if(__vec<=15) __vec += 0x20, __valid=1;                                 \
+        else if( 0x20 <= __vec && __vec <= 0x30 ) __valid=1;                    \
 	else __valid=0;                                                         \
-	__vec += 0x20;                                                          \
 CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
