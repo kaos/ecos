@@ -1,3 +1,13 @@
+2005-06-10  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mips_mips32.ld: gcc_except_table subsections don't need to be
+	kept.
+
+2005-06-06  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mips_mip32.ld (SECTION_gcc_except_table): Mark gcc_except_table
+	as KEEP.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_mips_mips32.cdl :

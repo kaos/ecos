@@ -7,6 +7,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2005 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -224,10 +225,11 @@ GROUP(libtarget.a libgcc.a)
        FORCE_OUTPUT; *(.eh_frame)                     \
     } > _region_
 
-#define SECTION_gcc_except_table(_region_, _vma_, _lma_) \
-  .gcc_except_table _vma_ : _lma_                        \
-    {                                                    \
-      FORCE_OUTPUT; *(.gcc_except_table)                 \
+#define SECTION_gcc_except_table(_region_, _vma_, _lma_)      \
+  .gcc_except_table _vma_ : _lma_                             \
+    { FORCE_OUTPUT;                                           \
+      KEEP(*(.gcc_except_table))                              \
+      *(.gcc_except_table.*)                                  \
     } > _region_
 
 
