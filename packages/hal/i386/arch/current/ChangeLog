@@ -6,6 +6,15 @@
 
 	* include/hal_arch.h: #define CYGARC_VIRTUAL_ADDRESS.
 
+2005-06-10  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/i386.ld: gcc_except_table subsections don't need to be
+	kept.
+
+2005-06-03  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/i386.ld: gcc_except_table needs to be marked KEEP.
+
 2005-04-22  David Vrabel  <dvrabel@arcom.com>
 
 	* cdl/hal_i386.cdl (CYGHWR_REDBOOT_I386_TRAMPOLINE_ADDRESS): Don't
