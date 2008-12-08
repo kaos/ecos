@@ -1,3 +1,8 @@
+2008-12-03  Sergei Gavrikov <sergei.gavrikov@gmail.com>
+
+	* misc/redboot_*.ecm: Rebuilt since target uses flash_olpcx2294_v2
+	driver.
+
 2008-08-31  Sergei Gavrikov <sergei.gavrikov@gmail.com>
 
 	* LPC-L2294 development board package

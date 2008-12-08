@@ -14,8 +14,8 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_ARM current ;
     package -hardware CYGPKG_HAL_ARM_LPC2XXX current ;
     package -hardware CYGPKG_HAL_ARM_LPC2XXX_OLPCH2294 current ;
-    package -hardware CYGPKG_DEVS_FLASH_INTEL_28FXXX current ;
-    package -hardware CYGPKG_DEVS_FLASH_ARM_OLPCX2294 current ;
+    package -hardware CYGPKG_DEVS_FLASH_STRATA_V2 current ;
+    package -hardware CYGPKG_DEVS_FLASH_ARM_OLPCX2294_V2 current ;
     package -hardware CYGPKG_IO_SERIAL_GENERIC_16X5X current ;
     package -hardware CYGPKG_IO_SERIAL_ARM_LPC2XXX current ;
     package -hardware CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX current ;
@@ -94,10 +94,6 @@ cdl_option CYGBLD_ISO_STRING_MEMFUNCS_HEADER {
 
 cdl_option CYGBLD_ISO_STRING_STRFUNCS_HEADER {
     inferred_value 1 <cyg/libc/string/string.h>
-};
-
-cdl_option CYGHWR_DEVS_FLASH_INTEL_28F320C3 {
-    inferred_value 1
 };
 
 

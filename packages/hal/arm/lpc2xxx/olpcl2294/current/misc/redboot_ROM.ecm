@@ -14,8 +14,8 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_ARM current ;
     package -hardware CYGPKG_HAL_ARM_LPC2XXX current ;
     package -hardware CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294 current ;
-    package -hardware CYGPKG_DEVS_FLASH_INTEL_28FXXX current ;
-    package -hardware CYGPKG_DEVS_FLASH_ARM_OLPCX2294 current ;
+    package -hardware CYGPKG_DEVS_FLASH_STRATA_V2 current ;
+    package -hardware CYGPKG_DEVS_FLASH_ARM_OLPCX2294_V2 current ;
     package -hardware CYGPKG_DEVS_ETH_CL_CS8900A current ;
     package -hardware CYGPKG_DEVS_ETH_ARM_OLPCL2294 current ;
     package -hardware CYGPKG_IO_SERIAL_GENERIC_16X5X current ;
@@ -27,10 +27,10 @@ cdl_configuration eCos {
     package -template CYGPKG_ISOINFRA current ;
     package -template CYGPKG_LIBC_STRING current ;
     package -template CYGPKG_CRC current ;
-    package CYGPKG_IO_FLASH current ;
     package CYGPKG_IO_ETH_DRIVERS current ;
     package CYGPKG_NS_DNS current ;
     package CYGPKG_COMPRESS_ZLIB current ;
+    package CYGPKG_IO_FLASH current ;
 };
 
 cdl_option CYGFUN_LIBC_STRING_BSD_FUNCS {
@@ -103,10 +103,6 @@ cdl_option CYGBLD_ISO_STRING_STRFUNCS_HEADER {
 
 cdl_option CYGBLD_ISO_DNS_HEADER {
     inferred_value 1 <cyg/ns/dns/dns.h>
-};
-
-cdl_option CYGHWR_DEVS_FLASH_INTEL_28F160C3B {
-    inferred_value 1
 };
 
 cdl_option CYGPKG_NS_DNS_BUILD {

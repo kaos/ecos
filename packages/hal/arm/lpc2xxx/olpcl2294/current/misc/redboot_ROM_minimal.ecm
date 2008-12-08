@@ -14,8 +14,8 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_ARM current ;
     package -hardware CYGPKG_HAL_ARM_LPC2XXX current ;
     package -hardware CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294 current ;
-    package -hardware CYGPKG_DEVS_FLASH_INTEL_28FXXX current ;
-    package -hardware CYGPKG_DEVS_FLASH_ARM_OLPCX2294 current ;
+    package -hardware CYGPKG_DEVS_FLASH_STRATA_V2 current ;
+    package -hardware CYGPKG_DEVS_FLASH_ARM_OLPCX2294_V2 current ;
     package -hardware CYGPKG_DEVS_ETH_CL_CS8900A current ;
     package -hardware CYGPKG_DEVS_ETH_ARM_OLPCL2294 current ;
     package -hardware CYGPKG_IO_SERIAL_GENERIC_16X5X current ;
