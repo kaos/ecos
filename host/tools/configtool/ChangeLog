@@ -1,3 +1,8 @@
+2008-12-08  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/mainwin.cpp: Make menu acceleration keys unique.
+	[ Bugzilla 1000618 ]
+
 2008-08-15  Bart Veer  <bartv@ecoscentric.com>
 
 	* common/common/build.cxx: avoid compiler warning.

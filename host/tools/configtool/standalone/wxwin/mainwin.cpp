@@ -343,7 +343,7 @@ ecMainFrame::ecMainFrame(wxDocManager *manager, const wxString& title, const wxP
     buildMenu->AppendSeparator();
     buildMenu->Append(ecID_BUILD_OPTIONS, _("&Options..."), _("Changes build options"));
     buildMenu->Append(ecID_BUILD_REPOSITORY, _("&Repository..."), _("Selects repository"));
-    buildMenu->Append(ecID_BUILD_TEMPLATES, _("&Templates..."), _("Selects the package templates"));
+    buildMenu->Append(ecID_BUILD_TEMPLATES, _("Te&mplates..."), _("Selects the package templates"));
     buildMenu->Append(ecID_BUILD_PACKAGES, _("&Packages..."), _("Selects individual packages"));
     
     // Tools menu
@@ -356,7 +356,7 @@ ecMainFrame::ecMainFrame(wxDocManager *manager, const wxString& title, const wxP
 
     toolsMenu->Append(ecID_SHELL, _("&Shell..."), _("Invokes a command shell"));
     toolsMenu->Append(ecID_RUN_TESTS, _("&Run Tests...\tCtrl+F5"), _("Runs the configuration tests"));
-    toolsMenu->Append(ecID_PLATFORMS, _("&Platforms..."), _("Edits the platforms list"));
+    toolsMenu->Append(ecID_PLATFORMS, _("Plat&forms..."), _("Edits the platforms list"));
     toolsMenu->Append(ecID_RESOLVE_CONFLICTS, _("Resolve &Conflicts..."), _("Resolves conflicts"));
     toolsMenu->Append(ecID_ADMINISTRATION, _("&Administration..."), _("Performs repository administration tasks"));
 #if 0
