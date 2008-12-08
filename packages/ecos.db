@@ -892,6 +892,18 @@ package CYGPKG_DEVS_FLASH_ARM_OLPCX2294 {
         description "
         This package contains hardware support for flash memory parts
         on the Olimex LPC-E2294, LPC-H2294 LPC-L2294-1M platforms."
+
+}
+
+package CYGPKG_DEVS_FLASH_ARM_OLPCX2294_V2 {
+        alias           { "External Flash memory support for OLPCE2294, OLPCH2294, OLPCL2294" flash_olpcx2294_v2 }
+        directory       devs/flash/arm/olpcx2294v2
+        script          flash_olpcx2294.cdl
+        hardware
+        description "
+            The flash_olpcx2294_v2 provides hardware support for external
+            flash memory parts on the Olimex LPC-E2294, LPC-H2294,
+            and LPC-L2294-1M boards. It uses eCos Flash v2 API."
 }
 
 package CYGPKG_DEVS_TOUCH_IPAQ {
@@ -4922,8 +4934,8 @@ target olpch2294 {
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC2XXX
                    CYGPKG_HAL_ARM_LPC2XXX_OLPCH2294
-                   CYGPKG_DEVS_FLASH_INTEL_28FXXX
-                   CYGPKG_DEVS_FLASH_ARM_OLPCX2294
+                   CYGPKG_DEVS_FLASH_STRATA_V2
+                   CYGPKG_DEVS_FLASH_ARM_OLPCX2294_V2
                    CYGPKG_IO_SERIAL_GENERIC_16X5X
                    CYGPKG_IO_SERIAL_ARM_LPC2XXX
                    CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX
@@ -4939,8 +4951,8 @@ target olpce2294 {
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC2XXX
                    CYGPKG_HAL_ARM_LPC2XXX_OLPCE2294
-                   CYGPKG_DEVS_FLASH_INTEL_28FXXX
-                   CYGPKG_DEVS_FLASH_ARM_OLPCX2294
+                   CYGPKG_DEVS_FLASH_STRATA_V2
+                   CYGPKG_DEVS_FLASH_ARM_OLPCX2294_V2
                    CYGPKG_DEVS_ETH_CL_CS8900A
                    CYGPKG_DEVS_ETH_ARM_OLPCE2294
                    CYGPKG_IO_SERIAL_GENERIC_16X5X
@@ -4957,8 +4969,8 @@ target olpcl2294 {
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC2XXX
                    CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294
-                   CYGPKG_DEVS_FLASH_INTEL_28FXXX
-                   CYGPKG_DEVS_FLASH_ARM_OLPCX2294
+                   CYGPKG_DEVS_FLASH_STRATA_V2
+                   CYGPKG_DEVS_FLASH_ARM_OLPCX2294_V2
                    CYGPKG_DEVS_ETH_CL_CS8900A
                    CYGPKG_DEVS_ETH_ARM_OLPCL2294
                    CYGPKG_IO_SERIAL_GENERIC_16X5X

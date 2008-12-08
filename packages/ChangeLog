@@ -1,3 +1,8 @@
+2008-12-02  Sergei Gavrikov <sergei.gavrikov@gmail.com>
+
+	* ecos.db: Use the flash V2 driver for the LPC-H2294, LPC-E2294, &
+	LPC-L2294-1MB targets.
+	
 2008-11-23  Sergei Gavrikov <sergei.gavrikov@gmail.com>
 
 	* NEWS:
