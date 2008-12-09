@@ -1,3 +1,11 @@
+2008-12-09  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/runtestsdlg.cpp: Reduce initial/minimum size of the
+	wxNotebook widget to allow initial display of borders and buttons.
+
+	* standalone/wxwin/outputwin.cpp, standalone/wxwin/outputwin.h:
+	Manipulate state of "Clear" context menu item. Fix from Spencer Oliver.
+
 2008-12-08  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/mainwin.cpp: Make menu acceleration keys unique.

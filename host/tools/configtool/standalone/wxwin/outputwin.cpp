@@ -76,6 +76,7 @@ BEGIN_EVENT_TABLE(ecOutputWindow, wxTextCtrl)
     EVT_MENU(wxID_CLEAR, ecOutputWindow::OnClear)
     EVT_MENU(wxID_SELECTALL, ecOutputWindow::OnSelectAll)
     EVT_MENU(wxID_SAVE, ecOutputWindow::OnSave)
+    EVT_UPDATE_UI(wxID_CLEAR, ecOutputWindow::OnUpdateClear)
 END_EVENT_TABLE()
 
 ecOutputWindow::ecOutputWindow(wxWindow* parent, wxWindowID id, const wxPoint& pt,
@@ -129,3 +130,9 @@ void ecOutputWindow::OnSelectAll(wxCommandEvent& event)
 void ecOutputWindow::OnSave(wxCommandEvent& event)
 {
 }
+
+void ecOutputWindow::OnUpdateClear(wxUpdateUIEvent& event)
+{
+    event.Enable(!IsEmpty());
+}
+

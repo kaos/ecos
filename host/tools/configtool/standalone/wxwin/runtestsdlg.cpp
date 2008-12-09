@@ -149,7 +149,7 @@ ecRunTestsDialog::ecRunTestsDialog(wxWindow* parent):
     SetSize(dialogWidth, dialogHeight);
         
     m_notebook = new wxNotebook(this, ecID_RUN_TESTS_NOTEBOOK,
-         wxPoint(2, 2), wxSize(PROPERTY_DIALOG_WIDTH - 4, PROPERTY_DIALOG_HEIGHT - 4));
+         wxPoint(2, 2), wxSize(PROPERTY_DIALOG_WIDTH - 100, PROPERTY_DIALOG_HEIGHT - 200));
 
     m_executables = new ecRunTestsExecutablesDialog(m_notebook);
     m_notebook->AddPage(m_executables, wxT("Executables"));

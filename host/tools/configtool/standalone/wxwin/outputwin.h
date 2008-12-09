@@ -65,6 +65,7 @@ public:
     void OnClear(wxCommandEvent& event);
     void OnSelectAll(wxCommandEvent& event);
     void OnSave(wxCommandEvent& event);
+    void OnUpdateClear(wxUpdateUIEvent& event);
 
 //// Operations
 
