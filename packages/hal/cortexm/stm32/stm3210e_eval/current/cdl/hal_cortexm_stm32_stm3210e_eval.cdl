@@ -87,7 +87,7 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
         display "Memory layout"
         flavor data
         no_define
-        default_value { (CYG_HAL_STARTUP == "RAM" ) ? "cortexm_stm3210e_eval_ram"      :
+        calculated    { (CYG_HAL_STARTUP == "RAM" ) ? "cortexm_stm3210e_eval_ram"      :
                         (CYG_HAL_STARTUP == "SRAM") ? "cortexm_stm3210e_eval_sram"     :
                         (CYG_HAL_STARTUP == "ROM" ) ? "cortexm_stm3210e_eval_rom"      :
                         (CYG_HAL_STARTUP == "JTAG") ? "cortexm_stm3210e_eval_jtag"     :

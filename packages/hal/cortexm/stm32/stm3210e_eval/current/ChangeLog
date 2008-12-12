@@ -1,3 +1,9 @@
+2008-12-10  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3210e_eval.cdl: Switch value for
+	CYGHWR_MEMORY_LAYOUT to calculated, so that changes to startup
+	type are correctly propagated.
+
 2008-11-20  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/hal_cortexm_stm32_stm3210e_eval.cdl: Remove doc link
