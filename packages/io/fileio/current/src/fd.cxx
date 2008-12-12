@@ -149,6 +149,26 @@ __externC void cyg_file_free(cyg_file * fp)
 //--------------------------------------------------------------------------
 // Decrement the use count on a file object and if it goes to zero,
 // close the file and deallocate the file object.
+//
+// A word on locking here: It is necessary for the filesystem
+// fo_close() function to be called with the file lock claimed, but
+// the fdlock released, to permit other threads to perform fd-related
+// operations. The original code here took the file lock and released
+// the fdlock before the call and then locked the fdlock and released
+// the file lock after. The idea was that there was no point at which
+// a lock of some sort was not held. However, if two threads are
+// running through this code simultaneously, this could lead to
+// deadlock, particularly if the filesystem's syncmode specifies fstab
+// or mtab level locking. So the code now unlocks the file lock before
+// reclaiming the fdlock. This leaves a small window where no locks
+// are held, where in theory some other thread could jump in and mess
+// things up. However, this is benign; if the other thread is
+// accessing some other file object there will be no conflict and by
+// definition no other thread can access this file object since we are
+// executing here because no file descriptors point to this file
+// object any longer. Additionally, the file object is only marked
+// free, by zeroing the f_flag field, once the fdlock has been
+// reclaimed.
 
 static int fp_ucount_dec( cyg_file *fp )
 {
@@ -156,13 +176,14 @@ static int fp_ucount_dec( cyg_file *fp )
     if( (--fp->f_ucount) <= 0 )
     {        
         cyg_file_lock( fp, fp->f_syncmode );
+        FILEIO_MUTEX_UNLOCK(fdlock);
         
         error = fp->f_ops->fo_close(fp);
 
         cyg_file_unlock( fp, fp->f_syncmode );
+        FILEIO_MUTEX_LOCK(fdlock);        
             
-        if( error == 0 )
-            fp->f_flag = 0;
+        fp->f_flag = 0;
     }
 
     return error;
@@ -180,6 +201,7 @@ static int fd_close( int fd )
     CYG_ASSERT(((0 <= fd) && (fd<CYGNUM_FILEIO_NFD)), "fd out of range");    
 
     fp = desc[fd];
+    desc[fd] = FD_ALLOCATED;
 
     if( fp != FD_ALLOCATED && fp != NULL)
     {
@@ -188,8 +210,6 @@ static int fd_close( int fd )
 
         error = fp_ucount_dec( fp );
     }
-
-    desc[fd] = FD_ALLOCATED;
 
     return error;
 }

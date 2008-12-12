@@ -1,3 +1,10 @@
+2008-12-11  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/fd.cxx (fp_ucount_dec, fd_close): Fix locking strategy so
+	that the fdlock is free when filesystem close entry is
+	called. This allows other threads to peform descriptor operations
+	during the close.
+
 2008-04-02 Xinghua Yang <yxinghua@sunnorth.com.cn>
 	   Andrew Lunn <andrew.lunn@ascom.ch>
 
