@@ -2299,7 +2299,7 @@ void ecConfigToolDoc::RunTests()
         if (NULL==CeCosTestPlatform::Get(strTarget))
         {
             wxString msg;
-            msg.Printf(_("%s is not a recognized platform - do you wish to add it?"), (const wxChar*) strTarget);
+            msg.Printf(_("%s is not a recognized test platform - do you wish to add it?"), (const wxChar*) strTarget);
             if (wxNO == wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO))
                 return;
             
@@ -2307,6 +2307,20 @@ void ecConfigToolDoc::RunTests()
             
             dlg.m_strPlatform = strTarget;
             dlg.m_strPrefix = GetCurrentTargetPrefix();
+            dlg.m_strGDB = _("set height 0\n"
+            		"set debug remote 0\n"
+            		"set remotebaud %b\n"
+            		"target remote %p\n"
+            		"load\n"
+            		"break cyg_test_exit\n"
+            		"rbreak cyg_assert_fail\n"
+            		"break cyg_test_init\n"
+            		"cont\n"
+            		"set cyg_test_is_simulator=0\n"
+            		"cont\n"
+            		"bt");
+            dlg.m_strPrompt = _("(gdb) ");
+            dlg.m_strInferior = dlg.m_strPrefix + _("-gdb -nw -q %e");
             dlg.m_strCaption=_("New Platform");
             if(wxID_CANCEL == dlg.ShowModal())
             {
