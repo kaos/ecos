@@ -289,7 +289,7 @@ bool ecApp::OnInit()
         wxLog::SetActiveTarget(new wxLogStderr);
 #endif
         wxString msg;
-        msg.Printf(wxT("eCos Configuration Tool (c) Red Hat, 2001 Version %s, %s"), ecCONFIGURATION_TOOL_VERSION, __DATE__);
+        msg.Printf(wxT("eCos Configuration Tool (c) Free Software Foundation, Inc., 1998-2008 Version %s, %s"), ecCONFIGURATION_TOOL_VERSION, __DATE__);
         wxLogMessage(msg);
         return FALSE;
     }

@@ -53,8 +53,8 @@
 #include "cdl_exec.hxx"
 #include "ecosconfig.hxx"
 
-#define TOOL_VERSION "2.net"
-#define TOOL_COPYRIGHT "Copyright (c) 2002 Red Hat, Inc.\nCopyright (c) 2004-2008 eCosCentric Limited"
+#define TOOL_VERSION "3.net"
+#define TOOL_COPYRIGHT "Copyright (c) 2002-2008 Free Software Foundation, Inc."
 #define DEFAULT_SAVE_FILE "ecos.ecc"
 static const char* tool = "ecosconfig";
 

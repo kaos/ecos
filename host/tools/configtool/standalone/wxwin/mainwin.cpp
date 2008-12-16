@@ -576,9 +576,7 @@ void ecMainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
 	int iTclVerMajor, iTclVerMinor, iTclVerPatchLevel;
 	Tcl_GetVersion (&iTclVerMajor, &iTclVerMinor, &iTclVerPatchLevel, NULL);
 	msg.Printf("eCos Configuration Tool %s (%s %s)\n\n"
-		"Copyright (c) Red Hat, Inc. 1998-2002\n"
-		"Copyright (c) John Dallaway 2003\n"
-		"Copyright (c) eCosCentric Limited 2004-2008\n\n"
+		"Copyright (c) Free Software Foundation, Inc. 1998-2008\n\n"
 		"Using %s %s and Tcl %d.%d.%d",
 		ecCONFIGURATION_TOOL_VERSION, __DATE__, __TIME__,
 		wxPlatformInfo::Get().GetPortIdName().c_str(), wxVERSION_NUM_DOT_STRING,
