@@ -1,3 +1,9 @@
+2008-12-19  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* src/stm32_flash.c:
+	Hardcoded flash and block sizes as the debug registers are not
+	readable by user software.
+
 2008-11-04  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* src/stm32_flash.c:

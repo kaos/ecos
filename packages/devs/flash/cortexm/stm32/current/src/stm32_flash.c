@@ -44,6 +44,7 @@
 //
 //========================================================================*/
 
+#include <pkgconf/hal_cortexm_stm32.h>
 #include <pkgconf/devs_flash_stm32.h>
 
 #include <cyg/infra/cyg_type.h>
@@ -103,7 +104,6 @@ stm32_flash_init(struct cyg_flash_dev* dev)
 {
     cyg_stm32_flash_dev *stm32_dev = (cyg_stm32_flash_dev *)dev->priv;
     CYG_ADDRESS base = CYGHWR_HAL_STM32_FLASH;
-    cyg_uint32 sig, id;
     cyg_uint32 flash_size, block_size = 0;
     
     // Set up the block info entries.
@@ -111,27 +111,38 @@ stm32_flash_init(struct cyg_flash_dev* dev)
     dev->block_info                             = &stm32_dev->block_info[0];
     dev->num_block_infos                        = 1;
 
-    // Get flash size from device signature and MCU ID
+    // As stated in the errata sheet, the debug register can only be read in
+    // debug mode and is therfore not accessible by user software.
 
-    HAL_READ_UINT32( CYGHWR_HAL_STM32_DEV_SIG, sig );
-    HAL_READ_UINT32( CYGHWR_HAL_STM32_MCU_ID, id );
-
-    stf_diag("sig %08x id %08x\n", sig, id );
+#if defined(CYGHWR_HAL_CORTEXM_STM32_F103RC) || \
+    defined(CYGHWR_HAL_CORTEXM_STM32_F103VC) || \
+    defined(CYGHWR_HAL_CORTEXM_STM32_F103ZC)
     
-    flash_size = CYGHWR_HAL_STM32_DEV_SIG_FSIZE(sig);
+    // High-density device with 256K flash (2K blocks)
+    flash_size = 0x40000;
+    block_size = 0x800;
+    
+#elif defined(CYGHWR_HAL_CORTEXM_STM32_F103RD) || \
+      defined(CYGHWR_HAL_CORTEXM_STM32_F103VD) || \
+      defined(CYGHWR_HAL_CORTEXM_STM32_F103ZD)
+    
+    // High-density device with 384K flash (2K blocks)
+    flash_size = 0x60000;
+    block_size = 0x800;
+    
+#elif defined(CYGHWR_HAL_CORTEXM_STM32_F103RE) || \
+      defined(CYGHWR_HAL_CORTEXM_STM32_F103VE) || \
+      defined(CYGHWR_HAL_CORTEXM_STM32_F103ZE)
+    
+    // High-density device with 512K flash (2K blocks)
+    flash_size = 0x80000;
+    block_size = 0x800;
 
-    if( CYGHWR_HAL_STM32_MCU_ID_DEV(id) == CYGHWR_HAL_STM32_MCU_ID_DEV_MEDIUM )
-    {
-        block_size = 1024;
-        if( flash_size == 0xFFFF ) flash_size = 128;
-    }
-    else if( CYGHWR_HAL_STM32_MCU_ID_DEV(id) == CYGHWR_HAL_STM32_MCU_ID_DEV_HIGH )
-    {
-        block_size = 2048;
-        if( flash_size == 0xFFFF ) flash_size = 512;
-    }
+#else
 
-    flash_size *= 1024;
+#error Unknown STM32 microprocessor variant.
+    
+#endif
     
     stm32_dev->block_info[0].blocks             = flash_size/block_size;
     stm32_dev->block_info[0].block_size         = block_size;
