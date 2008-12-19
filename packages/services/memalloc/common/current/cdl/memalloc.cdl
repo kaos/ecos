@@ -178,12 +178,15 @@ cdl_package CYGPKG_MEMALLOC {
            cdl_option CYGIMP_MEMALLOC_ALLOCATOR_DLMALLOC_USE_MEMCPY {
                 display       "Use system memmove() and memset()"
                 requires      CYGPKG_ISOINFRA
-                default_value { 0 != CYGPKG_ISOINFRA }
+                requires      CYGINT_ISO_STRING_MEMFUNCS
+                default_value { (0 != CYGPKG_ISOINFRA) && (0 != CYGINT_ISO_STRING_MEMFUNCS) }
                 description   "
                     This may be used to control whether memset() and memmove()
                     are used within the implementation. The alternative is
-                    to use some macro equivalents, which some people report
-                    are faster in some circumstances."
+                    to use some macro equivalents, which have been reported
+                    to be faster in some circumstances. The use of \"MEMCPY\"
+                    in the CDL option name is an anachronism and only
+                    present for backwards compatibility."
            }
 
            cdl_option CYGNUM_MEMALLOC_ALLOCATOR_DLMALLOC_ALIGNMENT {

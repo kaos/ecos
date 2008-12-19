@@ -1,3 +1,11 @@
+2008-12-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/dlmalloc.cxx (MALLOC_COPY): Reinstate fix of 2008-01-06
+	(reverting change of 2008-11-03).
+	* cdl/memalloc.cdl (CYGIMP_MEMALLOC_ALLOCATOR_DLMALLOC_USE_MEMCPY):
+	Make explicit dependency on isoinfra functionality block which
+	includes memmove(), and set default_value accordingly.
+
 2008-11-03  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/dlmalloc.cxx (MALLOC_COPY): Replace memmove() with memcpy().
