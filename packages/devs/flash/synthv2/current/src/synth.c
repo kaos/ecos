@@ -120,8 +120,8 @@ synth_flash_init(struct cyg_flash_dev *dev)
         flags,
         priv->flashfd, 
         0l);
-    CYG_ASSERT( (int) base > 0, "mmap of flash file failed!" );
-    if (base <= 0) {
+    CYG_ASSERT( base != -1, "mmap of flash file failed!" );
+    if (base == -1) {
         return CYG_FLASH_ERR_HWR;
     }
     dev->start = base;

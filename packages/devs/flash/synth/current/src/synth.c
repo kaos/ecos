@@ -124,9 +124,9 @@ flash_hwr_init(void)
                 |CYG_HAL_SYS_MAP_FIXED
 #endif
                 , cyg_dev_flash_synth_flashfd, 0 );
-    CYG_ASSERT( cyg_dev_flash_synth_base > 0, "mmap of flash file failed!" );
+    CYG_ASSERT( cyg_dev_flash_synth_base != (void *) -1, "mmap of flash file failed!" );
 
-    if (cyg_dev_flash_synth_base <= 0) {
+    if (cyg_dev_flash_synth_base == (void *) -1) {
         return FLASH_ERR_HWR;
     }
     flash_info.start = cyg_dev_flash_synth_base;

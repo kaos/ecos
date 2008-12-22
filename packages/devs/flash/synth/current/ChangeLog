@@ -1,3 +1,7 @@
+2008-12-18  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* src/synth.c: Fixed error check of mmap call.
+
 2008-11-19  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* tests/flash2.c: Fixed a few warnings.
