@@ -236,7 +236,7 @@ wxString ecConfigItem::GetItemNameOrMacro() const
 // Sets the text and icon for this item
 bool ecConfigItem::UpdateTreeItem(ecConfigTreeCtrl& treeCtrl)
 {
-    treeCtrl.SetItemText(m_treeItem, m_name);
+    treeCtrl.SetItemText(m_treeItem, GetItemNameOrMacro());
 
 #if wxCHECK_VERSION(2, 6, 0)
     static wxColour normalColour = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);

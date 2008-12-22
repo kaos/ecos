@@ -554,7 +554,8 @@ bool ecApp::OnInit()
     }
     else
     {
-        if (GetSettings().m_strRepository.IsEmpty()) // first invocation by this user
+        if (GetSettings().m_strRepository.IsEmpty() ||
+            !wxFileName::DirExists(GetSettings().m_strRepository)) // first invocation by this user
         {
             // we have no clues as to the location of the repository so
             // test for ../../packages relative to the configtool location
