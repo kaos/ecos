@@ -1,3 +1,9 @@
+2008-12-23  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* src/flash_erase_block.c:
+	* src/flash_program_buf.c:
+	Implemented simulation of proper NOR flash writes. General cleanup.
+
 2008-12-18  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* src/synth.c: Fixed error check of mmap call.

@@ -56,16 +56,39 @@
 #include <cyg/hal/hal_io.h>
 #include <cyg/io/flash.h>
 
+#ifndef MIN
+#define MIN(x,y) ((x)<(y) ? (x) : (y))
+#endif
+
 int
 flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
                   unsigned long block_mask, int buffer_size)
 {
-  
-    int offset = (int)addr;
-    offset -= (int)cyg_dev_flash_synth_base;
+    unsigned int offset = (unsigned int) addr;
+    cyg_uint8 *buf = (cyg_uint8 *) data;
 
-    cyg_hal_sys_lseek(cyg_dev_flash_synth_flashfd, offset, CYG_HAL_SYS_SEEK_SET);
-    cyg_hal_sys_write(cyg_dev_flash_synth_flashfd, data, len);
-  
+    // This helps speed up the programming
+    static cyg_uint8 tmp[4096];
+
+    offset -= (unsigned int) cyg_dev_flash_synth_base;
+
+    while (len > 0) {
+        int i;
+        int write_size = MIN(len, sizeof(tmp));
+        // Writing to NOR flash only sets bits from 1 to 0, not vice-versa
+        cyg_hal_sys_lseek(cyg_dev_flash_synth_flashfd, offset,
+                          CYG_HAL_SYS_SEEK_SET);
+        cyg_hal_sys_read(cyg_dev_flash_synth_flashfd, tmp, write_size);
+        for (i = 0; i < write_size; i++)
+            tmp[i] = tmp[i] & buf[i];
+        cyg_hal_sys_lseek(cyg_dev_flash_synth_flashfd, offset,
+                          CYG_HAL_SYS_SEEK_SET);
+        cyg_hal_sys_write(cyg_dev_flash_synth_flashfd, tmp, write_size);
+        // Process next chunk
+        buf += write_size;
+        offset += write_size;
+        len -= write_size;        
+    }
+    
     return FLASH_ERR_OK;
 }

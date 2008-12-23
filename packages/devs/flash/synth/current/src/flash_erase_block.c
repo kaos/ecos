@@ -56,17 +56,24 @@
 #include <pkgconf/devs_flash_synth.h>
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/io/flash.h>
+#include <cyg/io/flash_dev.h>
 #include <string.h> // memset
 
-/* This helps speed up the erase. */
-static char empty[4096];
-static cyg_bool empty_inited = false;
+#ifndef MIN
+#define MIN(x,y) ((x)<(y) ? (x) : (y))
+#endif
 
 int flash_erase_block(volatile flash_t *block, unsigned int block_size)
 {
-    int i;
-    int offset = (int)block;
-    offset -= (int)cyg_dev_flash_synth_base;
+    unsigned int offset = (unsigned int) block;
+    size_t remaining;
+    int write_size;
+    
+    // This helps speed up the erasing
+    static cyg_uint8 empty[4096];
+    static cyg_bool empty_inited;
+    
+    offset -= (unsigned int) cyg_dev_flash_synth_base;
 
     cyg_hal_sys_lseek(cyg_dev_flash_synth_flashfd, offset,
                       CYG_HAL_SYS_SEEK_SET);
@@ -75,16 +82,14 @@ int flash_erase_block(volatile flash_t *block, unsigned int block_size)
         memset(empty, 0xff, sizeof(empty));
         empty_inited = true;
     }
+    
+    remaining = flash_info.block_size;
 
-    CYG_ASSERT(sizeof(empty) < block_size,
-               "Eckk! Can't work with such small blocks");
-    CYG_ASSERT((block_size % sizeof(empty)) == 0,
-               "Eckk! Can't work with that odd size block");
-
-    for (i=0; (i * sizeof(empty)) < block_size; i++) {
-        cyg_hal_sys_write(cyg_dev_flash_synth_flashfd, empty, sizeof(empty));
+    while (remaining) {
+      write_size = MIN(remaining, sizeof(empty));
+      cyg_hal_sys_write(cyg_dev_flash_synth_flashfd, empty, write_size);
+      remaining -= write_size;
     }
+
     return FLASH_ERR_OK;
 }
-
-
