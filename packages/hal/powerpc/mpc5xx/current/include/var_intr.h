@@ -34,9 +34,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
@@ -186,14 +183,14 @@ hal_mpc5xx_remove_arbitration_isr(cyg_uint32 apriority);
 #define CYGNUM_HAL_INTERRUPT_IMB3_QUADCB_PI1    28  // QUADCB queue 1 pause
 #define CYGNUM_HAL_INTERRUPT_IMB3_QUADCB_CI2    29  // QUADCB queue 2 completion
 #define CYGNUM_HAL_INTERRUPT_IMB3_QUADCB_PI2    30  // QUADCB queue 2 pause
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TX       31  // SCI 0 transmit
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TXC      32  // SCI 0 transmit complete
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX       33  // SCI 0 receiver full
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI0_IDLE     34  // SCI 0 idle line detected
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX       35  // SCI 1 transmit
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXC      36  // SCI 1 transmit complete
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX       37  // SCI 1 receiver full
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE     38  // SCI 1 idle line detected
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX       31  // SCI 1 transmit
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXC      32  // SCI 1 transmit complete
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX       33  // SCI 1 receiver full
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE     34  // SCI 1 idle line detected
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TX       35  // SCI 2 transmit
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TXC      36  // SCI 2 transmit complete
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI2_RX       37  // SCI 2 receiver full
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI2_IDLE     38  // SCI 2 idle line detected
 #define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RXQTHF   39  // SCI 1 RX Queue top half full
 #define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RXQBHF   40  // SCI 1 RX Queue bottom half full
 #define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXQTHE   41  // SCI 1 TX Queue top half full
@@ -295,11 +292,11 @@ hal_mpc5xx_remove_arbitration_isr(cyg_uint32 apriority);
 #define CYGNUM_HAL_ISR_MIN      CYGNUM_HAL_INTERRUPT_DECREMENTER
 #define CYGNUM_HAL_ISR_MAX      CYGNUM_HAL_INTERRUPT_IMB3_MIOS_MDASM31
 
-#define CYGARC_SIU_PRIORITY_HIGH                 7 // Maximum interrupt priority on SIU 
-#define CYGARC_SIU_PRIORITY_LOW                  0 // Minimum interrupt priority on SIU
-#define CYGARC_IMB3_PRIORITY_HIGH               31 // Maximum interrupt priority on IMB3
-#define CYGARC_IMB3_PRIORITY_LOW                 0 // Minimum interrupt priority on IMB3
-
+// Note: highest priority has the lowest numerical value.
+#define CYGARC_SIU_PRIORITY_HIGH                 0  // Maximum interrupt priority on SIU 
+#define CYGARC_SIU_PRIORITY_LOW                  7  // Minimum interrupt priority on SIU
+#define CYGARC_IMB3_PRIORITY_HIGH                0  // Maximum interrupt priority on IMB3
+#define CYGARC_IMB3_PRIORITY_LOW                 31 // Minimum interrupt priority on IMB3
 
 //--------------------------------------------------------------------------
 // Interrupt controller access
@@ -470,7 +467,7 @@ cyg_hal_interrupt_mask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX:
     {
         cyg_uint16 sccxr1;
 
@@ -480,7 +477,7 @@ cyg_hal_interrupt_mask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TXC:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXC:
     {
         cyg_uint16 sccxr1;
 
@@ -490,7 +487,7 @@ cyg_hal_interrupt_mask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX:
     {
         cyg_uint16 sccxr1;
 
@@ -500,7 +497,7 @@ cyg_hal_interrupt_mask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_IDLE:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE:
     {
         cyg_uint16 sccxr1;
 
@@ -510,7 +507,7 @@ cyg_hal_interrupt_mask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TX:
     {
         cyg_uint16 sccxr1;
 
@@ -520,7 +517,7 @@ cyg_hal_interrupt_mask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXC:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TXC:
     {
         cyg_uint16 sccxr1;
 
@@ -530,7 +527,7 @@ cyg_hal_interrupt_mask ( cyg_uint32 vector )
         break;
     }
  
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_RX:
     {
         cyg_uint16 sccxr1;
 
@@ -540,7 +537,7 @@ cyg_hal_interrupt_mask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_IDLE:
     {
         cyg_uint16 sccxr1;
 
@@ -1144,7 +1141,7 @@ cyg_hal_interrupt_unmask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX:
     {
         cyg_uint16 sccxr1;
 
@@ -1154,7 +1151,7 @@ cyg_hal_interrupt_unmask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TXC:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXC:
     {
         cyg_uint16 sccxr1;
 
@@ -1164,7 +1161,7 @@ cyg_hal_interrupt_unmask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX:
     {
         cyg_uint16 sccxr1;
 
@@ -1174,7 +1171,7 @@ cyg_hal_interrupt_unmask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_IDLE:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE:
     {
         cyg_uint16 sccxr1;
 
@@ -1184,7 +1181,7 @@ cyg_hal_interrupt_unmask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TX:
     {
         cyg_uint16 sccxr1;
 
@@ -1194,7 +1191,7 @@ cyg_hal_interrupt_unmask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXC:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TXC:
     {
         cyg_uint16 sccxr1;
 
@@ -1204,7 +1201,7 @@ cyg_hal_interrupt_unmask ( cyg_uint32 vector )
         break;
     }
  
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_RX:
     {
         cyg_uint16 sccxr1;
 
@@ -1214,7 +1211,7 @@ cyg_hal_interrupt_unmask ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_IDLE:
     {
         cyg_uint16 sccxr1;
 
@@ -1819,37 +1816,19 @@ cyg_hal_interrupt_acknowledge ( cyg_uint32 vector )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TX:
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TXC:
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX:
-        // Nothing needs to be done here
-        break;
-
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_IDLE:
-    {
-        cyg_uint16 scxsr;
-   
-        HAL_READ_UINT16(CYGARC_REG_IMM_SC1SR, scxsr);
-        scxsr &= ~(CYGARC_REG_IMM_SCxSR_IDLE);
-        HAL_WRITE_UINT16(CYGARC_REG_IMM_SC1SR, scxsr);
-        break;
-    }
-
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX:
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXC:
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX:
-        // nothing needs to be done here
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE:
+    // Nothing needs to be done here
         break;
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE:
-    {
-        cyg_uint16 scxsr;
-   
-        HAL_READ_UINT16(CYGARC_REG_IMM_SC2SR, scxsr);
-        scxsr &= ~(CYGARC_REG_IMM_SCxSR_IDLE);
-        HAL_WRITE_UINT16(CYGARC_REG_IMM_SC2SR, scxsr);
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TXC:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_RX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_IDLE:
+        // nothing needs to be done here
         break;
-    }
 
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RXQTHF:
     {
@@ -1872,24 +1851,8 @@ cyg_hal_interrupt_acknowledge ( cyg_uint32 vector )
     }
 
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXQTHE:
-    {
-        cyg_uint16 qsci1sr;
-
-        HAL_READ_UINT16(CYGARC_REG_IMM_QSCI1SR, qsci1sr);
-        qsci1sr &= ~(CYGARC_REG_IMM_QSCI1SR_QTHE);
-        HAL_WRITE_UINT16(CYGARC_REG_IMM_QSCI1SR, qsci1sr);
-        break;
-    }
-
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXQBHE:
-    {
-        cyg_uint16 qsci1sr;
-
-        HAL_READ_UINT16(CYGARC_REG_IMM_QSCI1SR, qsci1sr);
-        qsci1sr &= ~(CYGARC_REG_IMM_QSCI1SR_QBHE);
-        HAL_WRITE_UINT16(CYGARC_REG_IMM_QSCI1SR, qsci1sr);
         break;
-    }
 
     case CYGNUM_HAL_INTERRUPT_IMB3_SPI_FI:
     {
@@ -2335,13 +2298,13 @@ cyg_hal_interrupt_set_level ( cyg_uint32 vector, cyg_uint32 level )
     if(vector < CYGNUM_HAL_INTERRUPT_IMB3_QUADCA_CI1)
     {
         // Note: highest priority has the lowest numerical value.
-        CYG_ASSERT( level >= CYGARC_SIU_PRIORITY_LOW, "Invalid priority");
-        CYG_ASSERT( level <= CYGARC_SIU_PRIORITY_HIGH, "Invalid priority");
+        CYG_ASSERT( level <= CYGARC_SIU_PRIORITY_LOW, "Invalid priority");
+        CYG_ASSERT( level >= CYGARC_SIU_PRIORITY_HIGH, "Invalid priority");
     }
     else
     {
-        CYG_ASSERT( level >= CYGARC_IMB3_PRIORITY_LOW, "Invalid priority");
-        CYG_ASSERT( level <= CYGARC_IMB3_PRIORITY_HIGH, "Invalid priority");
+        CYG_ASSERT( level <= CYGARC_IMB3_PRIORITY_LOW, "Invalid priority");
+        CYG_ASSERT( level >= CYGARC_IMB3_PRIORITY_HIGH, "Invalid priority");
     }
 
     switch (vector) {
@@ -2387,7 +2350,7 @@ cyg_hal_interrupt_set_level ( cyg_uint32 vector, cyg_uint32 level )
         rtcsc &= ~(CYGARC_REG_IMM_RTCSC_IRQMASK);
         rtcsc |= CYGARC_REG_IMM_RTCSC_IRQ0 >> level;
         rtcsc &= ~(CYGARC_REG_IMM_RTCSC_SEC); // Prevent from clearing interrupt flags
-        rtcsc &= ~(CYGARC_REG_IMM_RTCSC_ALR); // accidently. Just do wahat is asked.
+        rtcsc &= ~(CYGARC_REG_IMM_RTCSC_ALR); // accidently. Just do what is asked.
         HAL_WRITE_UINT16 (CYGARC_REG_IMM_RTCSC, rtcsc);
         break;
     }
@@ -2456,14 +2419,14 @@ cyg_hal_interrupt_set_level ( cyg_uint32 vector, cyg_uint32 level )
         break;
     }
 
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TX:
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TXC:
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX:
-    case CYGNUM_HAL_INTERRUPT_IMB3_SCI0_IDLE:
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX:
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXC:
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX:
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TXC:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_RX:
+    case CYGNUM_HAL_INTERRUPT_IMB3_SCI2_IDLE:
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RXQTHF:
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RXQBHF:
     case CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXQTHE:
@@ -2742,14 +2705,14 @@ externC cyg_uint32 hal_arbitration_isr_sci (CYG_ADDRWORD vector,
 #define CYGNUM_HAL_INTERRUPT_IMB3_QUADCB_PI1_PRIORITY   CYGNUM_HAL_ISR_SOURCE_PRIORITY_QUADC_B_QUEUE1
 #define CYGNUM_HAL_INTERRUPT_IMB3_QUADCB_CI2_PRIORITY   CYGNUM_HAL_ISR_SOURCE_PRIORITY_QUADC_B_QUEUE2
 #define CYGNUM_HAL_INTERRUPT_IMB3_QUADCB_PI2_PRIORITY   CYGNUM_HAL_ISR_SOURCE_PRIORITY_QUADC_B_QUEUE2
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TX_PRIORITY      CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TXC_PRIORITY     CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX_PRIORITY      CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI 
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI0_IDLE_PRIORITY    CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
 #define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX_PRIORITY      CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
 #define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXC_PRIORITY     CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX_PRIORITY      CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
-#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE_PRIORITY    CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI 
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX_PRIORITY      CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI 
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE_PRIORITY    CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TX_PRIORITY      CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI2_TXC_PRIORITY     CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI2_RX_PRIORITY      CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
+#define CYGNUM_HAL_INTERRUPT_IMB3_SCI2_IDLE_PRIORITY    CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI 
 #define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RXQTHF_PRIORITY  CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI
 #define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RXQBHF_PRIORITY  CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI  
 #define CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXQTHE_PRIORITY  CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI 

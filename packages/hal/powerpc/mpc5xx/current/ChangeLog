@@ -1,3 +1,14 @@
+2008-09-02  Steven Clusgton  <steven.clugston@ncl.ac.uk>
+
+    * include/var_intr.h:
+    * include/var_intr.c: 
+
+    Corrected some interrupt priority level defines used by asserts.
+    Changed confusing SCI0/1 naming to SCI1/2 to be consistent with actual 
+    register names. 
+    Removed some SCI related interrupt acknowledges so that the status 
+    is preserved for the DSR.
+
 2006-11-13  Andreas Fritiofson  <andreas.fritiofson@newmad.se>
 
     * include/var_intr.h: Fixed a set of incorrect asserts.
