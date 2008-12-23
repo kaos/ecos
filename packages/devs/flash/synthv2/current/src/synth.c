@@ -67,15 +67,16 @@
 static int
 synth_flash_init(struct cyg_flash_dev *dev)
 {
-    struct cyg_flash_synth_priv *priv = (struct cyg_flash_synth_priv*)dev->priv;
+    struct cyg_flash_synth_priv *priv =
+        (struct cyg_flash_synth_priv *) dev->priv;
     cyg_flashaddr_t base;
-    int flags=CYG_HAL_SYS_MAP_SHARED;
+    int flags = CYG_HAL_SYS_MAP_SHARED;
     
-    priv->flashfd = 
-        cyg_hal_sys_open(priv->filename,
-                         CYG_HAL_SYS_O_RDWR, 
-                         CYG_HAL_SYS_S_IRWXU|CYG_HAL_SYS_S_IRWXG|
-                         CYG_HAL_SYS_S_IRWXO);
+    priv->flashfd = cyg_hal_sys_open(
+        priv->filename,
+        CYG_HAL_SYS_O_RDWR, 
+        CYG_HAL_SYS_S_IRWXU|CYG_HAL_SYS_S_IRWXG|CYG_HAL_SYS_S_IRWXO);
+    
     if (priv->flashfd == -ENOENT) {
         long w, bytesleft;
         char buf[128];
@@ -84,46 +85,43 @@ synth_flash_init(struct cyg_flash_dev *dev)
             priv->filename, 
             CYG_HAL_SYS_O_RDWR|CYG_HAL_SYS_O_CREAT, 
             CYG_HAL_SYS_S_IRWXU|CYG_HAL_SYS_S_IRWXG|CYG_HAL_SYS_S_IRWXO);
-        CYG_ASSERT( priv->flashfd >= 0, 
-                    "Opening of the file for the synth flash failed!");
-        // fill with 0xff
-        memset( buf, 0xff, sizeof(buf) );
+        CYG_ASSERT(priv->flashfd >= 0, 
+                   "Opening of the file for the synth flash failed!");
+        
+        // Fill with 0xff
+        memset(buf, 0xff, sizeof(buf));
         bytesleft = priv->block_size * priv->blocks +
             priv->boot_block_size * priv->boot_blocks;
-
         while (bytesleft > 0) {
             int bytesneeded;
-            bytesneeded = bytesleft < sizeof(buf) ?  
-                bytesleft : sizeof(buf);
-            
-            w = cyg_hal_sys_write( priv->flashfd, buf,
-                                   bytesneeded );
-            CYG_ASSERT(w == bytesneeded, 
-                       "initialization of flash file failed");
+            bytesneeded = bytesleft < sizeof(buf) ? bytesleft : sizeof(buf);
+            w = cyg_hal_sys_write(priv->flashfd, buf, bytesneeded);
+            CYG_ASSERT(w == bytesneeded, "initialization of flash file failed");
             bytesleft -= bytesneeded;
-        } // while
+        }
     }
-    CYG_ASSERT( priv->flashfd >= 0, 
-                "Opening of the file for the synth flash failed!");
-    if ( priv->flashfd <= 0 ) {
+    
+    CYG_ASSERT(priv->flashfd >= 0,
+               "Opening of the file for the synth flash failed!");
+    
+    if (priv->flashfd <= 0)
         return CYG_FLASH_ERR_HWR;
-    }
 
-    if (dev->start != 0) {
+    if (dev->start != 0)
         flags |= CYG_HAL_SYS_MAP_FIXED;
-    }
-    base = (cyg_flashaddr_t)cyg_hal_sys_mmap( 
-        (void *)dev->start,
+
+    base = (cyg_flashaddr_t) cyg_hal_sys_mmap( 
+        (void *) dev->start,
         priv->blocks * priv->block_size + 
         priv->boot_block_size * priv->boot_blocks,
         CYG_HAL_SYS_PROT_READ, 
         flags,
         priv->flashfd, 
         0l);
-    CYG_ASSERT( base != -1, "mmap of flash file failed!" );
-    if (base == -1) {
+    CYG_ASSERT(base != -1, "mmap of flash file failed!");
+    if (base == -1)
         return CYG_FLASH_ERR_HWR;
-    }
+    
     dev->start = base;
     dev->end = base + (priv->blocks * priv->block_size) +
         (priv->boot_blocks * priv->boot_block_size) - 1;
@@ -150,30 +148,26 @@ synth_flash_init(struct cyg_flash_dev *dev)
     return CYG_FLASH_ERR_OK;
 }
 
-/* This helps speed up the erase. */
-static char empty[4096];
-static cyg_bool empty_inited = false;
-
 // Return the size of the block which is at the given address.
 // __inline__ so that we know it will be in RAM, not ROM.
 static __inline__ size_t 
 flash_block_size(struct cyg_flash_dev *dev, const cyg_flashaddr_t addr)
 {
-  int i;
-  size_t offset;
+    int i;
+    cyg_flashaddr_t offset;
   
+    CYG_ASSERT((addr >= dev->start) && (addr <= dev->end), "Not inside device");
   
-  CYG_ASSERT((addr >= dev->start) && (addr <= dev->end), "Not inside device");
-  
-  offset = addr - dev->start;
-  for (i=0; i < dev->num_block_infos; i++) {
-    if (offset < (dev->block_info[i].blocks * dev->block_info[i].block_size))
-      return dev->block_info[i].block_size;
-    offset = offset - 
-      (dev->block_info[i].blocks * dev->block_info[i].block_size);
-  }
-  CYG_FAIL("Programming error");
-  return 0;
+    offset = addr - dev->start;
+    for (i=0; i < dev->num_block_infos; i++) {
+        if (offset < (dev->block_info[i].blocks *
+                      dev->block_info[i].block_size))
+             return dev->block_info[i].block_size;
+        offset = offset - 
+            (dev->block_info[i].blocks * dev->block_info[i].block_size);
+    }
+    CYG_FAIL("Programming error");
+    return 0;
 }
 
 static int 
@@ -181,14 +175,17 @@ synth_flash_erase_block(struct cyg_flash_dev *dev,
                         cyg_flashaddr_t block_base)
 {
     const struct cyg_flash_synth_priv *priv = dev->priv;
-    int offset = (int)block_base;
+    cyg_flashaddr_t offset = block_base;
     size_t remaining;
     int write_size;
+    
+    // This helps speed up the erasing
+    static cyg_uint8 empty[4096];
+    static cyg_bool empty_inited;
 
     offset -= dev->start;
     
-    cyg_hal_sys_lseek(priv->flashfd, offset,
-                      CYG_HAL_SYS_SEEK_SET);
+    cyg_hal_sys_lseek(priv->flashfd, offset, CYG_HAL_SYS_SEEK_SET);
     
     if (!empty_inited) {
         memset(empty, 0xff, sizeof(empty));
@@ -202,6 +199,7 @@ synth_flash_erase_block(struct cyg_flash_dev *dev,
       cyg_hal_sys_write(priv->flashfd, empty, write_size);
       remaining -= write_size;
     }
+    
     return CYG_FLASH_ERR_OK;
 }
 
@@ -211,22 +209,39 @@ synth_flash_program (struct cyg_flash_dev *dev,
                      const void* data, size_t len)
 {
     const struct cyg_flash_synth_priv *priv = dev->priv;
-    int offset = base;
+    cyg_flashaddr_t offset = base;
+    cyg_uint8 *buf = (cyg_uint8 *) data;
+    
+    // This helps speed up the programming
+    static cyg_uint8 tmp[4096];
+    
     offset -= dev->start;
     
-    cyg_hal_sys_lseek(priv->flashfd, offset, CYG_HAL_SYS_SEEK_SET);
-    cyg_hal_sys_write(priv->flashfd, data, len);
-  
+    while (len > 0) {
+        int i;
+        int write_size = MIN(len, sizeof(tmp));
+        // Writing to NOR flash only sets bits from 1 to 0, not vice-versa
+        cyg_hal_sys_lseek(priv->flashfd, offset, CYG_HAL_SYS_SEEK_SET);
+        cyg_hal_sys_read(priv->flashfd, tmp, write_size);
+        for (i = 0; i < write_size; i++)
+            tmp[i] = tmp[i] & buf[i];
+        cyg_hal_sys_lseek(priv->flashfd, offset, CYG_HAL_SYS_SEEK_SET);
+        cyg_hal_sys_write(priv->flashfd, tmp, write_size);
+        // Process next chunk
+        buf += write_size;
+        offset += write_size;
+        len -= write_size;        
+    }
+    
     return CYG_FLASH_ERR_OK;
 }
 
 #define QUERY "Linux Synthetic Flash" 
 
 static size_t
-synth_flash_query(struct cyg_flash_dev *dev, void * data, 
-                  size_t len)
+synth_flash_query(struct cyg_flash_dev *dev, void * data, size_t len)
 {
-    memcpy(data,QUERY,sizeof(QUERY));
+    memcpy(data, QUERY, sizeof(QUERY));
     return sizeof(QUERY);
 }
 
