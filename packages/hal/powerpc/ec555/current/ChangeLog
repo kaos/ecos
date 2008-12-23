@@ -10,6 +10,10 @@
 	* include/pkgconf/mlt_powerpc_ec555_f08_s08_rom.ldi:
 	Add SECTION_eh_frame and SECTION_RELOCS.
 
+2008-09-02  Steven Clugston  <steven.clugston@ncl.ac.uk>
+
+	* src/hal_diag.c: Changed confusing SCI0/1 comments to SCI1/2
+ 
 2004-09-23  Bob Koninckx <bob.koninckx@o-3s.com>
 
 	* src/ec555.S: Updated memory controller settings for ethernet card. Now

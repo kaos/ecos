@@ -32,9 +32,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
@@ -85,8 +82,8 @@ cyg_hal_plf_comms_init(void)
 
 //-----------------------------------------------------------------------------
 // There are two serial ports.
-#define CYG_DEV_SERIAL_BASE_A    0x305008 // SCI0
-#define CYG_DEV_SERIAL_BASE_B    0x305020 // SCI1
+#define CYG_DEV_SERIAL_BASE_A    0x305008 // SCI1
+#define CYG_DEV_SERIAL_BASE_B    0x305020 // SCI2
 
 //-----------------------------------------------------------------------------
 // Define CYG_DEVICE_SERIAL_RS232_SCIBR
@@ -273,13 +270,13 @@ static channel_data_t channels[2] = {
     { (cyg_uint16*)CYG_DEV_SERIAL_BASE_A, 
       1000, 
       CYGNUM_HAL_INTERRUPT_SIU_LVL0, 
-      CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX,
+      CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX,
       0,
       CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
     { (cyg_uint16*)CYG_DEV_SERIAL_BASE_B, 
       1000, 
       CYGNUM_HAL_INTERRUPT_SIU_LVL0, 
-      CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX,
+      CYGNUM_HAL_INTERRUPT_IMB3_SCI2_RX,
       0,
       CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD }
 };

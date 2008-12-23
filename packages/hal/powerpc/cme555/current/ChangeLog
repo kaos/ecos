@@ -4,6 +4,10 @@
 	* include/pkgconf/mlt_powerpc_cme555_rom.ldi:
 	Add SECTION_eh_frame and SECTION_RELOCS.
 
+2008-09-02  Steven Clugston  <steven.clugston@ncl.ac.uk>
+
+	* src/hal_diag.c: Changed confusing SCI0/1 comments to SCI1/2
+ 
 2003-12-16  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_ROM.ecm: 
@@ -63,9 +67,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

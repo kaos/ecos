@@ -85,8 +85,8 @@ cyg_hal_plf_comms_init(void)
 
 //-----------------------------------------------------------------------------
 // There are two serial ports.
-#define CYG_DEV_SERIAL_BASE_A    0x305008 // SCI0
-#define CYG_DEV_SERIAL_BASE_B    0x305020 // SCI1
+#define CYG_DEV_SERIAL_BASE_A    0x305008 // SCI1
+#define CYG_DEV_SERIAL_BASE_B    0x305020 // SCI2
 
 //-----------------------------------------------------------------------------
 // Define CYG_DEVICE_SERIAL_RS232_SCIBR
@@ -273,11 +273,11 @@ cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 c)
 static channel_data_t channels[2] = {
     { (cyg_uint16*)CYG_DEV_SERIAL_BASE_A, 
       1000,
-      CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX,
+      CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX,
       CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
     { (cyg_uint16*)CYG_DEV_SERIAL_BASE_B, 
       1000, 
-      CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX,
+      CYGNUM_HAL_INTERRUPT_IMB3_SCI2_RX,
       CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD }
 };
 
