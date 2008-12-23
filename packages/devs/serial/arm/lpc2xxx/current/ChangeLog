@@ -1,3 +1,10 @@
+2008-11-23  Martin Laabs <martin.laabs@mailbox.tu-dresden.de>
+            Andrew Lunn  <andrew@lunn.ch>
+
+	* cdl/ser_arm_lpc2xxx.cdl:
+	* include/arm_lpc2xxx_ser.inl: Ensure the serial interrupts are
+	using different priorities, otherwise we get spurious interrupts.
+
 2007-06-22  Alexander Aganichev <aaganichev@gmail.com>
 
 	* cdl/ser_arm_lpc2xxx.cdl:

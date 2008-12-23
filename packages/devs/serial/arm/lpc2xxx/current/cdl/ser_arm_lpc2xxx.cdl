@@ -53,6 +53,8 @@ cdl_package CYGPKG_IO_SERIAL_ARM_LPC2XXX {
     parent        CYGPKG_IO_SERIAL_DEVICES
     active_if     CYGPKG_IO_SERIAL
     active_if     CYGPKG_HAL_ARM_LPC2XXX
+    implements    CYGINT_IO_SERIAL_GENERIC_16X5X_CHAN_INTPRIO                   
+
 
     requires      CYGPKG_ERROR
     include_dir   cyg/io
@@ -121,6 +123,23 @@ cdl_package CYGPKG_IO_SERIAL_ARM_LPC2XXX {
                 This option specifies the size of the internal buffers
                 used for the ARM LPC2XXX port 0."
         }
+	
+	cdl_option CYGNUM_IO_SERIAL_ARM_LPC2XXX_SERIAL0_INTPRIO {
+	     display "Interrupt priority of the serial port 0 ISR"
+	     flavor  data
+	     legal_values 0 to 15
+	     default_value 14
+             requires { is_active(CYGNUM_IO_SERIAL_ARM_LPC2XXX_SERIAL1_INTPRIO)
+                   implies CYGNUM_IO_SERIAL_ARM_LPC2XXX_SERIAL0_INTPRIO !=
+                           CYGNUM_IO_SERIAL_ARM_LPC2XXX_SERIAL1_INTPRIO 
+             }
+	     description "
+	         This option specifies the interrupt priority of the
+		 ISR of the serial port 0 interrupt in the VIC.
+		 Slot 0 has the highest priority and slot 15 the lowest."
+	}
+
+
     }
 
     cdl_component CYGPKG_IO_SERIAL_ARM_LPC2XXX_SERIAL1 {
@@ -166,6 +185,18 @@ cdl_package CYGPKG_IO_SERIAL_ARM_LPC2XXX {
                  This option specifies the size of the internal
                  buffers used for the ARM LPC2XXX port 1."
          }
+
+	
+	cdl_option CYGNUM_IO_SERIAL_ARM_LPC2XXX_SERIAL1_INTPRIO {
+	     display "Interrupt priority of the serial port 1 ISR"
+	     flavor  data
+	     legal_values 0 to 15
+	     default_value 15
+	     description "
+	         This option specifies the interrupt priority of the
+		 ISR of the serial port 1 interrupt in the VIC.
+		 Slot 0 has the highest priority and slot 15 the lowest."
+	}
     }
 
     cdl_component CYGPKG_IO_SERIAL_ARM_LPC2XXX_TESTING {
