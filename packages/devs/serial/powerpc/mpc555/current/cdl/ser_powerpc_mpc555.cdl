@@ -73,6 +73,7 @@ cdl_component CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_A {
     flavor        bool
     default_value 0
     implements    CYGINT_IO_SERIAL_LINE_STATUS_HW
+    implements    CYGINT_IO_SERIAL_BLOCK_TRANSFER
     description   "
         This option includes the serial device driver for the mpc555
         PowerPC port A."
@@ -104,6 +105,17 @@ cdl_component CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_A {
         description   "
             This option specifies the size of the internal buffers used for 
             the mpc555 PowerPC port A."
+    }
+    cdl_option CYGDAT_IO_SERIAL_POWERPC_MPC555_SERIAL_A_USE_HWARE_QUEUE {
+        display       "Use hardware queue for mpc555 PowerPC serial port A"
+        flavor        bool
+        default_value 1
+        description   "
+            This option specifies if the QSCI 16-byte hardware queue   
+            is used for the mpc555 PowerPC port A. Using the queue 
+            makes block transfers possible. Select this option 
+            if you need to support continuous transmission and reception
+            without buffer overruns occurring."
     }
 }
 
@@ -177,7 +189,6 @@ cdl_component CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_B {
                 the set of global flags if present."
         }
     }
-
 }
 
 # EOF ser_powerpc_mpc555.cdl

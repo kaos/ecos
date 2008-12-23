@@ -1,3 +1,15 @@
+2008-12-23  Steven Clugston <steven.clugston@ncl.ac.uk>
+
+	* cdl/ser_powerpc_mpc555.cdl: Add HW queue option
+        * src/mpc555_serial_with_ints.c:
+        To help resolve an issue of characters being lost a software buffer
+        has been added between the Rx ISR and DSR when no hardware queue is 
+        being used.
+        A cdl option to enable support the hardware queue on the first serial 
+        port has been added. This enables 16 character hardware Tx and Rx 
+        buffers to be used which allows continuous transmission and reception
+        of serial data and significantly improves performance.
+
 2008-05-13  Steven Clugston  <steven.clugston@ncl.ac.uk>
 
 	* cdl/ser_powerpc_mpc555.cdl: Add line status
@@ -7,7 +19,7 @@
 
 2008-04-06  Steven Clugston <steven.clugston@ncl.ac.uk>
 
-	* Refactored cme555 package to more generic mpc555
+	* Refactored package to more generic mpc555
 
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
