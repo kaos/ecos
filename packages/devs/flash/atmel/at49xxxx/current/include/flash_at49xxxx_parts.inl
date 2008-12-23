@@ -212,6 +212,27 @@
                      }
     },
 #endif
+#if defined(CYGHWR_DEVS_FLASH_ATMEL_AT49BV642D)
+    {
+        device_id : FLASHWORD(0x1D6),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 128,
+        device_size: 0x800000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask : ~(0x800000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     }   
+    },
+#endif
 
 #if defined(CYGHWR_DEVS_FLASH_ATMEL_AT49BV1604A) || \
     defined(CYGHWR_DEVS_FLASH_ATMEL_AT49BV1614A) || \
