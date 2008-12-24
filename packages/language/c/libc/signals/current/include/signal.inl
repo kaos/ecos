@@ -103,7 +103,7 @@ extern void cyg_libc_signals_lock_do_unlock(void);
 // cyg_libc_signals_lock() //
 /////////////////////////////
 
-static inline cyg_bool
+inline cyg_bool
 cyg_libc_signals_lock(void)
 {
 #ifdef CYGSEM_LIBC_SIGNALS_THREAD_SAFE
@@ -117,7 +117,7 @@ cyg_libc_signals_lock(void)
 // cyg_libc_signals_unlock() //
 ///////////////////////////////
 
-static inline void
+inline void
 cyg_libc_signals_unlock(void)
 {
 #ifdef CYGSEM_LIBC_SIGNALS_THREAD_SAFE
