@@ -1,3 +1,7 @@
+2008-12-30  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/spi.cdl: Reference per-package documentation.
+
 2004-08-25  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/spi.cdl: change the package's main display string, to avoid

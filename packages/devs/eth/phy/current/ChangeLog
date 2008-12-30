@@ -1,3 +1,7 @@
+2008-12-30  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/phy_eth_drivers.cdl: Reference per-package documentation.
+
 2008-10-28  Oliver Munz <munz@speag.ch>
 
 	* cdl/phy_eth_drivers.cdl: 

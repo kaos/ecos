@@ -45,6 +45,7 @@
 
 cdl_package CYGPKG_IO_SPI {
     display		"SPI support"
+    doc			ref/io-spi.html
     requires		CYGPKG_INFRA CYGPKG_HAL
     hardware
     include_dir		cyg/io

@@ -1,3 +1,7 @@
+2008-12-30  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/io_adc.cdl: Reference per-package documentation.
+
 2008-08-08  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/io_adc.cdl:

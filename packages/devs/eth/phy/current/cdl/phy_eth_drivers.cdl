@@ -51,6 +51,7 @@
 
 cdl_package CYGPKG_DEVS_ETH_PHY {
     display       "Ethernet transciever (PHY) support"
+    doc           ref/io-eth-phy-generic.html
     description   "API for ethernet PHY devices"
 
     parent        CYGPKG_IO_ETH_DRIVERS

@@ -51,6 +51,7 @@
 
 cdl_package CYGPKG_HAL_SYNTH {
     display  "Linux Synthetic target"
+    doc           ref/hal-synth-arch.html
     parent        CYGPKG_HAL_I386
     define_header hal_synth.h
     include_dir   cyg/hal

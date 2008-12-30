@@ -1,3 +1,7 @@
+2008-12-30  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/wallclock_ds1307.cdl: Reference per-package documentation.
+
 2004-10-09  Bart Veer  <bartv@ecoscentric.com>
 
 	* doc/ds1307.sgml: add package documentation

@@ -52,6 +52,7 @@
 
 cdl_package CYGPKG_HAL_SH_SH4_202_MD {
     display       "SuperH SH4-202 MicroDev CPU Board"
+    doc           ref/hal-sh4-microdev-part.html
     parent        CYGPKG_HAL_SH
     requires      CYGPKG_HAL_SH_202
     requires      CYGHWR_HAL_SH_IRQ_USE_IRQLVL

@@ -45,6 +45,7 @@
 
 cdl_package CYGPKG_IO_I2C {
     display		"I2C support"
+    doc			ref/io-i2c.html
     requires		CYGPKG_INFRA CYGPKG_HAL
     hardware
     include_dir		cyg/io

@@ -1,3 +1,7 @@
+2008-12-30  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/hal_synth.cdl: Reference per-package documentation.
+
 2008-10-07  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/ecosynth.tcl: another attempt to fix the X problems when

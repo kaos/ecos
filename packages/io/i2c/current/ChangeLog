@@ -1,3 +1,7 @@
+2008-12-30  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/i2c.cdl: Reference per-package documentation.
+
 2005-06-30  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/i2c.cxx (cyg_i2c_init): remove incorrect const

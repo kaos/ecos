@@ -44,6 +44,7 @@
 
 cdl_package CYGPKG_DEVS_I2C_MCF52xx {
     display         "I2C driver for coldfire MCF52xx family"
+    doc             ref/devs-i2c-m68k-mcf52xx-part.html
 
     parent          CYGPKG_IO_I2C
     active_if       CYGPKG_IO_I2C

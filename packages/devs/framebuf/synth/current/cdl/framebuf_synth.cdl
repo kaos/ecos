@@ -45,6 +45,7 @@
 
 cdl_package CYGPKG_DEVS_FRAMEBUF_SYNTH {
     display		"Synthetic Target Framebuffer device driver"
+    doc			ref/devs-framebuf-synth-ref.html
     parent		CYGPKG_IO_FRAMEBUF
     active_if		CYGPKG_IO_FRAMEBUF
     hardware

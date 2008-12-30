@@ -1,3 +1,7 @@
+2008-12-30  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/i2c_mcf52xx.cdl: Reference per-package documentation.
+
 2006-02-28  Bart Veer  <bartv@ecoscentric.com>
 
 	* doc/mcf52xx_i2c.sgml, include/i2c_mcf52xx.h: new files

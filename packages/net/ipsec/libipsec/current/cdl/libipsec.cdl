@@ -28,6 +28,7 @@
 
 cdl_package CYGPKG_NET_IPSEC_LIBIPSEC {
     display       "Implements the libipsec library"
+    doc           ref/net-ipsec-common.html
     parent        CYGPKG_NET_IPSEC
     requires      CYGPKG_NET_IPSEC
     

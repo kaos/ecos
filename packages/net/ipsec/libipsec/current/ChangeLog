@@ -1,3 +1,7 @@
+2008-12-30  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/libipsec.cdl: Reference per-package documentation.
+
 2004-01-05  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/prepare-manpages.sh: Shorten sect1 id's to make them more

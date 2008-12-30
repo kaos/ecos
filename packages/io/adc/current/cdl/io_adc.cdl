@@ -48,6 +48,7 @@
 
 cdl_package CYGPKG_IO_ADC {
     display       "ADC device drivers"
+    doc           ref/io-adc.html
     parent        CYGPKG_IO
     active_if     CYGPKG_IO
     requires      CYGPKG_ERROR

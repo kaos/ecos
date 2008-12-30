@@ -57,6 +57,7 @@ cdl_package CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307 {
     description   "
         This package provides a file with init, get and set functions
         for the Dallas 1307 clock part."
+    doc           ref/devs-wallclock-dallas-ds1307-part.html
 
     compile       ds1307.cxx
 

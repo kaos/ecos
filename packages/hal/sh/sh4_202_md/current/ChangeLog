@@ -1,3 +1,7 @@
+2008-12-30  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/hal_sh_sh4_202_md.cdl: Reference per-package documentation.
+
 2003-10-16  John Dallaway  <jld@ecoscentric.com>
 
 	* misc/sh4_202_md.ld: Place .stack at 0x88200000 by default.
