@@ -1,3 +1,8 @@
+2008-12-30  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/settingsdlg.cpp: Browse all files when selecting
+	HTML and text viewer applications under Linux.
+
 2008-12-12  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configtooldoc.cpp: Provide additional default state

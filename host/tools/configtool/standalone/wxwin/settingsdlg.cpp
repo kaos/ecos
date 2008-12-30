@@ -28,8 +28,8 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
-// Contact(s):  julians
+// Author(s):   julians, jld
+// Contact(s):  julians, jld
 // Date:        2000/09/11
 // Version:     $Id: settingsdlg.cpp,v 1.16 2002/02/15 17:40:01 julians Exp $
 // Purpose:
@@ -675,7 +675,12 @@ void ecViewerOptionsDialog::OnBrowseForViewer(wxCommandEvent& event)
     wxString currentViewer = ((wxTextCtrl*) FindWindow(ecID_VIEWER_DIALOG_HEADER_TEXT))->GetValue();
 
     wxFileDialog dialog(this, _("Choose a viewer executable"), wxPathOnly(currentViewer),
-        wxFileNameFromPath(currentViewer), wxT("*.exe"));
+        wxFileNameFromPath(currentViewer),
+#ifdef __WXMSW__
+        wxT("Executable files (*.exe)|*.exe"));
+#else
+        wxT("All files (*)|*"));
+#endif
 
     if (dialog.ShowModal() == wxID_OK)
     {
@@ -688,7 +693,12 @@ void ecViewerOptionsDialog::OnBrowseForBrowser(wxCommandEvent& event)
     wxString currentViewer = ((wxTextCtrl*) FindWindow(ecID_VIEWER_DIALOG_DOC_TEXT))->GetValue();
 
     wxFileDialog dialog(this, _("Choose a browser executable"), wxPathOnly(currentViewer),
-        wxFileNameFromPath(currentViewer), wxT("*.exe"));
+        wxFileNameFromPath(currentViewer),
+#ifdef __WXMSW__
+        wxT("Executable files (*.exe)|*.exe"));
+#else
+        wxT("All files (*)|*"));
+#endif
 
     if (dialog.ShowModal() == wxID_OK)
     {
