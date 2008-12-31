@@ -445,8 +445,8 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 		fprintf (stream, "OBJECTS := $(OBJECTS:.c=.o.d)\n");
 		fprintf (stream, "OBJECTS := $(OBJECTS:.S=.o.d)\n\n");
 		fprintf (stream, "$(LIBRARY).stamp: $(OBJECTS)\n");
-		fprintf (stream, "\t$(AR) rcs $(PREFIX)/lib/$(@:.stamp=) $(foreach obj,$?,$(dir $(obj))$(OBJECT_PREFIX)_$(notdir $(obj:.o.d=.o)))\n");
-		fprintf (stream, "\t@cat $^ > $(@:.stamp=.deps)\n");
+		fprintf (stream, "\t$(AR) rcs $(PREFIX)/lib/$(@:.stamp=) $(foreach obj,$?,$(if $(obj:%%.o=),$(dir $(obj))$(OBJECT_PREFIX)_$(notdir $(obj:.o.d=.o)),$(obj)))\n");
+		fprintf (stream, "\t@cat $(foreach obj,$^,$(obj:.o=.o.d)) > $(@:.stamp=.deps)\n");
 		fprintf (stream, "\t@touch $@\n\n");
 	}	
 

@@ -77,6 +77,7 @@ BEGIN_EVENT_TABLE(ecOutputWindow, wxTextCtrl)
     EVT_MENU(wxID_SELECTALL, ecOutputWindow::OnSelectAll)
     EVT_MENU(wxID_SAVE, ecOutputWindow::OnSave)
     EVT_UPDATE_UI(wxID_CLEAR, ecOutputWindow::OnUpdateClear)
+    EVT_UPDATE_UI(wxID_SAVE, ecOutputWindow::OnUpdateSave)
 END_EVENT_TABLE()
 
 ecOutputWindow::ecOutputWindow(wxWindow* parent, wxWindowID id, const wxPoint& pt,
@@ -129,6 +130,16 @@ void ecOutputWindow::OnSelectAll(wxCommandEvent& event)
 
 void ecOutputWindow::OnSave(wxCommandEvent& event)
 {
+    wxFileDialog dialog(this, _("Save output as"),
+        wxT(""), wxT("output.txt"), wxT("*.txt"), wxSAVE|wxOVERWRITE_PROMPT);
+    if (dialog.ShowModal() == wxID_OK)
+    {
+        if (!SaveFile(dialog.GetPath()))
+        {
+            wxMessageBox(_("Error saving output file."), wxGetApp().GetSettings().GetAppName(),
+                wxICON_EXCLAMATION|wxID_OK);
+        }
+    }
 }
 
 void ecOutputWindow::OnUpdateClear(wxUpdateUIEvent& event)
@@ -136,3 +147,7 @@ void ecOutputWindow::OnUpdateClear(wxUpdateUIEvent& event)
     event.Enable(!IsEmpty());
 }
 
+void ecOutputWindow::OnUpdateSave(wxUpdateUIEvent& event)
+{
+    event.Enable(!IsEmpty());
+}

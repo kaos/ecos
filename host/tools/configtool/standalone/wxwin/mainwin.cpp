@@ -1546,17 +1546,7 @@ void ecMainFrame::OnSaveOutput(wxCommandEvent& event)
     ecOutputWindow* win = GetOutputWindow();
     if (!win)
         return;
-
-    wxFileDialog dialog(this, _("Choose a file for saving the output window contents"),
-        wxT(""), wxT("output.txt"), wxT("*.txt"), wxSAVE|wxOVERWRITE_PROMPT);
-    if (dialog.ShowModal() == wxID_OK)
-    {
-        if (!win->SaveFile(dialog.GetPath()))
-        {
-            wxMessageBox(_("Sorry, there was a problem saving the file."), wxGetApp().GetSettings().GetAppName(),
-                wxICON_EXCLAMATION|wxID_OK);
-        }
-    }
+    win->OnSave(event);
 }
 
 void ecMainFrame::OnUpdateSelectAll(wxUpdateUIEvent& event)

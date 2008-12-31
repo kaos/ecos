@@ -1,3 +1,13 @@
+2008-12-31  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/outputwin.cpp, standalone/wxwin/outputwin.h,
+	  standalone/wxwin/mainwin.cpp:	Migrate save output method from
+	ecMainFrame to ecOutputWindow and manipulate state of associated
+	menu item. Fix from Spencer Oliver.
+
+	* common/common/build.cxx: Tweak library build rule generation to
+	allow correct use of the CDL make_object command in future.
+
 2008-12-30  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/settingsdlg.cpp: Browse all files when selecting
