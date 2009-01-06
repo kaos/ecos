@@ -9,6 +9,11 @@
         * src/diag.cxx: allow ASCII escape character in printf
         format strings.
 
+2008-01-10  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/infra.cdl (CYGFUN_INFRA_EMPTY_DELETE_FUNCTIONS): Escape square
+	brackets in description.	
+
 2007-12-28  Oyvind Harboe <oyvind.harboe@zylin.com>
 	
 	* src/memcpy.cxx: added assert when memory areas for memcpy()

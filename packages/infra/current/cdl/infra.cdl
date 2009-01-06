@@ -169,7 +169,7 @@ cdl_package CYGPKG_INFRA {
             increases code and data size needlessly.
             
             To defeat this undesirable behaviour, we define empty versions
-            of delete and delete[].  But doing this prevents proper use
+            of delete and delete\[\].  But doing this prevents proper use
             of dynamic memory in C++ programs via C++'s new and delete
             operators.
             
