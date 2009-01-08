@@ -1,3 +1,9 @@
+2009-01-08  John Dallaway  <john@dallaway.org.uk>
+
+	* src/heapgen.tcl: Specify script interpreter via /usr/bin/env.
+	* cdl/memalloc.cdl: Simplify heaps.cxx make rule - cygtclsh80 is
+	no-longer supported.
+
 2008-12-19  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/dlmalloc.cxx (MALLOC_COPY): Reinstate fix of 2008-01-06

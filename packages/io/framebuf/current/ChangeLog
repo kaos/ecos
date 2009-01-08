@@ -1,3 +1,7 @@
+2009-01-08  John Dallaway  <john@dallaway.org.uk>
+
+	* src/gen_framebufs.tcl: Specify script interpreter via /usr/bin/env.
+
 2008-11-09  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/linear.c: fix the block move operations (new_y > y) overlap

@@ -1,3 +1,7 @@
+2009-01-08  John Dallaway  <john@dallaway.org.uk>
+
+	* src/flash_cksum.tcl: Specify script interpreter via /usr/bin/env.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_arm_e7t.cdl :

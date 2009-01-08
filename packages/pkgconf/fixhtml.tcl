@@ -1,9 +1,4 @@
-#!/bin/bash
-# restart using a Tcl shell \
-    exec sh -c 'for tclshell in tclsh tclsh83 cygtclsh80 ; do \
-            ( echo | $tclshell ) 2> /dev/null && exec $tclshell "`( cygpath -w \"$0\" ) 2> /dev/null || echo $0`" "$@" ; \
-        done ; \
-        echo "fixhtml.tcl: cannot find Tcl shell" ; exit 1' "$0" "$@"
+#!/usr/bin/env tclsh
 
 #===============================================================================
 #

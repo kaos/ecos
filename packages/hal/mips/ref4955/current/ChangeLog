@@ -1,3 +1,8 @@
+2009-01-08  John Dallaway  <john@dallaway.org.uk>
+
+	* misc/slow_cat.tcl, misc/swap4.tcl:
+	Specify script interpreter via /usr/bin/env.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_mips_tx49_ref4955.cdl :

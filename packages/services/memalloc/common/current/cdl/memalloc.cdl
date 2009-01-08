@@ -281,12 +281,9 @@ cdl_package CYGPKG_MEMALLOC {
     
         # FIXME this should have a dependency on mlt_headers, but CDL doesn't
         # permit custom build rules depending on phony targets
-        # FIXME we workaround an NT cygtclsh80 bug by cd'ing into the
-        # correct dir and running heapgen.tcl from there rather than passing
-        # an absolute path.
         make -priority 50 {
-            heaps.cxx : heapgeninc.tcl <PACKAGE>/src/heapgen.tcl
-            XPWD=`pwd` ; cd $(REPOSITORY)/$(PACKAGE)/src ; sh heapgen.tcl "$(PREFIX)" "$$XPWD"
+            heaps.cxx : <PACKAGE>/src/heapgen.tcl heapgeninc.tcl
+            $< "$(PREFIX)" "`pwd`"
             @cp heaps.hxx "$(PREFIX)"/include/pkgconf/heaps.hxx
             @chmod u+w "$(PREFIX)"/include/pkgconf/heaps.hxx
         }

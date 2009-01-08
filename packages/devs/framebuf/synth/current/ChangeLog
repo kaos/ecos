@@ -1,3 +1,7 @@
+2009-01-08  John Dallaway  <john@dallaway.org.uk>
+
+	* src/gen_synthfb.tcl: Specify script interpreter via /usr/bin/env.
+
 2008-12-30  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/framebuf_synth.cdl: Reference per-package documentation.

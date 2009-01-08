@@ -1,3 +1,7 @@
+2009-01-08  John Dallaway  <john@dallaway.org.uk>
+
+	* support/file2c.tcl: Specify script interpreter via /usr/bin/env.
+
 2008-08-14  Klaas Gadeyne  <klaas.gadeyne@fmtc.be>
 2008-08-14  Jonathan Larmour  <jifl@eCosCentric.com>
 

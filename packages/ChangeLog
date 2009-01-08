@@ -1,3 +1,8 @@
+2009-01-08  John Dallaway  <john@dallaway.org.uk>
+
+	* ecosadmin.tcl, pkgconf/fixhtml.tcl: Specify script interpreter via
+	/usr/bin/env.
+
 2008-12-02  Sergei Gavrikov <sergei.gavrikov@gmail.com>
 
 	* ecos.db: Use the flash V2 driver for the LPC-H2294, LPC-E2294, &
