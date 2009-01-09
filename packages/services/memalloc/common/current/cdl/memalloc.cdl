@@ -283,7 +283,7 @@ cdl_package CYGPKG_MEMALLOC {
         # permit custom build rules depending on phony targets
         make -priority 50 {
             heaps.cxx : <PACKAGE>/src/heapgen.tcl heapgeninc.tcl
-            $< "$(PREFIX)" "`pwd`"
+            tclsh $< "$(PREFIX)" "`pwd`"
             @cp heaps.hxx "$(PREFIX)"/include/pkgconf/heaps.hxx
             @chmod u+w "$(PREFIX)"/include/pkgconf/heaps.hxx
         }

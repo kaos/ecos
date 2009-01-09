@@ -1,3 +1,8 @@
+2009-01-09  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/memalloc.cdl: Invoke tclsh explicitly to avoid the need for
+	execute permission on heapgen.tcl.
+
 2009-01-08  John Dallaway  <john@dallaway.org.uk>
 
 	* src/heapgen.tcl: Specify script interpreter via /usr/bin/env.
