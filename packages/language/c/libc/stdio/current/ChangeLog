@@ -1,3 +1,9 @@
+2009-01-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/common/fflush.cxx (cyg_libc_stdio_flush_all_but): Ensure the
+	files table can't change. Thanks to Xiaochen Zhou for the detective
+	work.
+
 2008-07-21  Guenter Ebermann  <guenter.ebermann@gmx.at>
 
 	* src/common/fclose.cxx (fclose): Replace config-dependent use of
