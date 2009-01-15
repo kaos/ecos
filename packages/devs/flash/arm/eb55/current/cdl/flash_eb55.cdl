@@ -2,7 +2,7 @@
 #
 #      flash_eb55.cdl
 #
-#      FLASH memory - Hardware support on Atmel ARM Eb55 board
+#      FLASH memory - Hardware support on Atmel ARM EB55 board
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
@@ -10,6 +10,7 @@
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ## Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
+## Copyright (C) 2005 eCosCentric Limited
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -68,6 +69,9 @@ cdl_package CYGPKG_DEVS_FLASH_EB55 {
     }
 
     implements    CYGINT_DEVS_FLASH_ATMEL_AT49XXXX_REQUIRED
+
+    implements    CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH_FLASH_DEV
+
 }
 
 # EOF flash_eb55.cdl

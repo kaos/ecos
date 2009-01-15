@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
+// Copyright (C) 2005 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -62,6 +63,26 @@
 
 #include "cyg/io/flash_at49xxxx.inl"
 
+// ------------------------------------------------------------------------
+// There is also an AT45DB321B DataFlash on the SPI bus
+
+#include <pkgconf/system.h>
+
+#if defined(CYGPKG_IO_SPI) && defined(CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH)
+
+#include <cyg/io/spi.h>
+#include <cyg/io/spi_at91.h>
+#include <cyg/io/dataflash.h>
+
+__externC cyg_spi_at91_device_t spi_dataflash_dev0;
+
+CYG_DATAFLASH_FLASH_DRIVER( cyg_eb55_dataflash,
+                            cyg_spi_dataflash_dev0,
+                            0x08000000,
+                            0,
+                            16 );
+
+#endif
 
 // ------------------------------------------------------------------------
 // EOF eb55_flash.c
