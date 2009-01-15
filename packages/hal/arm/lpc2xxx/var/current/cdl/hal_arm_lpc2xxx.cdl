@@ -280,4 +280,76 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX {
             this is the highest priority IRQ."
     }
 
+    cdl_interface CYGINT_HAL_ARM_LPC2XXX_IAP_CALL {
+        display "Interface to manage IAP call"
+    }
+
+    cdl_component CYGBLD_BUILD_HAL_LPC2XXX_WITH_IAP_CALL {
+        display       "IAP (In Application Programming) interface"
+        flavor        bool
+        default_value 1
+        compile       lpc2xxx_iap.c
+        implements    CYGINT_HAL_ARM_LPC2XXX_IAP_CALL
+        
+        cdl_option CYGNUM_HAL_ARM_LPC2XXX_IAP_CALL_SAFE {
+            display       "Disable interrupts during IAP call"
+            flavor        bool
+            default_value 1
+            description   "
+                In most cases IAP calls uses itself to manage on-chip
+                flash memory. LPC2XXX on-chip flash memory is not
+                accessible during erase and write operations. The
+                user should either disable interrupts, or ensure that
+                user interrupt vectors are active in RAM and that
+                the interrupt handlers reside in RAM, before making a
+                flash erase/write IAP call. The IAP code does not use
+                or disable interrupts. This option disable interrupts
+                by default during IAP call (for safety)."
+        }
+
+        cdl_option CYGFUN_HAL_ARM_LPC2XXX_IAP_CALL_WRAP {
+            display       "Wrap for IAP call enabled"
+            flavor        bool
+            active_if     { CYGDAT_HAL_ARM_LPC2XXX_IAP_PRE_CALL || \
+                            CYGDAT_HAL_ARM_LPC2XXX_IAP_POST_CALL }
+            calculated    1
+            description   "
+                This option controls whether IAP call will be wrapped by
+                custom helpers. E.g., IAP flash programming call takes
+                ~ 1 ms per 512 byte line. Single sector or full chip
+                erase takes 400 mS. This can be quite enougth to fire a
+                hardware watchdog. You still can manage it using own pre-
+                and (or) post-calls."
+        }
+
+        # void (*precall)(void)
+        cdl_option CYGDAT_HAL_ARM_LPC2XXX_IAP_PRE_CALL {
+                display         "Use custom IAP pre-call"
+                flavor          booldata
+                default_value   0
+                description "
+                  If enabled, this option will tell IAP call to use the 
+                  value of this option as a custom pre-call."
+        }
+
+        # void (*postcall)(void)
+        cdl_option CYGDAT_HAL_ARM_LPC2XXX_IAP_POST_CALL {
+                display         "Use custom IAP post-call"
+                flavor          booldata
+                default_value   0
+                description "
+                  If enabled, this option will tell IAP call to use the 
+                  value of this option as a custom post-call."
+        }
+    }
+
+    cdl_option CYGPKG_HAL_ARM_LPC2XXX_TESTS {
+        display       "LPC2XXX HAL tests"
+        flavor        data
+        no_define
+        calculated    { "tests/iap_test" }
+        description   "
+            This option specifies the set of tests for the LPC2XXX HAL."
+    }
+
 }

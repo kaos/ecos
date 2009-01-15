@@ -1,3 +1,11 @@
+2009-01-15  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* include/lpc2xxx_iap.h, src/lpc2xxx_iap.c, tests/iap_test.c: New
+	files: support for IAP (In Application Programming) interface and
+	small test case for hal_lpc2xxx_iap_call().
+	* cdl/hal_arm_lpc2xxx.cdl: CYGINT_HAL_ARM_LPC2XXX_IAP_CALL interface
+	and CYGPKG_HAL_ARM_LPC2XXX_TESTS option added.
+
 2008-12-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
             Andrew Lunn      <andrew@lunn.ch>
 
