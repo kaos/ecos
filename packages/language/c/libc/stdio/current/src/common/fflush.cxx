@@ -83,7 +83,7 @@ cyg_libc_stdio_flush_all_but( Cyg_StdioStream *not_this_stream )
         for (i=0; (i<FOPEN_MAX) && !err; i++) {
             if (files_flushed[i] == false) {
                 // Don't let the files table change e.g. by closing the file.
-                if ( Cyg_libc_stdio_files::lock() ) {
+                if ( !Cyg_libc_stdio_files::lock() ) {
                     err = EINTR;
                     break;
                 }
