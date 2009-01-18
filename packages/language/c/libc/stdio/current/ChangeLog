@@ -1,3 +1,8 @@
+2009-01-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/common/fflush.cxx (cyg_libc_stdio_flush_all_but): Fix silly
+	typo in last change.
+
 2009-01-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/common/fflush.cxx (cyg_libc_stdio_flush_all_but): Ensure the

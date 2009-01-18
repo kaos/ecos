@@ -125,7 +125,7 @@ cyg_libc_stdio_flush_all_but( Cyg_StdioStream *not_this_stream )
                 // We can unlock and relock every loop as we only care
                 // about flushing streams that were open prior to this
                 // call. Any new streams can be ignored.
-                Cyg_libc_stdio_files::unlock()
+                Cyg_libc_stdio_files::unlock();
             } // if
         } // for
     } // do
