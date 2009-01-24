@@ -1,3 +1,7 @@
+2009-01-24  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/vga_support.c: fix build problem with latest toolchains.
+
 2003-09-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_RAM.ecm: 

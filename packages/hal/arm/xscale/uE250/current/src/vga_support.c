@@ -147,7 +147,8 @@ vga_init(cyg_uint32 *addr)
 {
     volatile struct VGA_ctlr *ctlr;
 
-    vga.ctlr = (struct VGA_ctlr *)ctlr = (struct VGA_ctlr *)addr;
+    ctlr = (volatile struct VGA_ctlr *)addr;
+    vga.ctlr = (void*) ctlr;
     vga.fb = ctlr->fb;
     vga.bpp = VGA_DEPTH;
     vga.height = VGA_HEIGHT;
