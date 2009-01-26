@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_lpc24xx_ea2468.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc. Remove -mno-short-load-words.
+
 2008-11-01  Uwe Kindler  <uwe_kindler@web.de>
 
 	* cdl/hal_arm_lpc24xx_ea2468.cdl: Fixed typo

@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_lpc2xxx_lpcmt.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc. Remove -mno-short-load-words.
+
 2004-11-19  Jani Monoses <jani@iv.ro>
 
 	* cdl/hal_arm_lpc2xxx_lpcmt.cdl: 

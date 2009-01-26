@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_xscale_ixdp425.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc.
+
 2006-08-02  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/ixdp425_strataflash.c: In CYG_FLASH_FUNS, replace query

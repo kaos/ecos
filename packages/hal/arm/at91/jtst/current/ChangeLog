@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_at91_jtst.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc. Remove -mno-short-load-words.
+
 2004-10-8  Andrew Lunn	<andrew.lunn@ascom.ch>
 
 	* support/jtstflash.{c|cpp}: Host tools for programming the

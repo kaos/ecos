@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_at91sam7s.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc.
+
 2009-11-03  Gabor Toeroek <tgabor84@gmail.com>
 
 	* cdl/hal_arm_at91sam7s.cdl

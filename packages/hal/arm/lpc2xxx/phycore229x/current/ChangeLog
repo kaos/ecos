@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_lpc2xxx_phycore229x.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc. Remove -mno-short-load-words.
+
 2008-01-04  Uwe Kindler  <uwe_kindler@web.de>
 
 	* cdl/hal_arm_lpc2xxx_phycore229x.cdl

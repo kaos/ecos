@@ -326,7 +326,7 @@ CL-PS7111 and EP7xxx based development boards."
             display "Global command prefix"
             flavor  data
             no_define
-            default_value { "arm-elf" }
+            default_value { "arm-eabi"}
             description "
                 This option specifies the command prefix used when
                 invoking the build tools."

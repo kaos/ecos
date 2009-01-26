@@ -457,7 +457,7 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
             display "Global command prefix"
             flavor  data
             no_define
-            default_value { "arm-elf" }
+            default_value { "arm-eabi"}
             description "
                 This option specifies the command prefix used when
                 invoking the build tools."

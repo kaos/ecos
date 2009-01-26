@@ -316,7 +316,7 @@ cdl_package CYGPKG_HAL_ARM_MAC7100_MAC7100EVB {
             display "Global command prefix"
             flavor  data
             no_define
-            default_value { "arm-elf" }
+            default_value { "arm-eabi"}
             description "
                 This option specifies the command prefix used when
                 invoking the build tools."
@@ -326,7 +326,7 @@ cdl_package CYGPKG_HAL_ARM_MAC7100_MAC7100EVB {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { (CYGHWR_THUMB ? "-mthumb " : "") . (CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork " : "") . "-mcpu=arm7tdmi -mbig-endian -mno-short-load-words -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -gdwarf-2 -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { (CYGHWR_THUMB ? "-mthumb " : "") . (CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork " : "") . "-mcpu=arm7tdmi -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -gdwarf-2 -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
@@ -339,7 +339,7 @@ cdl_package CYGPKG_HAL_ARM_MAC7100_MAC7100EVB {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { (CYGHWR_THUMB ? "-mthumb " : "") . (CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork " : "") . "-mcpu=arm7tdmi -mbig-endian -mno-short-load-words -Wl,--gc-sections -Wl,-static -gdwarf-2 -nostdlib" }
+            default_value { (CYGHWR_THUMB ? "-mthumb " : "") . (CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork " : "") . "-mcpu=arm7tdmi -mbig-endian -Wl,--gc-sections -Wl,-static -gdwarf-2 -nostdlib" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

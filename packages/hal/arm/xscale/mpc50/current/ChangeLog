@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_xscale_mpc50.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc.
+
 2003-02-20  Gary Thomas  <gary@mind.be>
 
 	* src/mpc50_misc.c (plf_hardware_init): Platform needs to call

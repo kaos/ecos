@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_aim711.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc. Remove -mno-short-load-words.
+
 2008-11-20  Bart Veer  <bartv@ecoscentric.com>
 
 	* misc/redboot_ROMRAM_visionsystems.ecm:

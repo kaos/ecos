@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_xscale_uE250.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc.
+
 2009-01-24  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/vga_support.c: fix build problem with latest toolchains.

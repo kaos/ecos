@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_integrator.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_arm_integrator.cdl :

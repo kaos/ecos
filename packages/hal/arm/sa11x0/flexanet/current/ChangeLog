@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_sa11x0_flexanet.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc.
+
 2003-02-13  Patrick Doyle  <wpd@delcomsys.com>
 	* src/flexanet_misc.c: Replaced explicit prototype of memset with
 	#include <string.h>.

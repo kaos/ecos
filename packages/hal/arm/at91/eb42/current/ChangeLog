@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_at91_eb42.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc. Remove -mno-short-load-words.
+
 2004-09-16  Andrea Michelotti <amichelotti@atmel.com>
 
 	* include/hal_platform_ints.h: When CYGHWR_HAL_ARM_AT91_FIQ is defined 

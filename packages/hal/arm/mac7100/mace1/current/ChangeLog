@@ -1,3 +1,8 @@
+2009-01-24  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_mac7100_mace1.cdl: switch from arm-elf-gcc to
+	arm-eabi-gcc. Remove -mno-short-load-words.
+
 2006-06-08  Ilija Koco  <ilijak@siva.com.mk>
 
 	* include/hal_platform_setup.h: PLL clock and memory remap
