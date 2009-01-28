@@ -175,7 +175,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_CERFPDA {
             display "Global command prefix"
             flavor  data
             no_define
-            default_value { "arm-eabi"}
+            default_value { "arm-elf"}
             description "
                 This option specifies the command prefix used when
                 invoking the build tools."

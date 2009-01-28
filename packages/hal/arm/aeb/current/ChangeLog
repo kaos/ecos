@@ -1,8 +1,3 @@
-2009-01-24  Bart Veer <bartv@ecoscentric.com>
-
-	* cdl/hal_arm_aeb.cdl: switch from arm-elf-gcc to
-	arm-eabi-gcc.
-
 2009-01-08  John Dallaway  <john@dallaway.org.uk>
 
 	* src/flash_cksum.tcl: Specify script interpreter via /usr/bin/env.
