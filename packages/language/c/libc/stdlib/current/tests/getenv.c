@@ -54,6 +54,14 @@
 #include <stdlib.h>                 // Main header for stdlib functions
 #include <cyg/infra/testcase.h>     // Testcase API
 
+#ifdef CYGPKG_ISOINFRA
+# include <pkgconf/isoinfra.h>
+#endif
+#if !defined(CYGINT_ISO_ENVIRON) || (CYGINT_ISO_ENVIRON == 0)
+# define N_A_MSG "There is no implementation of the environ variable"
+#endif
+
+#ifndef N_A_MSG
 // GLOBALS
 
 extern char **environ;              // Standard environment definition
@@ -144,5 +152,14 @@ main( int argc, char *argv[] )
                     "library getenv() function");
 
 } // main()
+
+#else // N_A_MSG
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA( N_A_MSG);
+}
+#endif
 
 // EOF getenv.c

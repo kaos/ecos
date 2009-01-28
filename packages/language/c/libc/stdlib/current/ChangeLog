@@ -1,3 +1,8 @@
+2009-01-28  Bart Veer  <bartv@ecoscentric.com>
+
+	* tests/getenv.c: N/A in configurations which do not provide
+	environ.
+
 2009-01-26  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/abs.c: Allow to run if CYGPKG_LIBC_STARTUP isn't there.
