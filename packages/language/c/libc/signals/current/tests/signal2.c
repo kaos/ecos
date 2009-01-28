@@ -152,8 +152,12 @@ volatile int tmp;
 #endif
 
 
+#ifndef CYGPKG_LIBC_STARTUP
+void cyg_user_start(void)
+#else
 int
 main( int argc, char *argv[] )
+#endif
 {
 #ifdef CYGSEM_LIBC_SIGNALS_HWEXCEPTIONS
     __sighandler_t handler1;

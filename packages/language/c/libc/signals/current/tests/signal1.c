@@ -58,6 +58,10 @@
 
 // INCLUDES
 
+#include <pkgconf/system.h>
+#ifdef CYGPKG_ISOINFRA
+# include <pkgconf/isoinfra.h>
+#endif
 #include <cyg/infra/cyg_type.h>    // Common type definitions and support
 #include <cyg/infra/testcase.h>    // Test infrastructure
 #include <signal.h>                // Signal functions
@@ -86,8 +90,12 @@ myhandler2(int signal)
     longjmp(jbuf, 1);
 } // myhandler2()
 
+#ifndef CYGPKG_LIBC_STARTUP
+void cyg_user_start(void)
+#else
 int
 main( int argc, char *argv[] )
+#endif
 {
     __sighandler_t handler1;
     int rc;
@@ -184,6 +192,7 @@ main( int argc, char *argv[] )
     
     CYG_TEST_PASS_FAIL(6==state, "SIGTERM handler returned correctly");
 
+#if defined(CYGINT_ISO_ENVIRON) && (CYGINT_ISO_ENVIRON > 0)    
     // Test 6
 
     CYG_TEST_INFO("Test 6");
@@ -200,11 +209,13 @@ main( int argc, char *argv[] )
     }
 
     CYG_TEST_PASS_FAIL(7==state, "SIGABRT handler returned correctly");
+#else
+    CYG_TEST_INFO("skipping abort() test, function not implemented");
+#endif    
     
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C "
                     "library signal functions");
 
-    return 0;
 } // main()
 
 // EOF signal1.c
