@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2006 eCosCentric Limited.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -240,8 +241,7 @@ static void test(CYG_ADDRWORD data)
 
 } // test()
 
-int
-main(int argc, char *argv[])
+void cyg_user_start(void)
 {
     CYG_TEST_INIT();
 
@@ -250,8 +250,6 @@ main(int argc, char *argv[])
     CYG_TEST_INFO("These test individual features separately");
 
     test(0);
-
-    return 0;
-} // main()
+} // cyg_user_start()
 
 // EOF diag_sprintf1.c

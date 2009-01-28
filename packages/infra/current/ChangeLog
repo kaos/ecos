@@ -1,3 +1,9 @@
+2009-01-26  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/diag_sprintf1.c: Rename main() to cyg_user_start so this
+	works in all configs.
+	* tests/diag_sprintf2.c: Ditto.
+
 2008-10-02  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/gccsupport.cxx (fwrite, fputc): New functions since GCC can
