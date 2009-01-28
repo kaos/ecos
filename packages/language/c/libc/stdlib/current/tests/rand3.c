@@ -52,6 +52,7 @@
 
 // INCLUDES
 
+#include <pkgconf/system.h>
 #include <stdlib.h>
 #include <cyg/infra/testcase.h>
 
@@ -83,8 +84,12 @@ my_abs(int i)
     return (i < 0) ? -i : i;
 } // my_abs()
 
+#ifndef CYGPKG_LIBC_STARTUP
+void cyg_user_start(void)
+#else
 int
-main(int argc, char *argv[])
+main( int argc, char *argv[] )
+#endif
 {
     // divide the space from 0..RAND_MAX into NUM_BUCKETS categories *BUT*
     // RAND_MAX / NUM_BUCKETS may not divide exactly so we leave space for

@@ -50,14 +50,19 @@
 
 // INCLUDES
 
+#include <pkgconf/system.h>
 #include <stdlib.h>
 #include <cyg/infra/testcase.h>
 
 
 // FUNCTIONS
 
+#ifndef CYGPKG_LIBC_STARTUP
+void cyg_user_start(void)
+#else
 int
 main( int argc, char *argv[] )
+#endif
 {
     long num, denom;
     ldiv_t result;

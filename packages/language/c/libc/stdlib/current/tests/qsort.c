@@ -50,6 +50,7 @@
 
 // INCLUDES
 
+#include <pkgconf/system.h>
 #include <stdlib.h>
 #include <cyg/infra/testcase.h>
 
@@ -68,8 +69,12 @@ Compar( const void *int1, const void *int2 )
         return 1;
 } // Compar()
 
+#ifndef CYGPKG_LIBC_STARTUP
+void cyg_user_start(void)
+#else
 int
 main( int argc, char *argv[] )
+#endif
 {
     unsigned int ctr;
     int fail=0;
