@@ -1,3 +1,7 @@
+2009-01-28  Bart Veer  <bartv@ecoscentric.com>
+
+	* tests/setjmp.c: allow to run if CYGPKG_LIBC_STARTUP is absent.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/setjmp.cdl: Fix doc link.

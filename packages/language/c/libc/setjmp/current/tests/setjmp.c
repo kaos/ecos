@@ -64,6 +64,7 @@
 
 // INCLUDES
 
+#include <pkgconf/system.h>
 #include <cyg/infra/testcase.h>    // Test infrastructure header
 #include <setjmp.h>                // Header for what we're testing
 
@@ -86,8 +87,12 @@ test_fun( void )
 } // test_fun();
 
 
+#ifndef CYGPKG_LIBC_STARTUP
+void cyg_user_start(void)
+#else
 int
 main( int argc, char *argv[] )
+#endif
 {
     static int static_i=0;         // temporary variable
     int j=0;                       // ditto
