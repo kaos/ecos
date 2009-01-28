@@ -50,6 +50,7 @@
 
 // INCLUDES
 
+#include <pkgconf/system.h>
 #include <locale.h>                // header for functions to test
 #include <cyg/infra/testcase.h>    // Testcase API
 
@@ -68,8 +69,12 @@ my_strcmp(const char *s1, const char *s2)
     return (*s1 - *s2);
 } // my_strcmp()
 
+#ifndef CYGPKG_LIBC_STARTUP
+void cyg_user_start(void)
+#else
 int
 main( int argc, char *argv[] )
+#endif
 {
     char *str;
 

@@ -1,3 +1,9 @@
+2009-01-26  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/ctype.c: Allow to run if CYGPKG_LIBC_STARTUP isn't there.
+	* tests/i18nmb.c: Ditto.
+	* tests/setlocale.c: Ditto.
+
 2007-07-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/locale.cxx: Add (char *) casts to make GCC/4.2.x happy.

@@ -50,6 +50,7 @@
 
 // INCLUDES
 
+#include <pkgconf/system.h>
 #include <pkgconf/libc_i18n.h>     // Configuration header
 #include <stdlib.h>
 #include <locale.h>
@@ -59,8 +60,12 @@
 
 // FUNCTIONS
 
+#ifndef CYGPKG_LIBC_STARTUP
+void cyg_user_start(void)
+#else
 int
 main( int argc, char *argv[] )
+#endif
 {
 
 #ifdef CYGFUN_LIBC_I18N_LOCALE_C_JIS
@@ -668,6 +673,4 @@ main( int argc, char *argv[] )
   CYG_TEST_FINISH( "Finished tests from testcase " __FILE__ " for C library "
                      "<stdlib.h> multibyte character functions" );
   
-  return 0;
-
 }  
