@@ -55,6 +55,7 @@
 
 // INCLUDES
 
+#include <pkgconf/isoinfra.h>
 #include <string.h>
 #include <cyg/infra/testcase.h>
 
@@ -146,8 +147,11 @@ test( CYG_ADDRWORD data )
 
 } // test()
 
-int
-main(int argc, char *argv[])
+#if CYGINT_ISO_MAIN_STARTUP
+int main( int argc, char *argv[] )
+#else
+void cyg_user_start(void)
+#endif
 {
     CYG_TEST_INIT();
 

@@ -50,6 +50,7 @@
 
 // INCLUDES
 
+#include <pkgconf/isoinfra.h>
 #include <string.h>
 #include <cyg/infra/testcase.h>
 
@@ -69,7 +70,11 @@ static char *my_strcpy(char *s1, const char *s2)
 } // my_strcpy()
 
 
+#if CYGINT_ISO_MAIN_STARTUP
 int main( int argc, char *argv[] )
+#else
+void cyg_user_start(void)
+#endif
 {
     char x[300];
     char y[300];

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -50,6 +51,7 @@
 
 // INCLUDES
 
+#include <pkgconf/isoinfra.h>
 #include <string.h>
 #include <cyg/infra/testcase.h>
 
@@ -110,8 +112,12 @@ static char *my_strcpy(char *s1, const char *s2)
 } // my_strcpy()
 
 
+#if CYGINT_ISO_MAIN_STARTUP
 int
 main( int argc, char *argv[] )
+#else
+void cyg_user_start(void)
+#endif
 {
     char x[300];
     char y[300];

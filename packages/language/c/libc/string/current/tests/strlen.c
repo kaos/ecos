@@ -50,13 +50,18 @@
 
 // INCLUDES
 
+#include <pkgconf/isoinfra.h>
 #include <string.h>
 #include <cyg/infra/testcase.h>
 
 
 // FUNCTIONS
 
+#if CYGINT_ISO_MAIN_STARTUP
 int main( int argc, char *argv[] )
+#else
+void cyg_user_start(void)
+#endif
 {
     char x[]="";
     char y[]="The force is strong in this one";
