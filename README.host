@@ -343,28 +343,15 @@ there are no separate mailing lists for the eCos host-side sources,
 the main mailing list ecos-discuss@sourceware.com should be used
 instead.
 
-//####COPYRIGHTBEGIN####
-//                                                                          
-//----------------------------------------------------------------------------
-// Copyright (C) 2002 Bart Veer
-// Copyright (C) 2000, 2001 Red Hat, Inc.
-//
-// This file is part of the eCos host tools.
-//
-// This program is free software; you can redistribute it and/or modify it 
-// under the terms of the GNU General Public License as published by the Free 
-// Software Foundation; either version 2 of the License, or (at your option) 
-// any later version.
-// 
-// This program is distributed in the hope that it will be useful, but WITHOUT 
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
-// more details.
-// 
-// You should have received a copy of the GNU General Public License along with
-// this program; if not, write to the Free Software Foundation, Inc., 
-// 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-//
-// ----------------------------------------------------------------------------
-//                                                                          
-//####COPYRIGHTEND####
+// ####ECOSDOCCOPYRIGHTBEGIN####                                            
+// ===============================================================          
+// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.            
+// This material may be distributed only subject to the terms               
+// and conditions set forth in the Open Publication License, v1.0           
+// or later (the latest version is presently available at                   
+// http://www.opencontent.org/openpub/)                                     
+// Distribution of the work or derivative of the work in any                
+// standard (paper) book form is prohibited unless prior                    
+// permission obtained from the copyright holder                            
+// ===============================================================          
+// ####ECOSDOCCOPYRIGHTEND####                                              

@@ -5,15 +5,16 @@
 //      Networking package initializer class
 //
 //==========================================================================
-//####ECOSPDCOPYRIGHTBEGIN####
-//
-// Copyright (C) 2000, 2001, 2002 Red Hat, Inc.
-// All Rights Reserved.
+// ####ECOSPDCOPYRIGHTBEGIN####                                    
+// -------------------------------------------                     
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.   
 //
 // Permission is granted to use, copy, modify and redistribute this
-// file.
+// file.                                                           
 //
-//####ECOSPDCOPYRIGHTEND####
+// -------------------------------------------                     
+// ####ECOSPDCOPYRIGHTEND####                                      
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //

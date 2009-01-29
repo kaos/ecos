@@ -136,7 +136,7 @@ mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj
       Non-certified release, version UNKNOWN - built 13:39:14, Oct  2 2001
 
       Platform: MB93091-CB10 evaluation board (Fujitsu FR400) 
-      Copyright (C) 2000, 2001, Red Hat, Inc.
+      Copyright (C) 2000, 2001, Free Software Foundation, Inc.
 
       RAM: 0x00000000-0x04000000, 0x00007000-0x03fed000 available
       FLASH: 0xff000000 - 0xff200000, 32 blocks of 0x00010000 bytes each.

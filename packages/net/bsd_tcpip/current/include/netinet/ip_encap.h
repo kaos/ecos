@@ -3,20 +3,18 @@
 //      include/netinet/ip_encap.h
 //
 //==========================================================================
-//####BSDCOPYRIGHTBEGIN####
+// ####BSDCOPYRIGHTBEGIN####                                    
+// -------------------------------------------                  
+// This file is part of eCos, the Embedded Configurable Operating System.
 //
-// -------------------------------------------
+// Portions of this software may have been derived from FreeBSD 
+// or other sources, and if so are covered by the appropriate copyright
+// and license included herein.                                 
 //
-// Portions of this software may have been derived from OpenBSD, 
-// FreeBSD or other sources, and are covered by the appropriate
-// copyright disclaimers included herein.
-//
-// Portions created by Red Hat are
-// Copyright (C) 2002 Red Hat, Inc. All Rights Reserved.
-//
-// -------------------------------------------
-//
-//####BSDCOPYRIGHTEND####
+// Portions created by the Free Software Foundation are         
+// Copyright (C) 2002 Free Software Foundation, Inc.            
+// -------------------------------------------                  
+// ####BSDCOPYRIGHTEND####                                      
 //==========================================================================
 
 /*	$KAME: ip_encap.h,v 1.12 2001/09/04 08:43:18 itojun Exp $	*/

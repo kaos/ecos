@@ -1,7 +1,7 @@
 /* gdb-fileio.h.
    Contains definitions used inside of the File I/O facility.
 
-   Copyright 2002 Red Hat, Inc.
+   Copyright 2002 Free Software Foundation, Inc.
 
 */
 

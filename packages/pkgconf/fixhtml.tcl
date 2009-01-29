@@ -7,38 +7,37 @@
 #    Patch HTML files generated from DocBook sources.
 #
 #===============================================================================
-#####ECOSGPLCOPYRIGHTBEGIN####
-## -------------------------------------------
-## This file is part of eCos, the Embedded Configurable Operating System.
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 ##
-## eCos is free software; you can redistribute it and/or modify it under
-## the terms of the GNU General Public License as published by the Free
-## Software Foundation; either version 2 or (at your option) any later version.
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
 ##
-## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
-## WARRANTY; without even the implied warranty of MERCHANTABILITY or
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-## for more details.
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
 ##
-## You should have received a copy of the GNU General Public License along
-## with eCos; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
 ##
-## As a special exception, if other files instantiate templates or use macros
-## or inline functions from this file, or you compile this file and link it
-## with other works to produce a work based on this file, this file does not
-## by itself cause the resulting work to be covered by the GNU General Public
-## License. However the source code for this file must still be made available
-## in accordance with section (3) of the GNU General Public License.
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
 ##
-## This exception does not invalidate any other reasons why a work based on
-## this file might be covered by the GNU General Public License.
-##
-## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-## at http://sources.redhat.com/ecos/ecos-license/
-## -------------------------------------------
-#####ECOSGPLCOPYRIGHTEND####
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
 #===============================================================================
 ######DESCRIPTIONBEGIN####
 #
@@ -61,7 +60,7 @@
 set year [clock format [clock seconds] -format "%Y"]
 
 set copyright_banner \
-"<!-- Copyright (C) $year Red Hat, Inc.                                -->
+"<!-- Copyright (C) $year Free Software Foundation, Inc.                                -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -79,7 +78,7 @@ foreach file $files {
 	close $fd
 
 	# If there is already a (C) message on the first line, skip this file.
-	if {[regexp {[^\n]*Copyright (C) [0-9]* Red Hat.*} $data] == 0} {
+	if {[regexp {[^\n]*Copyright (C) [0-9]* Free Software Foundation.*} $data] == 0} {
 
 	    # The DSSSL has the annoying habit of splitting tags over several lines.
 	    # This should sort things out.

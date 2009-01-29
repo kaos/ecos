@@ -88,7 +88,7 @@ previous systems.
 
    $c#63
    RedBoot(tm) debug environment - built 07:45:57, Aug  7 2000
-   Copyright (C) 2000, Red Hat, Inc.
+   Copyright (C) 2000, Free Software Foundation, Inc.
 
    RAM: 0x00000000-0x01000000
    FLASH: 0x50000000 - 0x50400000, 32 blocks of 0x00020000 bytes ea.
@@ -121,7 +121,7 @@ previous systems.
 ****reset the board here, leaving your terminal program connected****
 
    RedBoot(tm) debug environment - built 07:47:35, Aug  7 2000
-   Copyright (C) 2000, Red Hat, Inc.
+   Copyright (C) 2000, Free Software Foundation, Inc.
    
    RAM: 0x00000000-0x01000000
    FLASH: 0x50000000 - 0x50400000, 32 blocks of 0x00020000 bytes ea.
@@ -155,7 +155,7 @@ previous systems.
    RedBoot> g
    +
    RedBoot(tm) debug environment - built 07:45:57, Aug  7 2000
-   Copyright (C) 2000, Red Hat, Inc.
+   Copyright (C) 2000, Free Software Foundation, Inc.
    
    RAM: 0x00000000-0x01000000
    FLASH: 0x50000000 - 0x50400000, 32 blocks of 0x00020000 bytes ea.

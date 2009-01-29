@@ -5,15 +5,16 @@
 #      FreeBSD crypto functions
 #
 # ====================================================================
-#####ECOSPDCOPYRIGHTBEGIN####
-#
-# Copyright (C) 2003 Andrew Lunn
-# All Rights Reserved.
+# ####ECOSPDCOPYRIGHTBEGIN####                                    
+# -------------------------------------------                     
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 2003 Free Software Foundation, Inc.               
 #
 # Permission is granted to use, copy, modify and redistribute this
-# file.
+# file.                                                           
 #
-#####ECOSPDCOPYRIGHTEND####
+# -------------------------------------------                     
+# ####ECOSPDCOPYRIGHTEND####                                      
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #

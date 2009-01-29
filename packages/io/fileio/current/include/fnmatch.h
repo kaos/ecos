@@ -6,16 +6,13 @@
 //      fnmatch.h
 //
 //==========================================================================
-//####BSDCOPYRIGHTBEGIN####
-//
-// -------------------------------------------
-//
-// Portions of this software may have been derived from NetBSD, and are
-// covered by the appropriate copyright disclaimers included herein.
-//
-// -------------------------------------------
-//
-//####BSDCOPYRIGHTEND####
+// ####BSDALTCOPYRIGHTBEGIN####                                        
+// -------------------------------------------                         
+// Portions of this software may have been derived from FreeBSD, OpenBSD,
+// or other sources, and if so are covered by the appropriate copyright
+// and license included herein.                                        
+// -------------------------------------------                         
+// ####BSDALTCOPYRIGHTEND####                                          
 
 /*	$NetBSD: fnmatch.h,v 1.12 2005/02/03 04:39:32 perry Exp $	*/
 

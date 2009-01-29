@@ -5,17 +5,16 @@
 //      getaddrinfo(), freeaddrinfo(), gai_strerror(), getnameinfo()
 //
 //==========================================================================
-//####ECOSPDCOPYRIGHTBEGIN####
-//
-// Copyright (C) 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2003 Gary Thomas
-// Copyright (C) 2003 andrew.lunn@ascom.ch
-// All Rights Reserved.
+// ####ECOSPDCOPYRIGHTBEGIN####                                    
+// -------------------------------------------                     
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // Permission is granted to use, copy, modify and redistribute this
-// file.
+// file.                                                           
 //
-//####ECOSPDCOPYRIGHTEND####
+// -------------------------------------------                     
+// ####ECOSPDCOPYRIGHTEND####                                      
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //

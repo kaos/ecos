@@ -1,27 +1,24 @@
-//####COPYRIGHTBEGIN####
-//                                                                          
-// ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
+// -------------------------------------------                              
+// This file is part of the eCos host tools.                                
+// Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.            
 //
-// This program is part of the eCos host tools.
+// This program is free software; you can redistribute it and/or modify     
+// it under the terms of the GNU General Public License as published by     
+// the Free Software Foundation; either version 2 or (at your option) any   
+// later version.                                                           
 //
-// This program is free software; you can redistribute it and/or modify it 
-// under the terms of the GNU General Public License as published by the Free 
-// Software Foundation; either version 2 of the License, or (at your option) 
-// any later version.
-// 
-// This program is distributed in the hope that it will be useful, but WITHOUT 
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
-// more details.
-// 
-// You should have received a copy of the GNU General Public License along with
-// this program; if not, write to the Free Software Foundation, Inc., 
-// 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// This program is distributed in the hope that it will be useful, but      
+// WITHOUT ANY WARRANTY; without even the implied warranty of               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        
+// General Public License for more details.                                 
 //
-// ----------------------------------------------------------------------------
-//                                                                          
-//####COPYRIGHTEND####
+// You should have received a copy of the GNU General Public License        
+// along with this program; if not, write to the                            
+// Free Software Foundation, Inc., 51 Franklin Street,                      
+// Fifth Floor, Boston, MA  02110-1301, USA.                                
+// -------------------------------------------                              
+// ####ECOSHOSTGPLCOPYRIGHTEND####                                          
 #if !defined(AFX_ECOSDIALOG_H__900AB3BE_8321_11D3_A534_00A0C949ADAC__INCLUDED_)
 #define AFX_ECOSDIALOG_H__900AB3BE_8321_11D3_A534_00A0C949ADAC__INCLUDED_
 

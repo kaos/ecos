@@ -1,7 +1,7 @@
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
- * Copyright (C) 2002-2003 Red Hat, Inc.
+ * Copyright (C) 2002-2003 Free Software Foundation, Inc.
  *
  * Created by David Woodhouse <dwmw2@cambridge.redhat.com>
  *

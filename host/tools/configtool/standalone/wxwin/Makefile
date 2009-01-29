@@ -3,7 +3,7 @@
 # Author:	Julian Smart
 # Created:	2000.08.25
 # Updated:	
-# Copyright:	(c) Red Hat, Inc.
+# Copyright:	(c) Free Software Foundation, Inc.
 #
 # To make absolutely everything:
 #

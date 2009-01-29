@@ -242,7 +242,7 @@ iPAQ bootloader:
     RedBoot(tm) debug environment - built 14:56:04, Dec  7 2000
     Platform: Compaq iPaq handheld PC (StrongARM 1110)         
     This port Copyright (C) 2000, 3G Lab Ltd.          
-    Copyright (C) 2000, Red Hat, Inc.        
+    Copyright (C) 2000, Free Software Foundation, Inc.        
 				 
     RAM: 0x00000000-0x02000000
     FLASH: 0x50000000 - 0x51000000, 64 blocks of 0x00040000 bytes each.

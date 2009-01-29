@@ -3,20 +3,18 @@
 //      src/if_ppp.c
 //
 //==========================================================================
+// ####BSDCOPYRIGHTBEGIN####                                    
+// -------------------------------------------                  
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Portions created by Nick Garnett are
-// Copyright (C) 2003 eCosCentric Ltd.
-//####BSDCOPYRIGHTBEGIN####
 //
-// -------------------------------------------
+// Portions of this software may have been derived from FreeBSD, OpenBSD,
+// or other sources, and if so are covered by the appropriate copyright
+// and license included herein.                                 
 //
-// Portions of this software may have been derived from OpenBSD, 
-// FreeBSD or other sources, and are covered by the appropriate
-// copyright disclaimers included herein.
-//
-// -------------------------------------------
-//
-//####BSDCOPYRIGHTEND####
+// Portions created by the Free Software Foundation are         
+// Copyright (C) 2003 Free Software Foundation, Inc.            
+// -------------------------------------------                  
+// ####BSDCOPYRIGHTEND####                                      
 //==========================================================================
 
 /*

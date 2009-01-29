@@ -6,39 +6,37 @@ dnl
 dnl     configure script for eCos USB host-side support
 dnl
 dnl ====================================================================
-dnl ####ECOSGPLCOPYRIGHTBEGIN####
-dnl -------------------------------------------
-dnl This file is part of eCos, the Embedded Configurable Operating System.
-dnl Copyright (C) 2005 eCosCentric Ltd    
-dnl Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+dnl ####ECOSGPLCOPYRIGHTBEGIN####                                           
+dnl -------------------------------------------                             
+dnl This file is part of eCos, the Embedded Configurable Operating System.  
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005 Free Software Foundation, Inc.
 dnl
-dnl eCos is free software; you can redistribute it and/or modify it under
-dnl the terms of the GNU General Public License as published by the Free
-dnl Software Foundation; either version 2 or (at your option) any later version.
+dnl eCos is free software; you can redistribute it and/or modify it under   
+dnl the terms of the GNU General Public License as published by the Free    
+dnl Software Foundation; either version 2 or (at your option) any later     
+dnl version.                                                                
 dnl
-dnl eCos is distributed in the hope that it will be useful, but WITHOUT ANY
-dnl WARRANTY; without even the implied warranty of MERCHANTABILITY or
-dnl FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-dnl for more details.
+dnl eCos is distributed in the hope that it will be useful, but WITHOUT     
+dnl ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or   
+dnl FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License   
+dnl for more details.                                                       
 dnl
-dnl You should have received a copy of the GNU General Public License along
-dnl with eCos; if not, write to the Free Software Foundation, Inc.,
-dnl 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+dnl You should have received a copy of the GNU General Public License       
+dnl along with eCos; if not, write to the Free Software Foundation, Inc.,   
+dnl 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           
 dnl
-dnl As a special exception, if other files instantiate templates or use macros
-dnl or inline functions from this file, or you compile this file and link it
-dnl with other works to produce a work based on this file, this file does not
-dnl by itself cause the resulting work to be covered by the GNU General Public
-dnl License. However the source code for this file must still be made available
-dnl in accordance with section (3) of the GNU General Public License.
+dnl As a special exception, if other files instantiate templates or use     
+dnl macros or inline functions from this file, or you compile this file     
+dnl and link it with other works to produce a work based on this file,      
+dnl this file does not by itself cause the resulting work to be covered by  
+dnl the GNU General Public License. However the source code for this file   
+dnl must still be made available in accordance with section (3) of the GNU  
+dnl General Public License v2.                                              
 dnl
-dnl This exception does not invalidate any other reasons why a work based on
-dnl this file might be covered by the GNU General Public License.
-dnl
-dnl Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-dnl at http://sources.redhat.com/ecos/ecos-license/
-dnl -------------------------------------------
-dnl ####ECOSGPLCOPYRIGHTEND####
+dnl This exception does not invalidate any other reasons why a work based   
+dnl on this file might be covered by the GNU General Public License.        
+dnl -------------------------------------------                             
+dnl ####ECOSGPLCOPYRIGHTEND####                                             
 dnl ====================================================================
 dnl#####DESCRIPTIONBEGIN####
 dnl

@@ -5,16 +5,13 @@
 //      Simple test of sysclt API
 //
 //==========================================================================
-//####BSDCOPYRIGHTBEGIN####
-//
-// -------------------------------------------
-//
-// Portions of this software may have been derived from FreeBSD or other sources,
-// and are covered by the appropriate copyright disclaimers included herein.
-//
-// -------------------------------------------
-//
-//####BSDCOPYRIGHTEND####
+// ####BSDALTCOPYRIGHTBEGIN####                                             
+// -------------------------------------------                              
+// Portions of this software may have been derived from FreeBSD             
+// or other sources, and if so are covered by the appropriate copyright     
+// and license included herein.                                             
+// -------------------------------------------                              
+// ####BSDALTCOPYRIGHTEND####                                               
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //

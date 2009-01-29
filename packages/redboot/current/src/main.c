@@ -5,37 +5,37 @@
 //      RedBoot main routine
 //
 //==========================================================================
-//####ECOSGPLCOPYRIGHTBEGIN####
-// -------------------------------------------
-// This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
-// Copyright (C) 2002, 2003, 2004 Gary Thomas
-// Copyright (C) 2003, 2004, 2005, 2006 eCosCentric Limited
+// ####ECOSGPLCOPYRIGHTBEGIN####                                            
+// -------------------------------------------                              
+// This file is part of eCos, the Embedded Configurable Operating System.   
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 //
-// eCos is free software; you can redistribute it and/or modify it under
-// the terms of the GNU General Public License as published by the Free
-// Software Foundation; either version 2 or (at your option) any later version.
+// eCos is free software; you can redistribute it and/or modify it under    
+// the terms of the GNU General Public License as published by the Free     
+// Software Foundation; either version 2 or (at your option) any later      
+// version.                                                                 
 //
-// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-// for more details.
+// eCos is distributed in the hope that it will be useful, but WITHOUT      
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+// for more details.                                                        
 //
-// You should have received a copy of the GNU General Public License along
-// with eCos; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+// You should have received a copy of the GNU General Public License        
+// along with eCos; if not, write to the Free Software Foundation, Inc.,    
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
 //
-// As a special exception, if other files instantiate templates or use macros
-// or inline functions from this file, or you compile this file and link it
-// with other works to produce a work based on this file, this file does not
-// by itself cause the resulting work to be covered by the GNU General Public
-// License. However the source code for this file must still be made available
-// in accordance with section (3) of the GNU General Public License.
+// As a special exception, if other files instantiate templates or use      
+// macros or inline functions from this file, or you compile this file      
+// and link it with other works to produce a work based on this file,       
+// this file does not by itself cause the resulting work to be covered by   
+// the GNU General Public License. However the source code for this file    
+// must still be made available in accordance with section (3) of the GNU   
+// General Public License v2.                                               
 //
-// This exception does not invalidate any other reasons why a work based on
-// this file might be covered by the GNU General Public License.
-// -------------------------------------------
-//####ECOSGPLCOPYRIGHTEND####
+// This exception does not invalidate any other reasons why a work based    
+// on this file might be covered by the GNU General Public License.         
+// -------------------------------------------                              
+// ####ECOSGPLCOPYRIGHTEND####                                              
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -176,8 +176,16 @@ do_version(int argc, char *argv[])
 #ifdef HAL_PLATFORM_CPU
     diag_printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif
-    diag_printf("Copyright (C) 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.\n");
-    diag_printf("Copyright (C) 2003, 2004, 2005, 2006 eCosCentric Limited\n\n");
+    diag_printf("Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.\n");
+    /* The following line fulfils requirement 2(c) of the GPL. If you modify it, ensure
+     * you remain compliant with the GPL requirements. Removing it entirely constitutes
+     * a breach of the GPL, and you should note section 4 of the GPL as to what that means!
+     */
+    diag_printf("RedBoot is free software, covered by the eCos license, derived from the\n"
+                "GNU General Public License. You are welcome to change it and/or distribute\n"
+                "copies of it under certain conditions. Under the license terms, RedBoot's\n"
+                "source code and full license terms must have been made available to you.\n"
+                "Redboot comes with ABSOLUTELY NO WARRANTY.\n"
     diag_printf("RAM: %p-%p, ", (void*)ram_start, (void*)ram_end);
     diag_printf("[%p-%p]", mem_segments[0].start, mem_segments[0].end);
     diag_printf(" available\n");

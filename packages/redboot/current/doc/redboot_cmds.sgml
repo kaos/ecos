@@ -7,20 +7,18 @@
 <!--     Documentation for RedBoot Commands                          -->
 <!--                                                                 -->
 <!-- =============================================================== -->
-<!-- ####COPYRIGHTBEGIN####                                          -->
-<!--                                                                 -->
-<!-- =============================================================== -->
-<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.  -->
-<!-- This material may be distributed only subject to the terms      -->
-<!-- and conditions set forth in the Open Publication License, v1.0  -->
-<!-- or later (the latest version is presently available at          -->
-<!-- http://www.opencontent.org/openpub/)                            -->
-<!-- Distribution of the work or derivative of the work in any       -->
-<!-- standard (paper) book form is prohibited unless prior           -->
-<!-- permission obtained from the copyright holder                   -->
-<!-- =============================================================== -->
-<!--                                                                 -->      
-<!-- ####COPYRIGHTEND####                                            -->
+<!-- ####ECOSDOCCOPYRIGHTBEGIN####                                       -->
+<!-- ===============================================================     -->
+<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc. -->
+<!-- This material may be distributed only subject to the terms          -->
+<!-- and conditions set forth in the Open Publication License, v1.0      -->
+<!-- or later (the latest version is presently available at              -->
+<!-- http://www.opencontent.org/openpub/)                                -->
+<!-- Distribution of the work or derivative of the work in any           -->
+<!-- standard (paper) book form is prohibited unless prior               -->
+<!-- permission obtained from the copyright holder                       -->
+<!-- ===============================================================     -->
+<!-- ####ECOSDOCCOPYRIGHTEND####                                         -->
 <!-- =============================================================== -->
 <!-- #####DESCRIPTIONBEGIN####                                       -->
 <!--                                                                 -->
@@ -1948,7 +1946,7 @@ RedBoot(tm) bootstrap and debug environment [ROM]
 Non-certified release, version UNKNOWN - built 10:41:41, May 14 2002
 
 Platform: Compaq iPAQ Pocket PC (StrongARM 1110) 
-Copyright (C) 2000, 2001, 2002, Red Hat, Inc.
+Copyright (C) 2000, 2001, 2002, Free Software Foundation, Inc.
 
 RAM: 0x00000000-0x01fc0000, 0x00014748-0x01f71000 available
 FLASH: 0x50000000 - 0x51000000, 64 blocks of 0x00040000 bytes each.
@@ -1987,7 +1985,7 @@ Display RedBoot's version.
 RedBoot> <userinput>version</userinput>
 RedBoot(tm) debug environment - built 09:12:03, Feb 12 2001
 Platform: XYZ (PowerPC 860)
-Copyright (C) 2000, 2001, Red Hat, Inc.
+Copyright (C) 2000, 2001, Free Software Foundation, Inc.
 RAM: 0x00000000-0x00400000
 </screen> 
       </para>
@@ -3727,7 +3725,7 @@ Update RedBoot non-volatile configuration - continue (y/n)? <userinput>y</userin
 ... Program from 0x8c021f60-0x8c022360 at 0xa0fc0000: .
 RedBoot>
 RedBoot(tm) debug environment - built 08:22:24, Aug 23 2000
-Copyright (C) 2000, Red Hat, Inc.
+Copyright (C) 2000, Free Software Foundation, Inc.
 
 
 RAM: 0x8c000000-0x8c800000
@@ -3797,7 +3795,7 @@ RedBoot(tm) bootstrap and debug environment [ROM]
 Red Hat certified release, version R1.xx - built 17:37:36, Aug 14 2001
 
 Platform: IQ80310 (XScale)
-Copyright (C) 2000, 2001, Red Hat, Inc.
+Copyright (C) 2000, 2001, Free Software Foundation, Inc.
 
 RAM: 0xa0000000-0xa2000000, 0xa001b088-0xa1fdf000 available
 FLASH: 0x00000000 - 0x00800000, 64 blocks of 0x00020000 bytes each.
@@ -3811,7 +3809,7 @@ RedBoot(tm) bootstrap and debug environment [RAM]
 Red Hat certified release, version R1.xx - built 13:03:47, Aug 14 2001
 
 Platform: IQ80310 (XScale)
-Copyright (C) 2000, 2001, Red Hat, Inc.
+Copyright (C) 2000, 2001, Free Software Foundation, Inc.
 
 RAM: 0xa0000000-0xa2000000, 0xa0057fe8-0xa1fdf000 available
 FLASH: 0x00000000 - 0x00800000, 64 blocks of 0x00020000 bytes each.

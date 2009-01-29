@@ -3,20 +3,18 @@
 //      include/net/ip_gif.h
 //
 //==========================================================================
-//####BSDCOPYRIGHTBEGIN####
+// ####BSDCOPYRIGHTBEGIN####                                    
+// -------------------------------------------                  
+// This file is part of eCos, the Embedded Configurable Operating System.
 //
-// -------------------------------------------
+// Portions of this software may have been derived from FreeBSD 
+// or other sources, and if so are covered by the appropriate copyright
+// and license included herein.                                 
 //
-// Portions of this software may have been derived from OpenBSD, 
-// FreeBSD or other sources, and are covered by the appropriate
-// copyright disclaimers included herein.
-//
-// Portions created by Red Hat are
-// Copyright (C) 2002 Red Hat, Inc. All Rights Reserved.
-//
-// -------------------------------------------
-//
-//####BSDCOPYRIGHTEND####
+// Portions created by the Free Software Foundation are         
+// Copyright (C) 2002 Free Software Foundation, Inc.            
+// -------------------------------------------                  
+// ####BSDCOPYRIGHTEND####                                      
 //==========================================================================
 
 /*	$KAME: if_gif.h,v 1.28 2001/10/23 12:41:29 jinmei Exp $	*/

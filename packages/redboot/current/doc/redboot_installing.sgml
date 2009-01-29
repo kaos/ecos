@@ -7,20 +7,18 @@
 <!--     RedBoot Documentation                                       -->
 <!--                                                                 -->
 <!-- =============================================================== -->
-<!-- ####COPYRIGHTBEGIN####                                          -->
-<!--                                                                 -->
-<!-- =============================================================== -->
-<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.  -->
-<!-- This material may be distributed only subject to the terms      -->
-<!-- and conditions set forth in the Open Publication License, v1.0  -->
-<!-- or later (the latest version is presently available at          -->
-<!-- http://www.opencontent.org/openpub/)                            -->
-<!-- Distribution of the work or derivative of the work in any       -->
-<!-- standard (paper) book form is prohibited unless prior           -->
-<!-- permission obtained from the copyright holder                   -->
-<!-- =============================================================== -->
-<!--                                                                 -->      
-<!-- ####COPYRIGHTEND####                                            -->
+<!-- ####ECOSDOCCOPYRIGHTBEGIN####                                       -->
+<!-- ===============================================================     -->
+<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc. -->
+<!-- This material may be distributed only subject to the terms          -->
+<!-- and conditions set forth in the Open Publication License, v1.0      -->
+<!-- or later (the latest version is presently available at              -->
+<!-- http://www.opencontent.org/openpub/)                                -->
+<!-- Distribution of the work or derivative of the work in any           -->
+<!-- standard (paper) book form is prohibited unless prior               -->
+<!-- permission obtained from the copyright holder                       -->
+<!-- ===============================================================     -->
+<!-- ####ECOSDOCCOPYRIGHTEND####                                         -->
 <!-- =============================================================== -->
 <!-- #####DESCRIPTIONBEGIN####                                       -->
 <!--                                                                 -->
@@ -895,7 +893,7 @@ RedBoot(tm) bootstrap and debug environment [RAM]
 Non-certified release, version UNKNOWN - built 14:09:27, Jul 20 2001
 
 Platform: Atmel AT91/EB40 (ARM7TDMI)
-Copyright (C) 2000, 2001, Red Hat, Inc.
+Copyright (C) 2000, 2001, Free Software Foundation, Inc.
 
 RAM: 0x02000000-0x02080000, 0x020116d8-0x0207fd00 available
 FLASH: 0x01010000 - 0x01020000, 256 blocks of 0x00000100 bytes each.
@@ -965,7 +963,7 @@ RedBoot(tm) bootstrap and debug environment [RAM]
 Non-certified release, version UNKNOWN - built 16:58:52, May  7 2003            
                                                                                 
 Platform: Atmel AT91/EB55 (ARM7TDMI)                                            
-Copyright (C) 2000, 2001, 2002, Red Hat, Inc.                                   
+Copyright (C) 2000, 2001, 2002, Free Software Foundation, Inc.                                   
                                                                                 
 RAM: 0x02000000-0x02040000, 0x020068a8-0x0203f000 available                     
 FLASH: 0x01010000 - 0x01200000, 31 blocks of 0x00010000 bytes each.
@@ -1466,7 +1464,7 @@ RedBoot(tm) bootstrap and debug environment [RAM]
 Non-certified release, version UNKNOWN - built 13:15:40, Nov  9 2001            
                                                                                 
 Platform: AAED2000 system (ARM9) [Primary]                                      
-Copyright (C) 2000, 2001, Red Hat, Inc.                                         
+Copyright (C) 2000, 2001, Free Software Foundation, Inc.                                         
                                                                                 
 RAM: 0x00000000-0x01f80000, 0x0006f208-0x01f51000 available                     
 FLASH: 0x60000000 - 0x62000000, 256 blocks of 0x00020000 bytes each.            
@@ -1563,7 +1561,7 @@ RedBoot(tm) bootstrap and debug environment [RAM]
 Non-certified release, version UNKNOWN - built 12:31:13, Nov  9 2001
 
 Platform: AAED2000 system (ARM9) [Secondary]
-Copyright (C) 2000, 2001, Red Hat, Inc.
+Copyright (C) 2000, 2001, Free Software Foundation, Inc.
 
 RAM: 0x00000000-0x01f80000, 0x00063568-0x01f51000 available
 FLASH: 0x60000000 - 0x62000000, 256 blocks of 0x00020000 bytes each.
@@ -2801,7 +2799,7 @@ on the LCD screen.  It will also appear on the serial port at 38400,8,N,1.
 Non-certified release, version UNKNOWN - built 06:17:41, Mar 19 2001
 Platform: Compaq iPAQ Pocket PC (StrongARM 1110)
 
-Copyright (C) 2000, 2001, Red Hat, Inc.
+Copyright (C) 2000, 2001, Free Software Foundation, Inc.
 
 RAM: 0x00000000-0x01fc0000, 0x0001f200-0x01f70000 available
 FLASH: 0x50000000 - 0x51000000, 64 blocks of 0x00040000 bytes
