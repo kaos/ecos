@@ -185,7 +185,7 @@ do_version(int argc, char *argv[])
                 "GNU General Public License. You are welcome to change it and/or distribute\n"
                 "copies of it under certain conditions. Under the license terms, RedBoot's\n"
                 "source code and full license terms must have been made available to you.\n"
-                "Redboot comes with ABSOLUTELY NO WARRANTY.\n"
+                "Redboot comes with ABSOLUTELY NO WARRANTY.\n\n"
     diag_printf("RAM: %p-%p, ", (void*)ram_start, (void*)ram_end);
     diag_printf("[%p-%p]", mem_segments[0].start, mem_segments[0].end);
     diag_printf(" available\n");
