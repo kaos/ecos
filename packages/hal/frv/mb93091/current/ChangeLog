@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_frv_mb93091.cdl: update compiler flags for gcc 4.x
+
 2004-09-05  Mark Salter  <msalter@redhat.com>
             David Woodhouse  <dwmw2@redhat.com>
 
