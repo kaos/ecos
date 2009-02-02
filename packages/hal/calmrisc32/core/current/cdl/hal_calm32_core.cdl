@@ -105,7 +105,7 @@ cdl_package CYGPKG_HAL_CALM32_CORE {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { "-fno-builtin -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . "-fno-builtin -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions " }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
