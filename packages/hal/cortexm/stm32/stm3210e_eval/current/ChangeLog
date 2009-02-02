@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3210e_eval.cdl: update compiler flags for gcc 4.x
+
 2008-12-10  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/hal_cortexm_stm32_stm3210e_eval.cdl: Switch value for
