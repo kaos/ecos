@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_h8300_h8s_edosk2674.cdl: update compiler flags for gcc 4.x
+
 2004-03-18  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* include/hal_diag.h
