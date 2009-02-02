@@ -130,6 +130,44 @@ cdl_package CYGPKG_HAL_ARM {
             Use the CPU in big-endian mode."
     }
 
+    cdl_option CYGBLD_ARCH_CFLAGS {
+        display     "Architecture-specific compiler flags"
+        parent      CYGBLD_GLOBAL_OPTIONS
+        flavor      data
+        no_define
+        calculated  { (CYGHWR_THUMB ? "-mthumb " : "") .
+            (CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork " : "-mno-thumb-interwork ") .
+            (CYGHWR_HAL_ARM_BIGENDIAN ? "-mbig-endian " : "")
+        }
+        requires    {  CYGHWR_THUMB                      implies  is_substr(CYGBLD_GLOBAL_CFLAGS, "-mthumb ") }
+        requires    { !CYGHWR_THUMB                      implies !is_substr(CYGBLD_GLOBAL_CFLAGS, "-mthumb ") }
+        requires    {  CYGBLD_ARM_ENABLE_THUMB_INTERWORK implies  is_substr(CYGBLD_GLOBAL_CFLAGS, "-mthumb-interwork") }
+        requires    {  CYGBLD_ARM_ENABLE_THUMB_INTERWORK implies !is_substr(CYGBLD_GLOBAL_CFLAGS, "-mno-thumb-interwork") }
+        requires    { !CYGBLD_ARM_ENABLE_THUMB_INTERWORK implies !is_substr(CYGBLD_GLOBAL_CFLAGS, "-mthumb-interwork") }
+        requires    { !CYGBLD_ARM_ENABLE_THUMB_INTERWORK implies  is_substr(CYGBLD_GLOBAL_CFLAGS, "-mno-thumb-interwork") }
+        requires    {  CYGHWR_HAL_ARM_BIGENDIAN          implies  is_substr(CYGBLD_GLOBAL_CFLAGS, "-mbig-endian") }
+        requires    { !CYGHWR_HAL_ARM_BIGENDIAN          implies !is_substr(CYGBLD_GLOBAL_CFLAGS, "-mbig-endian") }
+    }
+    
+    cdl_option CYGBLD_ARCH_LDFLAGS {
+        display     "Architecture-specific linker flags"
+        parent      CYGBLD_GLOBAL_OPTIONS
+        flavor      data
+        no_define
+        calculated  { (CYGHWR_THUMB ? "-mthumb " : "") .
+            (CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork " : "-mno-thumb-interwork ") .
+            (CYGHWR_HAL_ARM_BIGENDIAN ? "-mbig-endian " : "")
+        }
+        requires    {  CYGHWR_THUMB                      implies  is_substr(CYGBLD_GLOBAL_LDFLAGS, "-mthumb ") }
+        requires    { !CYGHWR_THUMB                      implies !is_substr(CYGBLD_GLOBAL_LDFLAGS, "-mthumb ") }
+        requires    {  CYGBLD_ARM_ENABLE_THUMB_INTERWORK implies  is_substr(CYGBLD_GLOBAL_LDFLAGS, "-mthumb-interwork") }
+        requires    {  CYGBLD_ARM_ENABLE_THUMB_INTERWORK implies !is_substr(CYGBLD_GLOBAL_LDFLAGS, "-mno-thumb-interwork") }
+        requires    { !CYGBLD_ARM_ENABLE_THUMB_INTERWORK implies !is_substr(CYGBLD_GLOBAL_LDFLAGS, "-mthumb-interwork") }
+        requires    { !CYGBLD_ARM_ENABLE_THUMB_INTERWORK implies  is_substr(CYGBLD_GLOBAL_LDFLAGS, "-mno-thumb-interwork") }
+        requires    {  CYGHWR_HAL_ARM_BIGENDIAN          implies  is_substr(CYGBLD_GLOBAL_LDFLAGS, "-mbig-endian") }
+        requires    { !CYGHWR_HAL_ARM_BIGENDIAN          implies !is_substr(CYGBLD_GLOBAL_LDFLAGS, "-mbig-endian") }
+    }
+    
     cdl_interface CYGINT_HAL_ARM_ARCH_ARM7 {
         display "The platform uses a processor with an ARM7 core"
     }

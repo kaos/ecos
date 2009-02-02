@@ -1,3 +1,8 @@
+2009-02-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_arm.cdl: add new architectural CFLAGS and LDFLAGS
+	options.
+
 2008-10-07  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/arm.ld: Discard C++ EH-related sections when we can't
