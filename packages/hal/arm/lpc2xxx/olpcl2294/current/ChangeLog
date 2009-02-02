@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_lpc2xxx_olpcl2294.cdl: update compiler flags for gcc 4.x
+
 2008-12-03  Sergei Gavrikov <sergei.gavrikov@gmail.com>
 
 	* misc/redboot_*.ecm: Rebuilt since target uses flash_olpcx2294_v2

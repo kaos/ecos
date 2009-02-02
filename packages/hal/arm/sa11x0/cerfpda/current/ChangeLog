@@ -1,3 +1,8 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_sa11x0_cerfpda.cdl: update compiler flags for
+          recent gcc
+
 2003-11-19  Jani Monoses  <jani@iv.ro>
 	
 	* src/cerfpda_misc.c: Map DRAM as cacheable, it increases performance.

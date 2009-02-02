@@ -249,7 +249,8 @@ cdl_package CYGPKG_HAL_ARM_AT91_PHYCORE {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { (CYGHWR_THUMB ? "-mthumb " : "") . (CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork " : "") . "-mcpu=arm7tdmi -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . CYGBLD_ARCH_CFLAGS .
+                            "-mcpu=arm7tdmi -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions " }
             description   "
                 This option controls the global compiler flags which are used to
                 compile all packages by default. Individual packages may define
@@ -260,7 +261,7 @@ cdl_package CYGPKG_HAL_ARM_AT91_PHYCORE {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { (CYGHWR_THUMB ? "-mthumb " : "") . (CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork " : "") . "-mcpu=arm7tdmi -Wl,--gc-sections -Wl,-static -g -nostdlib" }
+            default_value { CYGBLD_ARCH_LDFLAGS . "-mcpu=arm7tdmi -Wl,--gc-sections -Wl,-static -g -nostdlib" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

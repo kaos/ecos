@@ -1,3 +1,8 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_sa11x0_brutus.cdl: update compiler flags for
+	recent gcc
+
 2003-02-13  Patrick Doyle  <wpd@delcomsys.com>
 	* src/brutus_misc.c: Replaced explicit prototype of memset with
 	#include <string.h>.

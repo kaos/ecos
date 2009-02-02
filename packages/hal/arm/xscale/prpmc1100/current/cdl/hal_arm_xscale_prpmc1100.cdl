@@ -50,6 +50,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_PRPMC1100 {
     display       "Motorola PrPMC1100 Processor PMC"
     parent        CYGPKG_HAL_ARM_XSCALE
     implements    CYGINT_HAL_ARM_BIGENDIAN
+    requires      CYGHWR_HAL_ARM_BIGENDIAN
     hardware
     include_dir   cyg/hal
     define_header hal_arm_xscale_prpmc1100.h
@@ -109,7 +110,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_PRPMC1100 {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { "-mcpu=xscale -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -mapcs-frame" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . CYGBLD_ARCH_CFLAGS . "-mcpu=xscale -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -mapcs-frame" }
             description   "
                 This option controls the global compiler flags which are used to
                 compile all packages by default. Individual packages may define
@@ -120,7 +121,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_PRPMC1100 {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { "-mcpu=xscale -mbig-endian -Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" }
+            default_value { CYGBLD_ARCH_LDFLAGS . "-mcpu=xscale -Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

@@ -236,7 +236,8 @@ cdl_package CYGPKG_HAL_ARM_ARM9_EXCALIBUR {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { "-mcpu=arm9 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . CYGBLD_ARCH_CFLAGS .
+                            "-mcpu=arm9 -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions " }
             description   "
                 This option controls the global compiler flags which are used to
                 compile all packages by default. Individual packages may define
@@ -247,7 +248,7 @@ cdl_package CYGPKG_HAL_ARM_ARM9_EXCALIBUR {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { "--no-target-default-spec -Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" }
+            default_value { CYGBLD_ARCH_LDFLAGS . "-mcpu=arm9 --no-target-default-spec -Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_lpc2xxx_mcb2100.cdl: update compiler flags for gcc 4.x
+
 2009-01-24  Bart Veer <bartv@ecoscentric.com>
 
 	* cdl/hal_arm_lpc2xxx_mcb2100.cdl: switch from arm-elf-gcc to

@@ -334,8 +334,10 @@ CL-PS7111 and EP7xxx based development boards."
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? "-mcpu=arm710c -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : \
-                                                                          "-mcpu=arm7tdmi -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . CYGBLD_ARCH_CFLAGS .
+                            (CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? "-mcpu=arm710c" : "-mcpu=arm7tdmi") .
+                            " -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions "
+            }
             description   "
                 This option controls the global compiler flags which are used to
                 compile all packages by default. Individual packages may define
@@ -346,7 +348,9 @@ CL-PS7111 and EP7xxx based development boards."
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? "-mcpu=arm710c -Wl,--gc-sections -Wl,-static -g -nostdlib" : "-mcpu=arm7tdmi -Wl,--gc-sections -Wl,-static -g -nostdlib"}
+            default_value { CYGBLD_ARCH_LDFLAGS .
+                           (CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? "-mcpu=arm710c" : "-mcpu=arm7tdmi" ) .
+                           " -Wl,--gc-sections -Wl,-static -g -nostdlib" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

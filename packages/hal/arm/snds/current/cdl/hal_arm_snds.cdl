@@ -205,19 +205,9 @@ cdl_package CYGPKG_HAL_ARM_SNDS {
             display "Global compiler flags"
             flavor  data
             no_define
-            if {1} {
-                 default_value { (CYGHWR_THUMB && CYGHWR_HAL_ARM_BIGENDIAN) ? "-mthumb-interwork -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
-                   CYGHWR_THUMB ? "-mthumb-interwork -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
-                   (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
-                   (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && ! CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
-                   (CYGHWR_HAL_ARM_CPU_FAMILY != "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm7tdmi -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
-                   "-mcpu=arm7tdmi -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
-            } else { 
-                default_value { (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
-                   (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && ! CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
-                   (CYGHWR_HAL_ARM_CPU_FAMILY != "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm7tdmi -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
-                   "-mcpu=arm7tdmi -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
-            }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . CYGBLD_ARCH_CFLAGS .
+                (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9" ? "-mcpu=arm9" : "-mcpu=arm7tdmi") .
+                " -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions " }
             description   "
                 This option controls the global compiler flags which are used to
                 compile all packages by default. Individual packages may define
@@ -228,19 +218,9 @@ cdl_package CYGPKG_HAL_ARM_SNDS {
             display "Global linker flags"
             flavor  data
             no_define
-            if {1} {
-                 default_value { (CYGHWR_THUMB && CYGHWR_HAL_ARM_BIGENDIAN) ? "-mthumb-interwork -mbig-endian -g -nostdlib -Wl,--gc-sections -Wl,-static" :
-                   CYGHWR_THUMB ? "-mthumb-interwork -g -nostdlib -Wl,--gc-sections -Wl,-static" :
-                   (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -mbig-endian -g -nostdlib -Wl,--gc-sections -Wl,-static" :
-                   (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && ! CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -g -nostdlib -Wl,--gc-sections -Wl,-static" :
-                   (CYGHWR_HAL_ARM_CPU_FAMILY != "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm7tdmi -mbig-endian -g -nostdlib -Wl,--gc-sections -Wl,-static" :
-                   "-mcpu=arm7tdmi -g -nostdlib -Wl,--gc-sections -Wl,-static" }
-            } else { 
-                default_value { (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -mbig-endian -g -nostdlib -Wl,--gc-sections -Wl,-static" :
-                   (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && ! CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -g -nostdlib -Wl,--gc-sections -Wl,-static" :
-                   (CYGHWR_HAL_ARM_CPU_FAMILY != "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm7tdmi -mbig-endian -g -nostdlib -Wl,--gc-sections -Wl,-static" :
-                   "-mcpu=arm7tdmi -g -nostdlib -Wl,--gc-sections -Wl,-static" }
-            }
+            default_value { CYGBLD_ARCH_LDFLAGS .
+                            (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9" ? "-mcpu=arm9" : "-mcpu=arm7tdmi") .
+                            " -g -nostdlib -Wl,--gc-sections -Wl,-static" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."
