@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_coldfire_m5272c3.cdl: update compiler flags for gcc 4.x
+
 2006-05-09  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/pkgconf/mlt_coldfire_m5272c3_*.h: Added CYGMEM_REGION_RAM* 

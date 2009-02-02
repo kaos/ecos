@@ -252,7 +252,7 @@ cdl_package CYGPKG_HAL_COLDFIRE_M5272C3 {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { "-m5206e -malign-int -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -finit-priority" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . "-m5206e -malign-int -g -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions " }
             description       "This option controls the global compiler flags
                             which are used to compile all packages by default.
                             Individual packages may define options which
