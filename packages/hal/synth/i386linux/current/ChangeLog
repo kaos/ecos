@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_synth_i386.cdl: update compiler flags for gcc 4.x
+
 2005-11-19  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/pkgconf/mlt_synth_i386_rom.ldi: add new heap section to
