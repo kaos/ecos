@@ -147,7 +147,7 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { "-mam33-2 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -Wp,-Wno-paste -g -O2 -fno-builtin -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . "-mam33-2 -Wp,-Wno-paste -g -O2 -fno-builtin -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions " }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
