@@ -1,3 +1,8 @@
+2009-02-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal.cdl: add CYGBLD_GLOBAL_WARNFLAGS, as part of global
+	compiler flags update.
+
 2008-11-21  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/hal_if.h (CYGNUM_CALL_IF_available_x): fix typo in

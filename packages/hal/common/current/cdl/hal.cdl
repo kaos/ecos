@@ -72,6 +72,16 @@ cdl_package CYGPKG_HAL {
         $(CC) $(CFLAGS) -nostdlib -Wl,-r -T /dev/null -Wl,--whole-archive -o $@ $<
     }   
 
+    cdl_option CYGBLD_GLOBAL_WARNFLAGS {
+        display     "Standard compiler warning flags"
+        parent      CYGBLD_GLOBAL_OPTIONS
+        flavor      data
+        no_define
+        calculated { "-Wall -Wpointer-arith -Wstrict-prototypes -Wundef -Woverloaded-virtual -Wno-write-strings " }
+        description "
+            This option specifies the default warning-related compiler flags used
+          on all eCos platforms."
+    }
 
     cdl_component CYGPKG_HAL_COMMON {
         display       "Platform-independent HAL options"
