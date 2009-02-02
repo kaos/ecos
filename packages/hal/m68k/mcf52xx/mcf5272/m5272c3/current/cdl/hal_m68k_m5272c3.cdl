@@ -301,7 +301,7 @@ cdl_package CYGPKG_HAL_M68K_M5272C3 {
             display         "Global compiler flags"
             flavor          data
             no_define
-            default_value { "-mcpu=5272 -malign-int -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fomit-frame-pointer" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . "-mcpu=5272 -malign-int -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fomit-frame-pointer" }
             description       "This option controls the global compiler  flags
                             which are used to compile all packages by default.
                             Individual  packages  may  define  options   which

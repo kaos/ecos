@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_i386_pc.cdl: update compiler flags for gcc 4.x
+
 2005-06-20  Frank Pagliughi <fpagliughi@mindspring.com>
 
 	* cdl/hal_i386_pc.cdl, include/pkgconf/mlt_i386_pc_grub_hi.*:
