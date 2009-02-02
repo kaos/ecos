@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_fr30_skmb91302.cdl: update compiler flags for gcc 4.x
+
 2008-09-19  Lars Poeschel  <larsi@wh2.tu-dresden.de>
 
     * include/plf_cache.h: Changed to the general arch-var-plf include scheme.
