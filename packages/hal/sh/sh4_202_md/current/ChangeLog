@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_sh_sh4_202_md.cdl: update compiler flags for gcc 4.x
+
 2008-12-30  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/hal_sh_sh4_202_md.cdl: Reference per-package documentation.

@@ -262,7 +262,10 @@ cdl_package CYGPKG_HAL_SH_SH4_202_MD {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m4 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-ml -m4 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS .
+                            (CYGHWR_HAL_SH_BIGENDIAN ? "-mb" : "-ml") .
+                            " -m4 -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions"
+            }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
@@ -274,7 +277,7 @@ cdl_package CYGPKG_HAL_SH_SH4_202_MD {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m4 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" : "-ml -m4 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" }
+            default_value { (CYGHWR_HAL_SH_BIGENDIAN ? "-mb" : "-ml") . " -m4 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

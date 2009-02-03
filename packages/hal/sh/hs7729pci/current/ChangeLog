@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_sh_sh7729_hs7729pci.cdl: update compiler flags for gcc 4.x
+
 2002-08-06  Gary Thomas  <gary@chez-thomas.org>
 2002-08-06  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>	
 
