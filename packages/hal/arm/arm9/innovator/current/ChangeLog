@@ -1,3 +1,8 @@
+2009-02-03  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/pkgconf/mlt_arm_arm9_innovator_ram.ldi: do not put
+	anything into ROM for a RAM startup.
+
 2009-01-31  Bart Veer <bartv@ecoscentric.com>
 
 	* cdl/hal_arm_arm9_innovator.cdl: update compiler flags for gcc 4.x
