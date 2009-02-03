@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_powerpc_adder.cdl: update compiler flags for gcc 4.x
+
 2008-11-13  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/adder_flash.c: Dev id is really 0x22f6, not 0xf6.

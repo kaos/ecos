@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_powerpc_pati.cdl: update compiler flags for recent gcc
+
 2008-11-07  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/pkgconf/mlt_powerpc_pati_ram.ldi:
