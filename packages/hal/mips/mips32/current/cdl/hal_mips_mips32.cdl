@@ -148,8 +148,10 @@ cdl_package CYGPKG_HAL_MIPS_MIPS32 {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { CYGPKG_HAL_MIPS_LSBFIRST ? "-mips32 -EL -msoft-float -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -G0" : \
-			       "-mips32 -EB -msoft-float -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -G0"  }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS .
+                            (CYGPKG_HAL_MIPS_LSBFIRST ? "-EL" : "-EB") .
+                            " -mips32 -msoft-float -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -G0"
+            }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
@@ -161,8 +163,7 @@ cdl_package CYGPKG_HAL_MIPS_MIPS32 {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value {CYGPKG_HAL_MIPS_LSBFIRST ? "-EL -msoft-float -g -nostdlib -Wl,--gc-sections -Wl,-static" :\
-			    "-msoft-float -EB -g -nostdlib -Wl,--gc-sections -Wl,-static"}
+            default_value { (CYGPKG_HAL_MIPS_LSBFIRST ? "-EL" : "-EB") . " -mips32 -msoft-float -g -nostdlib -Wl,--gc-sections -Wl,-static" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

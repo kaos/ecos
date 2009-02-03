@@ -137,7 +137,10 @@ cdl_package CYGPKG_HAL_MIPS_SIM {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { CYGPKG_HAL_MIPS_TX39 ? "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-mgp32 -EB -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS .
+                            (CYGPKG_HAL_MIPS_TX39 ? "" : "-mgp32 -EB") .
+                            " -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions "
+            }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
@@ -149,7 +152,7 @@ cdl_package CYGPKG_HAL_MIPS_SIM {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { CYGPKG_HAL_MIPS_TX39 ? "-g -nostdlib -Wl,--gc-sections -Wl,-static" : "-mgp32 -EB -g -nostdlib -Wl,--gc-sections -Wl,-static" }
+            default_value { (CYGPKG_HAL_MIPS_TX39 ? "" : "-mgp32 -EB") . " -g -nostdlib -Wl,--gc-sections -Wl,-static" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

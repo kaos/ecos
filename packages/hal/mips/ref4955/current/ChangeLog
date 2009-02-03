@@ -1,3 +1,7 @@
+2009-01-31  Bart Veer <bartv@ecoscentric.com>
+
+	* cdl/hal_mips_tx49_ref4955.cdl: update compiler flags for gcc 4.x
+
 2009-01-08  John Dallaway  <john@dallaway.org.uk>
 
 	* misc/slow_cat.tcl, misc/swap4.tcl:

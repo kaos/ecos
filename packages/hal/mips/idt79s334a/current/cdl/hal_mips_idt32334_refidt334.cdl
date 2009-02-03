@@ -167,7 +167,7 @@ cdl_package CYGPKG_HAL_MIPS_IDT32334_REFIDT334 {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { "-mips32 -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -fno-builtin -G0" }
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . "-mips32 -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fno-builtin -G0" }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
