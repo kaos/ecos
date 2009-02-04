@@ -85,6 +85,43 @@
         HAL_SET_CP0_REGISTER_32( _regval_, _cp0_regno_, _cp0_regsel_ )
 
 //--------------------------------------------------------------------------
+// Bit manipulation macros
+
+#ifndef CYGHWR_HAL_BIT_INDEXES_DEFINED
+
+//--------------------------------------------------------
+// Determine the index of the ls bit of the supplied mask.
+
+#define HAL_LSBIT_INDEX(_index_, _mask_)                                \
+    CYG_MACRO_START                                                     \
+    unsigned _reg_;                                                     \
+                                                                        \
+    _reg_ = (_mask_);                                                   \
+    _reg_ &= -_reg_;                                                    \
+    asm volatile ("clz    %0, %1\n"                                     \
+               : "=r" (_reg_)                                           \
+               : "r" (_reg_) );                                         \
+    (_index_) = 31 - _reg_;                                             \
+    CYG_MACRO_END
+
+//--------------------------------------------------------
+// Determine the index of the ms bit of the supplied mask.
+
+#define HAL_MSBIT_INDEX(_index_, _mask_)                                \
+    CYG_MACRO_START                                                     \
+    unsigned _reg_;                                                     \
+                                                                        \
+    _reg_ = (_mask_);                                                   \
+    asm volatile ("clz    %0, %1\n"                                     \
+             : "=r" (_reg_)                                             \
+             : "r" (_reg_) );                                           \
+    (_index_) = 31 - _reg_;                                             \
+    CYG_MACRO_END
+
+#define CYGHWR_HAL_BIT_INDEXES_DEFINED
+#endif
+
+//--------------------------------------------------------------------------
 
 #ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 /* System Control Coprocessor (CP0) exception processing registers */

@@ -125,12 +125,16 @@ externC void cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
 //--------------------------------------------------------------------------
 // Bit manipulation macros
 
+#ifndef CYGHWR_HAL_BIT_INDEXES_DEFINED
+
 externC cyg_uint32 hal_lsbit_index(cyg_uint32 mask);
 externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 
 #define HAL_LSBIT_INDEX(index, mask) index = hal_lsbit_index(mask);
 
 #define HAL_MSBIT_INDEX(index, mask) index = hal_msbit_index(mask);
+
+#endif
 
 //--------------------------------------------------------------------------
 // Context Initialization

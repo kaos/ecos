@@ -1,3 +1,8 @@
+2009-02-04  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_arch.h (HAL_LSBIT_INDEX, HAL_MSBIT_INDEX): Provide
+	overrides for these macros that use the clz instruction.
+
 2009-01-31  Bart Veer <bartv@ecoscentric.com>
 
 	* cdl/hal_mips_mips32.cdl: update compiler flags for gcc 4.x
