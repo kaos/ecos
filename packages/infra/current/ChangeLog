@@ -1,3 +1,8 @@
+2009-02-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/cyg_type.h: add new static initialization priorities.
+	Add macros to support static initialization from C as well as C++.
+
 2009-01-26  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/diag_sprintf1.c: Rename main() to cyg_user_start so this

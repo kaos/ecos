@@ -11,7 +11,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -69,6 +69,18 @@
 #endif
 // Also define externC for now - but it is deprecated
 #define externC __externC
+
+// Compiler version.
+#ifdef __GNUC__
+# if defined(__GNU_PATCHLEVEL__)
+#  define __GNUC_VERSION__ (__GNUC__ * 10000 \
+                             + __GNUC_MINOR__ * 100 \
+                             + __GNUC_PATCHLEVEL__)
+# else
+#  define __GNUC_VERSION__ (__GNUC__ * 10000 \
+                             + __GNUC_MINOR__ * 100)
+# endif
+#endif
 
 // -------------------------------------------------------------------------
 // The header <basetype.h> defines the base types used here. It is
@@ -274,19 +286,71 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 #define CYGBLD_ATTRIB_INIT_BEFORE( _pri_ ) CYGBLD_ATTRIB_INIT_PRI(_pri_-100)
 #define CYGBLD_ATTRIB_INIT_AFTER( _pri_ )  CYGBLD_ATTRIB_INIT_PRI(_pri_+100)
 
+#if defined(__GNUC__) && !defined(__cplusplus) && (__GNUC_VERSION__ >= 40300)
+// Equivalents of the above for C functions, available from gcc 4.3 onwards.
+# define CYGBLD_ATTRIB_C_INIT_PRI( _pri_)       __attribute__((constructor (_pri_)))
+# define CYGBLD_ATTRIB_C_INIT_BEFORE( _pri_ )   __attribute__((constructor (_pri_-100)))
+# define CYGBLD_ATTRIB_C_INIT_AFTER( _pri_ )    __attribute__((constructor (_pri_+100)))
+#endif
+
+// Start with initializing everything inside the cpu and the main memory.
 #define CYG_INIT_HAL                    10000
 #define CYG_INIT_SCHEDULER              11000
+#define CYG_INIT_IDLE_THREAD            11100
 #define CYG_INIT_INTERRUPTS             12000
-#define CYG_INIT_DRIVERS                13000
 #define CYG_INIT_CLOCK                  14000
-#define CYG_INIT_IDLE_THREAD            15000
 #define CYG_INIT_THREADS                16000
-#define CYG_INIT_KERNEL                 40000
-#define CYG_INIT_MEMALLOC               47000
+#define CYG_INIT_KERNEL                 19000
+#define CYG_INIT_MEMALLOC               20000
+// Now move on to I/O subsystems and device drivers. These can make use of
+// kernel and HAL functionality, and can dynamically allocate memory if
+// absolutely needed. For now they can also assume that diag_printf()
+// functionality is available, but that may change in future.
+//
+// Primary buses are ones very closely tied to the processor, e.g. PCI.
+#define CYG_INIT_BUS_PRIMARY            30000
+// Not yet: on some targets cyg_pci_init() has to be called very early
+// on for HAL diagnostics to work.
+// #define CYG_INIT_BUS_PCI                CYG_INIT_BUS_PRIMARY
+//
+// Secondary buses may hang off primary buses, e.g. USB host.
+#define CYG_INIT_BUS_SECONDARY          31000
+// Tertiary buses are everything else.
+#define CYG_INIT_BUS_TERTIARY           32000
+#define CYG_INIT_BUS_I2C                CYG_INIT_BUS_TERTIARY
+#define CYG_INIT_BUS_SPI                CYG_INIT_BUS_TERTIARY
+//
+// In future HAL diag initialization may happen at this point.
+//
+// Watchdogs and wallclocks often hang off a tertiary bus but
+// have no dependencies
+#define CYG_INIT_DEV_WATCHDOG           35000
+#define CYG_INIT_DEV_WALLCLOCK          36000
+// A primary block configuration can be initialized with no need
+// for per-unit configuration information.
+#define CYG_INIT_DEV_BLOCK_PRIMARY      37000
+#define CYG_INIT_DEV_FLASH              CYG_INIT_DEV_BLOCK_PRIMARY
+// Per-unit configuration data extracted from primary storage.
+// NOTE: for future use, not implemented yet.
+#define CYG_INIT_CONFIG                 38000
+// Secondary block devices may use per-unit configuration data
+// for e.g. interpreting partition layout. Few devices are expected
+// to fall into this category. Note that these devices, as well as
+// some char devices, may not actually be usable until interrupts
+// are enabled.
+#define CYG_INIT_DEV_BLOCK_SECONDARY    40000
+// Char devices are everything else: serial, ethernet, CAN, ...
+#define CYG_INIT_DEV_CHAR               41000
+// For backwards compatibility. Subject to change in future so
+// a CYG_INIT_DEV_ priority should be used instead.
+#define CYG_INIT_DRIVERS                48000
+// CYG_INIT_IO and CYG_INIT_IO_FS are poorly defined at present,
+// and may get reorganized in future.
 #define CYG_INIT_IO                     49000
 #define CYG_INIT_IO_FS                  50000
-#define CYG_INIT_LIBC                   52000
-#define CYG_INIT_COMPAT                 55000
+// The I/O subsystems and device drivers have been initialized.
+#define CYG_INIT_LIBC                   56000
+#define CYG_INIT_COMPAT                 58000
 #define CYG_INIT_APPLICATION            60000
 #define CYG_INIT_PREDEFAULT             65534
 #define CYG_INIT_DEFAULT                65535
@@ -317,15 +381,6 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 // COMPILER-SPECIFIC STUFF
 
 #ifdef __GNUC__
-#if defined(__GNUC_PATCHLEVEL__)
-# define __GNUC_VERSION__ (__GNUC__ * 10000 \
-                            + __GNUC_MINOR__ * 100 \
-                            + __GNUC_PATCHLEVEL__)
-#else
-# define __GNUC_VERSION__ (__GNUC__ * 10000 \
-                            + __GNUC_MINOR__ * 100)
-#endif
-
 // Force a 'C' routine to be called like a 'C++' contructor
 # if !defined(CYGBLD_ATTRIB_CONSTRUCTOR)
 #  define CYGBLD_ATTRIB_CONSTRUCTOR __attribute__((constructor))
