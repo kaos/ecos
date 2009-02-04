@@ -1,3 +1,7 @@
+2009-02-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/watchdog.cxx: switch to CYG_INIT_DEV_WATCHDOG init priority.
+
 2003-11-05  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
 
 	* src/watchdog.cxx: 
@@ -279,7 +283,7 @@ Tue Aug 18 16:51:24 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
