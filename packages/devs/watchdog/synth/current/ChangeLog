@@ -1,3 +1,8 @@
+2009-02-04  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth_watchdog.cxx: use the generic watchdog package's
+	prioritized constructor.
+
 2008-08-18  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/Makefile.am: update host-side configury
@@ -44,7 +49,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2002, 2003 Free Software Foundation, Inc.                  
+// Copyright (C) 2002, 2003, 2009 Free Software Foundation, Inc.                  
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

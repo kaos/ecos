@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2002 Free Software Foundation, Inc.                        
+// Copyright (C) 2002, 2009 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -69,17 +69,10 @@
 
 // The synthetic target's watchdog implementation involves interaction
 // with a watchdog.tcl script running in the I/O auxiliary. The device
-// must be instantiated during system initialization, preferably via
-// a prioritized C++ static constructor. The generic watchdog package
-// does have a static object, but it is not prioritized. If
-// CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG is enabled then that object's
-// constructor would get called too late.
-//
-// Instead a private class is defined here, and once instance is created.
-// That instance gets referenced by the Cyg_Watchdog members, so
-// selective linking does not get in the way. Instantiation happens inside
-// the constructor, and the main Cyg_Watchdog::start() and reset() functions
-// involve passing a message to the host-side.
+// is instantiated during system initialization via the generic
+// watchdog package's prioritized constructor. The main
+// Cyg_Watchdog::start() and reset() functions involve passing a
+// message to the host-side.
 //
 // There is an open issue re. resolution. Usually the hardware imposes
 // limits on what resolutions are valid, in fact there may be only one.
@@ -91,22 +84,12 @@
 // target-side or host-side configuration is more appropriate, so for
 // now a fixed resolution of one second is used.
 
-class _Synth_Watchdog {
-  public:
-    _Synth_Watchdog();
-    ~_Synth_Watchdog() { }
-
-    cyg_uint64  resolution;
-};
-
-// A static instance of the _Synth_Watchdog class, whose constructor will
-// be called at the right time to instantiate host-side support.
-static _Synth_Watchdog _synth_watchdog_object CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_DRIVERS);
-
 // Id for communicating with the watchdog instance in the auxiliary
 static int aux_id   = -1;
 
-_Synth_Watchdog::_Synth_Watchdog()
+// Hardware initialization.
+void
+Cyg_Watchdog::init_hw(void)
 {
     // SIGPWR is disabled by default. It has to be reenabled.
     struct cyg_hal_sys_sigset_t blocked;
@@ -122,15 +105,6 @@ _Synth_Watchdog::_Synth_Watchdog()
                                               (const char*) 0,
                                               (const char*) 0);
     }
-}
-
-// Hardware initialization. This has already happened in the
-// _Synth_Watchdog constructor, all that is needed here is to
-// propagate the resolution.
-void
-Cyg_Watchdog::init_hw(void)
-{
-    resolution  = _synth_watchdog_object.resolution;
 }
 
 void
