@@ -21,6 +21,7 @@ SECTIONS
     SECTION_rodata1 (rom, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_rodata (rom, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_fixup (rom, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_eh_frame (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_gcc_except_table (rom, ALIGN (0x1), LMA_EQ_VMA)
     CYG_LABEL_DEFN(__reserved) = 0x8c000000; . = CYG_LABEL_DEFN(__reserved) + 0x200;
     SECTION_data (ram, ALIGN (0x1), FOLLOWING (.gcc_except_table))

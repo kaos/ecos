@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -190,7 +190,9 @@ GROUP(libtarget.a libgcc.a)
 
 #define SECTION_gcc_except_table(_region_, _vma_, _lma_)	\
     .gcc_except_table _vma_ : _lma_				\
-    { __EXCEPT_START__ = ABSOLUTE(.); *(.gcc_except_table)	\
+    { __EXCEPT_START__ = ABSOLUTE(.);				\
+      KEEP(*(.gcc_except_table))				\
+      *(.gcc_except_table.*)					\
       __EXCEPT_END__ = ABSOLUTE(.);}				\
     > _region_
 

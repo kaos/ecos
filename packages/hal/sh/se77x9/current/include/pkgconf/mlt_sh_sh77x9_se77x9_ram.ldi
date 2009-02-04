@@ -18,6 +18,7 @@ SECTIONS
     SECTION_rodata1 (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_rodata (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_fixup (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_eh_frame (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_gcc_except_table (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_data (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)

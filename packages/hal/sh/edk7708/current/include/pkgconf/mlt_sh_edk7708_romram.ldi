@@ -19,7 +19,8 @@ SECTIONS
     SECTION_rodata1 (ram, ALIGN (0x10), FOLLOWING (.fini))
     SECTION_rodata (ram, ALIGN (0x10), FOLLOWING (.rodata1))
     SECTION_fixup (ram, ALIGN (0x10), FOLLOWING (.rodata))
-    SECTION_gcc_except_table (ram, ALIGN (0x10), FOLLOWING (.fixup))
+    SECTION_eh_frame (ram, ALIGN (0x10), FOLLOWING (.fixup))
+    SECTION_gcc_except_table (ram, ALIGN (0x10), FOLLOWING (.eh_frame))
     SECTION_data (ram, ALIGN (0x10), FOLLOWING (.gcc_except_table))
     SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)
     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
