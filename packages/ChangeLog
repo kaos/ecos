@@ -1,3 +1,7 @@
+2009-02-04  Nick Garnett  <nickg@ecoscentric.com>
+
+	* ecos.db: Add STM32 SPI driver.
+
 2009-01-08  John Dallaway  <john@dallaway.org.uk>
 
 	* ecosadmin.tcl, pkgconf/fixhtml.tcl: Specify script interpreter via

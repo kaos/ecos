@@ -6888,6 +6888,15 @@ package CYGPKG_DEVS_FLASH_STM32 {
         on the ST STM32 devices."
 }
 
+package CYGPKG_DEVS_SPI_CORTEXM_STM32 {
+    alias         { "STM32 SPI driver" }
+    hardware
+    directory     devs/spi/cortexm/stm32
+    script        spi_stm32.cdl
+    description   "This package provides a driver for the SPI interfaces found on 
+                  the ST STM32 microcontroller family."
+}
+
 package CYGPKG_DEVS_WALLCLOCK_STM32 {
         alias           { "ST STM32 RTC wallclock support" wallclock_stm32 }
         directory       devs/wallclock/cortexm/stm32
@@ -6907,6 +6916,8 @@ target stm3210e_eval {
                    CYGPKG_DEVS_FLASH_STM32
                    CYGPKG_IO_SERIAL_CORTEXM_STM32
                    CYGPKG_DEVS_WALLCLOCK_STM32
+                   CYGPKG_IO_SPI
+                   CYGPKG_DEVS_SPI_CORTEXM_STM32
                  }
         description "The stm3210e_eval target provides the packages needed
         to run eCos on the STM3210E EVAL board."
