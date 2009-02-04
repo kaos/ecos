@@ -110,8 +110,8 @@
 // Device signature and ID registers
 
 #define CYGHWR_HAL_STM32_DEV_SIG                0x1FFFF7E0
-#define CYGHWR_HAL_STM32_DEV_SIG_FSIZE(__s)     (((__s)>>16)&0xFFFF)
-#define CYGHWR_HAL_STM32_DEV_SIG_RSIZE(__s)     ((__s)&0xFFFF)
+#define CYGHWR_HAL_STM32_DEV_SIG_RSIZE(__s)     (((__s)>>16)&0xFFFF)
+#define CYGHWR_HAL_STM32_DEV_SIG_FSIZE(__s)     ((__s)&0xFFFF)
 
 #define CYGHWR_HAL_STM32_MCU_ID                 0xe0042000
 #define CYGHWR_HAL_STM32_MCU_ID_DEV(__x)        ((__x)&0xFFF)
@@ -228,7 +228,8 @@
 #define CYGHWR_HAL_STM32_RCC_APB1ENR_UART4      BIT_(19)
 #define CYGHWR_HAL_STM32_RCC_APB1ENR_UART5      BIT_(20)
 #define CYGHWR_HAL_STM32_RCC_APB1ENR_I2C1       BIT_(21)
-#define CYGHWR_HAL_STM32_RCC_APB1ENR_USB        BIT_(22)
+#define CYGHWR_HAL_STM32_RCC_APB1ENR_I2C2       BIT_(22)
+#define CYGHWR_HAL_STM32_RCC_APB1ENR_USB        BIT_(23)
 #define CYGHWR_HAL_STM32_RCC_APB1ENR_CAN        BIT_(25)
 #define CYGHWR_HAL_STM32_RCC_APB1ENR_BKP        BIT_(27)
 #define CYGHWR_HAL_STM32_RCC_APB1ENR_PWR        BIT_(28)
@@ -369,6 +370,127 @@ __externC void hal_stm32_gpio_in ( cyg_uint32 pin, int *val );
 #define CYGHWR_HAL_STM32_GPIO_IN(__pin,  __val ) hal_stm32_gpio_in( __pin, __val )
 
 //=============================================================================
+// Alternate I/O configuration registers.
+
+#define CYGHWR_HAL_STM32_AFIO_EVCR              0x00
+#define CYGHWR_HAL_STM32_AFIO_MAPR              0x04
+#define CYGHWR_HAL_STM32_AFIO_EXTICR1           0x08
+#define CYGHWR_HAL_STM32_AFIO_EXTICR2           0x0C
+#define CYGHWR_HAL_STM32_AFIO_EXTICR3           0x10
+#define CYGHWR_HAL_STM32_AFIO_EXTICR4           0x14
+
+// The following macro allows the four ETXICR registers to be indexed
+// as CYGHWR_HAL_STM32_AFIO_EXTICR(1) to CYGHWR_HAL_STM32_AFIO_EXTICR(4)
+#define CYGHWR_HAL_STM32_AFIO_EXTICR(__x)       (4*((__x)-1)+0x08)
+
+#define CYGHWR_HAL_STM32_AFIO_EVCR_PIN(__x)     VALUE_(0,(__x))
+#define CYGHWR_HAL_STM32_AFIO_EVCR_PORTA        VALUE_(4,0) 
+#define CYGHWR_HAL_STM32_AFIO_EVCR_PORTB        VALUE_(4,1) 
+#define CYGHWR_HAL_STM32_AFIO_EVCR_PORTC        VALUE_(4,2) 
+#define CYGHWR_HAL_STM32_AFIO_EVCR_PORTD        VALUE_(4,3) 
+#define CYGHWR_HAL_STM32_AFIO_EVCR_PORTE        VALUE_(4,4)
+#define CYGHWR_HAL_STM32_AFIO_EVCR_EVOE         BIT_(7) 
+
+#define CYGHWR_HAL_STM32_AFIO_MAPR_SPI1_RMP     BIT_(0)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_I2C1_RMP     BIT_(1)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_URT1_RMP     BIT_(2)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_URT2_RMP     BIT_(3)
+
+#define CYGHWR_HAL_STM32_AFIO_MAPR_URT3_NO_RMP  VALUE_(4,0)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_URT3_P1_RMP  VALUE_(4,1)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_URT3_FL_RMP  VALUE_(4,3)
+
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM1_NO_RMP  VALUE_(6,0)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM1_P1_RMP  VALUE_(6,1)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM1_FL_RMP  VALUE_(6,3)
+
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM2_NO_RMP  VALUE_(8,0)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM2_P1_RMP  VALUE_(8,1)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM2_P2_RMP  VALUE_(8,2)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM2_FL_RMP  VALUE_(8,3)
+
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM3_NO_RMP  VALUE_(10,0)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM3_P2_RMP  VALUE_(10,2)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM3_FL_RMP  VALUE_(10,3)
+
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM4_RMP     BIT_(12)
+
+#define CYGHWR_HAL_STM32_AFIO_MAPR_CAN_NO_RMP   VALUE_(13,0)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_CAN_FL1_RMP  VALUE_(13,2)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_CAN_FL2_RMP  VALUE_(13,3)
+
+#define CYGHWR_HAL_STM32_AFIO_MAPR_PD01_RMP     BIT_(15)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_TIM5CH4_RMP  BIT_(16)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_ADC1EINJ_RMP BIT_(17)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_ADC1EREG_RMP BIT_(18)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_ADC2EINJ_RMP BIT_(19)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_ADC2EREG_RMP BIT_(20)
+
+#define CYGHWR_HAL_STM32_AFIO_MAPR_SWJ_FULL     VALUE_(24,0)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_SWJ_NORST    VALUE_(24,1)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_SWJ_SWDPEN   VALUE_(24,2)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_SWJ_SWDPDIS  VALUE_(24,4)
+
+// The following macros are used to generate the bitfields for setting up
+// external interrupts.  For example, CYGHWR_HAL_STM32_AFIO_EXTICRX_PORTC(12)
+// will generate the bitfield which when ORed into the EXTICR4 register will
+// set up C12 as the external interrupt pin for the EXTI12 interrupt.
+#define CYGHWR_HAL_STM32_AFIO_EXTICRX_PORTA(__x) VALUE_(4*((__x)&3),0)
+#define CYGHWR_HAL_STM32_AFIO_EXTICRX_PORTB(__x) VALUE_(4*((__x)&3),1)
+#define CYGHWR_HAL_STM32_AFIO_EXTICRX_PORTC(__x) VALUE_(4*((__x)&3),2)
+#define CYGHWR_HAL_STM32_AFIO_EXTICRX_PORTD(__x) VALUE_(4*((__x)&3),3)
+#define CYGHWR_HAL_STM32_AFIO_EXTICRX_PORTE(__x) VALUE_(4*((__x)&3),4)
+#define CYGHWR_HAL_STM32_AFIO_EXTICRX_PORTF(__x) VALUE_(4*((__x)&3),5)
+#define CYGHWR_HAL_STM32_AFIO_EXTICRX_PORTG(__x) VALUE_(4*((__x)&3),6)
+#define CYGHWR_HAL_STM32_AFIO_EXTICRX_MASK(__x)  VALUE_(4*((__x)&3),0xF)
+
+//=============================================================================
+// DMA controller register definitions.
+
+#define CYGHWR_HAL_STM32_DMA_ISR                0x00
+#define CYGHWR_HAL_STM32_DMA_IFCR               0x04
+
+// The following macros allow access to the per-channel DMA registers, indexed
+// by channel number.  Valid channel numbers are 1 to 7 for DMA1 and 1 to 5
+// for DMA2.
+#define CYGHWR_HAL_STM32_DMA_CCR(__x)           (0x14*(__x)-0x0C)
+#define CYGHWR_HAL_STM32_DMA_CNDTR(__x)         (0x14*(__x)-0x08)
+#define CYGHWR_HAL_STM32_DMA_CPAR(__x)          (0x14*(__x)-0x04)
+#define CYGHWR_HAL_STM32_DMA_CMAR(__x)          (0x14*(__x))
+
+#define CYGHWR_HAL_STM32_DMA_ISR_GIF(__x)       BIT_(4*(__x)-4)
+#define CYGHWR_HAL_STM32_DMA_ISR_TCIF(__x)      BIT_(4*(__x)-3)
+#define CYGHWR_HAL_STM32_DMA_ISR_HTIF(__x)      BIT_(4*(__x)-2)
+#define CYGHWR_HAL_STM32_DMA_ISR_TEIF(__x)      BIT_(4*(__x)-1)
+#define CYGHWR_HAL_STM32_DMA_ISR_MASK(__x)      VALUE_(4*(__x)-4,0xF)
+
+#define CYGHWR_HAL_STM32_DMA_IFCR_CGIF(__x)     BIT_(4*(__x)-4)
+#define CYGHWR_HAL_STM32_DMA_IFCR_CTCIF(__x)    BIT_(4*(__x)-3)
+#define CYGHWR_HAL_STM32_DMA_IFCR_CHTIF(__x)    BIT_(4*(__x)-2)
+#define CYGHWR_HAL_STM32_DMA_IFCR_CTEIF(__x)    BIT_(4*(__x)-1)
+#define CYGHWR_HAL_STM32_DMA_IFCR_MASK(__x)     VALUE_(4*(__x)-4,0xF)
+
+#define CYGHWR_HAL_STM32_DMA_CCR_EN             BIT_(0)
+#define CYGHWR_HAL_STM32_DMA_CCR_TCIE           BIT_(1)
+#define CYGHWR_HAL_STM32_DMA_CCR_HTIE           BIT_(2)
+#define CYGHWR_HAL_STM32_DMA_CCR_TEIE           BIT_(3)
+#define CYGHWR_HAL_STM32_DMA_CCR_DIR            BIT_(4)
+#define CYGHWR_HAL_STM32_DMA_CCR_CIRC           BIT_(5)
+#define CYGHWR_HAL_STM32_DMA_CCR_PINC           BIT_(6)
+#define CYGHWR_HAL_STM32_DMA_CCR_MINC           BIT_(7)
+#define CYGHWR_HAL_STM32_DMA_CCR_PSIZE8         VALUE_(8,0)
+#define CYGHWR_HAL_STM32_DMA_CCR_PSIZE16        VALUE_(8,1)
+#define CYGHWR_HAL_STM32_DMA_CCR_PSIZE32        VALUE_(8,2)
+#define CYGHWR_HAL_STM32_DMA_CCR_MSIZE8         VALUE_(10,0)
+#define CYGHWR_HAL_STM32_DMA_CCR_MSIZE16        VALUE_(10,1)
+#define CYGHWR_HAL_STM32_DMA_CCR_MSIZE32        VALUE_(10,2)
+#define CYGHWR_HAL_STM32_DMA_CCR_PLLOW          VALUE_(12,0)
+#define CYGHWR_HAL_STM32_DMA_CCR_PLMEDIUM       VALUE_(12,1)
+#define CYGHWR_HAL_STM32_DMA_CCR_PLHIGH         VALUE_(12,2)
+#define CYGHWR_HAL_STM32_DMA_CCR_PLMAX          VALUE_(12,3)
+#define CYGHWR_HAL_STM32_DMA_CCR_MEM2MEM        BIT_(14)
+
+//=============================================================================
 // UARTs
 
 #define CYGHWR_HAL_STM32_UART_SR                0x00
@@ -482,6 +604,157 @@ __externC void hal_stm32_gpio_in ( cyg_uint32 pin, int *val );
 __externC void hal_stm32_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 
 #endif
+
+//=============================================================================
+// SPI interface register definitions.
+
+#define CYGHWR_HAL_STM32_SPI_CR1                0x00
+#define CYGHWR_HAL_STM32_SPI_CR2                0x04
+#define CYGHWR_HAL_STM32_SPI_SR                 0x08
+#define CYGHWR_HAL_STM32_SPI_DR                 0x0C
+#define CYGHWR_HAL_STM32_SPI_CRCPR              0x10
+#define CYGHWR_HAL_STM32_SPI_RXCRCR             0x14
+#define CYGHWR_HAL_STM32_SPI_TXCRCR             0x18
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR            0x1C
+#define CYGHWR_HAL_STM32_SPI_I2SPR              0x20
+
+#define CYGHWR_HAL_STM32_SPI_CR1_CPHA           BIT_(0)
+#define CYGHWR_HAL_STM32_SPI_CR1_CPOL           BIT_(1)
+#define CYGHWR_HAL_STM32_SPI_CR1_MSTR           BIT_(2)
+#define CYGHWR_HAL_STM32_SPI_CR1_BR(__x)        VALUE_(3,(__x))
+#define CYGHWR_HAL_STM32_SPI_CR1_SPE            BIT_(6)
+#define CYGHWR_HAL_STM32_SPI_CR1_LSBFIRST       BIT_(7)
+#define CYGHWR_HAL_STM32_SPI_CR1_SSI            BIT_(8)
+#define CYGHWR_HAL_STM32_SPI_CR1_SSM            BIT_(9)
+#define CYGHWR_HAL_STM32_SPI_CR1_RXONLY         BIT_(10)
+#define CYGHWR_HAL_STM32_SPI_CR1_DFF            BIT_(11)
+#define CYGHWR_HAL_STM32_SPI_CR1_CRCNEXT        BIT_(12)
+#define CYGHWR_HAL_STM32_SPI_CR1_CRCEN          BIT_(13)
+#define CYGHWR_HAL_STM32_SPI_CR1_BIDIOE         BIT_(14)
+#define CYGHWR_HAL_STM32_SPI_CR1_BIDIMODE       BIT_(15)
+
+#define CYGHWR_HAL_STM32_SPI_CR2_RXDMAEN        BIT_(0)
+#define CYGHWR_HAL_STM32_SPI_CR2_TXDMAEN        BIT_(1)
+#define CYGHWR_HAL_STM32_SPI_CR2_SSOE           BIT_(2)
+#define CYGHWR_HAL_STM32_SPI_CR2_ERRIE          BIT_(5)
+#define CYGHWR_HAL_STM32_SPI_CR2_RXNEIE         BIT_(6)
+#define CYGHWR_HAL_STM32_SPI_CR2_TXEIE          BIT_(7)
+
+#define CYGHWR_HAL_STM32_SPI_SR_RXNE            BIT_(0)
+#define CYGHWR_HAL_STM32_SPI_SR_TXE             BIT_(1)
+#define CYGHWR_HAL_STM32_SPI_SR_CHSIDE          BIT_(2)
+#define CYGHWR_HAL_STM32_SPI_SR_UDR             BIT_(3)
+#define CYGHWR_HAL_STM32_SPI_SR_CRCERR          BIT_(4)
+#define CYGHWR_HAL_STM32_SPI_SR_MODF            BIT_(5)
+#define CYGHWR_HAL_STM32_SPI_SR_OVR             BIT_(6)
+#define CYGHWR_HAL_STM32_SPI_SR_BSY             BIT_(7)
+
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_CHLEN      BIT_(0)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_DATLEN16   VALUE_(1,0)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_DATLEN24   VALUE_(1,1)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_DATLEN32   VALUE_(1,2)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_CKPOL      BIT_(3)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_I2SSTDPHL  VALUE_(4,0)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_I2SSTDMSB  VALUE_(4,1)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_I2SSTDLSB  VALUE_(4,2)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_I2SSTDPCM  VALUE_(4,3)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_PCMSYNC    BIT_(7)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_I2SCFGST   VALUE_(8,0)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_I2SCFGSR   VALUE_(8,1)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_I2SCFGMT   VALUE_(8,2)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_I2SCFGMR   VALUE_(8,3)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_I2SE       BIT_(10)
+#define CYGHWR_HAL_STM32_SPI_I2SCFGR_I2MOD      BIT_(11)
+
+#define CYGHWR_HAL_STM32_SPI_I2SPR_I2SDIV(__x)  VALUE_(0,(__x))
+#define CYGHWR_HAL_STM32_SPI_I2SPR_ODD          BIT_(8)
+#define CYGHWR_HAL_STM32_SPI_I2SPR_MCKOE        BIT_(9)
+
+//=============================================================================
+// USB interface register definitions.
+
+#define CYGHWR_HAL_STM32_USB_EP0R               0x00 
+#define CYGHWR_HAL_STM32_USB_EP1R               0x04 
+#define CYGHWR_HAL_STM32_USB_EP2R               0x08 
+#define CYGHWR_HAL_STM32_USB_EP3R               0x0C 
+#define CYGHWR_HAL_STM32_USB_EP4R               0x10 
+#define CYGHWR_HAL_STM32_USB_EP5R               0x14 
+#define CYGHWR_HAL_STM32_USB_EP6R               0x18 
+#define CYGHWR_HAL_STM32_USB_EP7R               0x1C 
+
+#define CYGHWR_HAL_STM32_USB_CNTR               0x40
+#define CYGHWR_HAL_STM32_USB_ISTR               0x44
+#define CYGHWR_HAL_STM32_USB_FNR                0x48
+#define CYGHWR_HAL_STM32_USB_DADDR              0x4C
+#define CYGHWR_HAL_STM32_USB_BTABLE             0x50
+
+// The following macro allows the USB endpoint registers to be indexed as
+// CYGHWR_HAL_STM32_USB_EPXR(0) to CYGHWR_HAL_STM32_USB_EPXR(7).
+#define CYGHWR_HAL_STM32_USB_EPXR(__x)          ((__x)*4)
+
+#define CYGHWR_HAL_STM32_USB_EPXR_EA(__x)       VALUE_(0,(__x))
+#define CYGHWR_HAL_STM32_USB_EPXR_STATTX_DIS    VALUE_(4,0)
+#define CYGHWR_HAL_STM32_USB_EPXR_STATTX_STALL  VALUE_(4,1)
+#define CYGHWR_HAL_STM32_USB_EPXR_STATTX_NAK    VALUE_(4,2)
+#define CYGHWR_HAL_STM32_USB_EPXR_STATTX_VALID  VALUE_(4,3)
+#define CYGHWR_HAL_STM32_USB_EPXR_STATTX_MASK   VALUE_(4,3)
+#define CYGHWR_HAL_STM32_USB_EPXR_DTOGTX        BIT_(6)
+#define CYGHWR_HAL_STM32_USB_EPXR_SWBUFRX       BIT_(6)
+#define CYGHWR_HAL_STM32_USB_EPXR_CTRTX         BIT_(7)
+#define CYGHWR_HAL_STM32_USB_EPXR_EPKIND        BIT_(8)
+#define CYGHWR_HAL_STM32_USB_EPXR_EPTYPE_BULK   VALUE_(9,0)
+#define CYGHWR_HAL_STM32_USB_EPXR_EPTYPE_CTRL   VALUE_(9,1)
+#define CYGHWR_HAL_STM32_USB_EPXR_EPTYPE_ISO    VALUE_(9,2)
+#define CYGHWR_HAL_STM32_USB_EPXR_EPTYPE_INTR   VALUE_(9,3)
+#define CYGHWR_HAL_STM32_USB_EPXR_EPTYPE_MASK   VALUE_(9,3)
+#define CYGHWR_HAL_STM32_USB_EPXR_SETUP         BIT_(11)
+#define CYGHWR_HAL_STM32_USB_EPXR_STATRX_DIS    VALUE_(12,0)
+#define CYGHWR_HAL_STM32_USB_EPXR_STATRX_STALL  VALUE_(12,1)
+#define CYGHWR_HAL_STM32_USB_EPXR_STATRX_NAK    VALUE_(12,2)
+#define CYGHWR_HAL_STM32_USB_EPXR_STATRX_VALID  VALUE_(12,3)
+#define CYGHWR_HAL_STM32_USB_EPXR_STATRX_MASK   VALUE_(12,3)
+#define CYGHWR_HAL_STM32_USB_EPXR_DTOGRX        BIT_(14)
+#define CYGHWR_HAL_STM32_USB_EPXR_SWBUFTX       BIT_(14)
+#define CYGHWR_HAL_STM32_USB_EPXR_CTRRX         BIT_(15)
+
+#define CYGHWR_HAL_STM32_USB_CNTR_FRES          BIT_(0)
+#define CYGHWR_HAL_STM32_USB_CNTR_PDWN          BIT_(1)
+#define CYGHWR_HAL_STM32_USB_CNTR_LPMODE        BIT_(2)
+#define CYGHWR_HAL_STM32_USB_CNTR_FSUSP         BIT_(3)
+#define CYGHWR_HAL_STM32_USB_CNTR_RESUME        BIT_(4)
+#define CYGHWR_HAL_STM32_USB_CNTR_ESOFM         BIT_(8)
+#define CYGHWR_HAL_STM32_USB_CNTR_SOFM          BIT_(9)
+#define CYGHWR_HAL_STM32_USB_CNTR_RESETM        BIT_(10)
+#define CYGHWR_HAL_STM32_USB_CNTR_SUSPM         BIT_(11)
+#define CYGHWR_HAL_STM32_USB_CNTR_WKUPM         BIT_(12)
+#define CYGHWR_HAL_STM32_USB_CNTR_ERRM          BIT_(13)
+#define CYGHWR_HAL_STM32_USB_CNTR_PMAOVRM       BIT_(14)
+#define CYGHWR_HAL_STM32_USB_CNTR_CTRM          BIT_(15)
+
+#define CYGHWR_HAL_STM32_USB_ISTR_EPID(__x)     VALUE_(0,(__x))
+#define CYGHWR_HAL_STM32_USB_ISTR_EPID_MASK     MASK_(0,4)
+#define CYGHWR_HAL_STM32_USB_ISTR_DIR           BIT_(4)
+#define CYGHWR_HAL_STM32_USB_ISTR_ESOF          BIT_(8)
+#define CYGHWR_HAL_STM32_USB_ISTR_SOF           BIT_(9)
+#define CYGHWR_HAL_STM32_USB_ISTR_RESET         BIT_(10)
+#define CYGHWR_HAL_STM32_USB_ISTR_SUSP          BIT_(11)
+#define CYGHWR_HAL_STM32_USB_ISTR_WKUP          BIT_(12)
+#define CYGHWR_HAL_STM32_USB_ISTR_ERR           BIT_(13)
+#define CYGHWR_HAL_STM32_USB_ISTR_PMAOVR        BIT_(14)
+#define CYGHWR_HAL_STM32_USB_ISTR_CTR           BIT_(15)
+
+#define CYGHWR_HAL_STM32_USB_FNR_FN_MASK        MASK_(0,11)
+#define CYGHWR_HAL_STM32_USB_FNR_LSOF_LSOF0     VALUE_(11,0)
+#define CYGHWR_HAL_STM32_USB_FNR_LSOF_LSOF1     VALUE_(11,1)
+#define CYGHWR_HAL_STM32_USB_FNR_LSOF_LSOF2     VALUE_(11,2)
+#define CYGHWR_HAL_STM32_USB_FNR_LSOF_LSOFN     VALUE_(11,3)
+#define CYGHWR_HAL_STM32_USB_FNR_LSOF_MASK      MASK_(11,2)
+#define CYGHWR_HAL_STM32_USB_FNR_LCK            BIT_(13)
+#define CYGHWR_HAL_STM32_USB_FNR_RXDM           BIT_(14)
+#define CYGHWR_HAL_STM32_USB_FNR_RXDP           BIT_(15)
+
+#define CYGHWR_HAL_STM32_USB_DADDR_ADD(__x)     VALUE_(0,(__x))
+#define CYGHWR_HAL_STM32_USB_DADDR_EF           BIT_(7)
 
 //=============================================================================
 // Timers

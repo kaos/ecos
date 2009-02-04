@@ -26,6 +26,7 @@ SECTIONS
     SECTION_got (sram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_data (sram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_bss (sram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_sram (sram, ALIGN (0x8), LMA_EQ_VMA)
     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
     SECTIONS_END
 }

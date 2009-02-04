@@ -1,3 +1,13 @@
+2009-02-04  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_intr.h: Various fixes to allow external interrupts
+	to work.
+
+	* include/var_io.h: Add AFIO, DMA, SPI and USB definitions.
+
+	* src/stm32_misc.c (hal_stm32_gpio_set): Refetch bit number for
+	setting pullup/down.
+
 2008-11-24  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/var_intr.h (CYGNUM_HAL_INTERRUPT_DMA1_CHX): Rename DMA0

@@ -282,6 +282,7 @@ __externC void hal_stm32_gpio_set( cyg_uint32 pin )
     {
         cyg_uint32 odr;
         port = CYGHWR_HAL_STM32_GPIO_PORT( pin );
+        bit = CYGHWR_HAL_STM32_GPIO_BIT(pin);
         HAL_READ_UINT32( port+CYGHWR_HAL_STM32_GPIO_ODR, odr );
         if( pin & CYGHWR_HAL_STM32_GPIO_PULLUP )
             odr |= (1<<bit);

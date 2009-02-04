@@ -141,12 +141,9 @@
 #define CYGNUM_HAL_INTERRUPT_EXTI13             ( 9+CYGNUM_HAL_INTERRUPT_NVIC_MAX)
 #define CYGNUM_HAL_INTERRUPT_EXTI14             (10+CYGNUM_HAL_INTERRUPT_NVIC_MAX)
 #define CYGNUM_HAL_INTERRUPT_EXTI15             (11+CYGNUM_HAL_INTERRUPT_NVIC_MAX)
-#define CYGNUM_HAL_INTERRUPT_EXTI16             (12+CYGNUM_HAL_INTERRUPT_NVIC_MAX)
-#define CYGNUM_HAL_INTERRUPT_EXTI17             (13+CYGNUM_HAL_INTERRUPT_NVIC_MAX)
-#define CYGNUM_HAL_INTERRUPT_EXTI18             (14+CYGNUM_HAL_INTERRUPT_NVIC_MAX)
 
 #define CYGNUM_HAL_ISR_MIN                     0
-#define CYGNUM_HAL_ISR_MAX                     CYGNUM_HAL_INTERRUPT_EXTI18
+#define CYGNUM_HAL_ISR_MAX                     CYGNUM_HAL_INTERRUPT_EXTI15
 #define CYGNUM_HAL_ISR_COUNT                   (CYGNUM_HAL_ISR_MAX + 1)
 
 #define CYGNUM_HAL_VSR_MIN                     0
@@ -165,28 +162,36 @@
     switch( __vector )                                                  \
     {                                                                   \
     case CYGNUM_HAL_INTERRUPT_EXTI0...CYGNUM_HAL_INTERRUPT_EXTI4:       \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI0;                              \
+        __v = __vector - CYGNUM_HAL_INTERRUPT_EXTI0;                    \
         break;                                                          \
                                                                         \
     case CYGNUM_HAL_INTERRUPT_EXTI5...CYGNUM_HAL_INTERRUPT_EXTI9:       \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                          \
+        __v =  __vector - CYGNUM_HAL_INTERRUPT_EXTI5 + 5;               \
         break;                                                          \
                                                                         \
     case CYGNUM_HAL_INTERRUPT_EXTI10...CYGNUM_HAL_INTERRUPT_EXTI15:     \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                          \
+        __v =  __vector - CYGNUM_HAL_INTERRUPT_EXTI5 + 5;               \
         break;                                                          \
                                                                         \
-    case CYGNUM_HAL_INTERRUPT_EXTI16...CYGNUM_HAL_INTERRUPT_EXTI18:     \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                          \
+    case CYGNUM_HAL_INTERRUPT_PVD:                                      \
+        __v =  16;                                                      \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_RTC_ALARM:                                \
+        __v =  17;                                                      \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_USB_WAKEUP:                               \
+        __v =  18;                                                      \
         break;                                                          \
     }                                                                   \
                                                                         \
-    if( __v > 0 )                                                       \
+    if( __v >= 0 )                                                      \
     {                                                                   \
         cyg_uint32 __imr;                                               \
         HAL_READ_UINT32( CYGHWR_HAL_STM32_EXTI+CYGHWR_HAL_STM32_EXTI_IMR, __imr ); \
         __imr &= ~CYGHWR_HAL_STM32_EXTI_BIT(__v);                       \
-        HAL_READ_UINT32( CYGHWR_HAL_STM32_EXTI+CYGHWR_HAL_STM32_EXTI_IMR, __imr ); \
+        HAL_WRITE_UINT32( CYGHWR_HAL_STM32_EXTI+CYGHWR_HAL_STM32_EXTI_IMR, __imr ); \
     }                                                                   \
 }
 
@@ -197,38 +202,82 @@
     switch( __vector )                                                  \
     {                                                                   \
     case CYGNUM_HAL_INTERRUPT_EXTI0...CYGNUM_HAL_INTERRUPT_EXTI4:       \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI0;                              \
+        __v = __vector - CYGNUM_HAL_INTERRUPT_EXTI0;                    \
         break;                                                          \
                                                                         \
     case CYGNUM_HAL_INTERRUPT_EXTI5...CYGNUM_HAL_INTERRUPT_EXTI9:       \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                          \
+        __v = __vector - CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                \
         HAL_WRITE_UINT32( CYGARC_REG_NVIC_BASE+CYGARC_REG_NVIC_SER(CYGNUM_HAL_INTERRUPT_EXTI9_5-CYGNUM_HAL_INTERRUPT_EXTERNAL), \
                           CYGARC_REG_NVIC_IBIT(CYGNUM_HAL_INTERRUPT_EXTI9_5-CYGNUM_HAL_INTERRUPT_EXTERNAL) ); \
         break;                                                          \
                                                                         \
     case CYGNUM_HAL_INTERRUPT_EXTI10...CYGNUM_HAL_INTERRUPT_EXTI15:     \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                          \
+        __v = __vector - CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                \
         HAL_WRITE_UINT32( CYGARC_REG_NVIC_BASE+CYGARC_REG_NVIC_SER(CYGNUM_HAL_INTERRUPT_EXTI15_10-CYGNUM_HAL_INTERRUPT_EXTERNAL), \
                           CYGARC_REG_NVIC_IBIT(CYGNUM_HAL_INTERRUPT_EXTI15_10-CYGNUM_HAL_INTERRUPT_EXTERNAL) ); \
         break;                                                          \
                                                                         \
-    case CYGNUM_HAL_INTERRUPT_EXTI16...CYGNUM_HAL_INTERRUPT_EXTI18:     \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                          \
+    case CYGNUM_HAL_INTERRUPT_PVD:                                      \
+        __v =  16;                                                      \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_RTC_ALARM:                                \
+        __v =  17;                                                      \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_USB_WAKEUP:                               \
+        __v =  18;                                                      \
         break;                                                          \
     }                                                                   \
                                                                         \
-    if( __v > 0 )                                                       \
+    if( __v >= 0 )                                                      \
     {                                                                   \
         cyg_uint32 __imr;                                               \
         HAL_READ_UINT32( CYGHWR_HAL_STM32_EXTI+CYGHWR_HAL_STM32_EXTI_IMR, __imr ); \
         __imr |= CYGHWR_HAL_STM32_EXTI_BIT(__v);                        \
-        HAL_READ_UINT32( CYGHWR_HAL_STM32_EXTI+CYGHWR_HAL_STM32_EXTI_IMR, __imr ); \
+        HAL_WRITE_UINT32( CYGHWR_HAL_STM32_EXTI+CYGHWR_HAL_STM32_EXTI_IMR, __imr ); \
     }                                                                   \
 }
 
 #define HAL_VAR_INTERRUPT_SET_LEVEL( __vector, __level ) CYG_EMPTY_STATEMENT
 
-#define HAL_VAR_INTERRUPT_ACKNOWLEDGE( __vector ) CYG_EMPTY_STATEMENT
+#define HAL_VAR_INTERRUPT_ACKNOWLEDGE( __vector )                       \
+{                                                                       \
+    cyg_int32 __v = -1;                                                 \
+                                                                        \
+    switch( __vector )                                                  \
+    {                                                                   \
+    case CYGNUM_HAL_INTERRUPT_EXTI0...CYGNUM_HAL_INTERRUPT_EXTI4:       \
+        __v = __vector - CYGNUM_HAL_INTERRUPT_EXTI0;                    \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_EXTI5...CYGNUM_HAL_INTERRUPT_EXTI9:       \
+        __v =  __vector - CYGNUM_HAL_INTERRUPT_EXTI5 + 5;               \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_EXTI10...CYGNUM_HAL_INTERRUPT_EXTI15:     \
+        __v =  __vector - CYGNUM_HAL_INTERRUPT_EXTI5 + 5;               \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_PVD:                                      \
+        __v =  16;                                                      \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_RTC_ALARM:                                \
+        __v =  17;                                                      \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_USB_WAKEUP:                               \
+        __v =  18;                                                      \
+        break;                                                          \
+    }                                                                   \
+                                                                        \
+    if( __v >= 0 )                                                      \
+    {                                                                   \
+        cyg_uint32 __bit = CYGHWR_HAL_STM32_EXTI_BIT(__v);              \
+        HAL_WRITE_UINT32( CYGHWR_HAL_STM32_EXTI+CYGHWR_HAL_STM32_EXTI_PR, __bit ); \
+    }                                                                   \
+}
 
 #define HAL_VAR_INTERRUPT_CONFIGURE( __vector, __level, __up )          \
 {                                                                       \
@@ -237,33 +286,41 @@
     switch( __vector )                                                  \
     {                                                                   \
     case CYGNUM_HAL_INTERRUPT_EXTI0...CYGNUM_HAL_INTERRUPT_EXTI4:       \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI0;                              \
+        __v = __vector - CYGNUM_HAL_INTERRUPT_EXTI0;                    \
         break;                                                          \
                                                                         \
     case CYGNUM_HAL_INTERRUPT_EXTI5...CYGNUM_HAL_INTERRUPT_EXTI9:       \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                          \
+        __v =  __vector - CYGNUM_HAL_INTERRUPT_EXTI5 + 5;               \
         break;                                                          \
                                                                         \
     case CYGNUM_HAL_INTERRUPT_EXTI10...CYGNUM_HAL_INTERRUPT_EXTI15:     \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                          \
+        __v =  __vector - CYGNUM_HAL_INTERRUPT_EXTI5 + 5;               \
         break;                                                          \
                                                                         \
-    case CYGNUM_HAL_INTERRUPT_EXTI16...CYGNUM_HAL_INTERRUPT_EXTI18:     \
-        __v -= CYGNUM_HAL_INTERRUPT_EXTI5 + 5;                          \
+    case CYGNUM_HAL_INTERRUPT_PVD:                                      \
+        __v =  16;                                                      \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_RTC_ALARM:                                \
+        __v =  17;                                                      \
+        break;                                                          \
+                                                                        \
+    case CYGNUM_HAL_INTERRUPT_USB_WAKEUP:                               \
+        __v =  18;                                                      \
         break;                                                          \
     }                                                                   \
                                                                         \
-    if( !(__level) )                                                    \
+    if(( __v >= 0 ) && !(__level) )                                     \
     {                                                                   \
         cyg_uint32 __base = CYGHWR_HAL_STM32_EXTI;                      \
         cyg_uint32 __rtsr, __ftsr;                                      \
         cyg_uint32 __bit = CYGHWR_HAL_STM32_EXTI_BIT(__v);              \
         HAL_READ_UINT32( __base+CYGHWR_HAL_STM32_EXTI_RTSR, __rtsr );   \
-        HAL_READ_UINT32( __base+CYGHWR_HAL_STM32_EXTI_RTSR, __ftsr );   \
+        HAL_READ_UINT32( __base+CYGHWR_HAL_STM32_EXTI_FTSR, __ftsr );   \
         if( __up ) __rtsr |= __bit, __ftsr &= ~__bit;                   \
         else __ftsr |= __bit, __rtsr &= ~__bit;                         \
         HAL_WRITE_UINT32( __base+CYGHWR_HAL_STM32_EXTI_RTSR, __rtsr );  \
-        HAL_WRITE_UINT32( __base+CYGHWR_HAL_STM32_EXTI_RTSR, __ftsr );  \
+        HAL_WRITE_UINT32( __base+CYGHWR_HAL_STM32_EXTI_FTSR, __ftsr );  \
     }                                                                   \
 }
 
