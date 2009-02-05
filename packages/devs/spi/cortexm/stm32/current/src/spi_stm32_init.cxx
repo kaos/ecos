@@ -58,6 +58,6 @@ public:
   }
 };
 
-static cyg_spi_cortexm_stm32_init_class spi_cortexm_stm32_init CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
+static cyg_spi_cortexm_stm32_init_class spi_cortexm_stm32_init CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_BUS_SPI);
 
 //=============================================================================

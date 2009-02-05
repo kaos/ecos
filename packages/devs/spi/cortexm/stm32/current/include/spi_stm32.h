@@ -60,6 +60,43 @@
 #include <cyg/io/spi.h>
 
 //-----------------------------------------------------------------------------
+// Macro for defining a SPI device and attaching it to the appropriate bus.
+//
+// _name_     is the name of the SPI device.  This will be used to reference a
+//              data structure of type cyg_spi_device which can be passed to the
+//              SPI driver API without needing a cast.
+// _bus_      is the bus number to which this device is attached (1, 2 or 3).
+// _csnum_    is the chip select line used for this device, numbered from 0.
+// _16bit_    is set to true if the device uses 16 bit transactions and false
+//              if the bus uses 8 bit transactions.
+// _clpol_    is the SPI bus clock polarity used by the device.  This must be
+//              set to 1 if a clock line pullup resistor is used and 0 if a 
+//              clock line pulldown resistor is used.
+// _clpha_    is the SPI bus clock phase used by the device.
+// _brate_    is the SPI bus clock baud rate used by the device, measured in Hz.
+// _csup_dly_ is the minimum delay between chip select assert and transfer
+//              start, measured in microseconds.
+// _csdw_dly_ is the minimum delay between transfer end and chip select deassert,
+//              measured in microseconds.
+// _trbt_dly_ is the minimum delay between consecutive transfers.
+
+#define CYG_DEVS_SPI_CORTEXM_STM32_DEVICE( \
+  _name_, _bus_, _csnum_, _16bit_, _clpol_, _clpha_, _brate_, _csup_dly_, _csdw_dly_, _trbt_dly_\
+) \
+cyg_spi_cortexm_stm32_device_t _name_ ##_stm32 CYG_SPI_DEVICE_ON_BUS(_bus_) = { \
+{ .spi_bus    = (cyg_spi_bus*) &cyg_spi_stm32_bus## _bus_ }, \
+  .dev_num    = _csnum_, \
+  .bus_16bit  = _16bit_ ? 1 : 0, \
+  .cl_pol     = _clpol_, \
+  .cl_pha     = _clpha_, \
+  .cl_brate   = _brate_, \
+  .cs_up_udly = _csup_dly_, \
+  .cs_dw_udly = _csdw_dly_, \
+  .tr_bt_udly = _trbt_dly_, \
+}; \
+extern cyg_spi_device _name_ __attribute__((alias ( #_name_ "_stm32" )));
+
+//-----------------------------------------------------------------------------
 // STM32 SPI bus configuration and state.
 
 typedef struct cyg_spi_cortexm_stm32_bus_setup_s

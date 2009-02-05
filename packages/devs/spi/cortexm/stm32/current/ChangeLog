@@ -1,3 +1,12 @@
+2009-02-05  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/spi_stm32.h: Add macro to define an STM32 SPI device.
+
+	* src/spi_stm32.c: Fix potential compile error.
+
+	* src/spi_stm32_init.cxx: Change constructor init priority to use
+	CYG_INIT_BUS_SPI.
+
 2009-01-30  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/spi_stm32.cdl: 

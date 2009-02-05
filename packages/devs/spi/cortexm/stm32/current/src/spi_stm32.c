@@ -92,9 +92,7 @@ static int  stm32_set_config           (cyg_spi_device*, cyg_uint32, const void*
 static cyg_uint16 dma_tx_null __attribute__((section (".sram"))) = 0xFFFF;
 static cyg_uint16 dma_rx_null __attribute__((section (".sram"))) = 0xFFFF;
 
-#elif (defined (CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS1)) || \
-  (defined (CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS2)) || \
-  (defined (CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3))
+#else
 static cyg_uint16 dma_tx_null = 0xFFFF;
 static cyg_uint16 dma_rx_null = 0xFFFF;
 #endif
