@@ -256,6 +256,14 @@ package CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH {
     description "This package contains hardware support for Atmel DataFlash."
 }
 
+package CYGPKG_DEVS_FLASH_SPI_M25PXX {
+        alias           { "M25Pxx SPI Flash" flash_spi_m25pxx }
+        directory       devs/flash/spi/m25pxx
+        script          flash_m25pxx.cdl
+        description "
+        Support for M25Pxx SPI flash devices."
+}
+
 package CYGPKG_DEVS_FLASH_ARM_PID {
 	alias 		{ "Support for flash memory on ARM/PID board" flash_arm_pid }
 	directory	devs/flash/arm/pid
@@ -6846,6 +6854,7 @@ target stm3210e_eval {
                    CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL
                    CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2
                    CYGPKG_DEVS_FLASH_STM32
+                   CYGPKG_DEVS_FLASH_SPI_M25PXX
                    CYGPKG_IO_SERIAL_CORTEXM_STM32
                    CYGPKG_DEVS_WALLCLOCK_STM32
                    CYGPKG_IO_SPI
