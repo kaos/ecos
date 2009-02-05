@@ -4284,62 +4284,6 @@ package CYGPKG_DEVS_SERIAL_MCFxxxx {
 }
 
 # --------------------------------------------------------------------------
-# ColdFire packages
-
-package CYGPKG_HAL_COLDFIRE {
-    alias       { "ColdFire common HAL" hal_coldfire coldfire_hal
-coldfire_arch_hal }
-    directory   hal/coldfire/arch
-    script      hal_coldfire.cdl
-    hardware
-
-        description   "The ColdFire architecture HAL package provides generic
-                    support for this processor architecture. It is also
-                    necessary to select a specific target platform HAL
-                    package."
-
-}
-
-package CYGPKG_HAL_COLDFIRE_MCF5272 {
-    alias       { "ColdFire MCF5272 processor variant HAL"
-                  hal_coldfire_mcf5272
-                      coldfire_mcf5272_hal }
-    directory   hal/coldfire/mcf5272
-    script      hal_coldfire_mcf5272.cdl
-    hardware
-
-    description   "The ColdFire MCF5272 processor variant HAL package
-                  provides generic support for this processor architecture.
-                  It is also necessary to select a specific target platform
-                  HAL package."
-
-}
-
-package CYGPKG_HAL_COLDFIRE_M5272C3 {
-    alias       { "Freescale M5272C3 evaluation board platform HAL"
-                  hal_coldfire_m5272c3
-                      coldfire_m5272c3_hal }
-    directory   hal/coldfire/m5272c3
-    script      hal_coldfire_m5272c3.cdl
-    hardware
-
-    description   "The Freescale M5272C3 evaluation board platform HAL
-                  package should be used when targeting the actual hardware
-                  for the Freescale M5272C3 evaluation board platform."
-
-}
-
-package CYGPKG_IO_SERIAL_COLDFIRE_MCF5272 {
-    alias             { "ColdFire MCF5272 serial device drivers"
-                         devs_serial_coldfire_mcf5272_serial_driver }
-    hardware
-    directory         devs/serial/coldfire/mcf5272
-    script            mcf5272_serial.cdl
-    description       "ColdFire MCF5272 serial device drivers."
-}
-
-
-# --------------------------------------------------------------------------
 # CalmRISC16 packages
 
 package CYGPKG_HAL_CALM16 {
@@ -4732,6 +4676,7 @@ target at91sam7sek {
                    CYGPKG_HAL_ARM_AT91SAM7SEK
                    CYGPKG_IO_SERIAL_ARM_AT91
                    CYGPKG_DEVS_FLASH_AT91
+                   CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
                    CYGPKG_DEVS_USB_AT91
@@ -4749,6 +4694,7 @@ target at91sam7xek {
                    CYGPKG_HAL_ARM_AT91SAM7XEK
                    CYGPKG_IO_SERIAL_ARM_AT91
                    CYGPKG_DEVS_FLASH_AT91
+                   CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
                    CYGPKG_DEVS_USB_AT91
@@ -4768,6 +4714,7 @@ target sam7ex256 {
                    CYGPKG_HAL_ARM_SAM7EX256
                    CYGPKG_IO_SERIAL_ARM_AT91
                    CYGPKG_DEVS_FLASH_AT91
+                   CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
                    CYGPKG_DEVS_USB_AT91
@@ -4818,6 +4765,7 @@ target eb55 {
                    CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
                    CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH
                    CYGPKG_IO_SERIAL_ARM_AT91
+                   CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_ARM_EB55
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91
@@ -6191,22 +6139,6 @@ target m5272c3 {
     }
 
     description   "The m5272c3 target provides  the packages  needed to  run
-                eCos on the Freescale m5272c3 evaluation board."
-}
-
-# --------------------------------------------------------------------------
-# ColdFire targets
-
-target coldfire_m5272c3 {
-    alias { "Freescale M5272C3 evaluation board" }
-        packages {
-        CYGPKG_HAL_COLDFIRE
-        CYGPKG_HAL_COLDFIRE_MCF5272
-        CYGPKG_HAL_COLDFIRE_M5272C3
-        CYGPKG_IO_SERIAL_COLDFIRE_MCF5272
-    }
-
-    description   "The coldfire_m5272c3 target provides  the packages  needed to  run
                 eCos on the Freescale m5272c3 evaluation board."
 }
 

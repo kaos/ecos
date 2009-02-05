@@ -1,3 +1,12 @@
+2009-02-05  John Dallaway  <john@dallaway.org.uk>
+
+	* ecos.db: Remove package and target records for the deprecated
+	ColdFire port to avoid confusion. Add the CYGPKG_IO_SPI hardware
+	package to all relevant target records.
+
+	* pkgconf/stylesheet.dsl, pkgconf/ssa4.dsl, pkgconf/ssletter.dsl:
+	Match up "--" string delimiters in the copyright banners.
+
 2009-02-04  Nick Garnett  <nickg@ecoscentric.com>
 
 	* ecos.db: Add STM32 SPI driver.
@@ -2731,7 +2740,7 @@ Mon Jul 27 19:36:53 BST 1998  Chris Provenzano  <proven@cygnus.com>
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

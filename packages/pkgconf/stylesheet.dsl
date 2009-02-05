@@ -8,7 +8,7 @@
 <!--                                                                 -->
 <!-- =============================================================== -->
 <!-- ####ECOSGPLCOPYRIGHTBEGIN####                                       -->
-<!-- -------------------------------------------                         -->
+<!-- --------------------------------------------                        -->
 <!-- This file is part of eCos, the Embedded Configurable Operating System. -->
 <!-- Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc. -->
 <!--                                                               -->
@@ -36,7 +36,7 @@
 <!--                                                               -->
 <!-- This exception does not invalidate any other reasons why a work based -->
 <!-- on this file might be covered by the GNU General Public License.    -->
-<!-- -------------------------------------------                         -->
+<!-- --------------------------------------------                        -->
 <!-- ####ECOSGPLCOPYRIGHTEND####                                         -->
 <!-- =============================================================== -->
 <!-- #####DESCRIPTIONBEGIN####                                       -->
