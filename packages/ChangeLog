@@ -1,3 +1,8 @@
+2009-02-06  John Dallaway  <john@dallaway.org.uk>
+
+	* ecos.db: Eliminate superfluous target aliases which duplicate target
+	name.
+
 2009-02-05  Chris Holgate  <chris@zynaptic.com>
  
 	* ecos.db: Added M25Pxx SPI flash driver.  Included M25pxx driver in

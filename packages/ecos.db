@@ -2678,7 +2678,7 @@ package CYGPKG_CYGMON {
 }
 
 package CYGPKG_REDBOOT {
-    alias           { "RedBoot, the Red Hat bootstrap" redboot }
+    alias           { "RedBoot ROM monitor" redboot }
     directory       redboot
     script          redboot.cdl
     description     "
@@ -4553,7 +4553,7 @@ MB93090-PD00 Portable Development Kit."
 # FR30 Targets
 
 target skmb91302 {
-    alias { "Fujitsu Starterkit MB91302 board" skmb91302 }
+    alias { "Fujitsu Starterkit MB91302 board" }
     packages { CYGPKG_HAL_FR30
                    CYGPKG_HAL_FR30_MB91301
                    CYGPKG_HAL_FR30_MB91301_SKMB91302
@@ -4800,7 +4800,7 @@ target phycore {
 }
 
 target mcb2100 {
-        alias { "Keil evaluation board MCB2100" mcb2100 }
+        alias { "Keil evaluation board MCB2100" }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC2XXX
                    CYGPKG_HAL_ARM_LPC2XXX_MCB2100
@@ -4814,7 +4814,7 @@ target mcb2100 {
 }
 
 target p2106 {
-        alias { "Olimex evaluation board LPC-P2106" p2106 }
+        alias { "Olimex evaluation board LPC-P2106" }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC2XXX
                    CYGPKG_HAL_ARM_LPC2XXX_P2106
@@ -4828,7 +4828,7 @@ target p2106 {
 }
 
 target lpcmt {
-	alias { "Olimex evaluation board LPC-LPCMT" lpcmt }
+	alias { "Olimex evaluation board LPC-LPCMT" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC2XXX
                    CYGPKG_HAL_ARM_LPC2XXX_LPCMT
@@ -4842,7 +4842,7 @@ target lpcmt {
 }
 
 target phycore229x {
-        alias { "phyCORE-LPC2294/92 development board HAL" phycore229x }
+        alias { "phyCORE-LPC2294/92 development board HAL" }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC2XXX
                    CYGPKG_HAL_ARM_LPC2XXX_PHYCORE229X 
@@ -4862,7 +4862,7 @@ target phycore229x {
 }
 
 target ea2468 {
-        alias { "Embedded Artists LPC2468 OEM board HAL" ea2468 }
+        alias { "Embedded Artists LPC2468 OEM board HAL" }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC24XX
                    CYGPKG_HAL_ARM_LPC24XX_EA2468 
@@ -4886,7 +4886,7 @@ target ea2468 {
 }
 
 target olpch2294 {
-        alias { "Olimex LPC-H2294 header board" olpch2294 }
+        alias { "Olimex LPC-H2294 header board" }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC2XXX
                    CYGPKG_HAL_ARM_LPC2XXX_OLPCH2294
@@ -4903,7 +4903,7 @@ target olpch2294 {
 
 
 target olpce2294 {
-        alias { "Olimex LPC-E2294 development board" olpce2294 }
+        alias { "Olimex LPC-E2294 development board" }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC2XXX
                    CYGPKG_HAL_ARM_LPC2XXX_OLPCE2294
@@ -4921,7 +4921,7 @@ target olpce2294 {
 }
 
 target olpcl2294 {
-        alias { "Olimex LPC-L2294-1MB development board" olpcl2294 }
+        alias { "Olimex LPC-L2294-1MB development board" }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_LPC2XXX
                    CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294
@@ -4999,7 +4999,7 @@ target aaed2000 {
 }
 
 target excalibur_arm9 {
-	alias { "Altera ARM9/Excalibur board" excalibur_arm9 epxa10 }
+	alias { "Altera ARM9/Excalibur board" epxa10 }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_ARM9
                    CYGPKG_HAL_ARM_ARM9_EXCALIBUR
@@ -5012,7 +5012,7 @@ target excalibur_arm9 {
 }
 
 target smdk2410 {
-        alias { "Samsung ARM9/SMDK2410 development board" smdk2410 s3c2410x }
+        alias { "Samsung ARM9/SMDK2410 development board" s3c2410x }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_ARM9
                    CYGPKG_HAL_ARM_ARM9_SMDK2410
@@ -5026,7 +5026,7 @@ target smdk2410 {
 }
 
 target innovator {
-	alias { "Innovator (ARM) board" innovator }
+	alias { "Innovator (ARM) board" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_ARM9
                    CYGPKG_HAL_ARM_ARM9_INNOVATOR
@@ -5047,7 +5047,7 @@ target innovator {
 }
 
 target assabet {
-	alias { "Intel StrongARM SA1110 board" assabet }
+	alias { "Intel StrongARM SA1110 board" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_SA11X0
                    CYGPKG_HAL_ARM_SA11X0_ASSABET
@@ -5068,7 +5068,7 @@ target assabet {
 }
 
 target cerf {
-	alias { "Intrinsyc SA1110 Cerf board" cerf cerf_cube }
+	alias { "Intrinsyc SA1110 Cerf board" cerf_cube }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_SA11X0
                    CYGPKG_HAL_ARM_SA11X0_CERF
@@ -5114,7 +5114,7 @@ target cerfpda {
 }
 
 target ipaq {
-	alias { "Compaq iPAQ Pocket PC" ipaq }
+	alias { "Compaq iPAQ Pocket PC" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_SA11X0
                    CYGPKG_HAL_ARM_SA11X0_IPAQ
@@ -5135,7 +5135,7 @@ target ipaq {
 
 
 target nano {
-	alias { "nanoEngine StrongARM SA1110 board" nano nanoEngine }
+	alias { "nanoEngine StrongARM SA1110 board" nanoEngine }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_SA11X0
                    CYGPKG_HAL_ARM_SA11X0_NANO
@@ -5153,7 +5153,7 @@ target nano {
 }
 
 target flexanet {
-      alias { "Flexanet StrongARM SA1110 platform" flexanet }
+      alias { "Flexanet StrongARM SA1110 platform" }
       packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_SA11X0
                    CYGPKG_HAL_ARM_SA11X0_FLEXANET
@@ -5173,7 +5173,7 @@ target flexanet {
 }
 
 target brutus {
-	alias { "Intel StrongARM SA1100 board" brutus }
+	alias { "Intel StrongARM SA1100 board" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_SA11X0
                    CYGPKG_HAL_ARM_SA11X0_BRUTUS
@@ -5185,7 +5185,7 @@ target brutus {
 }
 
 target sa1100mm {
-	alias { "Intel StrongARM SA1100 Multimedia board" sa1100mm }
+	alias { "Intel StrongARM SA1100 Multimedia board" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_SA11X0
                    CYGPKG_HAL_ARM_SA11X0_SA1100MM
@@ -5198,7 +5198,7 @@ target sa1100mm {
 }
 
 target iq80310 {
- 	alias { "Intel IQ80310 XScale board" cyclone iq80310 }
+ 	alias { "Intel IQ80310 XScale board" cyclone }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_XSCALE_CORE
                    CYGPKG_HAL_ARM_XSCALE_IOP310
@@ -5216,7 +5216,7 @@ target iq80310 {
 }
 
 target npwr {
-	alias { "NPWR Linux Engine (Intel XScale)" npwr }
+	alias { "NPWR Linux Engine (Intel XScale)" }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_XSCALE_CORE
                    CYGPKG_HAL_ARM_XSCALE_IOP310
@@ -5234,7 +5234,7 @@ target npwr {
 }
 
 target iq80321 {
-	alias { "Intel XScale IQ80321 Board" iq80321 }
+	alias { "Intel XScale IQ80321 Board" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_XSCALE_CORE
                    CYGPKG_HAL_ARM_XSCALE_VERDE
@@ -5253,7 +5253,7 @@ target iq80321 {
 }
 
 target ixdp425 {
-	alias { "IXDP425 board" ixdp425 }
+	alias { "IXDP425 board" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_XSCALE_CORE
 	           CYGPKG_HAL_ARM_XSCALE_IXP425
@@ -5269,7 +5269,7 @@ target ixdp425 {
 }
 
 target XSEngine {
-        alias { "Exys XSEngine Board" XSEngine xsengine }
+        alias { "Exys XSEngine Board" xsengine }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_XSCALE_CORE
                    CYGPKG_HAL_ARM_XSCALE_PXA2X0
@@ -5285,7 +5285,7 @@ target XSEngine {
 }
 
 target grg {
-	alias { "Generic Residential Gateway" grg }
+	alias { "Generic Residential Gateway" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_XSCALE_CORE
 	           CYGPKG_HAL_ARM_XSCALE_IXP425
@@ -5302,7 +5302,7 @@ target grg {
 }
 
 target prpmc1100 {
-	alias { "Motorola PrPMC1100" prpmc1100 }
+	alias { "Motorola PrPMC1100" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_XSCALE_CORE
 	           CYGPKG_HAL_ARM_XSCALE_IXP425
@@ -5330,7 +5330,7 @@ The edb7xxx target provides the packages needed to run eCos on the Cirrus Logic 
     }
 
 target pati {
-        alias           { "MPL PATI" pati }
+        alias           { "MPL PATI" }
         packages        { CYGPKG_HAL_POWERPC
                           CYGPKG_HAL_POWERPC_MPC5xx
                           CYGPKG_HAL_POWERPC_PATI
@@ -5358,7 +5358,7 @@ CMA230 (ARM7TDMI) or CMA222 (ARM710T) board."
 
 
 target snds {
-      alias { "Samsung SNDS" SNDS snds snds100 }
+      alias { "Samsung SNDS" SNDS snds100 }
       packages { CYGPKG_HAL_ARM 
                  CYGPKG_HAL_ARM_SNDS 
                  CYGPKG_DEVS_ETH_ARM_KS32C5000
@@ -5370,7 +5370,7 @@ target snds {
 }
 
 target aim711 {
-      alias { "ARM Industrial Module AIM 711" AIM711 aim711 }
+      alias { "ARM Industrial Module AIM 711" AIM711 }
       packages {
                    CYGPKG_HAL_ARM 
                    CYGPKG_HAL_ARM_AIM711 
@@ -5390,7 +5390,7 @@ target aim711 {
 
 
 target mpc50 {
-	alias { "MICROPLEX Printer Controller 5.0" mpc50 }
+	alias { "MICROPLEX Printer Controller 5.0" }
 	packages {
 				CYGPKG_HAL_ARM
 				CYGPKG_HAL_ARM_XSCALE_CORE
@@ -5423,7 +5423,7 @@ target sh7708 {
            eCos on a Hitachi EDK/SH7708 board."
 }
 target cq7708 {
-        alias { "CqREEK SH7708 board" cq7708 }
+        alias { "CqREEK SH7708 board" }
         packages { CYGPKG_HAL_SH
                    CYGPKG_HAL_SH_SH3
                    CYGPKG_HAL_SH_SH7708_CQ7708
@@ -5505,7 +5505,7 @@ target se7751 {
 }
 
 target dreamcast {
-        alias { "SEGA Dreamcast" dreamcast }
+        alias { "SEGA Dreamcast" }
         packages { CYGPKG_HAL_SH
                    CYGPKG_HAL_SH_SH4
                    CYGPKG_HAL_SH_SH7750_DREAMCAST
@@ -5687,7 +5687,7 @@ target sparc_leon {
 # --------------------------------------------------------------------------
 # PowerPC targets
 target cme555 {
-        alias           { "Axiom's CME555 board" cme555 }
+        alias           { "Axiom's CME555 board" }
         packages        { CYGPKG_HAL_POWERPC
                           CYGPKG_HAL_POWERPC_MPC5xx
                           CYGPKG_HAL_POWERPC_CME555
@@ -5703,7 +5703,7 @@ target cme555 {
 }
 
 target ec555 {
-        alias           { "Wuerz ec555" ec555 }
+        alias           { "Wuerz ec555" }
         packages        { CYGPKG_HAL_POWERPC
                           CYGPKG_HAL_POWERPC_MPC5xx
                           CYGPKG_HAL_POWERPC_EC555
@@ -5886,7 +5886,7 @@ target jmr3904 {
 }
 
 target atlas_mips32_4kc {
-        alias		{ "MIPS Atlas board with Mips32 4Kc processor" atlas_mips32_4kc }
+        alias		{ "MIPS Atlas board with Mips32 4Kc processor" }
 	packages        { CYGPKG_HAL_MIPS
                           CYGPKG_HAL_MIPS_MIPS32
                           CYGPKG_HAL_MIPS_ATLAS
@@ -5902,7 +5902,7 @@ target atlas_mips32_4kc {
 }
 
 target atlas_mips64_5kc {
-        alias		{ "MIPS Atlas board with Mips64 5Kc processor" atlas_mips64_5kc ruby }
+        alias		{ "MIPS Atlas board with Mips64 5Kc processor" ruby }
 	packages        { CYGPKG_HAL_MIPS
                           CYGPKG_HAL_MIPS_MIPS64
                           CYGPKG_HAL_MIPS_ATLAS
@@ -5916,7 +5916,7 @@ target atlas_mips64_5kc {
            eCos on a MIPS Atlas board with a Mips64 5Kc processor."
 }
 target malta_mips32_4kc {
-        alias		{ "MIPS Malta board with Mips32 4Kc processor" malta_mips32_4kc }
+        alias		{ "MIPS Malta board with Mips32 4Kc processor" }
 	packages        { CYGPKG_HAL_MIPS
                           CYGPKG_HAL_MIPS_MIPS32
                           CYGPKG_HAL_MIPS_MALTA
@@ -5933,7 +5933,7 @@ target malta_mips32_4kc {
 }
 
 target malta_mips64_5kc {
-        alias		{ "MIPS Malta board with Mips64 5Kc processor" malta_mips64_5kc }
+        alias		{ "MIPS Malta board with Mips64 5Kc processor" }
 	packages        { CYGPKG_HAL_MIPS
                           CYGPKG_HAL_MIPS_MIPS64
                           CYGPKG_HAL_MIPS_MALTA
@@ -5978,7 +5978,7 @@ target ref4955 {
 }
 
 target ocelot {
-        alias		{ "PMC-Sierra Ocelot platform" ocelot }
+        alias		{ "PMC-Sierra Ocelot platform" }
 	packages        { CYGPKG_HAL_MIPS
                           CYGPKG_HAL_MIPS_RM7000
                           CYGPKG_HAL_MIPS_RM7000_OCELOT
@@ -6135,7 +6135,7 @@ Cosmo CEB-V850 evaluation board fitted with a NEC V850/SA1 or NEC V850/SB1."
 # m68k targets
 
 target m5272c3 {
-    alias { "Freescale m5272c3 evaluation board" m5272c3 }
+    alias { "Freescale m5272c3 evaluation board" }
     packages {
         CYGPKG_HAL_M68K
         CYGPKG_HAL_M68K_MCFxxxx
@@ -6327,7 +6327,7 @@ package CYGPKG_HAL_ARM_XSCALE_UE250 {
 }
 
 target uE250 {
-	alias { "NMI uEngine uE250 Board" uE250 ue250 }
+	alias { "NMI uEngine uE250 Board" ue250 }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_XSCALE_CORE
                    CYGPKG_HAL_ARM_XSCALE_PXA2X0
@@ -6375,7 +6375,7 @@ package CYGPKG_HAL_ARM_XSCALE_PICASSO {
 }
 
 target picasso {
-	alias { "NMI uEngine picasso Board" picasso picasso }
+	alias { "NMI uEngine picasso Board" }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_XSCALE_CORE
                    CYGPKG_HAL_ARM_XSCALE_PXA2X0
