@@ -1,3 +1,7 @@
+2009-02-07  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/objloader.tcl: Pass file2c.tcl to tclsh directly.
+
 2006-06-27  Anthony Tonizzo  <atonizzo@gmail.com>
 
     * src/loader_fs.c : Minor cosmetic and formatting changes on all files. 

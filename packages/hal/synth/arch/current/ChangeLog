@@ -1,3 +1,8 @@
+2009-02-07  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/hal_synth.cdl: Parent under the common HAL package as with
+	other architectural HAL packages.
+
 2008-12-30  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/hal_synth.cdl: Reference per-package documentation.
@@ -584,7 +589,7 @@ Mon Nov  9 15:18:11 GMT 1998   Chris Provenzano  <proven@cygnus.com>
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

@@ -8,7 +8,7 @@
 # ####ECOSGPLCOPYRIGHTBEGIN####                                             
 # -------------------------------------------                               
 # This file is part of eCos, the Embedded Configurable Operating System.    
-# Copyright (C) 2008 Free Software Foundation, Inc.                         
+# Copyright (C) 2008, 2009 Free Software Foundation, Inc.                         
 #
 # eCos is free software; you can redistribute it and/or modify it under     
 # the terms of the GNU General Public License as published by the Free      
@@ -189,10 +189,10 @@ cdl_package CYGPKG_DEVS_FRAMEBUF_SYNTH {
             CYGPKG_DEVS_FRAMEBUF_SYNTH_FB2 ||
             CYGPKG_DEVS_FRAMEBUF_SYNTH_FB3 }
         make -priority=1 {
-            $(PREFIX)/include/cyg/io/framebufs/synth_fb.h :	\
-                $(REPOSITORY)/$(PACKAGE)/src/gen_synthfb.tcl 	\
-                $(PREFIX)/include/pkgconf/devs_framebuf_synth.h
-            sh $< $(PREFIX)
+            <PREFIX>/include/cyg/io/framebufs/synth_fb.h :      \
+                <PACKAGE>/src/gen_synthfb.tcl                   \
+                <PREFIX>/include/pkgconf/devs_framebuf_synth.h
+            tclsh $< $(PREFIX)
         }
         compile synthfb.c
         compile -library=libextras.a synthfb_init.cxx

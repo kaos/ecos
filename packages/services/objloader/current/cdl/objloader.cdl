@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2005 Free Software Foundation, Inc.                        
+## Copyright (C) 2005, 2009 Free Software Foundation, Inc.                        
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -172,7 +172,7 @@ cdl_package CYGPKG_OBJLOADER {
             <PREFIX>/include/cyg/objloader/testromfs_be.h : tests/testromfs/hello.o 
             $(PREFIX)/bin/mk_romfs -b tests/testromfs testromfs_be.bin 
 	    @mkdir -p "$(dir $@)"
-            @sh $(PREFIX)/bin/file2c.tcl testromfs_be.bin testromfs_be.h
+            @tclsh $(PREFIX)/bin/file2c.tcl testromfs_be.bin testromfs_be.h
             @cp testromfs_be.h $@
         }
         
@@ -180,7 +180,7 @@ cdl_package CYGPKG_OBJLOADER {
             <PREFIX>/include/cyg/objloader/testromfs_le.h : tests/testromfs/hello.o 
             $(PREFIX)/bin/mk_romfs tests/testromfs testromfs_le.bin
 	    @mkdir -p "$(dir $@)"
-            @sh $(PREFIX)/bin/file2c.tcl testromfs_le.bin testromfs_le.h
+            @tclsh $(PREFIX)/bin/file2c.tcl testromfs_le.bin testromfs_le.h
             @cp testromfs_le.h $@
         }
     

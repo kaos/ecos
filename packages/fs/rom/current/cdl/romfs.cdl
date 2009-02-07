@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2009 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -111,23 +111,23 @@ cdl_package CYGPKG_FS_ROM {
                 This option enables the building of the ROM filesystem tests."
 
         make -priority 100 {
-            <PREFIX>/include/cyg/romfs/testromfs_le.h : $(PREFIX)/bin/mk_romfs <PACKAGE>/support/file2c.tcl
+            <PREFIX>/include/cyg/romfs/testromfs_le.h : <PREFIX>/bin/mk_romfs <PACKAGE>/support/file2c.tcl
             $(PREFIX)/bin/mk_romfs $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs_le.bin
             @mkdir -p "$(dir $@)"
             # work around cygwin path problems by copying to build dir
             @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl .
-            sh file2c.tcl testromfs_le.bin testromfs_le.h
+            tclsh file2c.tcl testromfs_le.bin testromfs_le.h
             @rm -f $@ file2c.tcl
             @cp testromfs_le.h $@
         }
     
         make -priority 100 {
-            <PREFIX>/include/cyg/romfs/testromfs_be.h : $(PREFIX)/bin/mk_romfs <PACKAGE>/support/file2c.tcl
+            <PREFIX>/include/cyg/romfs/testromfs_be.h : <PREFIX>/bin/mk_romfs <PACKAGE>/support/file2c.tcl
             $(PREFIX)/bin/mk_romfs -b $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs_be.bin
             @mkdir -p "$(dir $@)"
             # work around cygwin path problems by copying to bin dir
             @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl $(PREFIX)/bin/
-            sh $(PREFIX)/bin/file2c.tcl testromfs_be.bin testromfs_be.h
+            tclsh $(PREFIX)/bin/file2c.tcl testromfs_be.bin testromfs_be.h
             @cp testromfs_be.h $@
         }
     
