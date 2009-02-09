@@ -11,7 +11,7 @@
 <!-- =============================================================== -->
 <!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
 <!-- =============================================================== -->
-<!-- Copyright (C) 2004 Free Software Foundation, Inc.               -->
+<!-- Copyright (C) 2004, 2009 Free Software Foundation, Inc.         -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -203,8 +203,8 @@ extra functions in the platform HAL.
     <para>
 Typically all appropriate packages will be loaded automatically when
 you configure eCos for a given target. If the application does not use
-of the SPI I/O facilities, directly or indirectly, then linker garbage
-collection should eliminate all unnecessary code and data. All
+any of the SPI I/O facilities, directly or indirectly, then linker
+garbage collection should eliminate all unnecessary code and data. All
 necessary initialization should happen automatically. However the
 exact details may depend on the target, so the platform HAL
 documentation should be checked for further details.
@@ -689,7 +689,8 @@ Create a HAL table for the devices attached to this bus.
       <listitem><para>
 Arrange for the bus to be initialized early on during system
 initialization. Typically this will happen via a prioritized static
-constructor. As part of this initialization the bus driver should
+constructor with priority <literal>CYG_INIT_BUS_SPI</literal>.
+As part of this initialization the bus driver should
 invoke the <function>CYG_SPI_BUS_COMMON_INIT</function> macro on its
 <structname>cyg_spi_bus</structname> field.
       </para></listitem>

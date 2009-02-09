@@ -1,3 +1,9 @@
+2009-02-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/spi.cdl: fix descriptions in the CFLAGS_ADD and
+	CFLAGS_REMOVE options
+	* doc/spi.sgml: fix typo. Mention CYG_INIT_BUS_SPI priority.
+
 2008-12-30  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/spi.cdl: Reference per-package documentation.
@@ -16,7 +22,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2004 Free Software Foundation, Inc.                        
+// Copyright (C) 2004, 2009 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

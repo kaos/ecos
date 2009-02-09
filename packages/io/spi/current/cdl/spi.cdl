@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2004 Free Software Foundation, Inc.                        
+## Copyright (C) 2004, 2009 Free Software Foundation, Inc.                        
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -58,15 +58,13 @@ cdl_package CYGPKG_IO_SPI {
         attached to an SPI bus. It also provides support for writing
         bus drivers and for defining SPI device structures."
 
-    
     cdl_component CYGPKG_IO_SPI_OPTIONS {
         display "SPI build options"
         flavor  none
         description   "
 	    Package specific build options including control over
-	    compiler flags used only in building this package,
-	    and details of which tests are built."
-
+	    compiler flags used only in building the generic SPI
+            package, and details of which tests are built."
 
         cdl_option CYGPKG_IO_SPI_CFLAGS_ADD {
             display "Additional compiler flags"
@@ -75,8 +73,8 @@ cdl_package CYGPKG_IO_SPI {
             default_value { "" }
             description   "
                 This option modifies the set of compiler flags for
-                building the serial device drivers. These flags are used in addition
-                to the set of global flags."
+                building the generic SPI package. These flags are 
+                used in addition to the set of global flags."
         }
 
         cdl_option CYGPKG_IO_SPI_CFLAGS_REMOVE {
@@ -86,8 +84,8 @@ cdl_package CYGPKG_IO_SPI {
             default_value { "" }
             description   "
                 This option modifies the set of compiler flags for
-                building the serial device drivers. These flags are removed from
-                the set of global flags if present."
+                building the generic SPI package. These flags are 
+                removed from the set of global flags if present."
         }
     }
 }
