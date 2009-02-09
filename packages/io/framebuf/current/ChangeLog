@@ -1,3 +1,8 @@
+2009-02-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/framebuf.sgml: clarify the meaning of the true colour
+	formats.
+
 2009-02-07  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/framebuf.cdl: Pass gen_framebufs.tcl to tclsh directly.

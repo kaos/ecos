@@ -11,7 +11,7 @@
 <!-- =============================================================== -->
 <!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
 <!-- =============================================================== -->
-<!-- Copyright (C) 2008 Free Software Foundation, Inc.               -->
+<!-- Copyright (C) 2008, 2009 Free Software Foundation, Inc.         -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -1390,36 +1390,40 @@ at the same time. The palette may be read-only or read-write.
       <varlistentry>
         <term><literal>CYG_FB_FORMAT_8BPP_TRUE_332</literal></term>
         <listitem><para>
-an 8bpp true colour display. Bits 0 and 1 of each pixel value control
-four levels of blue intensity, bits 2 to 4 control eight levels of
-green, and bits 5 to 7 control eight levels of red.
+an 8bpp true colour display, with three bits (eight levels) of red and
+green intensity and two bits (four levels) of blue intensity.
         </para></listitem>
       </varlistentry>
       <varlistentry>
         <term><literal>CYG_FB_FORMAT_16BPP_TRUE_565</literal></term>
         <listitem><para>
-a 16bpp true colour display. Bits 0 to 4 of each pixel value control
-the blue intensity, bits 5 to 10 the green intensity, and bits 11 to
-15 the red intensity.
+a 16bpp true colour display with 5 bits each for red and blue and 6
+bits for green.
         </para></listitem>
       </varlistentry>
       <varlistentry>
         <term><literal>CYG_FB_FORMAT_16BPP_TRUE_555</literal></term>
         <listitem><para>
-a 16bpp true colour display, with the top bit unused. Bits 0 to 4 of
-each pixel value control the blue intensity, bits 5 to 9 the green
-intensity, and bits 10 to 14 the red intensity.
+a 16bpp true colour display with five bits each for red, green and
+blue, and one unused bit.
         </para></listitem>
       </varlistentry>
       <varlistentry>
         <term><literal>CYG_FB_FORMAT_32BPP_TRUE_0888</literal></term>
         <listitem><para>
-a 32bpp true colour display, with the top byte unused. Bits 0 to 7 of
-each pixel value control the blue intensity, bits 8 to 15 the green
-intensity, and bits 16 to 23 the red intensity.
+a 32bpp true colour display with eight bits each for red, green and
+blue and eight bits unused.
         </para></listitem>
       </varlistentry>
     </variablelist>
+    <para>
+For the true colour formats the format does not define exactly which
+bits in the pixel are used for which colour. Instead the
+<function>cyg_fb_make_colour</function>
+and <function>cyg_fb_break_colour</function> functions or the
+equivalent macros should be used to construct or decompose pixel
+values.
+    </para>
   </refsect1>
 
   <refsect1 id="framebuf-colour-palette">
@@ -1514,10 +1518,9 @@ offers the same colour intensities but requires four times the memory
 and four times the bandwidth.
     </para>
     <para>
-There are two ways of determining a <type>cyg_fb_colour</type> pixel
-value for a given colour. The first is to decode the colour format,
-for example <literal>CYG_FB_FORMAT_16BPP_TRUE_565</literal>, and
-perform the appropriate arithmetic. The second is to use the supplied
+Exactly how the colour bits are organized in
+a <type>cyg_fb_colour</type> pixel value is not
+defined by the colour format. Instead code should use the
 <function>cyg_fb_make_colour</function> or
 <function>CYG_FB_MAKE_COLOUR</function> primitives. These take 8-bit
 intensity levels for red, green and blue, and return the corresponding
@@ -2640,6 +2643,13 @@ default definitions of the true colour primitives for
     CYG_MACRO_END
         </programlisting>
         <para>
+These default definitions assume the most common layout of colours
+within a pixel value, so for
+example <function>CYG_FB_MAKE_COLOUR_16BPP_TRUE_565</function> assumes
+bits 0 to 4 hold the blue intensity, bits 5 to 10 the green, and bits
+11 to 15 the red.
+        </para>
+        <para>
 If the hardware does not implement a linear framebuffer then obviously
 writing the device driver will be significantly more work. The macros
 will have to perform the operations themselves instead of relying on
@@ -2796,7 +2806,8 @@ device driver does not implement non-core functionality.
 As with the macros there are default implementations of the true
 colour primitives for <literal>8bpp_true_332</literal>,
 <literal>16bpp_true_565</literal>, <literal>16bpp_true_555</literal>
-and <literal>32bpp_true_0888</literal>. There are also default
+and <literal>32bpp_true_0888</literal>, assuming the most common
+layout for these colour modes. There are also default
 implementations of the drawing primitives for linear framebuffers,
 with variants for the common display depths and layouts. Obviously
 non-linear framebuffers will need rather more work.
