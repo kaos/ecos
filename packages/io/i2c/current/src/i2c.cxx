@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.                  
+// Copyright (C) 2004, 2005, 2009 Free Software Foundation, Inc.                  
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -71,10 +71,6 @@
 // then all required code and data should get included, otherwise it
 // will all be elided.
 //
-// The init priority is configurable, defaulting to CYG_INIT_DRIVERS.
-// Arguably it should happen a bit earlier to allow other drivers to
-// perform I2C operations, but there is no CYG_INIT_BUS.
-//
 // All I2C buses are kept in a table, so that the init code can
 // iterate through each one.
 
@@ -87,7 +83,7 @@ class cyg_i2c_init {
     cyg_i2c_init();
 };
 
-static cyg_i2c_init cyg_i2c_init_object CYGBLD_ATTRIB_INIT_PRI(CYGNUM_I2C_INIT_PRIORITY);
+static cyg_i2c_init cyg_i2c_init_object CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_BUS_I2C);
 
 cyg_i2c_init::cyg_i2c_init()
 {

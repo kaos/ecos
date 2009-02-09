@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2004 Free Software Foundation, Inc.                        
+## Copyright (C) 2004, 2009 Free Software Foundation, Inc.                        
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -58,19 +58,6 @@ cdl_package CYGPKG_IO_I2C {
         attached to an I2C bus. It specifies how I2C bus drivers should
         be written and how I2C devices should be defined. There is also
         support for bit-banged I2C buses."
-
-    cdl_option CYGNUM_I2C_INIT_PRIORITY {
-	display		"I2C initialization priority"
-	flavor		data
-	default_value	{ "CYG_INIT_DRIVERS" }
-
-	description "
-            The generic I2C package will initialize each I2C bus during
-            system startup, using a prioritized static constructor. This
-            option controls the priority that is used. The default value,
-            CYG_INIT_DRIVERS, means that I2C buses get initialized early
-            on."
-    }
 
     cdl_component CYGPKG_IO_I2C_OPTIONS {
         display "I2C build options"

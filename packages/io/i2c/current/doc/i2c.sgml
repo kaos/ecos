@@ -11,7 +11,7 @@
 <!-- =============================================================== -->
 <!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
 <!-- =============================================================== -->
-<!-- Copyright (C) 2004 Free Software Foundation, Inc.               -->
+<!-- Copyright (C) 2004, 2009 Free Software Foundation, Inc.         -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -546,12 +546,11 @@ before the transaction is ended.
     <para>
 The generic package <varname>CYGPKG_IO_I2C</varname> arranges for all
 I2C bus devices to be initialized via a single prioritized C++ static
-constructor. Usually this constructor will run early on during system
-startup, before any application code. The default priority is
-<literal>CYG_INIT_DRIVERS</literal>, but this can be changed via the
-configuration option <varname>CYGNUM_I2C_INIT_PRIORITY</varname>.
-Other code should not try to access any of the I2C devices until after
-the buses have been initialized.
+constructor. This constructor will run early on during system startup,
+before any application code, with priority
+<literal>CYG_INIT_BUS_I2C</literal>. Other code should not try to
+access any of the I2C devices until after the buses have been
+initialized.
     </para>
   </refsect1>
 
@@ -730,7 +729,7 @@ hal_alaia_i2c_bitbang(cyg_i2c_bus* bus, cyg_i2c_bitbang_op op)
     return result;
 }
 
-CYG_I2C_BITBANG_BUS(&amp;hal_alaia_i2c_bus, &amp;hal_alaia_i2c_bitbang);
+CYG_I2C_BITBANG_BUS(hal_alaia_i2c_bus, &amp;hal_alaia_i2c_bitbang);
     </programlisting>
     <para>
 This gives a structure <varname>hal_alaia_i2c_bus</varname> which can
@@ -768,9 +767,8 @@ The bitbang function should support the following operations:
         <term><literal>CYG_I2C_BITBANG_INIT</literal></term>
         <listitem><para>
 This will be called during system initialization, as a side effect of
-a prioritized C++ static constructor. By default this constructor will
-run at <literal>CYG_INIT_DRIVERS</literal> priority. The bitbang
-function should ensure that both SCL and SDA are driven high.
+a prioritized C++ static constructor. The bitbang function should
+ensure that both SCL and SDA are driven high.
         </para></listitem>
       </varlistentry>
       <varlistentry>
