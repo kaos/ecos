@@ -1,3 +1,7 @@
+2009-02-09  John Dallaway  <john@dallaway.org.uk>
+
+	* README.host: Minor update of configtool info.
+
 2008-08-28  Bart Veer  <bartv@ecoscentric.com>
 
 	* README.host: update description of Tcl/Tk searching.

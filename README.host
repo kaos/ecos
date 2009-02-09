@@ -57,17 +57,15 @@ tools/configtool/standalone/common/
 
 tools/configtool/standalone/wxwin/
     Contains sources for the wxWindows-based, Linux and Windows graphical
-    configuration tool. The Windows version can currently only be
-    built with Visual C++, not with cygwin g++.
+    configuration tool. The Windows version is built with cygwin g++.
     
 tools/configtool/common/win32/
 tools/configtool/standalone/win32/
     Contains sources for the older, MFC-based, Windows-only graphical
-    configuration tool. Again this can currently only be built with
-    Visual C++.
+    configuration tool. This can only be built with Visual C++.
 
 The two graphical configuration tools have their own build procedures,
-described in tools/configtool/standalone/wxwin/ReadMe and
+described in tools/configtool/standalone/wxwin/README.txt and
 tools/configtool/standalone/win32/ReadMe respectively.
 
 Package-specific host-side code lives in the host subdirectory of the
@@ -345,7 +343,7 @@ instead.
 
 // ####ECOSDOCCOPYRIGHTBEGIN####                                            
 // ===============================================================          
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.            
+// Copyright (C) 2000, 2001, 2002, 2009 Free Software Foundation, Inc.            
 // This material may be distributed only subject to the terms               
 // and conditions set forth in the Open Publication License, v1.0           
 // or later (the latest version is presently available at                   
