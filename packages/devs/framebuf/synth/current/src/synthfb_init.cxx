@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -70,4 +70,4 @@ class _synth_fb_init {
     }
 };
 
-static _synth_fb_init _synth_fb_init_object CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
+static _synth_fb_init _synth_fb_init_object CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_DEV_CHAR);

@@ -1,3 +1,7 @@
+2009-02-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synthfb_init.cxx: initialize at DEV_CHAR priority, not IO
+
 2009-02-07  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/framebuf_synth.tcl: Pass gen_synthfb.tcl to tclsh directly.
