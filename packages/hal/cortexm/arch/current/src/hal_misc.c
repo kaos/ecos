@@ -97,6 +97,9 @@ __externC void interrupt_end(cyg_uint32 isr_ret, CYG_ADDRWORD intr, HAL_SavedReg
 __externC cyg_uint32 __ram_data_start;
 __externC cyg_uint32 __ram_data_end;
 __externC cyg_uint32 __rom_data_start;
+__externC cyg_uint32 __sram_data_start;
+__externC cyg_uint32 __sram_data_end;
+__externC cyg_uint32 __srom_data_start;
 __externC cyg_uint32 __bss_start;
 __externC cyg_uint32 __bss_end;
 
@@ -194,6 +197,15 @@ void hal_reset_vsr( void )
         register cyg_uint32 *p, *q;
         for( p = &__ram_data_start, q = &__rom_data_start;
              p < &__ram_data_end;
+             p++, q++ )
+            *p = *q;
+    }
+
+    // Relocate data from ROM to SRAM
+    {
+        register cyg_uint32 *p, *q;
+        for( p = &__sram_data_start, q = &__srom_data_start;
+             p < &__sram_data_end;
              p++, q++ )
             *p = *q;
     }

@@ -1,3 +1,9 @@
+2009-02-07  Chris Holgate  <chris@zynaptic.com>
+
+	* src/hal_misc.c:
+	* src/cortexm.ld: 
+	Modified SRAM linker section to support initialisation from ROM.
+
 2008-12-03  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/hal_misc.c (hal_deliver_interrupt): Fix instrumentation call

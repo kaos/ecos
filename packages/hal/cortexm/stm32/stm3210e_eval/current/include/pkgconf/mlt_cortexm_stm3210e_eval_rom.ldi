@@ -24,8 +24,8 @@ SECTIONS
     SECTION_gcc_except_table (flash, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_eh_frame (flash, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_got (flash, ALIGN (0x8), LMA_EQ_VMA)
-    SECTION_sram (sram, 0x20000400, LMA_EQ_VMA)
-    SECTION_data (ram, 0x68000000, FOLLOWING (.got))
+    SECTION_sram (sram, 0x20000400, FOLLOWING (.got))
+    SECTION_data (ram, 0x68000000, FOLLOWING (.sram))
     SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
     SECTIONS_END

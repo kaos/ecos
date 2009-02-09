@@ -235,8 +235,12 @@ OUTPUT_FORMAT(elf32-bigarm)
 
 #define SECTION_sram(_region_, _vma_, _lma_) \
     .sram _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.sram*) } \
-    > _region_
+    { __sram_data_start = ABSOLUTE (.); \
+    *(.sram*) . = ALIGN (4); } \
+    > _region_ \
+    __srom_data_start = LOADADDR (.sram); \
+    __sram_data_end = .; PROVIDE (__sram_data_end = .); \
+    PROVIDE (__srom_data_end = LOADADDR (.sram) + SIZEOF(.sram));
 
 #define SECTION_data(_region_,  _vma_, _lma_) \
     .data _vma_ : _lma_ \
