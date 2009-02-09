@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.                  
+// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.                  
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -163,7 +163,7 @@ mcf52xx_i2c_isr(cyg_vector_t vec, cyg_addrword_t data)
     } else if (CYG_MCF52xx_I2C_XFER_MODE_STARTRX == extra->i2c_mode) {
         // Start followed by RX. The address byte has been sent, we
         // need to switch to receiving.
-        if (sr & HAL_MCF52xx_I2C_SR_IAL) {
+        if (sr & (HAL_MCF52xx_I2C_SR_IAL | HAL_MCF52xx_I2C_SR_RXAK)) {
             // Looks like no device acknowledged the address.
             result = CYG_ISR_HANDLED | CYG_ISR_CALL_DSR;
         } else {
@@ -367,7 +367,6 @@ cyg_mcf52xx_i2c_tx(const cyg_i2c_device* dev, cyg_bool send_start, const cyg_uin
         if (send_start) {
             extra->i2c_data.i2c_tx_data = tx_data;
             if (! mcf52xx_i2c_send_start(extra, (dev->i2c_address << 1) | 0x00)) {
-                diag_printf("send_start failed\n");
                 return 0;
             }
             mcf52xx_i2c_doit(extra);

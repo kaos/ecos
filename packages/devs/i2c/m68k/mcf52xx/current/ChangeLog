@@ -1,3 +1,11 @@
+2009-02-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/i2c_mcf52xx.c (mcf52xx_i2c_isr): handle RXAK error
+	condition, reported by Rainer Arndt.
+
+	* src/i2c_mcf52xx.c (cyg_mcf52xx_i2c_tx): remove spurious
+        diag_printf(). 
+
 2008-12-30  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/i2c_mcf52xx.cdl: Reference per-package documentation.
@@ -16,7 +24,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.                  
+// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.                  
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
