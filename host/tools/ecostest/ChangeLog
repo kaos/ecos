@@ -1,3 +1,10 @@
+2009-02-09  John Dallaway  <john@dallaway.org.uk>
+
+	* common/eCosTest.cpp (CygPath): Accommodate UNC file paths.
+
+	* common/eCosTest.cpp (GetSizes): Accommodate an empty command prefix
+	string.
+
 2007-10-25  Gary Thomas  <gary@mlbassoc.com>
 
 	* common/eCosTest.h: Remove class qualifier - no longer legal

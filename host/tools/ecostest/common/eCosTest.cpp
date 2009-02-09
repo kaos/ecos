@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.            
+// Copyright (C) 1998, 1999, 2000, 2009 Free Software Foundation, Inc.            
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -30,7 +30,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     sdf
-// Contributors:  sdf
+// Contributors:  sdf, jld
 // Date:          1999-04-01
 // Description:   This class abstracts a test for use in the testing infrastructure
 // Usage:
@@ -49,6 +49,10 @@
 #include "eCosTestDownloadFilter.h"
 #include "Properties.h"
 #include "Subprocess.h"
+
+#ifdef __CYGWIN__
+#include <sys/cygwin.h> /* for cygwin_conv_to_posix_path() */
+#endif
 
 #define WF(n) (n+50)/1000,((n+50)%1000)/100     // Present n as whole and fractional part.  Round to nearest least significant digit
 #define WFS   _T("%u.%u")                           // The format string to output the above
@@ -1105,7 +1109,19 @@ bool CeCosTest::CheckForTimeout()
 // Convert a path to something a cygwin tool will understand.  Used when invoking -size and -gdb
 String CeCosTest::CygPath (LPCTSTR pszPath)
 {
-#ifdef _WIN32
+#ifdef __CYGWIN__
+    char buffer[MAX_PATH + 1];
+    long len = ::GetShortPathName (pszPath, NULL, 0);
+    if (len > 0) {
+        char shortpath [len + 1];
+        ::GetShortPathName (pszPath, shortpath, len + 1);
+        cygwin_conv_to_posix_path (shortpath, buffer);
+    } else {
+        cygwin_conv_to_posix_path (pszPath, buffer);
+    }
+    return buffer;
+#elif defined(_WIN32)
+#warning "native Win32 build does not support UNC file paths"
   String str = "";
   HKEY hKey = 0;
   DWORD type;
@@ -1174,15 +1190,14 @@ bool CeCosTest::GetSizes()
 TRACE(_T("GetSizes %s\n"),(LPCTSTR)Executable());
   bool rc=false;
   m_nStrippedSize=m_nFileSize=0;
-  LPCTSTR pszPrefix=m_ep.Platform()->Prefix();
+  String strPrefix(m_ep.Platform()->Prefix());
+  if (strPrefix.length() > 0) strPrefix += _T("-");
   struct _stat buf;
   if(-1==_tstat(Executable(),&buf)){
     Log(_T("%s does not exist\n"),(LPCTSTR)Executable());
-  } else if (_TCHAR('\0')==*pszPrefix){
-    LogString(_T("No prefix to run a size program\n"));
   } else {
     m_nFileSize=buf.st_size;
-    const String strSizeCmd(String::SFormat(_T("%s-size %s"),pszPrefix,(LPCTSTR)CygPath(Executable())));
+    const String strSizeCmd(String::SFormat(_T("%ssize %s"),(LPCTSTR)strPrefix,(LPCTSTR)CygPath(Executable())));
     String strOut;
     CSubprocess sp;
     if(!sp.Run(strOut,strSizeCmd)){
