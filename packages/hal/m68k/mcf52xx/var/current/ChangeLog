@@ -1,3 +1,8 @@
+2009-02-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h (HAL_MCFxxxx_SDRAMC_DACRx_CBM_xx): fix
+	definitions.
+
 2008-11-18  Bart Veer  <bartv@ecoscentric.com>
 
 	* whole package. Replace the original M68K port.

@@ -11,7 +11,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2003, 2004, 2006, 2008 Free Software Foundation, Inc.      
+// Copyright (C) 2003, 2004, 2006, 2008, 2009 Free Software Foundation, Inc.      
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -553,14 +553,14 @@
 # define HAL_MCFxxxx_SDRAMC_DACRx_CASL_SHIFT        12
 # define HAL_MCFxxxx_SDRAMC_DACRx_CBM_MASK          (0x07 << 8)
 # define HAL_MCFxxxx_SDRAMC_DACRx_CBM_SHIFT         8
-# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_17            0x00
-# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_18            0x01
-# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_19            0x02
-# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_20            0x03
-# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_21            0x04
-# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_22            0x05
-# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_23            0x06
-# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_24            0x07
+# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_17            (0x00 << 8)
+# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_18            (0x01 << 8)
+# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_19            (0x02 << 8)
+# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_20            (0x03 << 8)
+# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_21            (0x04 << 8)
+# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_22            (0x05 << 8)
+# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_23            (0x06 << 8)
+# define HAL_MCFxxxx_SDRAMC_DACRx_CBM_24            (0x07 << 8)
 # define HAL_MCFxxxx_SDRAMC_DACRx_IMRS              (0x01 << 6)
 # define HAL_MCFxxxx_SDRAMC_DACRx_PS_MASK           (0x03 << 4)
 # define HAL_MCFxxxx_SDRAMC_DACRx_PS_SHIFT          4
