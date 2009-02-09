@@ -1,3 +1,8 @@
+2009-02-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/tasks.cdl: clarify usage of CYGNUM_UITRON_TASKS, bug
+	22913.
+
 2006-10-12  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/uitron.cdl: Add reqirement for UITRON conformant mailbox

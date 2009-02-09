@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -55,7 +55,10 @@ cdl_option CYGNUM_UITRON_TASKS {
     default_value 4
     description   "
         The number of uITRON tasks present in the system.
-        Valid task object IDs will range from 1 to this value."
+        Valid task object IDs will range from 1 to this value.
+        When changing this option it is also necessary to change
+        CYGDAT_UITRON_TASK_INITIALIZERS and possibly
+        CYGDAT_UITRON_TASK_EXTERNS, giving all tasks a stack."
 }
 cdl_option CYGNUM_UITRON_START_TASKS {
     display       "Start tasks"
