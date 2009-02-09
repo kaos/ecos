@@ -449,8 +449,8 @@ start:
         cmp     r1,r2
         beq     2f
 1:      str     r0,[r1],#4
-        cmp     r1,r2
-        blt     1b
+        cmp     r2,r1
+        bhi     1b
 2:
 
         // Run kernel + application in THUMB mode
