@@ -1,3 +1,13 @@
+2009-02-09  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/vectors.S (start): The loop to initialize BSS was using a
+	BLS to terminate. This caused an extra zero to be stored beyond
+	the end of __bss_end. Usually this is benign, but when __bss_end
+	is at the very top of RAM, and the hardware generates an exception
+	for illegal accesses, this can crash the program before it even
+	starts. The fix is to use a BLT instructions which will terminate
+	the loop 1 word earlier.
+
 2009-02-02  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/hal_arm.cdl: add new architectural CFLAGS and LDFLAGS
