@@ -614,6 +614,16 @@ static void spi_transaction_dma
 void cyg_spi_cortexm_stm32_init 
   (void)
 {
+#if defined(CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3) && \
+    defined(CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3_DISABLE_DEBUG_PORT)
+  // Disable debug port, freeing up SPI bus 3 pins.
+  cyg_uint32 reg_val;
+  HAL_READ_UINT32 (CYGHWR_HAL_STM32_AFIO + CYGHWR_HAL_STM32_AFIO_MAPR, reg_val);
+  reg_val &= ~((cyg_uint32) CYGHWR_HAL_STM32_AFIO_MAPR_SWJ_MASK);
+  reg_val |= CYGHWR_HAL_STM32_AFIO_MAPR_SWJ_SWDPDIS;
+  HAL_WRITE_UINT32 (CYGHWR_HAL_STM32_AFIO + CYGHWR_HAL_STM32_AFIO_MAPR, reg_val);
+#endif
+
 #ifdef CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS1
   stm32_spi_bus_setup (&cyg_spi_stm32_bus1);
 #endif

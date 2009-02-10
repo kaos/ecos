@@ -165,10 +165,23 @@ cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS2 {
 cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3 {
     display       "ST STM32 SPI bus 3"
     description   "
-        Enable SPI bus 3 on the STM32 device.
+        Enable SPI bus 3 on the STM32 device.  Note that SPI bus 3 shares pins
+        with the JTAG port which means that debug should ideally be disabled 
+        on startup.  However, there is also the option of disabling it during 
+        SPI bus initialisation instead.
     "
     flavor        bool
     default_value false
+
+    cdl_option CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3_DISABLE_DEBUG_PORT {
+        display       "Disable debug port"
+        description   "
+            When set the debug port will automatically be disabled on 
+            initialising SPI bus 3, freeing up the SPI interface pins.
+        "
+        flavor        bool
+        default_value false
+    }
 
     cdl_option CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3_CS_GPIOS {
         display       "SPI chip selects"
