@@ -1,3 +1,12 @@
+2009-02-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/spi_stm32.c (cyg_spi_cortexm_stm32_init): mark as
+	prioritized constructor and rename.
+
+	* cdl/spi_stm32.cdl: stop building spi_stm32_init.cxx
+
+	* src/spi_stm32_init.cxx: removed, no longer needed.
+
 2009-02-10  Chris Holgate  <chris@zynaptic.com>
 
 	* src/spi_stm32.c: 

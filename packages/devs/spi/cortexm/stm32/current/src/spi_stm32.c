@@ -611,8 +611,8 @@ static void spi_transaction_dma
 //-----------------------------------------------------------------------------
 // Initialise SPI interfaces on startup.
 
-void cyg_spi_cortexm_stm32_init 
-  (void)
+static void CYGBLD_ATTRIB_C_INIT_PRI(CYG_INIT_BUS_SPI)
+stm32_spi_init(void)
 {
 #if defined(CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3) && \
     defined(CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3_DISABLE_DEBUG_PORT)

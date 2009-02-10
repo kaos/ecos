@@ -59,7 +59,6 @@ cdl_package CYGPKG_DEVS_SPI_CORTEXM_STM32 {
     hardware
     include_dir   cyg/io
     compile       spi_stm32.c
-    compile       -library=libextras.a spi_stm32_init.cxx
 
 cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_PIN_TOGGLE_RATE {
     display       "Pin toggle rate"
