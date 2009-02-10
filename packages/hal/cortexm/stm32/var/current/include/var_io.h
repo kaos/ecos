@@ -430,6 +430,7 @@ __externC void hal_stm32_gpio_in ( cyg_uint32 pin, int *val );
 #define CYGHWR_HAL_STM32_AFIO_MAPR_SWJ_NORST    VALUE_(24,1)
 #define CYGHWR_HAL_STM32_AFIO_MAPR_SWJ_SWDPEN   VALUE_(24,2)
 #define CYGHWR_HAL_STM32_AFIO_MAPR_SWJ_SWDPDIS  VALUE_(24,4)
+#define CYGHWR_HAL_STM32_AFIO_MAPR_SWJ_MASK     VALUE_(24,7)
 
 // The following macros are used to generate the bitfields for setting up
 // external interrupts.  For example, CYGHWR_HAL_STM32_AFIO_EXTICRX_PORTC(12)

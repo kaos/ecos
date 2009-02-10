@@ -1,3 +1,7 @@
+2009-02-10  Chris Holgate  <chris@zynaptic.com>
+
+	* include/var_io.h: Add mask for CYGHWR_HAL_STM32_AFIO_MAPR_SWJ.
+
 2009-02-04  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/var_intr.h: Various fixes to allow external interrupts
