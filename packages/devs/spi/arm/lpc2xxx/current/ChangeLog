@@ -1,3 +1,7 @@
+2009-02-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/spi_lpc2xxx.cxx: update init priority.
+
 2007-07-12  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
 
 	* lpc2xxx: driver for on-chip SPI units
@@ -6,7 +10,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

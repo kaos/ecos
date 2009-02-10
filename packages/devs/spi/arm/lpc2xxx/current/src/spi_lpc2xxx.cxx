@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -359,5 +359,5 @@ public:
 };
 
 static cyg_spi_lpc2xxx_init_class spi_lpc2xxx_init 
-    CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
+    CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_BUS_SPI);
 
