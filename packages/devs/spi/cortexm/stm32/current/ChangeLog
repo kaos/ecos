@@ -1,3 +1,7 @@
+2009-02-10  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/spi_stm32.c (bus3_setup): Fix typo.
+
 2009-02-05  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/spi_stm32.h: Add macro to define an STM32 SPI device.
