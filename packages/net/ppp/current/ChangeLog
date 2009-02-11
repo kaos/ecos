@@ -1,3 +1,7 @@
+2009-02-11  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/ppp.cdl: Fix per-package documentation reference.
+
 2008-08-19  Rainer Arndt <Arndt-ADT@kieback-peter.de>
 
 	* src/pppd.c (cyg_pppd_main): CYGPKG_PPP_CHAT must be enabled
@@ -477,7 +481,7 @@
 # ####GPLCOPYRIGHTBEGIN####                 
 # -------------------------------------------
 # This file is part of eCos, the Embedded Configurable Operating System.
-# Copyright (C) 2003, 2004, 2005, 2006, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
