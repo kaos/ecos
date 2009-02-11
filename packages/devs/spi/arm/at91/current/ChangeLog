@@ -1,3 +1,12 @@
+2009-02-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/spi_at91.c (cyg_spi_at91_bus_init): turn into a prioritized
+	constructor, make it a static and rename.
+
+	* cdl/spi_at91.cdl: remove src/spi_at91_init.cxx
+	
+	* src/spi_at91_init.cxx: removed, no longer needed.
+
 2008-10-19  Igor B. Poretsky <poretsky@mlbox.ru>
 	
 	* src/spi_at91.c: Typo fixes from var_io.h.  Correctly calculate
@@ -64,7 +73,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

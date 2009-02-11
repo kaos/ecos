@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -175,8 +175,8 @@ CYG_SPI_DEFINE_BUS_TABLE(cyg_spi_at91_device_t, 1);
 #endif
 // -------------------------------------------------------------------------
 
-void
-cyg_spi_at91_bus_init(void)
+static void CYGBLD_ATTRIB_C_INIT_PRI(CYG_INIT_BUS_SPI)
+spi_at91_bus_init(void)
 {
 
 #ifdef CYGHWR_DEVS_SPI_ARM_AT91_BUS0
