@@ -1,3 +1,7 @@
+2009-02-12  John Dallaway  <john@dallaway.org.uk>
+
+	* ecos.db: Make CYGPKG_DEVS_FLASH_SPI_M25PXX a hardware package.
+
 2009-02-06  John Dallaway  <john@dallaway.org.uk>
 
 	* ecos.db: Eliminate superfluous target aliases which duplicate target

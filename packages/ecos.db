@@ -260,6 +260,7 @@ package CYGPKG_DEVS_FLASH_SPI_M25PXX {
         alias           { "M25Pxx SPI Flash" flash_spi_m25pxx }
         directory       devs/flash/spi/m25pxx
         script          flash_m25pxx.cdl
+        hardware
         description "
         Support for M25Pxx SPI flash devices."
 }
@@ -2421,7 +2422,7 @@ package CYGPKG_DEVS_ADC_ARM_LPC24XX {
 }
 
 package CYGPKG_IO_ADC {
-	alias 		{ "Genric ADC support" adc io_adc }
+	alias 		{ "Generic ADC support" adc io_adc }
 	directory	io/adc
 	script		io_adc.cdl
         description "
