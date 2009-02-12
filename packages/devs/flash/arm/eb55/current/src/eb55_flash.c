@@ -74,7 +74,7 @@
 __externC cyg_spi_at91_device_t spi_dataflash_dev0;
 
 CYG_DATAFLASH_FLASH_DRIVER( cyg_eb55_dataflash,
-                            cyg_spi_dataflash_dev0,
+                            &spi_dataflash_dev0,
                             0x08000000,
                             0,
                             16 );

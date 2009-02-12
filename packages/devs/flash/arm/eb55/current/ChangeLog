@@ -1,3 +1,8 @@
+2009-02-12  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/eb55_flash.c: Fix linkage problems in reference to SPI
+	device for dataflash.
+
 2005-08-08  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/eb55_flash.c: Removed unnecessary external reference.

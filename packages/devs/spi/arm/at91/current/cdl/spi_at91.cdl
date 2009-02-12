@@ -50,7 +50,8 @@ cdl_package CYGPKG_DEVS_SPI_ARM_AT91 {
     parent        CYGPKG_IO_SPI
     active_if     CYGPKG_IO_SPI
     display       "Atmel AT91 SPI driver"
-    requires      CYGPKG_HAL_ARM_AT91 
+    requires      CYGPKG_HAL_ARM_AT91
+    requires      CYGPKG_ERROR
     hardware
     include_dir   cyg/io
     compile       spi_at91.c

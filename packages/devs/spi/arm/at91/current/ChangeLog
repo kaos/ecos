@@ -1,3 +1,7 @@
+2009-02-12  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/spi_at91.cdl: Add a requires for CYGPKG_ERROR.
+
 2009-02-11  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/spi_at91.c (cyg_spi_at91_bus_init): turn into a prioritized

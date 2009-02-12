@@ -57,7 +57,7 @@
 // AT91EB55 SPI exported devices 
 
 // AT45DB321B DataFlash
-static cyg_spi_at91_device_t spi_dataflash_dev0 CYG_SPI_DEVICE_ON_BUS(0) = 
+cyg_spi_at91_device_t spi_dataflash_dev0 CYG_SPI_DEVICE_ON_BUS(0) = 
 {
     .spi_device.spi_bus = &cyg_spi_at91_bus.spi_bus,
 
@@ -69,8 +69,6 @@ static cyg_spi_at91_device_t spi_dataflash_dev0 CYG_SPI_DEVICE_ON_BUS(0) =
     .cs_dw_udly  = 1,       // Delay in usec between transfer end and CS down
     .tr_bt_udly  = 1        // Delay in usec between two transfers
 };
-
-cyg_spi_device *cyg_spi_dataflash_dev0 = &spi_dataflash_dev0.spi_device;
 
 // -------------------------------------------------------------------------
 // EOF spi_eb55.c
