@@ -1,3 +1,8 @@
+2009-02-12  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/hal_powerpc_ts1000.cdl: Eliminate duplicate definition of
+	CYGSEM_REDBOOT_HAL_LINUX_BOOT.
+
 2009-01-31  Bart Veer <bartv@ecoscentric.com>
 
 	* cdl/hal_powerpc_ts1000.cdl: update compiler flags for gcc 4.x
@@ -89,7 +94,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

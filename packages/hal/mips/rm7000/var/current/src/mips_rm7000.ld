@@ -224,7 +224,9 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_gcc_except_table(_region_, _vma_, _lma_) \
   .gcc_except_table _vma_ : _lma_                        \
     {                                                    \
-      FORCE_OUTPUT; *(.gcc_except_table)                 \
+      FORCE_OUTPUT;                                      \
+      KEEP(*(.gcc_except_table))                         \
+      *(.gcc_except_table.*)                             \
     } > _region_
 
 

@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -287,17 +287,6 @@ cdl_package CYGPKG_HAL_POWERPC_TS1000 {
         description   "
             This option lists the target's requirements for a valid Redboot
             configuration."
-
-        cdl_option CYGSEM_REDBOOT_HAL_LINUX_BOOT {
-            active_if      CYGBLD_BUILD_REDBOOT_WITH_EXEC
-            display        "Support booting Linux via RedBoot"
-            flavor         bool
-            default_value  0
-            description    "
-               This option enables RedBoot to support booting of a Linux kernel."
-
-            compile -library=libextras.a redboot_linux_exec.c
-        }
 
         cdl_option CYGBLD_BUILD_REDBOOT_BIN {
             display       "Build Redboot ROM binary image"
