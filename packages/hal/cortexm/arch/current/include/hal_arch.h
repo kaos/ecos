@@ -53,6 +53,8 @@
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
+#include <cyg/hal/var_arch.h>
+
 //==========================================================================
 // CPU save state
 //
@@ -289,10 +291,8 @@ __externC void hal_longjmp(hal_jmp_buf env, int val);
 // processor. Here we only supply a default fallback if the variant/platform
 // doesn't define anything.
 
-#if 0 //ndef HAL_IDLE_THREAD_ACTION
+#ifndef HAL_IDLE_THREAD_ACTION
 #define HAL_IDLE_THREAD_ACTION(__count) __asm__ volatile ( "wfi\n" )
-#else
-#define HAL_IDLE_THREAD_ACTION(__count) CYG_EMPTY_STATEMENT
 #endif
 
 //==========================================================================
