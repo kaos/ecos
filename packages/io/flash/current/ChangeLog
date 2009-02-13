@@ -1,3 +1,8 @@
+2009-02-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/io_flash.cdl: remove CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM, no
+	longer needed.
+
 2008-11-23  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* doc/flash.sgml: Fix flash.h header name typos.
