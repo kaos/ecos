@@ -1,5 +1,7 @@
 2009-02-13  Bart Veer  <bartv@ecoscentric.com>
 
+	* doc/flash.sgml: remove incomplete sentence.
+
 	* cdl/io_flash.cdl: remove CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM, no
 	longer needed.
 

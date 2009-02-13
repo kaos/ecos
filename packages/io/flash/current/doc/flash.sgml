@@ -75,7 +75,7 @@ crash could result.
 <PARA> Thus with a ROM based image or a ROM based Redboot it is
 recommended to disable interrupts while erasing or programming
 flash. Using both a ROMRAM or RAM images and a ROMRAM or RAM RedBoot
-are safe and there is no need to disable interrupts. Similarly, 
+are safe and there is no need to disable interrupts.
 </PARA>
 </SECT1>
 
