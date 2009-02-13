@@ -54,9 +54,6 @@ cdl_package CYGPKG_DEVS_FLASH_VADS {
     parent        CYGPKG_IO_FLASH
     active_if	  CYGPKG_IO_FLASH
     requires	  CYGPKG_HAL_POWERPC_VADS
-
-#    implements    CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
-
     compile       powerpc_vads_flash.c
 
     # Arguably this should do in the generic package
