@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -107,6 +107,7 @@
         .code   16                              ;\
         .thumb_func                             ;\
         .globl _name_                           ;\
+        .type _name_, function                  ;\
 _name_:                                         ;\
         ldr     _r_,=_name_ ## _ARM             ;\
         bx      _r_                             ;\
@@ -128,6 +129,7 @@ _name_ ## _ARM:
 // Function definition, start executing body in ARM mode
 #define FUNC_START_ARM(_name_, _r_) \
         .globl _name_; \
+        .type _name_, function ;\
 _name_: 
 
 #endif
@@ -345,6 +347,7 @@ warm_reset:
 // =========================================================================
 // Real startup code. We jump here from the reset vector to set up the world.
         .globl  start
+        .type   start,function
 start:  
 
         LED 5
