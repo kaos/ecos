@@ -1,3 +1,12 @@
+2009-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/cxxsupp.cxx (cyg_start): Only test 'new' with ARM tools after
+	3.2.x since up to that point the compiler generates references from
+	the libsupc++ new implementation to .gcc_except_table, which is
+	discarded. This is specific to ARM for now as that's all it has
+	been reported against, but it's possible it may apply to other
+	targets.
+
 2009-02-04  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/cyg_type.h: add new static initialization priorities.
@@ -1069,7 +1078,7 @@ Tue Aug 25 11:47:58 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

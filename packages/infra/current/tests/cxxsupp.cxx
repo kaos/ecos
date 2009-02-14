@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2003 Free Software Foundation, Inc.                        
+// Copyright (C) 2003, 2009 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -47,9 +47,11 @@
 //####DESCRIPTIONEND####
 //==========================================================================
 
+#include <pkgconf/system.h>
 #include <pkgconf/hal.h>
 #include <pkgconf/isoinfra.h>
 
+#include <cyg/infra/cyg_type.h>
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>
 
@@ -147,7 +149,7 @@ cyg_start( void )
     pure->impure_fun1();
     pure->inline_fun1();
 
-#if CYGINT_ISO_MALLOC
+#if CYGINT_ISO_MALLOC && (!defined(CYGPKG_HAL_ARM) || (__GNUC_VERSION__ >= 30300))
     Derived *derived2 = new Derived(2);
     Pure *pure2 = derived2;
     
