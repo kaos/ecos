@@ -628,10 +628,11 @@ To achieve this all device definitions should specify the particular
 bus to which they are attached, for example:
     </para>
     <programlisting>
-struct cyg_mcf52xx_qspi_device hal_spi_atod = {
+struct cyg_mcf52xx_qspi_device hal_spi_atod CYG_SPI_DEVICE_ON_BUS(0) =
+{
     .spi_common.spi_bus = &amp;cyg_mcf52xx_qspi_bus,
     &hellip;
-} CYG_SPI_DEVICE_ON_BUS(0);
+};
     </programlisting>
     <para>
 The <function>CYG_SPI_DEVICE_ON_BUS</function> macro adds information

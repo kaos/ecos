@@ -1,3 +1,7 @@
+2009-02-13  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* doc/spi.sgml: fix an example of code.
+
 2009-02-09  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/spi.cdl: fix descriptions in the CFLAGS_ADD and
