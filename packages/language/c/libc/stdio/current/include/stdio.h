@@ -174,7 +174,7 @@ printf( const char * /* format */, ... ) __THROW
 
 __externC int
 scanf( const char * /* format */, ... ) __THROW 
-    CYGBLD_ATTRIB_SCANF_FORMAT(1, 2);;
+    CYGBLD_ATTRIB_SCANF_FORMAT(1, 2);
 
 __externC int
 sprintf( char * /* str */, const char * /* format */, ... ) __THROW
