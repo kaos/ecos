@@ -96,7 +96,7 @@
 #endif
 
 
-# if (_16AS8 == 0)||CYGHWR_DEVS_FLASH_ST_M29W320D
+# if (_16AS8 == 0) || defined(CYGHWR_DEVS_FLASH_ST_M29W320D)
 # define FLASH_Setup_Addr1              (0x555)
 # define FLASH_Setup_Addr2              (0x2AA)
 # define FLASH_VendorID_Addr            (0)
