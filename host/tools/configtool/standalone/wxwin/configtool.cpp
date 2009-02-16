@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2004, 2005, 2006, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2003, 2004, 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -284,7 +284,7 @@ bool ecApp::OnInit()
         wxLog::SetActiveTarget(new wxLogStderr);
 #endif
         wxString msg;
-        msg.Printf(wxT("eCos Configuration Tool (c) Free Software Foundation, Inc., 1998-2008 Version %s, %s"), ecCONFIGURATION_TOOL_VERSION, __DATE__);
+        msg.Printf(wxT("eCos Configuration Tool (c) Free Software Foundation, Inc., 1998-2009 Version %s, %s"), ecCONFIGURATION_TOOL_VERSION, __DATE__);
         wxLogMessage(msg);
         return FALSE;
     }

@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.            
+// Copyright (C) 1998, 1999, 2000, 2009 Free Software Foundation, Inc.            
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -24,7 +24,7 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
+// Author(s):   julians, jld
 // Contact(s):  julians
 // Date:        2000/09/04
 // Version:     $Id: conflictwin.cpp,v 1.3 2001/04/24 14:39:13 julians Exp $
@@ -89,7 +89,7 @@ ecConflictListCtrl::ecConflictListCtrl(wxWindow* parent, wxWindowID id, const wx
 
     InsertColumn(0, "Item", wxLIST_FORMAT_LEFT, 200);
     InsertColumn(1, "Conflict", wxLIST_FORMAT_LEFT, 80);
-    InsertColumn(2, "Property", wxLIST_FORMAT_LEFT, 200);
+    InsertColumn(2, "Property", wxLIST_FORMAT_LEFT, 100);
 
     m_contextMenu = new wxMenu;
     m_contextMenu->Append(ecID_WHATS_THIS, _("&What's This?"));
@@ -226,6 +226,9 @@ void ecConflictListCtrl::AddConflicts (const std::list<CdlConflict>& conflicts)
     for (std::list<CdlConflict>::const_iterator conf_i=conflicts.begin (); conf_i != conflicts.end (); conf_i++) {
         AddConflict(*conf_i);
     }
+    SetColumnWidth(2, wxLIST_AUTOSIZE); // resize the property column for the longest item
+    if (GetColumnWidth(2) < 100)        // but at least wide enough for the column heading
+        SetColumnWidth(2, 100);
 }
 
 ecConfigItem *ecConflictListCtrl::AssociatedItem(int nRow,int nCol)

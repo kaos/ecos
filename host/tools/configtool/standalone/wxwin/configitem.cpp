@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2006, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2006, 2008, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -24,8 +24,8 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
-// Contact(s):  julians
+// Author(s):   julians, jld
+// Contact(s):  julians, jld
 // Date:        2000/09/01
 // Version:     $Id: configitem.cpp,v 1.10 2001/04/30 17:12:32 julians Exp $
 // Purpose:
@@ -129,6 +129,7 @@ ecConfigItem::ecConfigItem(ecConfigItem* parent, CdlUserVisible vitem)
     m_optionFlavor = ecFlavorNone;
     m_enabled = FALSE;
     m_active = FALSE;
+    m_modifiable = FALSE;
     m_parent = parent;
     m_CdlItem = vitem;
     m_hint = ecHintNone;
@@ -220,6 +221,7 @@ bool ecConfigItem::ConvertFromCdl()
 
     m_active = IsActive();
     m_enabled = IsEnabled();
+    m_modifiable = IsModifiable();
 
     return TRUE;
 }
@@ -328,7 +330,7 @@ bool ecConfigItem::UpdateTreeItem(ecConfigTreeCtrl& treeCtrl)
 
     if (!iconName.IsEmpty())
     {
-        int iconId = treeCtrl.GetIconDB().GetIconId(iconName, iconState, GetActive());
+        int iconId = treeCtrl.GetIconDB().GetIconId(iconName, iconState, GetModifiable());
         treeCtrl.SetItemImage(m_treeItem, iconId, wxTreeItemIcon_Normal);
         treeCtrl.SetItemImage(m_treeItem, iconId, wxTreeItemIcon_Selected);
     }
@@ -348,7 +350,7 @@ void ecConfigItem::OnIconLeftDown(ecConfigTreeCtrl& treeCtrl)
     case ecFlavorBool:
     case ecFlavorBoolData:
         {
-            if (GetActive())
+            if (GetModifiable())
             {
                 wxGetApp().GetConfigToolDoc()->SetEnabled(*this, !m_enabled);
             }
@@ -356,7 +358,7 @@ void ecConfigItem::OnIconLeftDown(ecConfigTreeCtrl& treeCtrl)
         }
     case ecFlavorData:
         {
-            if (GetActive())
+            if (GetModifiable())
             {
                 switch (GetOptionType())
                 {
@@ -499,7 +501,7 @@ wxString ecConfigItem::GetDisplayValue() const
 // Can we start editing this item?
 bool ecConfigItem::CanEdit() const
 {
-    if (!GetActive())
+    if (!GetModifiable())
         return FALSE;
 
     if (GetConfigType() != ecOption)
@@ -938,13 +940,24 @@ bool ecConfigItem::IsEnabled() const
     return NULL==valuable ||valuable->is_enabled();
 }
 
+bool ecConfigItem::IsModifiable() const
+{
+    const CdlValuable valuable = GetCdlValuable();
+    if (valuable && ((GetOptionType() != ecOptionTypeNone) || HasBool()))
+    {
+        return (valuable->is_modifiable () && valuable->is_active ());
+    }
+    else
+        return GetCdlItem()->is_active();
+}
+
 bool ecConfigItem::IsActive() const
 {
 //    return GetCdlItem()->is_active();
     const CdlValuable valuable = GetCdlValuable();
     if (valuable && ((GetOptionType() != ecOptionTypeNone) || HasBool()))
     {
-        return (valuable->is_modifiable () && valuable->is_active ());
+        return (valuable->is_active ());
     }
     else
         return GetCdlItem()->is_active();

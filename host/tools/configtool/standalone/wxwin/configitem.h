@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.            
+// Copyright (C) 1998, 1999, 2000, 2009 Free Software Foundation, Inc.            
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -24,8 +24,8 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
-// Contact(s):  julians
+// Author(s):   julians, jld
+// Contact(s):  julians, jld
 // Date:        2000/09/01
 // Version:     $Id: configitem.h,v 1.4 2001/04/09 12:51:34 julians Exp $
 // Purpose:
@@ -174,7 +174,11 @@ public:
     void SetEnabled(bool enabled) { m_enabled = enabled; }
     bool GetEnabled() const { return m_enabled; }
 
-    // Whether greyed out or not
+    // Whether value and icon greyed out or not
+    void SetModifiable(bool modifiable) { m_modifiable = modifiable; }
+    bool GetModifiable() const { return m_modifiable; }
+
+    // Whether tree item text greyed out or not
     void SetActive(bool active) { m_active = active; }
     bool GetActive() const { return m_active; }
 
@@ -236,6 +240,7 @@ public:
     bool HasModifiedChildren() const;
     bool IsEnabled() const;
     bool IsActive() const; // Added JACS
+    bool IsModifiable() const;
 
     bool Modified() const;
 
@@ -278,6 +283,7 @@ protected:
     wxString            m_macro;
     bool                m_enabled;
     bool                m_active;
+    bool                m_modifiable;
     ecConfigType        m_configType;
     ecOptionType        m_optionType;
     ecOptionFlavor      m_optionFlavor;

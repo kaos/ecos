@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2008 Free Software Foundation, Inc.      
+// Copyright (C) 1998, 1999, 2000, 2008, 2009 Free Software Foundation, Inc.      
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -24,7 +24,7 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
+// Author(s):   julians, jld
 // Contact(s):  julians
 // Date:        2000/09/04
 // Version:     $Id: propertywin.cpp,v 1.7 2001/04/24 14:39:13 julians Exp $
@@ -187,7 +187,7 @@ void ecPropertyListCtrl::OnRightClick(wxMouseEvent& event)
 void ecPropertyListCtrl::AddColumns()
 {
     InsertColumn(0, "Property", wxLIST_FORMAT_LEFT, 100);
-    InsertColumn(1, "Value", wxLIST_FORMAT_LEFT, 300);
+    InsertColumn(1, "Value", wxLIST_FORMAT_LEFT, 100);
 }
 
 void ecPropertyListCtrl::Fill(ecConfigItem *pti)
@@ -318,6 +318,10 @@ void ecPropertyListCtrl::Fill(ecConfigItem *pti)
         SetColumnWidth(1,w); 
 #endif
     }
+
+    SetColumnWidth(1, wxLIST_AUTOSIZE); // resize the value column for the longest item
+    if (GetColumnWidth(1) < 100)        // but at least wide enough for the column heading
+        SetColumnWidth(1, 100);
 
     Refresh();
 }

@@ -1,3 +1,17 @@
+2009-02-16  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/mainwin.cpp: Tweak the conflicts status pane width.
+
+	* standalone/wxwin/configtooldoc.cpp, standalone/wxwin/filename.cpp:
+	Accommodate UNC file paths.
+
+	* standalone/wxwin/propertywin.cpp, standalone/wxwin/conflictwin.cpp:
+	Automatically size the last column.
+
+	* standalone/wxwin/configitem.cpp, standalone/wxwin/configitem.h,
+	  standalone/wxwin/configtree.cpp: Do not grey tree item text for
+	active non-modifiable items.
+
 2008-12-31  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/outputwin.cpp, standalone/wxwin/outputwin.h,

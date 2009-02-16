@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2006, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -1386,6 +1386,7 @@ bool ecConfigToolDoc::ShowURL(const wxString& strURL1)
         break;
     case ecAssociatedExternal:
         {
+            QualifyDocURL(strURL, FALSE);
             rc = ShowExternalHtmlHelp(strURL);
         }
 
@@ -1406,7 +1407,11 @@ bool ecConfigToolDoc::ShowExternalHtmlHelp (const wxString& strURL)
 
     wxString url;
 
+#ifdef __WXMSW__
+    wxString sep(wxT("\\"));
+#else
     wxString sep(wxFILE_SEP_PATH);
+#endif
     wxString docDir(wxString(m_strRepository) + sep + wxString(wxT("doc")));
     if (wxDirExists(docDir + sep + wxT("html")))
         docDir += sep + wxT("html") ;

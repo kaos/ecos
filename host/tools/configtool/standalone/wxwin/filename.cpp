@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2005 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -73,7 +73,12 @@
 
 #define wxTChar wxT
 
+#ifdef __WXMSW__
+const wxChar ecFileName::cSep=wxT('\\');
+#else
 const wxChar ecFileName::cSep=wxFILE_SEP_PATH;
+#endif
+
 
 ecFileName::ecFileName(const wxChar* psz1,const wxChar* psz2):
 wxString(psz1)

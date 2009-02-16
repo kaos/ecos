@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2008 Free Software Foundation, Inc.      
+// Copyright (C) 1998, 1999, 2000, 2008, 2009 Free Software Foundation, Inc.      
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -24,8 +24,8 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
-// Contact(s):  julians
+// Author(s):   julians, jld
+// Contact(s):  julians, jld
 // Date:        2000/08/24
 // Version:     $Id: configtree.cpp,v 1.8 2001/04/24 14:39:13 julians Exp $
 // Purpose:
@@ -436,7 +436,7 @@ void ecValueWindow::DrawItem(wxDC& dc, wxTreeItemId id, const wxRect& rect)
         static wxColour normalColour = wxSystemSettings::GetSystemColour(wxSYS_COLOUR_WINDOWTEXT);
         static wxColour disabledColour = wxSystemSettings::GetSystemColour(wxSYS_COLOUR_GRAYTEXT);
 #endif
-        dc.SetTextForeground( (item->GetActive() && (item->GetConfigType() != ecPackage)) ? normalColour : disabledColour );
+        dc.SetTextForeground( (item->GetModifiable() && (item->GetConfigType() != ecPackage)) ? normalColour : disabledColour );
         
         int textW, textH;
         dc.GetTextExtent(text, & textW, & textH);
