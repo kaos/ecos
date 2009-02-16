@@ -55,6 +55,7 @@ cdl_package CYGPKG_DEVS_SPI_ARM_AT91 {
     hardware
     include_dir   cyg/io
     compile       spi_at91.c
+    compile       -library=libextras.a spi_at91_init.cxx
 
     cdl_option CYGHWR_DEVS_SPI_ARM_AT91_BUS0 {
         display       "Enable support for SPI bus 0"

@@ -175,8 +175,14 @@ CYG_SPI_DEFINE_BUS_TABLE(cyg_spi_at91_device_t, 1);
 #endif
 // -------------------------------------------------------------------------
 
-static void CYGBLD_ATTRIB_C_INIT_PRI(CYG_INIT_BUS_SPI)
-spi_at91_bus_init(void)
+// If C constructor with init priority functionality is not in compiler,
+// rely on spi_at91_init.cxx to init us.
+#ifndef CYGBLD_ATTRIB_C_INIT_PRI
+# define CYGBLD_ATTRIB_C_INIT_PRI(x)
+#endif
+
+void CYGBLD_ATTRIB_C_INIT_PRI(CYG_INIT_BUS_SPI)
+cyg_spi_at91_bus_init(void)
 {
 
 #ifdef CYGHWR_DEVS_SPI_ARM_AT91_BUS0

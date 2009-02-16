@@ -1,3 +1,13 @@
+2009-02-16  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/spi_at91.c (cyg_spi_at91_bus_init): Partially revert change of
+	2009-02-11. Define an empty CYGBLD_ATTRIB_C_INIT_PRI and rely on
+	spi_at91_init.cxx to call, in case the compiler does not supply
+	that macro (e.g. if too old).
+	* cdl/spi_at91.cdl: Revert change of 2009-02-11.
+	* src/spi_at91_init.cxx: Revive. Set priority to CYG_INIT_BUS_SPI.
+	Conditionalise on CYGBLD_ATTRIB_C_INIT_PRI.
+
 2009-02-12  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/spi_at91.cdl: Add a requires for CYGPKG_ERROR.
