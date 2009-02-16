@@ -1,6 +1,6 @@
 2009-02-13  Nick Garnett  <nickg@ecoscentric.com>
 
-	* include/hal_arch.h: Add include for var_intr.h.
+	* include/hal_arch.h: Add include for var_arch.h.
 	(HAL_IDLE_THREAD_ACTION): Tidy up debug code left in by mistake.
 
 2009-02-07  Chris Holgate  <chris@zynaptic.com>
