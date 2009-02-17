@@ -346,7 +346,7 @@ public:
     spi_lpc2xxx_init_bus(&cyg_spi_lpc2xxx_bus0,
                          CYGARC_HAL_LPC2XXX_REG_SPI0_BASE,
                          CYGNUM_HAL_INTERRUPT_SPI0,
-                         CYGNUM_IO_SPI_ARM_LPC2XXX_SPI0_INTPRIO);
+                         CYGNUM_IO_SPI_ARM_LPC2XXX_BUS0_INTPRIO);
 #endif
 #ifdef CYGPKG_DEVS_SPI_ARM_LPC2XXX_BUS1
     addr = (CYGARC_HAL_LPC2XXX_REG_PIN_BASE
@@ -357,7 +357,7 @@ public:
     spi_lpc2xxx_init_bus(&cyg_spi_lpc2xxx_bus1,
                          CYGARC_HAL_LPC2XXX_REG_SPI1_BASE,
                          CYGNUM_HAL_INTERRUPT_SPI1,
-                         CYGNUM_IO_SPI_ARM_LPC2XXX_SPI1_INTPRIO);
+                         CYGNUM_IO_SPI_ARM_LPC2XXX_BUS1_INTPRIO);
 #endif
   }
 };
