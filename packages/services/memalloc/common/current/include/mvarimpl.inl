@@ -152,7 +152,7 @@ Cyg_Mempool_Variable_Implementation::Cyg_Mempool_Variable_Implementation(
 
     CYG_ASSERT( align > 0, "Bad alignment" );
     CYG_ASSERT(0!=align ,"align is zero");
-    CYG_ASSERT(0==(align & align-1),"align not a power of 2");
+    CYG_ASSERT(0==(align & (align-1)),"align not a power of 2");
 
     if ((unsigned)size < sizeof(struct memdq)) {
         bottom = NULL;
@@ -165,7 +165,7 @@ Cyg_Mempool_Variable_Implementation::Cyg_Mempool_Variable_Implementation(
     alignment = align;
     while (alignment < (cyg_int32)sizeof(struct memdq))
         alignment += alignment;
-    CYG_ASSERT(0==(alignment & alignment-1),"alignment not a power of 2");
+    CYG_ASSERT(0==(alignment & (alignment-1)),"alignment not a power of 2");
 
     // the memdq for each allocation is always positioned immediately before
     // an aligned address, so that the allocation (i.e. what eventually gets
@@ -182,12 +182,12 @@ Cyg_Mempool_Variable_Implementation::Cyg_Mempool_Variable_Implementation(
     
     CYG_ASSERT( top > bottom , "heap too small" );
     CYG_ASSERT( top <= (base+size), "top too large" );
-    CYG_ASSERT( ((cyg_int32)(top+sizeof(struct memdq)) & alignment-1)==0,
+    CYG_ASSERT( ((cyg_int32)(top+sizeof(struct memdq)) & (alignment-1))==0,
                 "top badly aligned" );
 
     struct memdq *hdq = &head, *dq = (struct memdq *)bottom;
     
-    CYG_ASSERT( ((cyg_int32)memdq2alloc(dq) & alignment-1)==0,
+    CYG_ASSERT( ((cyg_int32)memdq2alloc(dq) & (alignment-1))==0,
                  "bottom badly aligned" );
 
     hdq->prev = hdq->next = dq;

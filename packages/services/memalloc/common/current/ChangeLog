@@ -1,3 +1,9 @@
+2009-02-03  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* include/mvarimpl.inl:
+	* include/sepmetaimpl.inl:
+	Fixed a few compiler warnings.
+
 2009-01-09  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/memalloc.cdl: Invoke tclsh explicitly to avoid the need for

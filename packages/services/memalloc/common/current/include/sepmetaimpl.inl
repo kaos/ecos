@@ -273,7 +273,7 @@ Cyg_Mempool_Sepmeta_Implementation::Cyg_Mempool_Sepmeta_Implementation(
 
     CYG_ASSERT( alignment > 0, "Bad alignment" );
     CYG_ASSERT( 0!=alignment, "alignment is zero" );
-    CYG_ASSERT( 0==(alignment & alignment-1), "alignment not a power of 2" );
+    CYG_ASSERT( 0==(alignment & (alignment-1)), "alignment not a power of 2" );
 
     obase=base;
     osize=size;
@@ -293,9 +293,9 @@ Cyg_Mempool_Sepmeta_Implementation::Cyg_Mempool_Sepmeta_Implementation(
     
     CYG_ASSERT( top > bottom , "heap too small" );
     CYG_ASSERT( top <= (base+size), "top too large" );
-    CYG_ASSERT( (((cyg_int32)(top)) & alignment-1)==0,
+    CYG_ASSERT( (((cyg_int32)(top)) & (alignment-1))==0,
                 "top badly aligned" );
-    CYG_ASSERT( (((cyg_int32)(bottom)) & alignment-1)==0,
+    CYG_ASSERT( (((cyg_int32)(bottom)) & (alignment-1))==0,
                 "bottom badly aligned" );
 
     CYG_ASSERT( metatop > metabottom , "meta space too small" );
