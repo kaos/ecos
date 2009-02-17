@@ -57,19 +57,47 @@ cdl_package CYGPKG_DEVS_SPI_ARM_LPC2XXX {
     include_dir cyg/io
     compile     spi_lpc2xxx.cxx
 
-    cdl_option CYGPKG_DEVS_SPI_ARM_LPC2XXX_BUS0 {
+    cdl_component CYGPKG_DEVS_SPI_ARM_LPC2XXX_BUS0 {
         display       "Enable SPI interface 0"
         flavor        bool
         default_value 1
         description   "The LPC2xxx controllers contain two SPI interfaces.
-                       Enable this option to get support for SPI interface 0."
+                       Enable this component to get support for SPI
+                       interface 0."
+
+        cdl_option CYGNUM_IO_SPI_ARM_LPC2XXX_BUS0_INTPRIO {
+            display       "Interrupt priority of the SPI bus 0 ISR"
+            flavor        data
+            legal_values  0 to 15
+            default_value 12
+            requires      { is_active(CYGNUM_IO_SPI_ARM_LPC2XXX_SPI1_INTPRIO)
+                             implies (CYGNUM_IO_SPI_ARM_LPC2XXX_SPI0_INTPRIO !=
+                             CYGNUM_IO_SPI_ARM_LPC2XXX_SPI1_INTPRIO)
+            }
+            description "
+                This option specifies the interrupt priority of the ISR of
+                the SPI bus 0 interrupt in the VIC. Slot 0 has the highest
+                priority and slot 15 the lowest."
+        }
     }
 
-    cdl_option CYGPKG_DEVS_SPI_ARM_LPC2XXX_BUS1 {
+    cdl_component CYGPKG_DEVS_SPI_ARM_LPC2XXX_BUS1 {
         display       "Enable SPI interface 1"
         flavor        bool
         default_value 1
         description   "The LPC2xxx controllers contain two SPI interfaces.
-                       Enable this option to get support for SPI interface 1."
+                       Enable this component to get support for SPI
+                       interface 1."
+
+        cdl_option CYGNUM_IO_SPI_ARM_LPC2XXX_SPI1_INTPRIO {
+            display       "Interrupt priority of the SPI bus 1 ISR"
+            flavor        data
+            legal_values  0 to 15
+            default_value 13
+            description "
+                This option specifies the interrupt priority of the ISR of
+                the SPI bus 1 interrupt in the VIC. Slot 0 has the highest
+                priority and slot 15 the lowest."
+        }
     }
 }

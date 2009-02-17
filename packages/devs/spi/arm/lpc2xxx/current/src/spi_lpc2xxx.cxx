@@ -180,7 +180,7 @@ spi_lpc2xxx_set_config(cyg_spi_device *device, cyg_uint32 key, const void *buf,
   cyg_spi_lpc2xxx_dev_t *dev = (cyg_spi_lpc2xxx_dev_t *) device;
   
   switch(key) {
-    case CYG_IO_GET_CONFIG_SPI_CLOCKRATE:
+    case CYG_IO_SET_CONFIG_SPI_CLOCKRATE:
       if(*len == sizeof(cyg_uint32)) {
         dev->spi_baud = * (cyg_uint32 *) buf;
         spi_lpc2xxx_baud((cyg_spi_lpc2xxx_bus_t *) dev->spi_device.spi_bus, 
@@ -304,7 +304,8 @@ spi_lpc2xxx_end(cyg_spi_device *device)
 static void 
 spi_lpc2xxx_init_bus(cyg_spi_lpc2xxx_bus_t *bus, 
                      cyg_addrword_t dev,
-                     cyg_vector_t vec)
+                     cyg_vector_t vec,
+                     cyg_priority_t prio)
 {
   bus->spi_bus.spi_transaction_begin    = spi_lpc2xxx_begin;
   bus->spi_bus.spi_transaction_transfer = spi_lpc2xxx_transfer;
@@ -319,8 +320,9 @@ spi_lpc2xxx_init_bus(cyg_spi_lpc2xxx_bus_t *bus,
   
   bus->spi_dev = (struct spi_dev *) dev;
   bus->spi_vect = vec;
+  bus->spi_prio = prio;
   cyg_drv_interrupt_create(
-                           vec, 0, (cyg_addrword_t) bus,
+                           vec, prio, (cyg_addrword_t) bus,
                            &spi_lpc2xxx_isr, &spi_lpc2xxx_dsr,
                            &bus->spi_hand, &bus->spi_intr);
   cyg_drv_interrupt_attach(bus->spi_hand);
@@ -343,7 +345,8 @@ public:
     
     spi_lpc2xxx_init_bus(&cyg_spi_lpc2xxx_bus0,
                          CYGARC_HAL_LPC2XXX_REG_SPI0_BASE,
-                         CYGNUM_HAL_INTERRUPT_SPI0);
+                         CYGNUM_HAL_INTERRUPT_SPI0,
+                         CYGNUM_IO_SPI_ARM_LPC2XXX_SPI0_INTPRIO);
 #endif
 #ifdef CYGPKG_DEVS_SPI_ARM_LPC2XXX_BUS1
     addr = (CYGARC_HAL_LPC2XXX_REG_PIN_BASE
@@ -353,7 +356,8 @@ public:
     HAL_WRITE_UINT32(addr, tmp);
     spi_lpc2xxx_init_bus(&cyg_spi_lpc2xxx_bus1,
                          CYGARC_HAL_LPC2XXX_REG_SPI1_BASE,
-                         CYGNUM_HAL_INTERRUPT_SPI1);
+                         CYGNUM_HAL_INTERRUPT_SPI1,
+                         CYGNUM_IO_SPI_ARM_LPC2XXX_SPI1_INTPRIO);
 #endif
   }
 };

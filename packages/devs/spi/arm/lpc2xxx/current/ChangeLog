@@ -1,3 +1,12 @@
+2009-02-17  Jonathan Larmour  <jifl@eCosCentric.com>
+2009-01-27  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/spi_lpc2xxx.cdl: Ensure the SPI interrupts are using different
+	priorities: CYGNUM_IO_SPI_ARM_LPC2XXX_SPI{0,1}_INTPRIO entered.
+	* include/spi_lpc2xxx.h: cyg_spi_lpc2xxx_bus_t: spi_prio field added.
+	* src/spi_lpc2xxx.cxx: spi_lpc2xxx_set_config(): fixed copy & paste
+	typo, spi_lpc2xxx_init_bus(): added 'prio' argument to initializer.
+
 2009-02-10  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/spi_lpc2xxx.cxx: update init priority.

@@ -75,6 +75,7 @@ typedef struct {
   cyg_interrupt   spi_intr;
   cyg_handle_t    spi_hand;
   cyg_vector_t    spi_vect;
+  cyg_priority_t  spi_prio;
   cyg_drv_mutex_t spi_lock;
   cyg_drv_cond_t  spi_wait;
   
