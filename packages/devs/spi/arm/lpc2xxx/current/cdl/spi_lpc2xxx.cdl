@@ -89,7 +89,7 @@ cdl_package CYGPKG_DEVS_SPI_ARM_LPC2XXX {
                        Enable this component to get support for SPI
                        interface 1."
 
-        cdl_option CYGNUM_IO_SPI_ARM_LPC2XXX_SPI1_INTPRIO {
+        cdl_option CYGNUM_IO_SPI_ARM_LPC2XXX_BUS1_INTPRIO {
             display       "Interrupt priority of the SPI bus 1 ISR"
             flavor        data
             legal_values  0 to 15
