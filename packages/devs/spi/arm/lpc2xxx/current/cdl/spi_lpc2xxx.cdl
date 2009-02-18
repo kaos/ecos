@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 ,2009 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -70,9 +70,9 @@ cdl_package CYGPKG_DEVS_SPI_ARM_LPC2XXX {
             flavor        data
             legal_values  0 to 15
             default_value 12
-            requires      { is_active(CYGNUM_IO_SPI_ARM_LPC2XXX_SPI1_INTPRIO)
-                             implies (CYGNUM_IO_SPI_ARM_LPC2XXX_SPI0_INTPRIO !=
-                             CYGNUM_IO_SPI_ARM_LPC2XXX_SPI1_INTPRIO)
+            requires      { is_active(CYGNUM_IO_SPI_ARM_LPC2XXX_BUS1_INTPRIO)
+                             implies (CYGNUM_IO_SPI_ARM_LPC2XXX_BUS0_INTPRIO !=
+                             CYGNUM_IO_SPI_ARM_LPC2XXX_BUS1_INTPRIO)
             }
             description "
                 This option specifies the interrupt priority of the ISR of
