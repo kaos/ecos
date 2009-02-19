@@ -1,3 +1,9 @@
+2009-02-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (do_flash_init): Update for minor flash API
+        mod to call cyg_flash_set_global_printf() to set printf
+        function.
+
 2009-02-06  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/redboot.cdl: Fix documentation reference.

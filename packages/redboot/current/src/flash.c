@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -1861,8 +1861,9 @@ do_flash_init(void)
 
     if (!__flash_init) {
         __flash_init = 1;
-        
-        if ((stat = cyg_flash_init(diag_printf)) != 0) {
+
+        cyg_flash_set_global_printf((cyg_flash_printf *)&diag_printf);
+        if ((stat = cyg_flash_init()) != 0) {
             diag_printf("FLASH: driver init failed: %s\n", cyg_flash_errmsg(stat));
             return -1;
         }
