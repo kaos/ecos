@@ -229,6 +229,17 @@ static SERIAL_FUNS(pc_serial_funs,
 # define CYG_IO_SERIAL_GENERIC_16X5X_INT_PRIORITY 4
 #endif
 
+// Allow platform code to override the default implementation of
+// a write to the LCR
+#ifndef SER_16X5X_WRITE_LCR
+#define SER_16X5X_WRITE_LCR(_base_, _val_) HAL_WRITE_UINT8((_base_) + REG_lcr, _val_)
+#endif
+
+// Allow platform code to override the default implementation of
+// a read of the ISR
+#ifndef SER_16X5X_READ_ISR
+#define SER_16X5X_READ_ISR(_base_, _val_) HAL_READ_UINT8((_base_) + REG_isr, _val_)
+#endif
 
 // Internal function to actually configure the hardware to desired
 // baud rate, etc.
@@ -259,10 +270,10 @@ serial_config_port(serial_channel *chan,
     _lcr = select_word_length[new_config->word_length - CYGNUM_SERIAL_WORD_LENGTH_5] | 
         select_stop_bits[new_config->stop] |
         select_parity[new_config->parity];
-    HAL_WRITE_UINT8(base+REG_lcr, _lcr | LCR_DL);
+    SER_16X5X_WRITE_LCR(base, _lcr | LCR_DL);
     HAL_WRITE_UINT8(base+REG_mdl, baud_divisor >> 8);
     HAL_WRITE_UINT8(base+REG_ldl, baud_divisor & 0xFF);
-    HAL_WRITE_UINT8(base+REG_lcr, _lcr);
+    SER_16X5X_WRITE_LCR(base, _lcr);
     if (init) {
 #ifdef CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO
         unsigned char _fcr_thresh;
@@ -580,7 +591,7 @@ pc_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 
     // Check if we have an interrupt pending - note that the interrupt
     // is pending of the low bit of the isr is *0*, not 1.
-    HAL_READ_UINT8(base+REG_isr, _isr);
+    SER_16X5X_READ_ISR(base, _isr);
     while ((_isr & ISR_nIP) == 0) {
         switch (_isr&0xE) {
         case ISR_Rx:

@@ -1,3 +1,10 @@
+2009-02-17  Rene Schipp von Branitz Nielsen <rbn@vitesse.com>
+
+	* src/ser_16x5x.c:
+	Allow platform code to override the default implementation for
+	writing the LCR register and reading the ISR register by using
+	the SER_16X5X_WRITE_LCR() and SER_16X5X_READ_ISR() macros.
+
 2008-07-08  Uwe Kindler <uwe_kindler@web.de>
 
 	* cdl/ser_generic_16x5x.cdl
