@@ -11,7 +11,7 @@ static char copyright[] =
 "// ####ECOSGPLCOPYRIGHTBEGIN####                                          "
 "// -------------------------------------------                            "
 "// This file is part of eCos, the Embedded Configurable Operating System. "
-"// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc. "
+"// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc. "
 "//                                                                   "
 "// eCos is free software; you can redistribute it and/or modify it under  "
 "// the terms of the GNU General Public License as published by the Free   "
@@ -89,7 +89,8 @@ void cyg_user_start(void)
     
     CYG_TEST_INIT();
   
-    ret=cyg_flash_init((cyg_flash_printf *)diag_printf);
+    cyg_flash_set_global_printf((cyg_flash_printf *)&diag_printf);
+    ret=cyg_flash_init();
   
     CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_init");
 

@@ -1,3 +1,9 @@
+2009-02-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/flash2.c (cyg_user_start): Update for minor flash API
+	mod to call cyg_flash_set_global_printf() to set printf
+	function.
+
 2008-12-23  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* src/flash_erase_block.c:
@@ -81,7 +87,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
