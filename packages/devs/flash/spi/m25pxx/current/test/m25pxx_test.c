@@ -376,7 +376,8 @@ void cyg_user_start
 {
     do_version();
     diag_printf ("----\nChecking for M25Pxx compatible devices.\n");
-    cyg_flash_init (&diag_printf);
+    cyg_flash_set_global_printf((cyg_flash_printf *)&diag_printf);
+    cyg_flash_init();
     CYG_TEST_INIT();
     cyg_thread_create(
         10,                                   // Arbitrary priority
