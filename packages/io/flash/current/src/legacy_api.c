@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2004 Free Software Foundation, Inc.                        
+// Copyright (C) 2004, 2009 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -57,7 +57,8 @@
 int
 flash_init(_printf *pf)
 {
-  return cyg_flash_init(pf);
+  cyg_flash_set_global_printf(pf);
+  return cyg_flash_init();
 }
 
 int

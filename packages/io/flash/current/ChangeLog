@@ -1,3 +1,32 @@
+2009-02-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/flash.h: Modest API change: cyg_flash_init() no longer
+	takes a printf function argument. Instead two new API functions
+	are available: cyg_flash_set_printf() and
+	cyg_flash_set_global_printf().
+	
+	* src/flash.c (CHATTER): Don't attempt output if printf function
+	is NULL.
+	(cyg_flash_init): No longer takes printf arg.
+	(cyg_flash_set_printf): New. Set per-device printf function, locking
+	if needed.
+	(cyg_flash_set_global_printf): New. Set printf function for all
+	devices, locking if needed.
+	
+	* src/flashiodev.c (flashiodev_init): cyg_flash_init no longer takes
+	printf arg, and we can leave global printf at default.
+	* src/flashiodevlegacy.c (flashiodev_init): Ditto.
+
+	* src/legacy_api.c (flash_init): cyg_flash_init no longer takes
+	printf arg. So call cyg_flash_set_global_printf as well.
+
+	* src/legacy_dev.c (legacy_flash_init): legacy drivers can't handle
+	NULL printf function, so provide a dummy.
+
+	* doc/flash.sgml: Document removal of printf functionality of
+	cyg_flash_init() and document cyg_flash_set_printf() and
+	cyg_flash_set_global_printf().
+
 2009-02-13  Bart Veer  <bartv@ecoscentric.com>
 
 	* doc/flash.sgml: remove incomplete sentence.
@@ -642,7 +671,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005, 2006, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

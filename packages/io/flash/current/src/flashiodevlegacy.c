@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -74,12 +74,10 @@ struct flashiodev_priv_t{
   cyg_bool        init;
 };
 
-static int dummy_printf( const char *fmt, ... ) {return 0;}
-
 static bool
 flashiodev_init( struct cyg_devtab_entry *tab )
 {
-  int stat = cyg_flash_init( &dummy_printf );
+  int stat = cyg_flash_init();
 
   return (stat == CYG_FLASH_ERR_OK);
 } // flashiodev_init()

@@ -11,7 +11,7 @@
 <!-- =============================================================== -->
 <!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
 <!-- =============================================================== -->
-<!-- Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc. -->
+<!-- Copyright (C) 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc. -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -118,19 +118,7 @@ operations can be performed. This only needs to be done once. The
 following function will only do the initialization once so it's safe
 to call multiple times: </PARA>
 
-<PROGRAMLISTING>__externC int cyg_flash_init(const cyg_flash_printf *pf); 
-typedef int cyg_flash_printf(const char *fmt, ...); </PROGRAMLISTING>
-
-<PARA>
-The parameter <parameter>pf</parameter> is a pointer to a function
-which is to be used for diagnostic output. Typically the function
-<function>diag_printf()</function> will be passed. Normally this
-function is not used by the higher layer of the library unless
-<literal>CYGSEM_IO_FLASH_CHATTER</literal> is enabled.  Passing a
-<parameter>NULL</parameter> is not recommended, even when
-CYGSEM_IO_FLASH_CHATTER is disabled. The lower layers of the library
-may unconditionally call this function, especially when errors occur,
-probably resulting in a more serious error/crash!.</PARA>
+<PROGRAMLISTING>__externC int cyg_flash_init(void); </PROGRAMLISTING>
 </SECT2>
 
 <SECT2>
@@ -281,7 +269,43 @@ __externC int cyg_flash_mutex_lock(const cyg_flashaddr_t from, size_t len);
 __externC int cyg_flash_mutex_unlock(const cyg_flashaddr_t from, size_t len);
 </PROGRAMLISTING>
 
-</SECT2
+</SECT2>
+
+<SECT2>
+<TITLE>Configuring diagnostic output</TITLE>
+
+<PARA> Each FLASH device can have an associated function which is
+called to perform diagnostic output. The function to be used can
+be configured with the following functions: </PARA>
+
+<PROGRAMLISTING>__externC int cyg_flash_set_printf(const cyg_flashaddr_t flash_base,
+                                   cyg_flash_printf *pf);
+__externC void cyg_flash_set_global_printf(cyg_flash_printf *pf);
+typedef int cyg_flash_printf(const char *fmt, ...); </PROGRAMLISTING>
+
+<PARA>The parameter <parameter>pf</parameter> is a pointer to a function
+which is to be used for diagnostic output. Typically the function
+<function>diag_printf()</function> will be passed. Normally this
+function is not used by the higher layer of the library unless
+<literal>CYGSEM_IO_FLASH_CHATTER</literal> is enabled.  Passing a
+<parameter>NULL</parameter> causes diagnostic output from lower level
+drivers to be discarded.</PARA>
+
+<PARA><function>cyg_flash_set_printf</function> is used to set a
+diagnostic output function which will be used specifically when
+diagnostic output is attempted from the FLASH device driver associated
+with the base address of <parameter>flash_base</parameter>. An error
+will be returned if no FLASH device is found for this address, or the
+FLASH subsystem has not yet been initialised with
+<function>cyg_flash_init</function>.</PARA>
+
+<PARA><function>cyg_flash_set_global_printf</function> sets a
+diagnostic output function for all available FLASH devices. Any
+previous setting of a diagnostic output function (including with
+<function>cyg_flash_set_printf</function>) will be discarded.
+This function may be called prior to
+<function>cyg_flash_init</function>.</PARA>
+</SECT2>
 
 <SECT2>
 

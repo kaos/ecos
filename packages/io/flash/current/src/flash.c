@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -76,7 +76,10 @@
 // Optional verbosity. Using a macro here avoids lots of ifdefs in the
 // rest of the code.
 #ifdef CYGSEM_IO_FLASH_CHATTER
-# define CHATTER(_dev_, _fmt_, ...) (*(_dev_)->pf)((_fmt_), ## __VA_ARGS__)
+# define CHATTER(_dev_, _fmt_, ...) CYG_MACRO_START \
+    if ((_dev_)->pf)                                \
+        (*(_dev_)->pf)((_fmt_), ## __VA_ARGS__);    \
+    CYG_MACRO_END
 #else
 # define CHATTER(_dev_, _fmt_, ...) CYG_EMPTY_STATEMENT
 #endif
@@ -217,7 +220,7 @@ find_dev(cyg_flashaddr_t addr, int* stat)
 // ascending order of address and put them into a linked list. Lastly
 // check if we have any overlap of the addresses.
 __externC int 
-cyg_flash_init(cyg_flash_printf *pf) 
+cyg_flash_init(void) 
 {
   int err;
   struct cyg_flash_dev * dev;
@@ -225,15 +228,10 @@ cyg_flash_init(cyg_flash_printf *pf)
   CYG_ASSERT(&(cyg_flashdevtab[CYGHWR_IO_FLASH_DEVICE]) == &cyg_flashdevtab_end, "incorrect number of flash devices");
   
   if (init) {
-      // In case the printf function has changed.
-      for (dev = &cyg_flashdevtab[0]; dev != &cyg_flashdevtab_end; dev++) {
-          dev->pf = pf;
-      }
       return CYG_FLASH_ERR_OK;
   }
 
   for (dev = &cyg_flashdevtab[0]; dev != &cyg_flashdevtab_end; dev++) {
-    dev->pf = pf;
     LOCK_INIT(dev);
     
     err = dev->funs->flash_init(dev);
@@ -279,6 +277,51 @@ cyg_flash_init(cyg_flash_printf *pf)
   // consistent.
   init = true;
   return CYG_FLASH_ERR_OK;
+}
+
+// Set a printf function to use for a particular device,
+// which is associated with the supplied base address
+__externC int
+cyg_flash_set_printf(const cyg_flashaddr_t flash_base,
+                     cyg_flash_printf *pf)
+{
+  struct cyg_flash_dev *dev;
+  int                   stat = CYG_FLASH_ERR_OK;
+
+  dev = find_dev(flash_base, &stat);
+  if (dev) {
+    // Locking may seem like overkill, but if there's any chance of CHATTER
+    // mid-change then bad things are theoretically possible. But we only
+    // lock if this device is usable, i.e. it's been initialised.
+    if (dev->init) {
+      LOCK(dev);
+    }
+    dev->pf = pf;
+    if (dev->init) {
+      UNLOCK(dev);
+    }
+  }
+  return stat;
+}
+
+// Set a printf function to use for all flash devices.
+// This overrides any previously set printf function.
+__externC void
+ cyg_flash_set_global_printf(cyg_flash_printf *pf)
+{
+  struct cyg_flash_dev *dev;
+  for (dev = &cyg_flashdevtab[0]; dev != &cyg_flashdevtab_end; dev++) {
+    // Locking may seem like overkill, but if there's any chance of CHATTER
+    // mid-change then bad things are theoretically possible. But we only
+    // lock if this device is usable, i.e. it's been initialised.
+    if (dev->init) {
+      LOCK(dev);
+    }
+    dev->pf = pf;
+    if (dev->init) {
+      UNLOCK(dev);
+    }
+  }
 }
 
 // Is the address within one of the flash drivers?

@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2004, 2006 Free Software Foundation, Inc.                  
+// Copyright (C) 2004, 2006, 2009 Free Software Foundation, Inc.                  
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -81,6 +81,8 @@ externC code_fun flash_read_buf;
 externC code_fun flash_lock_block;
 externC code_fun flash_unlock_block;
 
+static int dummy_printf( const char *fmt, ... ) {return 0;}
+
 // Initialize the device
 static int 
 legacy_flash_init (struct cyg_flash_dev *dev)
@@ -88,7 +90,11 @@ legacy_flash_init (struct cyg_flash_dev *dev)
   int err;
   static cyg_flash_block_info_t block_info[1];
 
-  flash_info.pf = dev->pf;
+  // Legacy device drivers can't handle NULL printf function
+  if (NULL != dev->pf)
+      flash_info.pf = dev->pf;
+  else
+      flash_info.pf = &dummy_printf;
   
   err=flash_hwr_init();
 
