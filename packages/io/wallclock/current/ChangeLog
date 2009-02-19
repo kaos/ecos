@@ -1,3 +1,9 @@
+2009-02-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/wallclock/wallclock.inl: _simple_mkdate is used by RedBoot
+	and possibly others, so don't make specific to SET_GET mode.
+	(Suggested by Rene Nielsen).
+
 2009-02-04  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/wallclock.cxx: switch to CYG_INIT_DEV_WALLCLOCK init

@@ -11,7 +11,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -101,9 +101,6 @@ _simple_mktime(cyg_uint32 year, cyg_uint32 mon,
     return secs;
 }
 
-#ifdef CYGSEM_WALLCLOCK_SET_GET_MODE
-
-
 static void
 _simple_mkdate(time_t time,
                cyg_uint32* year, cyg_uint32* mon,
@@ -134,8 +131,6 @@ _simple_mkdate(time_t time,
 
     *day = days+1;
 }
-
-#endif
 
 //-----------------------------------------------------------------------------
 // BCD helper macros
