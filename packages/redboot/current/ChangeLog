@@ -1,3 +1,7 @@
+2009-02-19  John Dallaway  <john@dallaway.org.uk>
+
+	* src/main.c: Update copyright notice.
+
 2009-02-19  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/flash.c (do_flash_init): Update for minor flash API

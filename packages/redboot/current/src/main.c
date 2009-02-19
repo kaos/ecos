@@ -176,7 +176,7 @@ do_version(int argc, char *argv[])
 #ifdef HAL_PLATFORM_CPU
     diag_printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif
-    diag_printf("Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.\n");
+    diag_printf("Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009\nFree Software Foundation, Inc.\n");
     /* The following line fulfils requirement 2(c) of the GPL. If you modify it, ensure
      * you remain compliant with the GPL requirements. Removing it entirely constitutes
      * a breach of the GPL, and you should note section 4 of the GPL as to what that means!
