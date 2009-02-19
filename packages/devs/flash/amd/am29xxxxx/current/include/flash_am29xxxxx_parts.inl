@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -78,6 +78,56 @@
 #define _LAST_BOOTBLOCK (-1)
 
 #if CYGNUM_FLASH_WIDTH == 8
+#ifdef CYGHWR_DEVS_FLASH_AMD_MX29LV128
+    {   // MX29LV128M-B (Bottom-boot)
+        long_device_id: true,
+        device_id  : FLASHWORD(0x7e),
+        device_id2 : FLASHWORD(0x11),
+        device_id3 : FLASHWORD(0x00),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 256,
+        device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : false,
+        bufsiz     : 32
+    },
+    {   // MX29LV128M-T (Top-boot)
+        long_device_id: true,
+        device_id  : FLASHWORD(0x7e),
+        device_id2 : FLASHWORD(0x11),
+        device_id3 : FLASHWORD(0x01),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 256,
+        device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0xff0000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : false,
+        bufsiz     : 32
+    },
+#endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29F002T
     {   // AM29F002T
         device_id  : FLASHWORD(0xb0),
@@ -578,6 +628,22 @@
     },
 #endif
 
+#ifdef CYGHWR_DEVS_FLASH_AMD_S29GL128N
+    {   // AMD/SPANSION S29GL128N
+        long_device_id: true,
+        device_id  : FLASHWORD(0x7e),
+        device_id2 : FLASHWORD(0x21),
+        device_id3 : FLASHWORD(0x01),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 128,
+        device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 32,
+    },
+#endif
+
 #else // 16 bit devices
 
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV128
@@ -596,6 +662,30 @@
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_MX29LV128
+    {   // MX29LV128M-B
+        long_device_id: true,
+        device_id  : FLASHWORD(0x227e),
+        device_id2 : FLASHWORD(0x2211),
+        device_id3 : FLASHWORD(0x2200),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 256,
+        device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : false,
+        bufsiz     : 16
+    },
     {   // MX29LV128M-T
         long_device_id: true,
         device_id  : FLASHWORD(0x227e),
