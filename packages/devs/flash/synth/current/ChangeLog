@@ -1,3 +1,8 @@
+2009-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/flash2.c (cyg_user_start): Call cyg_flash_init with
+	NULL arg.
+
 2009-02-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/flash2.c (cyg_user_start): Update for minor flash API
