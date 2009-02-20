@@ -120,7 +120,7 @@ void cyg_user_start(void)
     CYG_REFERENCE_OBJECT(cyg_flash_synth_flashdev_flash3);  
 
     cyg_flash_set_global_printf((cyg_flash_printf *)&diag_printf);
-    ret=cyg_flash_init();
+    ret=cyg_flash_init(NULL);
     
     CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_init");
 
