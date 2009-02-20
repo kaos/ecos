@@ -220,13 +220,17 @@ find_dev(cyg_flashaddr_t addr, int* stat)
 // ascending order of address and put them into a linked list. Lastly
 // check if we have any overlap of the addresses.
 __externC int 
-cyg_flash_init(void) 
+cyg_flash_init(cyg_flash_printf *pf)
 {
   int err;
   struct cyg_flash_dev * dev;
   
   CYG_ASSERT(&(cyg_flashdevtab[CYGHWR_IO_FLASH_DEVICE]) == &cyg_flashdevtab_end, "incorrect number of flash devices");
   
+  // In case the printf function has changed.
+  if (NULL != pf)
+      cyg_flash_set_global_printf(pf);
+
   if (init) {
       return CYG_FLASH_ERR_OK;
   }

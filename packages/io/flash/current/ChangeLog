@@ -1,3 +1,15 @@
+2009-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/flash.h: Reinstate printf arg to cyg_flash_init, but it
+	will now be officially required to be set to NULL.
+	* src/flash.c (cyg_flash_init): Act on printf arg again (even though
+	it's not meant to be non-NULL).
+	* src/flashiodev.c (flashiodev_init): Call cyg_flash_init with NULL.
+	* src/flashiodevlegacy.c (flashiodev_init): Ditto.
+	* src/legacy_api.c (flash_init): Ditto.
+	* doc/flash.sgml: Update cyg_flash_init as above, deprecating use of
+	non-NULL parameter.
+
 2009-02-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/flash.h: Modest API change: cyg_flash_init() no longer

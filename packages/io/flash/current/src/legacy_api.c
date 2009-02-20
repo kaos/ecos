@@ -58,7 +58,7 @@ int
 flash_init(_printf *pf)
 {
   cyg_flash_set_global_printf(pf);
-  return cyg_flash_init();
+  return cyg_flash_init(NULL);
 }
 
 int

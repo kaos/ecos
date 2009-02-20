@@ -126,7 +126,7 @@ BLOCK_DEVTAB_ENTRY( cyg_io_flashdev,
 static bool
 flashiodev_init( struct cyg_devtab_entry *tab )
 {
-  int stat = cyg_flash_init();
+  int stat = cyg_flash_init(NULL);
   cyg_ucount32 i;
 
   if (stat == CYG_FLASH_ERR_OK)

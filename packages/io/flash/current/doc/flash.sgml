@@ -118,7 +118,17 @@ operations can be performed. This only needs to be done once. The
 following function will only do the initialization once so it's safe
 to call multiple times: </PARA>
 
-<PROGRAMLISTING>__externC int cyg_flash_init(void); </PROGRAMLISTING>
+<PROGRAMLISTING>__externC int cyg_flash_init(cyg_flash_printf *pf); </PROGRAMLISTING>
+
+<PARA>
+The parameter <parameter>pf</parameter> must always be set to NULL. It
+exists solely for backward compatibility and other settings are deprecated
+and obsolete. Past use of this parameter has now been replaced with use of
+the <link
+linkend="ecos-flash-v2-api-config-diag-output"><function>cyg_flash_set_global_printf</function></link>
+function.
+</PARA>
+
 </SECT2>
 
 <SECT2>
@@ -253,7 +263,7 @@ __externC int cyg_flash_unlock(const cyg_flashaddr_t flash_base, size_t len, cyg
 </SECT2>
 
 <SECT2>
-<TITLE>Locking FLASH Mutex's</TITLE>
+<TITLE>Locking FLASH mutexes</TITLE>
 
 <PARA>When the eCos kernel package is included in the eCos
 configuration, the FLASH IO library will perform mutex locking on
@@ -271,7 +281,7 @@ __externC int cyg_flash_mutex_unlock(const cyg_flashaddr_t from, size_t len);
 
 </SECT2>
 
-<SECT2>
+<SECT2 id="ecos-flash-v2-api-config-diag-output">
 <TITLE>Configuring diagnostic output</TITLE>
 
 <PARA> Each FLASH device can have an associated function which is

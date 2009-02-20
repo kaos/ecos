@@ -77,7 +77,7 @@ struct flashiodev_priv_t{
 static bool
 flashiodev_init( struct cyg_devtab_entry *tab )
 {
-  int stat = cyg_flash_init();
+  int stat = cyg_flash_init(NULL);
 
   return (stat == CYG_FLASH_ERR_OK);
 } // flashiodev_init()

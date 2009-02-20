@@ -80,7 +80,7 @@ typedef struct {
 } cyg_flash_info_t;
 
 typedef int cyg_flash_printf(const char *fmt, ...);
-__externC int cyg_flash_init(void);
+__externC int cyg_flash_init( cyg_flash_printf *pf );
 __externC int cyg_flash_set_printf(const cyg_flashaddr_t flash_base,
                                    cyg_flash_printf *pf);
 __externC void cyg_flash_set_global_printf(cyg_flash_printf *pf);
