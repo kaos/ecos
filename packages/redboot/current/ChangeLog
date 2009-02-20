@@ -1,3 +1,8 @@
+2009-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (do_flash_init): Call cyg_flash_init() with
+	NULL argument.
+
 2009-02-19  John Dallaway  <john@dallaway.org.uk>
 
 	* src/main.c: Update copyright notice.

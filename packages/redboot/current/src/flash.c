@@ -1863,7 +1863,7 @@ do_flash_init(void)
         __flash_init = 1;
 
         cyg_flash_set_global_printf((cyg_flash_printf *)&diag_printf);
-        if ((stat = cyg_flash_init()) != 0) {
+        if ((stat = cyg_flash_init(NULL)) != 0) {
             diag_printf("FLASH: driver init failed: %s\n", cyg_flash_errmsg(stat));
             return -1;
         }
