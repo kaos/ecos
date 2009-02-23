@@ -1105,23 +1105,31 @@ void ecRunOptionsDialog::CreateControls( wxPanel *parent)
 
     wxString strs21[] = 
     {
+        _("50"), 
+        _("75"), 
         _("110"), 
+//        _("134.5"), 
+        _("150"), 
+        _("200"), 
         _("300"), 
         _("600"), 
         _("1200"), 
+        _("1800"), 
         _("2400"), 
+        _("3600"), 
         _("4800"), 
+        _("7200"), 
         _("9600"), 
         _("14400"), 
         _("19200"), 
         _("38400"), 
-        _("56000"), 
         _("57600"), 
         _("115200"), 
-        _("128000"), 
-        _("256000")
+        _("230400"), 
+        _("460800"), 
+        _("921600")
     };
-    wxChoice *item21 = new wxChoice( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_SPEED, wxDefaultPosition, wxSize(80,-1), 15, strs21, 0 );
+    wxChoice *item21 = new wxChoice( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_SPEED, wxDefaultPosition, wxSize(90,-1), 22, strs21, 0 );
     item16->Add( item21, 0, wxALIGN_CENTRE|wxALL, 5 );
 
     item14->Add( item16, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
