@@ -1,7 +1,12 @@
+2009-02-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* tests/flash1.c, tests/flash2.c: fix breakage caused by banner
+	change.
+
 2009-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
 
-	* tests/flash2.c (cyg_user_start): Call cyg_flash_init() with
-	NULL argument.
+	* tests/flash2.c (cyg_user_start): Call cyg_flash_init with
+	NULL arg.
 
 2009-02-18  Jonathan Larmour  <jifl@eCosCentric.com>
 

@@ -38,7 +38,7 @@ static char copyright[] =
 "// This exception does not invalidate any other reasons why a work based  "
 "// on this file might be covered by the GNU General Public License.       "
 "// -------------------------------------------                            "
-"// ####ECOSGPLCOPYRIGHTEND####                                             
+"// ####ECOSGPLCOPYRIGHTEND####"
 "//=========================================================================="
 "//#####DESCRIPTIONBEGIN####"
 "//"
