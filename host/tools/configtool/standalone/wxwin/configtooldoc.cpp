@@ -2318,7 +2318,7 @@ void ecConfigToolDoc::RunTests()
             		"cont\n"
             		"set cyg_test_is_simulator=0\n"
             		"cont\n"
-            		"bt");
+            		"bt 64");
             dlg.m_strPrompt = _("(gdb) ");
             dlg.m_strInferior = dlg.m_strPrefix + _("-gdb -nw -q %e");
             dlg.m_strCaption=_("New Platform");

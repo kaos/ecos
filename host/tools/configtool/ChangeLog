@@ -1,3 +1,8 @@
+2009-02-27  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/configtooldoc.cpp: Limit backtrace length to 64 in
+	case GDB fails to detect the thread entry point. [ Bugzilla 1000699 ]
+
 2009-02-23  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/settingsdlg.cpp: Rationalise serial baud options.
