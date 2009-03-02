@@ -150,8 +150,8 @@
         // BANK1: 1M RAM
         // K6R4016V1D (512Kx16 x 2, 10nS)
         ldr r0,=CYGARC_HAL_LPC2XXX_REG_BCFG1
-	// Warning: changed these timings, you can fall dramatically the eCos
-	// kernel performance. Check it then using the eCos 'tm_basic' test.
+        // Warning: changed these timings, you can fall dramatically the eCos
+        // kernel performance. Check it then using the eCos 'tm_basic' test.
         ldr r1,=  (0x0 << 0)    /* IDCY=0, idle cycles  */\
                 | (0x0 << 5)    /* WST1=0, read timing  */\
                 | (0x1 << 10)   /* RBLE=1               */\
@@ -187,7 +187,7 @@
         str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_PINSEL1]
 
         // GPIO P1.25:16, P3.24 are used as PIO
-        ldr r1,=  (0x1 << 2)    /* P1.36:26 Debug port  */\
+        ldr r1,=  (0x1 << 2)    /* P1.31:26 Debug port  */\
                 | (0x2 << 4)    /* D31:0,CS0,OE,BLS0-3  */\
                 | (0x1 << 8)    /* WE enabled           */\
                 | (0x1 << 11)   /* CS1 enabled          */\
