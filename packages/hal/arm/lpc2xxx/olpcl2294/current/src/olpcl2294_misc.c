@@ -60,11 +60,6 @@
 #include <cyg/hal/hal_var_ints.h>
 #include <cyg/hal/drv_api.h>
 
-// Newlib provides support for building the run-time elements of C++
-// within the toolchain. Modern newlib stuff looks for a _impure_ptr
-// entry.
-void           *_impure_ptr;
-
 extern void cyg_hal_plf_serial_init (void);
 
 //--------------------------------------------------------------------------
