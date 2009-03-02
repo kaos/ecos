@@ -1,3 +1,8 @@
+2008-11-18  Rutger Hofman <rutger@cs.vu.nl>
+
+	* src/file.cxx: add a chmod() call, implemented by calling
+	cyg_fs_setinfo with parameter FS_INFO_CHMOD
+
 2008-12-11  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/fd.cxx (fp_ucount_dec, fd_close): Fix locking strategy so

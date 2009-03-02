@@ -161,6 +161,8 @@ struct cyg_fstab_entry
 #ifdef  CYGSEM_FILEIO_INFO_DISK_USAGE
 #define FS_INFO_DISK_USAGE      6       /* get_disk_usage()    */
 #endif
+#define FS_INFO_CHMOD           7       /* chmod() */
+
 //-----------------------------------------------------------------------------
 // Types for link()
 

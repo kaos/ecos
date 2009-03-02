@@ -41,6 +41,7 @@
 //
 // Author(s):           nickg
 // Contributors:        nickg
+// Contributors:        rutger at cs dot vu dot nl: chmod()
 // Date:                2000-05-25
 // Purpose:             Fileio file operations
 // Description:         These are the functions that operate on files as a whole,
@@ -898,6 +899,20 @@ __externC int cyg_fs_setinfo( const char *path, int key, void *buf, int len )
     
     UNLOCK_FS( mte );
     
+    FILEIO_RETURN(ret);
+}
+
+//==========================================================================
+// chmod
+
+__externC int chmod(const char *path, mode_t mode)
+{
+    int ret;
+
+    FILEIO_ENTRY();
+
+    ret = cyg_fs_setinfo(path, FS_INFO_CHMOD, &mode, sizeof(mode));
+
     FILEIO_RETURN(ret);
 }
 
