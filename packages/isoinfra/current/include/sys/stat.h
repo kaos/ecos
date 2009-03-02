@@ -148,6 +148,8 @@ __externC int fstat( int fd, struct stat *buf );
 
 __externC int mkdir(const char *path, mode_t mode);
 
+__externC int chmod(const char *path, mode_t mode);
+
 #endif /* CYGONCE_ISO_STAT_H multiple inclusion protection */
 
 /* EOF stat.h */
