@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -374,7 +374,7 @@ void task1( unsigned int arg )
     CYG_TEST_PASS("create/delete flags");
 #endif // CYGPKG_UITRON_FLAGS_CREATE_DELETE
 
-#ifdef CYGPKG_UITRON_MBOXES_CREATE_DELETE
+#if defined(CYGPKG_UITRON_MBOXES_CREATE_DELETE) && defined(CYGIMP_UITRON_STRICT_CONFORMANCE)
     tests++;
 #ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
     ercd = del_mbx( -6 );

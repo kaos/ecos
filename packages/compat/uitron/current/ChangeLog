@@ -1,3 +1,13 @@
+2009-03-02  Nick Garnett  <nickg@ecoscentric.com>
+
+	* tests/test2.c: 
+	* tests/test6.c: 
+	* tests/test7.c: 
+	* tests/testcx2.c: 
+	* tests/testcx6.c: 
+	* tests/testcx7.c: Modify tests to either not run, or avoid mbox
+	functions if system is configured without strict conformance.
+
 2009-02-09  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/tasks.cdl: clarify usage of CYGNUM_UITRON_TASKS, bug

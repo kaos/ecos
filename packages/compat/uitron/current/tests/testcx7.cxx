@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -54,6 +54,8 @@
 #include <cyg/infra/testcase.h>         // testing infrastructure
 
 #ifdef CYGPKG_UITRON                    // we DO want the uITRON package
+
+#ifdef CYGIMP_UITRON_STRICT_CONFORMANCE // we DO want strict conformance
 
 #ifdef CYGSEM_KERNEL_SCHED_MLQUEUE      // we DO want prioritized threads
 
@@ -1084,6 +1086,9 @@ void task4( unsigned int arg )
 #else  // ! CYGIMP_THREAD_PRIORITY        - can't test without it
 #define N_A_MSG "no CYGSEM_KERNEL_SCHED_MLQUEUE"
 #endif // ! CYGSEM_KERNEL_SCHED_MLQUEUE   - can't test without it
+#else  // ! CYGIMP_UITRON_STRICT_CONFORMANCE - can't test without it
+#define N_A_MSG "no CYGIMP_UITRON_STRICT_CONFORMANCE"
+#endif // ! CYGIMP_UITRON_STRICT_CONFORMANCE - can't test without it
 #else  // ! CYGPKG_UITRON
 #define N_A_MSG "uITRON Compatibility layer disabled"
 #endif // CYGPKG_UITRON
