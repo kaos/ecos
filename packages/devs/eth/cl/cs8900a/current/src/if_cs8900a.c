@@ -168,6 +168,19 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
     CYGHWR_CL_CS8900A_PLF_INIT(cpd);
 
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
+# ifdef CYGSEM_DEVS_ETH_CL_CS8900A_NOINTS
+    // The olpce2994 target uses 8-bit, non-interrupt driven mode for CS8900A.
+    cyg_thread_create(1,                 // Priority
+                      cs8900a_fake_int,  // entry
+                      (cyg_addrword_t)sc,// entry parameter
+                      "CS8900 int",      // Name
+                      &cs8900a_fake_int_stack[0],      // Stack
+                      STACK_SIZE,                      // Size
+                      &cs8900a_fake_int_thread_handle, // Handle
+                      &cs8900a_fake_int_thread_data    // Thread data structure
+            );
+    cyg_thread_resume(cs8900a_fake_int_thread_handle);  // Start it
+# else
     // Initialize environment, setup interrupt handler
     cyg_drv_interrupt_create(cpd->interrupt,
                              cpd->priority,
@@ -179,20 +192,8 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
     cyg_drv_interrupt_attach(cpd->interrupt_handle);
     cyg_drv_interrupt_acknowledge(cpd->interrupt);
     cyg_drv_interrupt_unmask(cpd->interrupt);
-
-#ifdef CYGSEM_DEVS_ETH_CL_CS8900A_NOINTS
-    cyg_thread_create(1,                 // Priority
-                      cs8900a_fake_int,   // entry
-                      (cyg_addrword_t)sc, // entry parameter
-                      "CS8900 int",      // Name
-                      &cs8900a_fake_int_stack[0],         // Stack
-                      STACK_SIZE,        // Size
-                      &cs8900a_fake_int_thread_handle,    // Handle
-                      &cs8900a_fake_int_thread_data       // Thread data structure
-            );
-    cyg_thread_resume(cs8900a_fake_int_thread_handle);  // Start it
-#endif
-#endif
+# endif // CYGSEM_DEVS_ETH_CL_CS8900A_NOINTS
+#endif // CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 
     // Read controller ID - the first is a dummy read, since (on some
     // platforms) the first access to the controller seems to skip the

@@ -1,3 +1,9 @@
+ 2009-02-28  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+	
+        * src/if_cs8900a.c: Fixed interrupt hooking block in cs8900a_init() to
+        prevent assertion fail on cyg_interrupt_attach() when interrupt is not
+        used.
+	
 2008-11-07  Sergei Gavrikov <sergei.gavrikov@gmail.com>
 
 	* cdl/cl_cs8900a_eth_drivers.cdl: Added
