@@ -1,3 +1,11 @@
+2009-02-02  Sergei Gavrikov <sergei.gavrikov@gmail.com>
+
+ 	* cdl/hal_arm_lpc2xxx_olpch2294.cdl: Expanded a list the legal baud
+ 	rates for both diagnostic and debug channels (upon 230400 bps).
+ 	* include/hal_platform_setup.h: Fixed a comment about JTAG pinouts.
+ 	* src/olpch2294_misc.c: 1) hal_plf_hardware_init(): masked interrupts
+ 	on UART1; 2) Removed odd _impure_ptr stub.
+ 
 2009-01-31  Bart Veer <bartv@ecoscentric.com>
 
 	* cdl/hal_arm_lpc2xxx_olpch2294.cdl: update compiler flags for gcc 4.x

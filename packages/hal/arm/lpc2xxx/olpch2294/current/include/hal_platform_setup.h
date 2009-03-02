@@ -175,7 +175,7 @@
         str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_PINSEL1]
 
         // GPIO P1.25:16, P3.0, P3.25:24 are used as PIO
-        ldr r1,=  (0x1 << 2)    /* P1.36:26 Debug port  */\
+        ldr r1,=  (0x1 << 2)    /* P1.31:26 Debug port  */\
                 | (0x2 << 4)    /* D31:0,CS0,OE,BLS0-3  */\
                 | (0x1 << 8)    /* WE enabled           */\
                 | (0x1 << 11)   /* CS1 enabled          */\

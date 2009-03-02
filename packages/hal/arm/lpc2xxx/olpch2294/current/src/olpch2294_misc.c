@@ -51,14 +51,10 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_io.h>     // IO macros
+#include <cyg/hal/hal_intr.h>
 
 #include <cyg/infra/cyg_type.h> // base types
 #include <cyg/hal/var_io.h>
-
-// Newlib provides support for building the run-time elements of C++
-// within the toolchain. Modern newlib stuff looks for a _impure_ptr
-// entry.
-void           *_impure_ptr;
 
 extern void     cyg_hal_plf_serial_init (void);
 
@@ -104,7 +100,9 @@ cyg_hal_plf_comms_init (void)
 void
 hal_plf_hardware_init (void)
 {
-    // Currently, it does nothing
+    // Platform HAL does not use the second LPC2XXX UART. To be sure that we
+    // won't meet any spurios interrupts on UART1 anymore, mask that vector.
+    HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_UART1);
 }
 #endif // HAL_PLF_HARDWARE_INIT
 

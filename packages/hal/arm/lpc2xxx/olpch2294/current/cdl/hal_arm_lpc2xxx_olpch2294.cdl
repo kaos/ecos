@@ -115,7 +115,7 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX_OLPCH2294 {
      cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
         display       "Diagnostic serial port baud rate"
         flavor        data
-        legal_values  9600 19200 38400 57600 115200
+        legal_values  9600 19200 38400 57600 115200 230400
         default_value 38400
         description   "
             This option selects the baud rate used for the diagnostic
@@ -125,7 +125,7 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX_OLPCH2294 {
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
          display       "GDB serial port baud rate"
          flavor        data
-         legal_values  9600 19200 38400 57600 115200
+         legal_values  9600 19200 38400 57600 115200 230400
          default_value 38400
          description   "
             This option controls the baud rate used for the GDB
