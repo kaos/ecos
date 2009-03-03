@@ -1,3 +1,9 @@
+2009-03-03  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/configitem.cpp, standalone/wxwin/configitem.h:
+	Initialise 'modifiable' member variable in alternative constructor.
+	[ Bugzilla 1000705 ]
+
 2009-02-27  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/configtooldoc.cpp: Limit backtrace length to 64 in

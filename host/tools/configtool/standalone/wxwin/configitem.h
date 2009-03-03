@@ -141,7 +141,7 @@ public:
     // enabled: only if this is a Bool or BoolData: whether enabled/disabled (checked/unchecked)
     ecConfigItem(ecConfigItem* parent, const wxString& name, ecConfigType ctype = ecConfigTypeNone,
         ecOptionFlavor flavor = ecFlavorNone, ecOptionType otype = ecOptionTypeNone,
-        bool active = TRUE, bool enabled = TRUE, ecUIHint hint = ecHintNone);
+        bool active = TRUE, bool enabled = TRUE, bool modifiable = TRUE, ecUIHint hint = ecHintNone);
     ecConfigItem(ecConfigItem* parent, CdlUserVisible vitem);
     ~ecConfigItem();
 

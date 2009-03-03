@@ -78,7 +78,7 @@ IMPLEMENT_CLASS(ecConfigItem, wxObject)
 
 ecConfigItem::ecConfigItem(ecConfigItem* parent, const wxString& name, ecConfigType ctype,
                            ecOptionFlavor flavor, ecOptionType otype,
-                           bool active, bool enabled, ecUIHint hint)
+                           bool active, bool enabled, bool modifiable, ecUIHint hint)
 {
     m_CdlItem = NULL;
     m_name = name;
@@ -87,6 +87,7 @@ ecConfigItem::ecConfigItem(ecConfigItem* parent, const wxString& name, ecConfigT
     m_optionFlavor = flavor;
     m_enabled = enabled;
     m_active = active;
+    m_modifiable = modifiable;
     m_parent = parent;
     m_hint = hint;
     m_treeItem = wxTreeItemId();
