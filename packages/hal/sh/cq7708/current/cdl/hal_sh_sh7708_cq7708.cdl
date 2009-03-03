@@ -230,7 +230,7 @@ cdl_package CYGPKG_HAL_SH_SH7708_CQ7708 {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { (CYGHWR_HAL_SH_BIGENDIAN ? "-mb" : "-m3") . " -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" }
+            default_value { (CYGHWR_HAL_SH_BIGENDIAN ? "-mb" : "-ml") . " -m3 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

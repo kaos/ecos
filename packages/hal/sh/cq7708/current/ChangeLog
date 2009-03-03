@@ -1,3 +1,8 @@
+2009-03-03  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_sh_sh7708_cq7708.cdl: fix previous compiler flags
+	update.
+
 2009-02-04  John Dallaway  <john@dallaway.org.uk>
 
 	* include/pkgconf/*.ldi: Add SECTION_eh_frame().
