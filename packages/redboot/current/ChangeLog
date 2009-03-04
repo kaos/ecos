@@ -1,3 +1,8 @@
+2009-03-04  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/fconfig.c (get_config): Simplify memcpy() call to
+	work around GCC 4.3 code generation error.  BZ#1000672
+
 2009-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/flash.c (do_flash_init): Call cyg_flash_init() with

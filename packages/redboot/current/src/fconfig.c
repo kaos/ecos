@@ -385,7 +385,7 @@ get_config(char *dp, char *title, int list_opt, char *newvalue )
         break;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     case CONFIG_IP:
-        memcpy(&hold_ip_val.s_addr, &((in_addr_t *)val_ptr)->s_addr, sizeof(in_addr_t));
+        memcpy(&hold_ip_val, val_ptr, sizeof(in_addr_t));
         if (!_gethostbyname(line, &new_ip_val)) {
             return CONFIG_BAD;
         }
