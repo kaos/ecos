@@ -1,0 +1,237 @@
+# ====================================================================
+#
+#      adc_stm32.cdl
+#
+#      eCos STM32 ADC configuration data
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2009 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Simon Kallweit <simon.kallweit@intefo.ch>
+# Contributors:   
+# Date:           2009-02-24
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+
+cdl_package CYGPKG_DEVS_ADC_CORTEXM_STM32 {
+    display     "ST STM32 ADC device driver"
+    
+    parent      CYGPKG_IO_ADC_DEVICES
+    active_if   CYGPKG_IO_ADC_DEVICES
+    active_if   CYGPKG_HAL_CORTEXM_STM32
+    requires    {CYGNUM_IO_ADC_SAMPLE_SIZE >= 12}
+    description "
+        This option enables the ADC device drivers for the ST STM32. The STM32
+        has up to 3 ADC devices. The driver supports both ADC1 and ADC3. ADC2
+        is not supported as it does cover the same inputs as ADC2 and does not
+        support DMA directly."
+           
+    include_dir cyg/io
+    compile     -library=libextras.a adc_stm32.c
+    
+    cdl_option CYGNUM_DEVS_ADC_CORTEXM_STM32_CLOCK_DIV {
+         display        "ADC clock divider"
+         flavor         data
+         legal_values   { 2 4 6 8 }
+         default_value  8
+         description    "
+             This option specifies the level of debug data output by
+             the STM32 ADC device driver. A value of 0 signifies
+             no debug data output; 1 signifies normal debug data
+             output. If an overrun occurred then this can only be
+             detected by debug output messages."         
+    }
+    
+    cdl_component CYGHWR_DEVS_ADC_CORTEXM_STM32_ADC1 {
+        display         "ADC1"
+        default_value   0
+        description     "
+            ADC1 supports 16 analog input channels as well as additional
+            channels for CPU temperature and internal VREF. This is a total of
+            18 channels. Note that only 16 channels may be active at once!
+            ADC1 uses TIM3 to generate scan events and DMA1 channel 1 for data
+            transmission."
+        
+        cdl_interface CYGINT_DEVS_ADC_CORTEXM_STM32_ADC1_CHANNELS {
+            display         "Number of ADC channels"
+        }
+            
+        cdl_option CYGNUM_DEVS_ADC_CORTEXM_STM32_ADC1_SAMPLE_TIME {
+            display         "Sample time"
+            flavor          data
+            legal_values    1 to 1000
+            default_value   20
+            description     "
+                Sampling time in us. When sampling the internal temperatur,
+                this needs to be at least 17.1 us."
+        }
+        
+        cdl_option CYGNUM_DEVS_ADC_CORTEXM_STM32_ADC1_DEFAULT_RATE {
+            display         "Default sample rate"
+            flavor          data
+            legal_values    1 to 10000
+            default_value   100
+            description     "
+                The driver will be initialized with the default sample rate.
+                If you raise the default sample rate you might need to increase
+                the buffer size for each channel."
+        }
+        
+        cdl_option CYGNUM_DEVS_ADC_CORTEXM_STM32_ADC1_DMA_INT_PRI {
+            display         "DMA interrupt priority"
+            flavor          data
+            default_value   0x80
+            description     "
+                Priority of the DMA request interrupt."
+        }
+        
+        # ADC1 supports 16 analog inputs + 2 additional channels (temperature/vref)
+        for { set ::channel 0 } { $::channel < 18 } { incr ::channel } {  
+    
+            cdl_component CYGHWR_DEVS_ADC_CORTEXM_STM32_ADC1_CHANNEL[set ::channel] {
+                display         "ADC channel [set ::channel]"
+                flavor          bool
+                default_value   [set ::channel] == 0
+                implements      CYGINT_DEVS_ADC_CORTEXM_STM32_ADC1_CHANNELS
+                description     "
+                    If the application needs to access the on-chip ADC
+                    channel [set ::channel] via an eCos ADC driver then
+                    this option should be enabled."
+     
+                cdl_option CYGDAT_DEVS_ADC_CORTEXM_STM32_ADC1_CHANNEL[set ::channel]_NAME {
+                    display         "Device name"
+                    flavor          data
+                    default_value   [format {"\"/dev/adc0%d\""} $::channel]
+                    description     "
+                        This option controls the name that an eCos application
+                        should use to access this device via cyg_io_lookup(),
+                        open(), or similar calls."
+                }
+        
+                cdl_option CYGDAT_DEVS_ADC_CORTEXM_STM32_ADC1_CHANNEL[set ::channel]_BUFSIZE {
+                    display         "Size of data buffer"
+                    flavor          data
+                    legal_values    1 to 65536
+                    default_value   128
+                    description     "
+                        This option controls the number of samples the
+                        buffer can store. The required RAM is = size of
+                        data buffer * 2."
+                } 
+            }
+        }
+    }
+
+    cdl_component CYGHWR_DEVS_ADC_CORTEXM_STM32_ADC3 {
+        display         "ADC3"
+        default_value   0        
+        description     "
+            ADC3 supports 16 analog input channels. All channels may be active
+            at once. ADC3 uses TIM8 to generate scan events and DMA2 channel 5
+            for data transmission."
+        
+        cdl_interface CYGINT_DEVS_ADC_CORTEXM_STM32_ADC3_CHANNELS {
+            display         "Number of ADC channels"
+        }
+            
+        cdl_option CYGNUM_DEVS_ADC_CORTEXM_STM32_ADC3_SAMPLE_TIME {
+            display         "Sample time"
+            flavor          data
+            legal_values    1 to 1000
+            default_value   20
+            description     "
+                Sampling time in us. When sampling the internal temperatur,
+                this needs to be at least 17.1 us."
+        }
+        
+        cdl_option CYGNUM_DEVS_ADC_CORTEXM_STM32_ADC3_DEFAULT_RATE {
+            display         "Default sample rate"
+            flavor          data
+            legal_values    1 to 10000
+            default_value   100
+            description     "
+                The driver will be initialized with the default sample rate.
+                If you raise the default sample rate you might need to increase
+                the buffer size for each channel."
+        }
+        
+        cdl_option CYGNUM_DEVS_ADC_CORTEXM_STM32_ADC3_DMA_INT_PRI {
+            display         "DMA interrupt priority"
+            flavor          data
+            default_value   0x80
+            description     "
+                Priority of the DMA request interrupt."
+        }
+        
+        # ADC3 supports 16 analog inputs
+        for { set ::channel 0 } { $::channel < 16 } { incr ::channel } {  
+    
+            cdl_component CYGHWR_DEVS_ADC_CORTEXM_STM32_ADC3_CHANNEL[set ::channel] {
+                display         "ADC channel [set ::channel]"
+                flavor          bool
+                default_value   [set ::channel] == 0
+                implements      CYGINT_DEVS_ADC_CORTEXM_STM32_ADC3_CHANNELS
+                description     "
+                    If the application needs to access the on-chip ADC
+                    channel [set ::channel] via an eCos ADC driver then
+                    this option should be enabled."
+     
+                cdl_option CYGDAT_DEVS_ADC_CORTEXM_STM32_ADC3_CHANNEL[set ::channel]_NAME {
+                    display         "Device name"
+                    flavor          data
+                    default_value   [format {"\"/dev/adc1%d\""} $::channel]
+                    description     "
+                        This option controls the name that an eCos application
+                        should use to access this device via cyg_io_lookup(),
+                        open(), or similar calls."
+                }
+        
+                cdl_option CYGDAT_DEVS_ADC_CORTEXM_STM32_ADC3_CHANNEL[set ::channel]_BUFSIZE {
+                    display         "Size of data buffer"
+                    flavor          data
+                    legal_values    1 to 65536
+                    default_value   128
+                    description     "
+                        This option controls the number of samples the
+                        buffer can store. The required RAM is = size of
+                        data buffer * 2."
+                } 
+            }
+        }
+    }
+}

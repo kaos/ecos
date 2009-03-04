@@ -1,27 +1,14 @@
-2009-03-02  Simon Kallweit  <simon.kallweit@intefo.ch>
+2009-02-27  Simon Kallweit  <simon.kallweit@intefo.ch>
 
-	* cdl/io_adc.cdl:
-	* tests/adc1.c:
-	* tests/adc2.c:
-	Added generic ADC device driver tests.
+	* Synthethic ADC driver package created
+	* cdl/adc_synth.cdl
+	* src/adc_synth.c
 
-2008-12-30  John Dallaway  <john@dallaway.org.uk>
-
-	* cdl/io_adc.cdl: Reference per-package documentation.
-
-2008-08-08  Nick Garnett  <nickg@ecoscentric.com>
-
-	* cdl/io_adc.cdl:
-	* doc/adc.sgml:
-	* include/adc.h: 
-	* src/adc.c:
-	New package -- ADC generic driver support.
-
-##==========================================================================
+//===========================================================================
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2009 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -39,4 +26,4 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.                                
 // -------------------------------------------                              
 // ####GPLCOPYRIGHTEND####                                                  
-##==========================================================================
+//===========================================================================

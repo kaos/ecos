@@ -122,6 +122,7 @@ cyg_uint32 hal_stm32_pclk1;
 cyg_uint32 hal_stm32_pclk2;
 cyg_uint32 hal_cortexm_systick_clock;
 
+void hal_start_clocks( void );
 cyg_uint32 hal_exti_isr( cyg_uint32 vector, CYG_ADDRWORD data );
 
 //==========================================================================
@@ -131,97 +132,105 @@ void hal_variant_init( void )
     CYG_ADDRESS rcc = CYGHWR_HAL_STM32_RCC;
 
     // Enable all devices in RCC
-    {
-        HAL_WRITE_UINT32( CYGHWR_HAL_STM32_RCC+CYGHWR_HAL_STM32_RCC_APB2ENR, 0xFFFFFFFF );
-        HAL_WRITE_UINT32( CYGHWR_HAL_STM32_RCC+CYGHWR_HAL_STM32_RCC_APB1ENR, 0xFFFFFFFF );
-    }
-
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_APB2ENR, 0xFFFFFFFF );
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_APB1ENR, 0xFFFFFFFF );
 
 #if 1 //!defined(CYG_HAL_STARTUP_RAM)
-    // Set up clocks from configuration. In the future this should be moved to a
-    // function so that clock rates can be changed at runtime.
-    {
-        cyg_uint32 cr, cfgr;
-
-        // Reset RCC
-
-        HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, 0x00000001 );
-        
-        // Start up HSE clock
-
-        HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
-        cr &= CYGHWR_HAL_STM32_RCC_CR_HSEON|CYGHWR_HAL_STM32_RCC_CR_HSEBYP;
-        HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
-
-        HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
-        cr |= CYGHWR_HAL_STM32_RCC_CR_HSEON;
-        HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
-        
-        // Wait for HSE clock to startup
-        do
-        {
-            HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
-        } while( !(cr & CYGHWR_HAL_STM32_RCC_CR_HSERDY) );
-
-//        HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CFGR, cfgr );
-
-        // Configure clocks
-
-        hal_stm32_sysclk = CYGARC_HAL_CORTEXM_STM32_INPUT_CLOCK;
-        
-        cfgr = 0;
-
-#if defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSE)
-        cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_HSE;
-#elif defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSE_HALF)
-        cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_HSE |
-                CYGHWR_HAL_STM32_RCC_CFGR_PLLXTPRE;
-        hal_stm32_sysclk /= 2;
-#elif defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSI_HALF)
-        hal_stm32_sysclk /= 2;
-#endif
-        
-        cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PLLMUL(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL);
-        cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_HPRE;
-        cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PPRE1;
-        cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PPRE2;
-
-        HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CFGR, cfgr );        
-
-        // Enable the PLL and wait for it to lock
-
-        cr |= CYGHWR_HAL_STM32_RCC_CR_PLLON;
-
-        HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
-        do
-        {
-            HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
-        } while( !(cr & CYGHWR_HAL_STM32_RCC_CR_PLLRDY) );
-
-        // Now switch to use PLL as SYSCLK
-
-        cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_SW_PLL;
-
-        HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CFGR, cfgr );        
-
-        // Calculate clocks from configuration
-
-        hal_stm32_sysclk *= CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL;
-        hal_stm32_hclk = hal_stm32_sysclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV;
-        hal_stm32_pclk1 = hal_stm32_hclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK1_DIV;
-        hal_stm32_pclk2 = hal_stm32_hclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV;
-        hal_cortexm_systick_clock = hal_stm32_hclk / 8;
-    }
+    hal_start_clocks();
 #endif
 
     // Attach EXTI springboard to interrupt vectors
     HAL_INTERRUPT_ATTACH( CYGNUM_HAL_INTERRUPT_EXTI9_5,   hal_exti_isr, 0, 0 );
     HAL_INTERRUPT_ATTACH( CYGNUM_HAL_INTERRUPT_EXTI15_10, hal_exti_isr, 0, 0 );
-
     
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     hal_if_init();
 #endif
+}
+
+//==========================================================================
+// Setup up system clocks
+//
+// Set up clocks from configuration. In the future this should be extended so
+// that clock rates can be changed at runtime.
+
+void hal_start_clocks( void )
+{
+    CYG_ADDRESS rcc = CYGHWR_HAL_STM32_RCC;
+    cyg_uint32 cr, cfgr;
+    
+    // Reset RCC
+
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, 0x00000001 );
+    
+    // Start up HSE clock
+    
+    HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+    cr &= CYGHWR_HAL_STM32_RCC_CR_HSEON|CYGHWR_HAL_STM32_RCC_CR_HSEBYP;
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+
+    HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+    cr |= CYGHWR_HAL_STM32_RCC_CR_HSEON;
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+    
+    // Wait for HSE clock to startup
+    
+    do
+    {
+        HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+    } while( !(cr & CYGHWR_HAL_STM32_RCC_CR_HSERDY) );
+
+    // Configure clocks
+    
+    hal_stm32_sysclk = CYGARC_HAL_CORTEXM_STM32_INPUT_CLOCK;
+    
+    cfgr = 0;
+
+#if defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSE)
+    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_HSE;
+#elif defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSE_HALF)
+    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_HSE |
+            CYGHWR_HAL_STM32_RCC_CFGR_PLLXTPRE;
+    hal_stm32_sysclk /= 2;
+#elif defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSI_HALF)
+    hal_stm32_sysclk /= 2;
+#endif
+    
+    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PLLMUL(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL);
+    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_HPRE;
+    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PPRE1;
+    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PPRE2;
+
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CFGR, cfgr );
+
+    // Enable the PLL and wait for it to lock
+    
+    cr |= CYGHWR_HAL_STM32_RCC_CR_PLLON;
+
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+    do
+    {
+        HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+    } while( !(cr & CYGHWR_HAL_STM32_RCC_CR_PLLRDY) );
+
+    // Now switch to use PLL as SYSCLK
+    
+    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_SW_PLL;
+
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CFGR, cfgr );
+    do
+    {
+        HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CFGR, cfgr );
+    } while( (cfgr & CYGHWR_HAL_STM32_RCC_CFGR_SWS_XXX) != 
+             CYGHWR_HAL_STM32_RCC_CFGR_SWS_PLL );
+
+    // Calculate clocks from configuration
+
+    hal_stm32_sysclk *= CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL;
+    hal_stm32_hclk = hal_stm32_sysclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV;
+    hal_stm32_pclk1 = hal_stm32_hclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK1_DIV;
+    hal_stm32_pclk2 = hal_stm32_hclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV;
+    hal_cortexm_systick_clock = hal_stm32_hclk / 8;
 }
 
 //==========================================================================
@@ -351,6 +360,30 @@ void hal_stm32_uart_setbaud( cyg_uint32 base, cyg_uint32 baud )
     brr |= (((frac_div * 16 ) + 50 ) / 100) & 0xF;
 
     HAL_WRITE_UINT32( base+CYGHWR_HAL_STM32_UART_BRR, brr );
+}
+
+//==========================================================================
+// Timer clock rate
+//
+// Returns the current timer clock rate of a timer.
+
+cyg_uint32 hal_stm32_timer_clock( CYG_ADDRESS base )
+{
+    if( base == CYGHWR_HAL_STM32_TIM1 ||
+        base == CYGHWR_HAL_STM32_TIM8 )
+    {
+#if CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV == 1
+        return hal_stm32_pclk2;
+#else
+        return hal_stm32_pclk2 << 1;
+#endif
+    } else {
+#if CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK1_DIV == 1
+        return hal_stm32_pclk1;
+#else
+        return hal_stm32_pclk1 << 1;
+#endif
+    }
 }
 
 //==========================================================================

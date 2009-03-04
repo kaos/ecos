@@ -1,3 +1,7 @@
+2009-03-04  Nick Garnett  <nickg@ecoscentric.com>
+
+	* ecos.db: Add ADC synthetic driver. Add STM32 ADC driver.
+
 2009-02-12  John Dallaway  <john@dallaway.org.uk>
 
 	* ecos.db: Make CYGPKG_DEVS_FLASH_SPI_M25PXX a hardware package.

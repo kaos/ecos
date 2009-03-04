@@ -1,3 +1,7 @@
+2009-02-27  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* include/hal_io.h: Added system control register definitions 
+
 2009-02-13  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/hal_arch.h: Add include for var_arch.h.

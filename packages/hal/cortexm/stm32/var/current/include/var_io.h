@@ -177,6 +177,7 @@
 #define CYGHWR_HAL_STM32_RCC_CFGR_ADCPRE_4      VALUE_(14,1)
 #define CYGHWR_HAL_STM32_RCC_CFGR_ADCPRE_6      VALUE_(14,2)
 #define CYGHWR_HAL_STM32_RCC_CFGR_ADCPRE_8      VALUE_(14,3)
+#define CYGHWR_HAL_STM32_RCC_CFGR_ADCPRE_XXX    VALUE_(14,3)
 #define CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_HSI    0
 #define CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_HSE    BIT_(16)
 #define CYGHWR_HAL_STM32_RCC_CFGR_PLLXTPRE      BIT_(17)
@@ -279,7 +280,7 @@
 // CRL fields
 
 #define CYGHWR_HAL_STM32_RTC_CRL_SECF           BIT_(0)
-#define CYGHWR_HAL_STM32_RTC_CRL_ALRCF          BIT_(1)
+#define CYGHWR_HAL_STM32_RTC_CRL_ALRF           BIT_(1)
 #define CYGHWR_HAL_STM32_RTC_CRL_OWF            BIT_(2)
 #define CYGHWR_HAL_STM32_RTC_CRL_RSF            BIT_(3)
 #define CYGHWR_HAL_STM32_RTC_CRL_CNF            BIT_(4)
@@ -607,6 +608,159 @@ __externC void hal_stm32_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 #endif
 
 //=============================================================================
+// ADCs
+
+#define CYGHWR_HAL_STM32_ADC_SR                 0x00
+#define CYGHWR_HAL_STM32_ADC_CR1                0x04
+#define CYGHWR_HAL_STM32_ADC_CR2                0x08
+#define CYGHWR_HAL_STM32_ADC_SMPR1              0x0C
+#define CYGHWR_HAL_STM32_ADC_SMPR2              0x10
+#define CYGHWR_HAL_STM32_ADC_JOFR(__x)          0x14 + ((__x) << 2)
+#define CYGHWR_HAL_STM32_ADC_HTR                0x24
+#define CYGHWR_HAL_STM32_ADC_LTR                0x28
+#define CYGHWR_HAL_STM32_ADC_SQR1               0x2C
+#define CYGHWR_HAL_STM32_ADC_SQR2               0x30
+#define CYGHWR_HAL_STM32_ADC_SQR3               0x34
+#define CYGHWR_HAL_STM32_ADC_JSQR               0x38
+#define CYGHWR_HAL_STM32_ADC_JDR(__x)           0x3C + ((__x) << 2)
+#define CYGHWR_HAL_STM32_ADC_DR                 0x4C
+
+// SR fields
+
+#define CYGHWR_HAL_STM32_ADC_SR_AWD             BIT_(0)
+#define CYGHWR_HAL_STM32_ADC_SR_EOC             BIT_(1)
+#define CYGHWR_HAL_STM32_ADC_SR_JEOC            BIT_(2)
+#define CYGHWR_HAL_STM32_ADC_SR_JSTRT           BIT_(3)
+#define CYGHWR_HAL_STM32_ADC_SR_STRT            BIT_(4)
+
+// CR1 fields
+
+#define CYGHWR_HAL_STM32_ADC_CR1_AWDCH(__x)     VALUE_(0,(__x))
+#define CYGHWR_HAL_STM32_ADC_CR1_EOCIE          BIT_(5)
+#define CYGHWR_HAL_STM32_ADC_CR1_AWDIE          BIT_(6)
+#define CYGHWR_HAL_STM32_ADC_CR1_JEOCIE         BIT_(7)
+#define CYGHWR_HAL_STM32_ADC_CR1_SCAN           BIT_(8)
+#define CYGHWR_HAL_STM32_ADC_CR1_AWDSGL         BIT_(9)
+#define CYGHWR_HAL_STM32_ADC_CR1_JAUTO          BIT_(10)
+#define CYGHWR_HAL_STM32_ADC_CR1_DISCEN         BIT_(11)
+#define CYGHWR_HAL_STM32_ADC_CR1_JDISCEN        BIT_(12)
+#define CYGHWR_HAL_STM32_ADC_CR1_DISCNUM(__x)   VALUE_(13,(__x))
+#define CYGHWR_HAL_STM32_ADC_CR1_DUALMODE(__x)  VALUE_(16,(__x))
+#define CYGHWR_HAL_STM32_ADC_CR1_JAWDEN         BIT_(22)
+#define CYGHWR_HAL_STM32_ADC_CR1_AWDEN          BIT_(23)
+
+// CR2 fields
+
+#define CYGHWR_HAL_STM32_ADC_CR2_ADON           BIT_(0)
+#define CYGHWR_HAL_STM32_ADC_CR2_CONT           BIT_(1)
+#define CYGHWR_HAL_STM32_ADC_CR2_CAL            BIT_(2)
+#define CYGHWR_HAL_STM32_ADC_CR2_RSTCAL         BIT_(3)
+#define CYGHWR_HAL_STM32_ADC_CR2_DMA            BIT_(8)
+#define CYGHWR_HAL_STM32_ADC_CR2_ALIGN          BIT_(11)
+#define CYGHWR_HAL_STM32_ADC_CR2_JEXTSEL(__x)   VALUE_(12,(__x))
+#define CYGHWR_HAL_STM32_ADC_CR2_JEXTTRIG       BIT_(15)
+#define CYGHWR_HAL_STM32_ADC_CR2_EXTSEL(__x)    VALUE_(17,(__x))
+#define CYGHWR_HAL_STM32_ADC_CR2_EXTTRIG        BIT_(20)
+#define CYGHWR_HAL_STM32_ADC_CR2_JSWSTART       BIT_(21)
+#define CYGHWR_HAL_STM32_ADC_CR2_SWSTART        BIT_(22)
+#define CYGHWR_HAL_STM32_ADC_CR2_TSVREFE        BIT_(23)
+
+// SMPRx fields
+
+#define CYGHWR_HAL_STM32_ADC_SMPRx_SMP(__x, __y) VALUE_((__x) * 3, (__y))
+
+// SQRx fields
+
+#define CYGHWR_HAL_STM32_ADC_SQR1_L(__x)        VALUE_(20, (__x))
+#define CYGHWR_HAL_STM32_ADC_SQRx_SQ(__x, __y)  VALUE_((__x) * 5, (__y))
+
+// JSQR fields
+
+#define CYGHWR_HAL_STM32_ADC_JSQR_SQ(__x, __y)  VALUE_((__x) * 5, (__y))
+
+// ADC GPIO pins
+
+#define CYGHWR_HAL_STM32_ADC123_IN0             CYGHWR_HAL_STM32_GPIO( A, 0,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC123_IN1             CYGHWR_HAL_STM32_GPIO( A, 1,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC123_IN2             CYGHWR_HAL_STM32_GPIO( A, 2,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC123_IN3             CYGHWR_HAL_STM32_GPIO( A, 3,  IN, ANALOG )
+
+#define CYGHWR_HAL_STM32_ADC12_IN4              CYGHWR_HAL_STM32_GPIO( A, 4,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC12_IN5              CYGHWR_HAL_STM32_GPIO( A, 5,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC12_IN6              CYGHWR_HAL_STM32_GPIO( A, 6,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC12_IN7              CYGHWR_HAL_STM32_GPIO( A, 7,  IN, ANALOG )
+
+#define CYGHWR_HAL_STM32_ADC12_IN8              CYGHWR_HAL_STM32_GPIO( B, 0,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC12_IN9              CYGHWR_HAL_STM32_GPIO( B, 1,  IN, ANALOG )
+
+#define CYGHWR_HAL_STM32_ADC3_IN4               CYGHWR_HAL_STM32_GPIO( F, 6,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC3_IN5               CYGHWR_HAL_STM32_GPIO( F, 7,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC3_IN6               CYGHWR_HAL_STM32_GPIO( F, 8,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC3_IN7               CYGHWR_HAL_STM32_GPIO( F, 9,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC3_IN8               CYGHWR_HAL_STM32_GPIO( F, 10, IN, ANALOG )
+
+#define CYGHWR_HAL_STM32_ADC123_IN10            CYGHWR_HAL_STM32_GPIO( C, 0,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC123_IN11            CYGHWR_HAL_STM32_GPIO( C, 1,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC123_IN12            CYGHWR_HAL_STM32_GPIO( C, 2,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC123_IN13            CYGHWR_HAL_STM32_GPIO( C, 3,  IN, ANALOG )
+
+#define CYGHWR_HAL_STM32_ADC12_IN14             CYGHWR_HAL_STM32_GPIO( C, 4,  IN, ANALOG )
+#define CYGHWR_HAL_STM32_ADC12_IN15             CYGHWR_HAL_STM32_GPIO( C, 5,  IN, ANALOG )
+
+// ADC1 GPIO pin aliases
+
+#define CYGHWR_HAL_STM32_ADC1_IN0               CYGHWR_HAL_STM32_ADC123_IN0
+#define CYGHWR_HAL_STM32_ADC1_IN1               CYGHWR_HAL_STM32_ADC123_IN1
+#define CYGHWR_HAL_STM32_ADC1_IN2               CYGHWR_HAL_STM32_ADC123_IN2
+#define CYGHWR_HAL_STM32_ADC1_IN3               CYGHWR_HAL_STM32_ADC123_IN3
+#define CYGHWR_HAL_STM32_ADC1_IN4               CYGHWR_HAL_STM32_ADC12_IN4
+#define CYGHWR_HAL_STM32_ADC1_IN5               CYGHWR_HAL_STM32_ADC12_IN5
+#define CYGHWR_HAL_STM32_ADC1_IN6               CYGHWR_HAL_STM32_ADC12_IN6
+#define CYGHWR_HAL_STM32_ADC1_IN7               CYGHWR_HAL_STM32_ADC12_IN7
+#define CYGHWR_HAL_STM32_ADC1_IN8               CYGHWR_HAL_STM32_ADC12_IN8
+#define CYGHWR_HAL_STM32_ADC1_IN9               CYGHWR_HAL_STM32_ADC12_IN9
+#define CYGHWR_HAL_STM32_ADC1_IN10              CYGHWR_HAL_STM32_ADC123_IN10
+#define CYGHWR_HAL_STM32_ADC1_IN11              CYGHWR_HAL_STM32_ADC123_IN11
+#define CYGHWR_HAL_STM32_ADC1_IN12              CYGHWR_HAL_STM32_ADC123_IN12
+#define CYGHWR_HAL_STM32_ADC1_IN13              CYGHWR_HAL_STM32_ADC123_IN13
+#define CYGHWR_HAL_STM32_ADC1_IN14              CYGHWR_HAL_STM32_ADC12_IN14
+#define CYGHWR_HAL_STM32_ADC1_IN15              CYGHWR_HAL_STM32_ADC12_IN15
+
+// ADC2 GPIO pin aliases
+
+#define CYGHWR_HAL_STM32_ADC2_IN0               CYGHWR_HAL_STM32_ADC123_IN0
+#define CYGHWR_HAL_STM32_ADC2_IN1               CYGHWR_HAL_STM32_ADC123_IN1
+#define CYGHWR_HAL_STM32_ADC2_IN2               CYGHWR_HAL_STM32_ADC123_IN2
+#define CYGHWR_HAL_STM32_ADC2_IN3               CYGHWR_HAL_STM32_ADC123_IN3
+#define CYGHWR_HAL_STM32_ADC2_IN4               CYGHWR_HAL_STM32_ADC12_IN4
+#define CYGHWR_HAL_STM32_ADC2_IN5               CYGHWR_HAL_STM32_ADC12_IN5
+#define CYGHWR_HAL_STM32_ADC2_IN6               CYGHWR_HAL_STM32_ADC12_IN6
+#define CYGHWR_HAL_STM32_ADC2_IN7               CYGHWR_HAL_STM32_ADC12_IN7
+#define CYGHWR_HAL_STM32_ADC2_IN8               CYGHWR_HAL_STM32_ADC12_IN8
+#define CYGHWR_HAL_STM32_ADC2_IN9               CYGHWR_HAL_STM32_ADC12_IN9
+#define CYGHWR_HAL_STM32_ADC2_IN10              CYGHWR_HAL_STM32_ADC123_IN10
+#define CYGHWR_HAL_STM32_ADC2_IN11              CYGHWR_HAL_STM32_ADC123_IN11
+#define CYGHWR_HAL_STM32_ADC2_IN12              CYGHWR_HAL_STM32_ADC123_IN12
+#define CYGHWR_HAL_STM32_ADC2_IN13              CYGHWR_HAL_STM32_ADC123_IN13
+#define CYGHWR_HAL_STM32_ADC2_IN14              CYGHWR_HAL_STM32_ADC12_IN14
+#define CYGHWR_HAL_STM32_ADC2_IN15              CYGHWR_HAL_STM32_ADC12_IN15
+
+// ADC3 GPIO pin aliases
+
+#define CYGHWR_HAL_STM32_ADC3_IN0               CYGHWR_HAL_STM32_ADC123_IN0
+#define CYGHWR_HAL_STM32_ADC3_IN1               CYGHWR_HAL_STM32_ADC123_IN1
+#define CYGHWR_HAL_STM32_ADC3_IN2               CYGHWR_HAL_STM32_ADC123_IN2
+#define CYGHWR_HAL_STM32_ADC3_IN3               CYGHWR_HAL_STM32_ADC123_IN3
+// Inputs 4 - 8 are already defined
+#define CYGHWR_HAL_STM32_ADC3_IN9               CYGHWR_HAL_STM32_GPIO_NONE
+#define CYGHWR_HAL_STM32_ADC3_IN10              CYGHWR_HAL_STM32_ADC123_IN10
+#define CYGHWR_HAL_STM32_ADC3_IN11              CYGHWR_HAL_STM32_ADC123_IN11
+#define CYGHWR_HAL_STM32_ADC3_IN12              CYGHWR_HAL_STM32_ADC123_IN12
+#define CYGHWR_HAL_STM32_ADC3_IN13              CYGHWR_HAL_STM32_ADC123_IN13
+#define CYGHWR_HAL_STM32_ADC3_IN14              CYGHWR_HAL_STM32_GPIO_NONE
+#define CYGHWR_HAL_STM32_ADC3_IN15              CYGHWR_HAL_STM32_GPIO_NONE
+
+//=============================================================================
 // SPI interface register definitions.
 
 #define CYGHWR_HAL_STM32_SPI_CR1                0x00
@@ -768,15 +922,27 @@ __externC void hal_stm32_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 #define CYGHWR_HAL_STM32_TIM_DIER               0x0C
 #define CYGHWR_HAL_STM32_TIM_SR                 0x10
 #define CYGHWR_HAL_STM32_TIM_EGR                0x14
+#define CYGHWR_HAL_STM32_TIM_CCMR1              0x18
+#define CYGHWR_HAL_STM32_TIM_CCMR2              0x1C
+#define CYGHWR_HAL_STM32_TIM_CCER               0x20
 #define CYGHWR_HAL_STM32_TIM_CNT                0x24
 #define CYGHWR_HAL_STM32_TIM_PSC                0x28
 #define CYGHWR_HAL_STM32_TIM_ARR                0x2C
+#define CYGHWR_HAL_STM32_TIM_CCR1               0x34
+#define CYGHWR_HAL_STM32_TIM_CCR2               0x38
+#define CYGHWR_HAL_STM32_TIM_CCR3               0x3C
+#define CYGHWR_HAL_STM32_TIM_CCR4               0x40
 
 #define CYGHWR_HAL_STM32_TIM_CR1_CEN            BIT_(0)
 #define CYGHWR_HAL_STM32_TIM_CR1_UDIS           BIT_(1)
 #define CYGHWR_HAL_STM32_TIM_CR1_URS            BIT_(2)
 #define CYGHWR_HAL_STM32_TIM_CR1_OPM            BIT_(3)
+#define CYGHWR_HAL_STM32_TIM_CR1_DIR            BIT_(4)
 #define CYGHWR_HAL_STM32_TIM_CR1_ARPE           BIT_(7)
+#define CYGHWR_HAL_STM32_TIM_CR1_CKD_1          VALUE_(8,0)
+#define CYGHWR_HAL_STM32_TIM_CR1_CKD_2          VALUE_(8,1)
+#define CYGHWR_HAL_STM32_TIM_CR1_CKD_4          VALUE_(8,2)
+#define CYGHWR_HAL_STM32_TIM_CR1_CKD_XXX        VALUE_(8,3)
 
 #define CYGHWR_HAL_STM32_TIM_CR2_MMS_RESET      VALUE_(4,0)
 #define CYGHWR_HAL_STM32_TIM_CR2_MMS_ENABLE     VALUE_(4,1)
@@ -788,6 +954,12 @@ __externC void hal_stm32_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 #define CYGHWR_HAL_STM32_TIM_SR_UIF             BIT_(0)
 
 #define CYGHWR_HAL_STM32_TIM_EGR_UG             BIT_(0)
+
+#ifndef __ASSEMBLER__
+
+__externC cyg_uint32 hal_stm32_timer_clock( CYG_ADDRESS base );
+
+#endif
 
 //=============================================================================
 // Flash controller
@@ -867,7 +1039,11 @@ __externC void hal_stm32_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 // Functions and macros to reset the backup domain as well as
 // enable/disable backup domain write protection.
 
+#ifndef __ASSEMBLER__
+
 __externC void hal_stm32_bd_protect( int protect );
+
+#endif
 
 #define CYGHWR_HAL_STM32_BD_RESET()                                         \
     CYG_MACRO_START                                                         \

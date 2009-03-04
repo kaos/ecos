@@ -1,0 +1,158 @@
+# ====================================================================
+#
+#      adc_synth.cdl
+#
+#      eCos Synthethic ADC configuration data
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2009 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Simon Kallweit <simon.kallweit@intefo.ch>
+# Contributors:   
+# Date:           2009-02-27
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+
+cdl_package CYGPKG_DEVS_ADC_SYNTH {
+    display     "Synthetic ADC device driver"
+    
+    parent      CYGPKG_IO_ADC_DEVICES
+    active_if   CYGPKG_IO_ADC_DEVICES
+    active_if   CYGPKG_HAL_SYNTH
+    requires    {CYGNUM_IO_ADC_SAMPLE_SIZE >= CYGNUM_DEVS_ADC_SYNTH_SAMPLE_SIZE}
+    description "
+        This option enables the ADC device drivers for Synthetic target."
+           
+    include_dir cyg/io
+    compile     -library=libextras.a adc_synth.c
+    
+    cdl_interface CYGINT_DEVS_ADC_SYNTH_CHANNELS {
+        display         "Number of ADC channels"
+    }
+            
+    cdl_option CYGNUM_DEVS_ADC_SYNTH_SAMPLE_SIZE {
+        display         "Sample size"
+        flavor          data
+        legal_values    1 to 32
+        default_value   16
+        description     "
+            Sample size provided by the ADC channels."
+    }
+        
+    cdl_option CYGNUM_DEVS_ADC_SYNTH_DEFAULT_RATE {
+        display         "Default sample rate"
+        flavor          data
+        legal_values    1 to 10000
+        default_value   100
+        description     "
+            The driver will be initialized with the default sample rate.
+            If you raise the default sample rate you might need to increase
+            the buffer size for each channel."
+    }
+        
+    # Support 16 channels
+    for { set ::channel 0 } { $::channel < 16 } { incr ::channel } {
+    
+        cdl_component CYGHWR_DEVS_ADC_SYNTH_CHANNEL[set ::channel] {
+            display         "ADC channel [set ::channel]"
+            flavor          none
+            implements      CYGINT_DEVS_ADC_SYNTH_CHANNELS
+            description     "
+                If the application needs to access the ADC
+                channel [set ::channel] via an eCos ADC driver then
+                this option should be enabled."
+     
+            cdl_option CYGDAT_DEVS_ADC_SYNTH_CHANNEL[set ::channel]_NAME {
+                display         "Device name"
+                flavor          data
+                default_value   [format {"\"/dev/adc0%d\""} $::channel]
+                description     "
+                    This option controls the name that an eCos application
+                    should use to access this device via cyg_io_lookup(),
+                    open(), or similar calls."
+            }
+        
+            cdl_option CYGNUM_DEVS_ADC_SYNTH_CHANNEL[set ::channel]_BUFSIZE {
+                display         "Size of data buffer"
+                flavor          data
+                legal_values    1 to 65536
+                default_value   128
+                description     "
+                    This option controls the number of samples the
+                    buffer can store. The required RAM is = size of
+                    data buffer * size of sample."
+            }
+            
+            cdl_option CYGDAT_DEVS_ADC_SYNTH_CHANNEL[set ::channel]_SOURCE {
+                display         "Channel source"
+                flavor          data
+                legal_values    { "CONST" "RANDOM" "FILE" }
+                default_value   { "CONST" }
+                description     "
+                    This option controls the sample source of the virtual ADC
+                    channel. CONST mode always returns a constant sample value.
+                    RANDOM mode returns random samples. FILE returns samples as
+                    read by a file on the host." 
+            }
+        
+            cdl_option CYGNUM_DEVS_ADC_SYNTH_CHANNEL[set ::channel]_CONST_VALUE {
+                display         "Constant sample value"
+                flavor          data
+                default_value   0
+                description     "
+                    Constant sample value returned when CONST mode is selected."
+            }
+            
+            cdl_option CYGDAT_DEVS_ADC_SYNTH_CHANNEL[set ::channel]_FILENAME {
+                display         "Sample data filename"
+                flavor          data
+                default_value   [format {"\"adc0%d\""} $::channel]
+                description     "
+                    Filename of sample data file used in FILE mode."
+            }
+            
+            cdl_option CYGNUM_DEVS_ADC_SYNTH_CHANNEL[set ::channel]_MODE {
+                display         "Channel mode"
+                flavor          data
+                calculated      CYGDAT_DEVS_ADC_SYNTH_CHANNEL[set ::channel]_SOURCE == { "CONST" } ? 0 : \
+                                CYGDAT_DEVS_ADC_SYNTH_CHANNEL[set ::channel]_SOURCE == { "RANDOM" } ? 1 : \
+                                CYGDAT_DEVS_ADC_SYNTH_CHANNEL[set ::channel]_SOURCE == { "FILE" } ? 2 : -1
+            }
+        }
+    }
+}

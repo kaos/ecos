@@ -1,3 +1,15 @@
+2009-02-27  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* include/var_io.h:
+	Add mask for CYGHWR_HAL_STM32_RCC_CFGR_ADCPRE.
+	Fixed CYGHWR_HAL_STM32_RTC_CRL_ALRF.
+	Add register definitions for ADC.
+	Add additional timer registers.
+	* src/stm32_mis.c:
+	Moved system clock initialization into it's own function, so it can
+	be called after wakeup from sleep modes.
+	Added hal_stm32_timer_clock() to get current clock of timers.
+
 2009-02-10  Chris Holgate  <chris@zynaptic.com>
 
 	* include/var_io.h: Add mask for CYGHWR_HAL_STM32_AFIO_MAPR_SWJ.

@@ -2421,6 +2421,15 @@ package CYGPKG_DEVS_ADC_ARM_LPC24XX {
             ADC provided by the LPC24xx processor family."
 }
 
+package CYGPKG_DEVS_ADC_SYNTH {
+    alias         { "Synthethic ADC driver" adc_synth }
+    hardware
+    directory     devs/adc/synth
+    script        adc_synth.cdl
+    description "
+            This package provides an ADC driver for the Synthethic target."
+}
+
 package CYGPKG_IO_ADC {
 	alias 		{ "Generic ADC support" adc io_adc }
 	directory	io/adc
@@ -5630,7 +5639,8 @@ target linux {
                       CYGPKG_DEVS_ETH_ECOSYNTH
                       CYGPKG_DEVS_WATCHDOG_SYNTH
                       CYGPKG_DEVS_WALLCLOCK_SYNTH      
-	                  CYGPKG_DEVS_FRAMEBUF_SYNTH
+                      CYGPKG_DEVS_FRAMEBUF_SYNTH
+                      CYGPKG_DEVS_ADC_SYNTH
         }
         description "
     	    The linux target provides the 
@@ -6848,6 +6858,16 @@ package CYGPKG_DEVS_WALLCLOCK_STM32 {
         STM32 controller and compatibles"
 }
 
+package CYGPKG_DEVS_ADC_CORTEXM_STM32 {
+    alias         { "STM32 ADC driver" adc_stm32 }
+    hardware
+    directory     devs/adc/cortexm/stm32
+    script        adc_stm32.cdl
+    description "
+    This package provides a driver for the ADC interfaces found on the
+    ST STM32 microcontroller family."
+}
+
 target stm3210e_eval {
         alias { "ST STM3210E EVAL board" stm3210e }
         packages { CYGPKG_HAL_CORTEXM
@@ -6860,6 +6880,7 @@ target stm3210e_eval {
                    CYGPKG_DEVS_WALLCLOCK_STM32
                    CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_CORTEXM_STM32
+                   CYGPKG_DEVS_ADC_CORTEXM_STM32
                  }
         description "The stm3210e_eval target provides the packages needed
         to run eCos on the STM3210E EVAL board."

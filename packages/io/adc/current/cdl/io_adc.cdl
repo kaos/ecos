@@ -92,4 +92,23 @@ cdl_package CYGPKG_IO_ADC {
 	    ADC devices."
     }
     
+    cdl_component CYGPKG_IO_ADC_TESTS {
+        display     "ADC device driver tests"
+        flavor      data
+        no_define
+        calculated  { "tests/adc1 tests/adc2" }
+        description "
+            This option specifies the set of tests for the ADC device drivers."
+            
+            
+        cdl_option CYGNUM_IO_ADC_PERFORMANCE_TEST_RATE {
+            display         "ADC performance test rate"
+            flavor          data
+            legal_values    1 to 10000
+            default_value   1000
+            description     "
+                This option specifies the sampling rate used for the ADC device
+                driver performance test."
+        }
+    }
 }    
