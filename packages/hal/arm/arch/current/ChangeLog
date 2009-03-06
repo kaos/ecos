@@ -1,3 +1,9 @@
+2009-03-06  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/hal_arm.cdl: Merge goals for CYGHWR_THUMB and
+	CYGBLD_ARM_ENABLE_THUMB_INTERWORK to allow selective application
+	of CDL solutions within the eCos Configuration Tool.
+
 2009-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/vectors.S: Use .type xxx, function everywhere where
