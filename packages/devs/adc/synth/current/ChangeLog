@@ -1,8 +1,14 @@
+2009-03-05  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* cdl/adc_synth.cdl:
+	* cdl/adc_synth.c:
+	Fixed some typos.
+
 2009-02-27  Simon Kallweit  <simon.kallweit@intefo.ch>
 
-	* Synthethic ADC driver package created
 	* cdl/adc_synth.cdl
 	* src/adc_synth.c
+	Synthetic ADC driver package created.
 
 //===========================================================================
 // ####GPLCOPYRIGHTBEGIN####                                                

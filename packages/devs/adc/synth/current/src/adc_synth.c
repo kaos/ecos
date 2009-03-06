@@ -2,7 +2,7 @@
 //
 //      adc_synth.c
 //
-//      ADC driver for Synthethic ADC
+//      ADC driver for Synthetic ADC
 //
 //==========================================================================
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
@@ -96,7 +96,7 @@ typedef struct synth_adc_channel_info {
 } synth_adc_channel_info;
 
 //-----------------------------------------------------------------------------
-// Synthethic ADC device
+// Synthetic ADC device
 
 typedef struct synth_adc_info {
     synth_adc_channel_info  *chan_info;     // Channel infos
@@ -134,7 +134,7 @@ CYG_ADC_FUNCTIONS(synth_adc_funs,
                   synth_adc_set_rate);
 
 //-----------------------------------------------------------------------------
-// Synthethic ADC channel info macro
+// Synthetic ADC channel info macro
 
 #define SYNTH_ADC_CHANNEL_INFO(_chan_)                                      \
 {                                                                           \
@@ -144,7 +144,7 @@ CYG_ADC_FUNCTIONS(synth_adc_funs,
 }
 
 //-----------------------------------------------------------------------------
-// Synthethic ADC channel instance macro
+// Synthetic ADC channel instance macro
 
 #define SYNTH_ADC_CHANNEL(_chan_)                                           \
 CYG_ADC_CHANNEL(                                                            \
@@ -164,7 +164,7 @@ DEVTAB_ENTRY(                                                               \
 );
 
 //-----------------------------------------------------------------------------
-// Synthethic ADC device instance
+// Synthetic ADC device instance
 
 static synth_adc_channel_info synth_adc_channel_infos[NUM_CHANNELS] = {
     SYNTH_ADC_CHANNEL_INFO(0),
