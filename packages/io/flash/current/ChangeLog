@@ -1,3 +1,7 @@
+2009-03-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* doc/flash.sgml: Fixed typos in a FLASH API listing.
+
 2009-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/flash.h: Reinstate printf arg to cyg_flash_init, but it

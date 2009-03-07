@@ -145,6 +145,7 @@ __externC int cyg_flash_verify_addr(const flashaddr_t address);
 __extern size_t cyg_flash_block_size(const cyg_flashaddr_t flash_base);
 
 typedef struct cyg_flash_block_info
+{
     size_t                    block_size;
     cyg_uint32                blocks;
 } cyg_flash_block_info_t;
@@ -152,7 +153,7 @@ typedef struct cyg_flash_block_info
 typedef struct {
     cyg_flashaddr_t              start;          // First address
     cyg_flashaddr_t              end;            // Last address
-    cyg_uint32                   num_block_infos // Number of entries
+    cyg_uint32                   num_block_infos;// Number of entries
     const cyg_flash_block_info_t *blocks_info;   // Info about one block size
 } cyg_flash_info_t;
 </PROGRAMLISTING>
