@@ -1,3 +1,8 @@
+2009-03-09  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/ftpclient.cdl: Reference test executable filenames for
+	compatibility with the eCos Configuration Tool.
+
 2006-09-11  Daniel Néri  <daniel.neri@sigicom.se>
 
 	* src/ftpclient.c (send_cmd): Use correct variable in error check.
@@ -60,7 +65,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

@@ -8,7 +8,7 @@
 # ####ECOSPDCOPYRIGHTBEGIN####                                    
 # -------------------------------------------                     
 # This file is part of eCos, the Embedded Configurable Operating System.
-# Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.   
+# Copyright (C) 2000, 2001, 2002, 2009 Free Software Foundation, Inc.   
 #
 # Permission is granted to use, copy, modify and redistribute this
 # file.                                                           
@@ -534,7 +534,7 @@ cdl_package CYGPKG_NET {
                     tests/udp_lo_test \
                     tests/multi_lo_select \
                     tests/tcp_lo_select \
-                    tests/addr_test.c " 
+                    tests/addr_test" 
             :
                     "tests/ping_lo_test \
                     tests/tcp_lo_test \

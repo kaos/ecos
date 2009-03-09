@@ -1,3 +1,8 @@
+2009-03-09  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/net.cdl: Reference test executable filenames for compatibility
+	with the eCos Configuration Tool.
+
 2008-04-13  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/server_test.c (server_test): Fix typo with atoi which
@@ -923,7 +928,7 @@
 # ####GPLCOPYRIGHTBEGIN####                                       
 # -------------------------------------------                     
 # This file is part of eCos, the Embedded Configurable Operating System.
-# Copyright (C) 2002 Free Software Foundation, Inc.               
+# Copyright (C) 2002, 2009 Free Software Foundation, Inc.               
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

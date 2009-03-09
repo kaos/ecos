@@ -1,3 +1,8 @@
+2009-03-09  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/sntp.cdl: Reference test executable filenames for	compatibility
+	with the eCos Configuration Tool.
+
 2006-11-08 Andre Mas <andrejohn.mas@gmail.com>
 
         * src/sntp.c: Removed optional KeyIdentifer and MessageDigest
@@ -70,7 +75,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2003 Free Software Foundation, Inc.                        
+// Copyright (C) 2003, 2009 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
