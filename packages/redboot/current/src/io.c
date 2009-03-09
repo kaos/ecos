@@ -315,6 +315,7 @@ getc_script(char *cp)
 static char _cl_lines[_CL_NUM_LINES][CYGPKG_REDBOOT_MAX_CMD_LINE];
 static int  _cl_index = -1;      // Last known command line
 static int  _cl_max_index = -1;  // Last command in buffers
+static int  _cl_real_index = 0;  // Virtual command index (0..N)
 
 #ifdef CYGBLD_REDBOOT_CMD_LINE_HISTORY
 static void expand_history(char *);
@@ -608,9 +609,12 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
 		expand_history(buf);
 #endif
 		if (*buf != '\0') {
-		    if (++_cl_index == _CL_NUM_LINES) _cl_index = 0;
+		    if (++_cl_index == _CL_NUM_LINES) {
+                        _cl_index = 0;
+                    }
 		    if (_cl_index > _cl_max_index) _cl_max_index = _cl_index;
 		    strcpy(_cl_lines[_cl_index], buf);
+                    _cl_real_index++;
 		}
             }
 #endif
@@ -802,20 +806,24 @@ expand_history(char *buf)
 	    return;
 	}
 	if ((index = parse_history_index(buf + 1)) >= 0) {
-	    if (index <= _cl_max_index) {
-		strcpy(buf, _cl_lines[index]);
-		return;
-	    }
-	}
-	len = strlen(buf + 1);
-	for (i = 0, index = _cl_index; i < ncmds; i++) {
-	    if (!strncmp(_cl_lines[index], buf+1, len)) {
-		strcpy(buf, _cl_lines[index]);
-		return;
-	    }
-	    if (--index < 0)
-		index = _cl_max_index;
-	}
+            if (index <= _cl_real_index) {
+                while (index >= _CL_NUM_LINES) {
+                    index -= _CL_NUM_LINES;
+                }
+                strcpy(buf, _cl_lines[index]);
+                return;
+            }
+	} else {
+            len = strlen(buf + 1);
+            for (i = 0, index = _cl_index; i < ncmds; i++) {
+                if (!strncmp(_cl_lines[index], buf+1, len)) {
+                    strcpy(buf, _cl_lines[index]);
+                    return;
+                }
+                if (--index < 0)
+                    index = _cl_max_index;
+            }
+        }
     }
 
     diag_printf("%s: event not found\n", buf);
@@ -833,8 +841,9 @@ do_history(int argc, char *argv[])
 	for (i = 0; i < ncmds; i++)
 	    diag_printf("%3d %s\n", i, _cl_lines[i]);
     } else {
+        diag_printf("_cl_index = %d\n", _cl_index);
 	for (i = 0, index = _cl_index + 1; i < ncmds; i++) {
-	    diag_printf("%3d %s\n", i, _cl_lines[index++]);
+	    diag_printf("%3d %s\n", i+_cl_real_index-_CL_NUM_LINES, _cl_lines[index++]);
 	    if (index > _cl_max_index)
 		index = 0;
 	}
