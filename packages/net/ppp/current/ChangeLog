@@ -1,3 +1,8 @@
+2009-03-19  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/ppp.cdl: Provide a display string for
+	CYGPKT_PPP_WORKAROUNDS_START_FLAG.
+
 2009-02-11  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/ppp.cdl: Fix per-package documentation reference.

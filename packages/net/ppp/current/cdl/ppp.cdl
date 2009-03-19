@@ -242,11 +242,12 @@ cdl_package CYGPKG_PPP {
         no_define
 
         cdl_option CYGPKT_PPP_WORKAROUNDS_START_FLAG {
-        flavor bool
-        default_value false
-        description "This option enables a workaround to add a start
-                     flag to every packet. The RFC does not require this,
-                     but some broken PPP implementations seems to need it."
+            display "Add a start flag to every packet"
+            flavor bool
+            default_value false
+            description "This option enables a workaround to add a start
+                         flag to every packet. The RFC does not require this,
+                         but some broken PPP implementations seem to need it."
         }
     }
 
@@ -268,7 +269,7 @@ cdl_package CYGPKG_PPP {
         display       "Allow the PPP code to configure the resolver"
         default_value 1
         description   "
-            The PPP code can negotionate with the peer what the 
+            The PPP code can negotiate with the peer what the 
             recommended DNS server is. This option causes the PPP 
             code to then configure the DNS resolver with the address
             of the discovered server."
