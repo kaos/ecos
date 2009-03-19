@@ -1,3 +1,7 @@
+2009-03-19  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* ecos.db: target mac7100evb added word "Freescale" to the description.
+	
 2009-03-04  Nick Garnett  <nickg@ecoscentric.com>
 
 	* ecos.db: Add ADC synthetic driver. Add STM32 ADC driver.

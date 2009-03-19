@@ -10,7 +10,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2008 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2008, 2009 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -4962,7 +4962,7 @@ target mace1 {
 }
 
 target mac7100evb {
-	alias { "MAC7100EVB - a MAC7100 evaluation board" mac7100_mac7100evb }
+	alias { "MAC7100EVB - Freescale MAC7100 evaluation board" mac7100_mac7100evb }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_MAC7100
                    CYGPKG_HAL_ARM_MAC7100_MAC7100EVB

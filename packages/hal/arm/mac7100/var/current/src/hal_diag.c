@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -273,7 +273,7 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
     HAL_READ_UINT16(FREESCALE_ESCI_SR(esci_base), esci_sr);
     if (esci_sr & FREESCALE_ESCI_SR_RDRF){
         HAL_READ_UINT8(FREESCALE_ESCI_DRL(esci_base), ch_in);
-        if( cyg_hal_is_break( &ch_in , 1 ) )
+        if( cyg_hal_is_break( (char *) &ch_in , 1 ) )
             *__ctrlc = 1;
 
         res = CYG_ISR_HANDLED;
