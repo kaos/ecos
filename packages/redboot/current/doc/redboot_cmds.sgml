@@ -1436,6 +1436,17 @@ ELF executable program format,
 Motorola S-record (SREC)
 format or raw data.
       </para>
+      <note>
+        <title>Note</title>
+        <para>
+When downloading an ELF image, RedBoot will forcibly terminate the transfer
+once all the relevant (loadable) ELF sections have been received. This
+behaviour reduces download time when using the X/Y modem protocol
+over a slow serial connection. However, the terminal emulator may report
+that the transfer is incomplete and has been cancelled. Such messages
+are normal and may be ignored.
+        </para>
+      </note>
     </refsect1>
     <refsect1>
       <title>Examples</title>

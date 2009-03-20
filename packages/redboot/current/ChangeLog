@@ -1,3 +1,18 @@
+2009-03-20  John Dallaway  <john@dallaway.org.uk>
+
+	* doc/redboot_cmds.sgml: Add note concerning the termination of
+	ELF downloads once all relevant sections have been transferred.
+	[ Bugzilla 1000711 ]
+
+	* doc/redboot_main.sgml: Update copyright notice.
+
+	* src/main.c (do_baud_rate): Wait for 10s when changing serial
+	baud to accommodate terminal emulators which do not provide
+	rapid access to this parameter.
+
+	* src/main.c (do_version): Tidy RAM availability message.
+	[ Bugzilla 1000712 ]
+
 2009-03-09  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/io.c: Better handling of history - commands now have
