@@ -9,7 +9,7 @@
 <!-- =============================================================== -->
 <!-- ####ECOSDOCCOPYRIGHTBEGIN####                                       -->
 <!-- ===============================================================     -->
-<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc. -->
+<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2009 Free Software Foundation, Inc. -->
 <!-- This material may be distributed only subject to the terms          -->
 <!-- and conditions set forth in the Open Publication License, v1.0      -->
 <!-- or later (the latest version is presently available at              -->
@@ -39,10 +39,10 @@
 
 <LISTITEM>
 <PARA><!-- <conditionaltext> -->Standard Intel architecture PC running
- Linux (tested on recent Red Hat, SuSE and Debian distributions),
- Microsoft Windows NT (no earlier than 4.0 + SP6a), Windows 2000 and
- Windows XP. Linux distributions from other vendors may also work, but
- are currently untested. </PARA>
+ Linux (tested on recent Fedora, openSUSE and Ubuntu distributions),
+ Microsoft Windows NT 4 + SP6a, Windows 2000, Windows XP and Windows Vista.
+ Linux distributions from other vendors may also work, but
+ are currently untested.</PARA>
 </LISTITEM>
 
 <LISTITEM>

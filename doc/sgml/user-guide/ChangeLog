@@ -1,7 +1,12 @@
+2009-03-20  John Dallaway  <john@dallaway.org.uk>
+
+	* installation.sgml: Update supported host list to include
+	Microsoft Windows Vista.
+
 2004-06-15  Roland Cassebohn <Roland.Cassebohm@VisionSystems.de>
 
 	* target-setup.sgml: 
-	* real-time-characterization.sgmo:
+	* real-time-characterization.sgml:
 	Added documentation for the aim711 module 
 
 2003-10-17  Alex Schuilenburg <alex@schuilenburg.org>
