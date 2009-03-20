@@ -1,3 +1,8 @@
+2009-02-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/jffs2.cdl: Add include-fixed to the system include files we
+	should search. Without this gcc 4.3 breaks.
+
 2008-11-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/jffs2_1.c, tests/jffs2_2.c, tests/jffs2_3.c: 

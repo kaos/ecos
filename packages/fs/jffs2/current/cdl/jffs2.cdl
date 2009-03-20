@@ -233,7 +233,7 @@ cdl_package CYGPKG_FS_JFFS2 {
 	# We add '-nostdinc -iwithprefix include' to avoid picking up
 	#    native <linux/*.h> include files when building on Linux.
 	default_value { "-D__ECOS " . \
-            (CYGPKG_HAL_SYNTH ? " -nostdinc -iwithprefix include" : "") }
+            (CYGPKG_HAL_SYNTH ? " -nostdinc -iwithprefix include -iwithprefix include-fixed" : "") }
 	description   "
 	    This option modifies the set of compiler flags for
             building the JFFS2 package.
