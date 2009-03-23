@@ -1,3 +1,8 @@
+2009-03-23  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/settingsdlg.cpp: Tweak width of settings dialog
+	widgets used for test connection parameters.
+
 2009-03-03  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/configitem.cpp, standalone/wxwin/configitem.h:

@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2005, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2005, 2008, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -1097,7 +1097,7 @@ void ecRunOptionsDialog::CreateControls( wxPanel *parent)
         _("/dev/ttyS6"), 
         _("/dev/ttyS7")
     };
-    wxComboBox *item19 = new wxComboBox( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_ADDR, wxEmptyString, wxDefaultPosition, wxSize(110,-1), 8, strs19, wxCB_DROPDOWN );
+    wxComboBox *item19 = new wxComboBox( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_ADDR, wxEmptyString, wxDefaultPosition, wxSize(130,-1), 8, strs19, wxCB_DROPDOWN );
     item16->Add( item19, 0, wxALIGN_CENTRE|wxALL, 5 );
 
     wxStaticText *item20 = new wxStaticText( parent, wxID_STATIC, _("&Baud:"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -1144,13 +1144,13 @@ void ecRunOptionsDialog::CreateControls( wxPanel *parent)
     wxStaticText *item24 = new wxStaticText( parent, wxID_STATIC, _("&Address:"), wxDefaultPosition, wxDefaultSize, 0 );
     item22->Add( item24, 0, wxALIGN_CENTRE|wxALL, 5 );
 
-    wxTextCtrl *item25 = new wxTextCtrl( parent, ecID_RUN_PROPERTIES_TCPIP_HOST, _(""), wxDefaultPosition, wxSize(100,-1), 0 );
+    wxTextCtrl *item25 = new wxTextCtrl( parent, ecID_RUN_PROPERTIES_TCPIP_HOST, _(""), wxDefaultPosition, wxSize(120,-1), 0 );
     item22->Add( item25, 0, wxALIGN_CENTRE|wxALL, 5 );
 
     wxStaticText *item26 = new wxStaticText( parent, wxID_STATIC, _(":"), wxDefaultPosition, wxDefaultSize, 0 );
     item22->Add( item26, 0, wxALIGN_CENTRE, 5 );
 
-    wxTextCtrl *item27 = new wxTextCtrl( parent, ecID_RUN_PROPERTIES_TCPIP_PORT, _(""), wxDefaultPosition, wxSize(40,-1), 0 );
+    wxTextCtrl *item27 = new wxTextCtrl( parent, ecID_RUN_PROPERTIES_TCPIP_PORT, _(""), wxDefaultPosition, wxSize(50,-1), 0 );
     item22->Add( item27, 0, wxALIGN_CENTRE|wxALL, 5 );
 
     item14->Add( item22, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
