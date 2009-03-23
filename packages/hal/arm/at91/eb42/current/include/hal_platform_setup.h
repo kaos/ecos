@@ -11,7 +11,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -59,7 +59,7 @@
                 
         .macro  _led_init
         ldr     r0,=AT91_PIOB
-        mov     r1,#0x0000FF00
+        ldr     r1,=0x0000FF00
         str     r1,[r0,#AT91_PIO_PER]
         str     r1,[r0,#AT91_PIO_OER]
         _led    0
@@ -68,9 +68,9 @@
         
         .macro _led y
         ldr     r0,=AT91_PIOB
-        mov     r1,#0x0000FF00
+        ldr     r1,=0x0000FF00
         str     r1,[r0,#AT91_PIO_SODR]
-        mov     r1,#(\y<<8)
+        ldr     r1,=(\y<<8)
         str     r1,[r0,#AT91_PIO_CODR]
 #if 0
         mov     r0,#0x00100000
