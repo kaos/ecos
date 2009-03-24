@@ -1,3 +1,8 @@
+2009-03-24  John Dallaway  <john@dallaway.org.uk>
+
+	* src/pxa2x0_misc.c (hal_interrupt_configure): Use GFER0/GRER0 for
+	GPIO2-GPIO31. Patch from Alfonso Sanchez. [ Bugzilla 1000681 ]
+
 2005-12-06  David Vrabel  <dvrabel@arcom.com>
 
 	* cdl/hal_arm_xscale_pxa2x0.cdl: New

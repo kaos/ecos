@@ -385,13 +385,13 @@ void hal_interrupt_configure(int vector, int level, int up)
             *PXA2X0_GRER1 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 32));
     } else if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(2)) {
         if (falling)
-            *PXA2X0_GFER1 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
+            *PXA2X0_GFER0 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
         else
-            *PXA2X0_GFER1 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
+            *PXA2X0_GFER0 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
         if (rising)
-            *PXA2X0_GRER1 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
+            *PXA2X0_GRER0 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
         else
-            *PXA2X0_GRER1 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
+            *PXA2X0_GRER0 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
     } else if (vector == CYGNUM_HAL_INTERRUPT_GPIO0 || vector == CYGNUM_HAL_INTERRUPT_GPIO1) {
         if (falling)
             *PXA2X0_GFER0 |=  (1 << (vector - 8));
