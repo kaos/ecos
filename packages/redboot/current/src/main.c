@@ -173,9 +173,6 @@ do_version(int argc, char *argv[])
     char *version = CYGACC_CALL_IF_MONITOR_VERSION();
 
     diag_printf(version);
-#ifdef HAL_PLATFORM_CPU
-    diag_printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
-#endif
     diag_printf("Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009\nFree Software Foundation, Inc.\n");
     /* The following line fulfils requirement 2(c) of the GPL. If you modify it, ensure
      * you remain compliant with the GPL requirements. Removing it entirely constitutes
@@ -186,6 +183,9 @@ do_version(int argc, char *argv[])
                 "copies of it under certain conditions. Under the license terms, RedBoot's\n"
                 "source code and full license terms must have been made available to you.\n"
                 "Redboot comes with ABSOLUTELY NO WARRANTY.\n\n");
+#ifdef HAL_PLATFORM_CPU
+    diag_printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
+#endif
     diag_printf("RAM: %p-%p ", (void*)ram_start, (void*)ram_end);
     diag_printf("[%p-%p available]\n", mem_segments[0].start, mem_segments[0].end);
 #if CYGBLD_REDBOOT_MAX_MEM_SEGMENTS > 1
