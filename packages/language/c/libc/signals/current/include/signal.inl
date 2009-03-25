@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -102,7 +102,7 @@ extern void cyg_libc_signals_lock_do_unlock(void);
 // cyg_libc_signals_lock() //
 /////////////////////////////
 
-inline cyg_bool
+extern __inline__ cyg_bool
 cyg_libc_signals_lock(void)
 {
 #ifdef CYGSEM_LIBC_SIGNALS_THREAD_SAFE
@@ -116,7 +116,7 @@ cyg_libc_signals_lock(void)
 // cyg_libc_signals_unlock() //
 ///////////////////////////////
 
-inline void
+extern __inline__ void
 cyg_libc_signals_unlock(void)
 {
 #ifdef CYGSEM_LIBC_SIGNALS_THREAD_SAFE

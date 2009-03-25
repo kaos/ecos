@@ -1,3 +1,8 @@
+2009-03-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/signal.inl: add extern to the cyg_libc_signals_lock()
+	and _unlock() inlining, to prevent multiple definitions.
+
 2009-01-28  Bart Veer  <bartv@ecoscentric.com>
 
 	* tests/signal1.c: skip the abort() test if there is no proper
