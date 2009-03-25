@@ -1,3 +1,8 @@
+2009-03-12  Sergei Gavrikov <sergei.gavrikov@gmail.com>
+
+	* src/netif/slipif.c (slipif_init): in SLIP mode it quite erases
+	NETIF_FLAG_UP bit. Fixed.
+
 2007-03-22  John Eigelaar  <jeigelaar@mweb.co.za>
                                                      
 	* include/lwip/netif.h, include/lwip/inet.h: Added externC macro
