@@ -1,3 +1,9 @@
+2009-03-25  John Dallaway  <john@dallaway.org.uk>
+
+	* src/signal.cxx (pause): Revert change of 2006-07-18 pending
+	updating of the signal1, signal3 and timer1 tests.
+	[ Bugzilla 1000689, 1000690 ]
+
 2008-03-28  John Dallaway  <jld@ecoscentric.com>
 
 	* tests/tm_basic.cxx: Rename test to tm_posix.cxx.
@@ -1105,7 +1111,7 @@
 ## ####GPLCOPYRIGHTBEGIN####                                                
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify     
 ## it under the terms of the GNU General Public License as published by     
