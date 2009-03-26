@@ -1097,7 +1097,7 @@ void ecRunOptionsDialog::CreateControls( wxPanel *parent)
         _("/dev/ttyS6"), 
         _("/dev/ttyS7")
     };
-    wxComboBox *item19 = new wxComboBox( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_ADDR, wxEmptyString, wxDefaultPosition, wxSize(130,-1), 8, strs19, wxCB_DROPDOWN );
+    wxComboBox *item19 = new wxComboBox( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_ADDR, wxEmptyString, wxDefaultPosition, wxSize(100,-1), 8, strs19, wxCB_DROPDOWN );
     item16->Add( item19, 0, wxALIGN_CENTRE|wxALL, 5 );
 
     wxStaticText *item20 = new wxStaticText( parent, wxID_STATIC, _("&Baud:"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -1129,7 +1129,7 @@ void ecRunOptionsDialog::CreateControls( wxPanel *parent)
         _("460800"), 
         _("921600")
     };
-    wxChoice *item21 = new wxChoice( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_SPEED, wxDefaultPosition, wxSize(90,-1), 22, strs21, 0 );
+    wxChoice *item21 = new wxChoice( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_SPEED, wxDefaultPosition, wxSize(85,-1), 22, strs21, 0 );
     item16->Add( item21, 0, wxALIGN_CENTRE|wxALL, 5 );
 
     item14->Add( item16, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
