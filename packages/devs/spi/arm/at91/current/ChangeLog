@@ -1,3 +1,8 @@
+2009-04-02  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/spi_at91.cdl: Fix typographical error for
+	CYGINT_DEVS_SPI_ARM_AT91_HAS_BUS1. [ Bugzilla 1000737 ]
+
 2009-02-16  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/spi_at91.c (cyg_spi_at91_bus_init): Partially revert change of

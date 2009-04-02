@@ -73,7 +73,7 @@ cdl_package CYGPKG_DEVS_SPI_ARM_AT91 {
         
 
     cdl_option CYGHWR_DEVS_SPI_ARM_AT91_BUS1 {
-	active_if     CYGINT_DEVS_SPI_ARM_AT_HAS_BUS1
+	active_if     CYGINT_DEVS_SPI_ARM_AT91_HAS_BUS1
         display       "Enable support for SPI bus 1"
         flavor        bool
         default_value 0
