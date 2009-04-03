@@ -169,7 +169,7 @@ cyg_uint32 flash_num_blocks;
 void *fis_work_block;
 cyg_flashaddr_t fis_addr;
 #ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
-void *redundant_fis_addr;
+cyg_flashaddr_t redundant_fis_addr;
 #endif
 int fisdir_size;  // Size of FIS directory.
 #endif
@@ -286,8 +286,8 @@ int fis_start_update_directory(int autolock)
 #endif
 
    struct fis_image_desc* img=NULL;
-   cyg_flashaddr_t err_addr=NULL;
-   cyg_flashaddr_t tmp_fis_addr=NULL;
+   cyg_flashaddr_t err_addr;
+   cyg_flashaddr_t tmp_fis_addr;
    int stat;
 
    /*exchange old and new valid fis tables*/
@@ -310,14 +310,15 @@ int fis_start_update_directory(int autolock)
 #endif
 
    if ((stat = cyg_flash_erase(fis_addr, fisdir_size, &err_addr)) != 0) {
-       diag_printf("Error erasing FIS directory at %p: %s\n", err_addr, cyg_flash_errmsg(stat));
+       diag_printf("Error erasing FIS directory at %p: %s\n",
+                   (void*)err_addr, cyg_flash_errmsg(stat));
        return 1;
    }
    //now magic is 0xffffffff
    fis_endian_fixup(fis_work_block);
    if ((stat = cyg_flash_program(fis_addr, fis_work_block, flash_block_size, &err_addr)) != 0) {
        diag_printf("Error writing FIS directory at %p: %s\n",
-                   err_addr, cyg_flash_errmsg(stat));
+                   (void*)err_addr, cyg_flash_errmsg(stat));
        return 1;
    }
    fis_endian_fixup(fis_work_block);
@@ -360,13 +361,13 @@ fis_update_directory(int autolock, int error)
    //but IN_PROGRESS is also good enough I think
    if (error!=0)
    {
-      void* swap_fis_addr=fis_addr;
+      cyg_flashaddr_t swap_fis_addr=fis_addr;
       fis_addr=redundant_fis_addr;
       redundant_fis_addr=swap_fis_addr;
    }
    else //success
    {
-      void* tmp_fis_addr=(void *)((CYG_ADDRESS)fis_addr+CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH);
+      cyg_flashaddr_t tmp_fis_addr=((CYG_ADDRESS)fis_addr+CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH);
 
       img->u.valid_info.valid_flag[0]=CYG_REDBOOT_RFIS_VALID;
       img->u.valid_info.valid_flag[1]=CYG_REDBOOT_RFIS_VALID;
@@ -374,7 +375,7 @@ fis_update_directory(int autolock, int error)
       if ((stat = cyg_flash_program(tmp_fis_addr, img->u.valid_info.valid_flag,
                                     sizeof(img->u.valid_info.valid_flag), &err_addr)) != 0) {
           diag_printf("Error writing FIS directory at %p: %s\n", 
-                      err_addr, cyg_flash_errmsg(stat));
+                      (void*)err_addr, cyg_flash_errmsg(stat));
       }
    }
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
@@ -463,7 +464,7 @@ void
 fis_erase_redundant_directory(void)
 {
     int stat;
-    void *err_addr;
+    cyg_flashaddr_t err_addr;
 
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is unlocked before trying
@@ -474,7 +475,7 @@ fis_erase_redundant_directory(void)
     if ((stat = cyg_flash_erase(redundant_fis_addr, fisdir_size,
                                 &err_addr)) != 0) {
          diag_printf("Error erasing FIS directory at %p: %s\n",
-                     err_addr, cyg_flash_errmsg(stat));
+                     (void*)err_addr, cyg_flash_errmsg(stat));
     }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is locked after the update
@@ -670,7 +671,7 @@ fis_init(int argc, char *argv[])
         }
         if ((stat = cyg_flash_erase(erase_start, erase_size,&err_addr)) != 0) {
           diag_printf("   initialization failed %p: %s\n",
-                 err_addr, cyg_flash_errmsg(stat));
+                      (void*)err_addr, cyg_flash_errmsg(stat));
         }
         erase_start += (erase_size + flash_block_size);
         if (fis_addr > cfg_base) {
@@ -680,7 +681,7 @@ fis_init(int argc, char *argv[])
         }
         if ((stat = cyg_flash_erase(erase_start, erase_size,&err_addr)) != 0) {
           diag_printf("   initialization failed %p: %s\n",
-                 err_addr, cyg_flash_errmsg(stat));
+                      (void*)err_addr, cyg_flash_errmsg(stat));
         }
         erase_start += (erase_size + flash_block_size);
 #else  // !CYGSEM_REDBOOT_FLASH_CONFIG        
@@ -1924,11 +1925,11 @@ do_flash_init(void)
 #ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
 
         if (CYGNUM_REDBOOT_FIS_REDUNDANT_DIRECTORY_BLOCK < 0) {
-            redundant_fis_addr = (void *)((CYG_ADDRESS)flash_end + 1 +
-                                          (CYGNUM_REDBOOT_FIS_REDUNDANT_DIRECTORY_BLOCK*flash_block_size));
+            redundant_fis_addr = ((CYG_ADDRESS)flash_end + 1 +
+                                  (CYGNUM_REDBOOT_FIS_REDUNDANT_DIRECTORY_BLOCK*flash_block_size));
         } else {
-            redundant_fis_addr = (void *)((CYG_ADDRESS)flash_start +
-                                (CYGNUM_REDBOOT_FIS_REDUNDANT_DIRECTORY_BLOCK*flash_block_size));
+            redundant_fis_addr = ((CYG_ADDRESS)flash_start +
+                                  (CYGNUM_REDBOOT_FIS_REDUNDANT_DIRECTORY_BLOCK*flash_block_size));
         }
 
         if (((CYG_ADDRESS)redundant_fis_addr + fisdir_size - 1) > (CYG_ADDRESS)flash_end) {
@@ -1956,7 +1957,7 @@ do_flash_init(void)
         if (fis_get_valid_buf(&img0, &img1, &fis_update_was_interrupted)==1)
         {
            // Valid, so swap primary and secondary
-           void * tmp;
+           cyg_flashaddr_t tmp;
            tmp = fis_addr;
            fis_addr = redundant_fis_addr;
            redundant_fis_addr = tmp;

@@ -1,3 +1,8 @@
+2009-04-02  Rene Schipp von Branitz Nielsen <rbn@vitesse.com>
+
+	* src/flash.c: Fix compilation warnings when redundant FIS
+	is selected.
+
 2009-03-25  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* src/main.c: Move platform info behind GPL banner.
