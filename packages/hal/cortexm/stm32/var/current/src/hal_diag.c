@@ -213,14 +213,14 @@ hal_stm32_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
     cyg_bool res;
     CYGARC_HAL_SAVE_GP();
 
-    delay_count = chan->msec_timeout * 10; // delay in .1 ms steps
+    delay_count = chan->msec_timeout * 100; // delay in 10 us steps
 
     for(;;) {
         res = hal_stm32_serial_getc_nonblock(__ch_data, ch);
         if (res || 0 == delay_count--)
             break;
         
-        CYGACC_CALL_IF_DELAY_US(100);
+        CYGACC_CALL_IF_DELAY_US(10);
     }
 
     CYGARC_HAL_RESTORE_GP();

@@ -1,3 +1,9 @@
+2009-04-17  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* src/hal_diag.c (hal_stm32_serial_getc_timeout): Fix for higher
+	baudrates. The original version lost bytes due to the long
+	timeout.
+
 2009-02-27  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* include/var_io.h:
