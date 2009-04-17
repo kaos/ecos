@@ -1,3 +1,10 @@
+2009-04-06  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* src/stm32_flash.c:
+	stm32_flash_get_block_info() now computes correct block base
+	address. HSI is enabled for flash erase/program as stated in the
+	manual. Some cleanup.
+
 2008-12-19  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* src/stm32_flash.c:

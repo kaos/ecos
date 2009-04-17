@@ -83,6 +83,8 @@ typedef cyg_uint16 STM32_TYPE;
 // ----------------------------------------------------------------------------
 // Forward declarations for functions that need to be placed in RAM:
 
+static int stm32_enable_hsi(void);
+static void stm32_disable_hsi(void);
 static int stm32_flash_hw_erase(cyg_flashaddr_t addr) __attribute__((section (".2ram.stm32_flash_hw_erase")));
 static int stm32_flash_hw_program( volatile STM32_TYPE* addr, const cyg_uint16* buf, cyg_uint32 count) __attribute__((section (".2ram.stm32_flash_hw_program")));
     
@@ -180,13 +182,14 @@ stm32_flash_get_block_info(struct cyg_flash_dev* dev, const cyg_flashaddr_t addr
 {
     size_t          offset  = addr - dev->start;
     
-    *block_start    = dev->start + (offset & (dev->block_info[0].block_size-1));
+    *block_start    = dev->start + (offset & ~(dev->block_info[0].block_size-1));
     *block_size     = dev->block_info[0].block_size;
 }
 
 // ----------------------------------------------------------------------------
 
-static int stm32_flash_decode_error( int sr )
+static int
+stm32_flash_decode_error( int sr )
 {
     int result = CYG_FLASH_ERR_OK;
 
@@ -197,6 +200,35 @@ static int stm32_flash_decode_error( int sr )
         result = CYG_FLASH_ERR_PROTECT;
     
     return result;
+}
+
+static int
+stm32_enable_hsi(void)
+{
+    CYG_ADDRESS rcc = CYGHWR_HAL_STM32_RCC;
+    cyg_uint32 cr;
+    
+    HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+    if( cr & CYGHWR_HAL_STM32_RCC_CR_HSIRDY )
+        return 0;
+    
+    cr |= CYGHWR_HAL_STM32_RCC_CR_HSION;
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+    while( cr & CYGHWR_HAL_STM32_RCC_CR_HSIRDY )
+        HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+    
+    return 1;
+}
+
+static void
+stm32_disable_hsi(void)
+{
+    CYG_ADDRESS rcc = CYGHWR_HAL_STM32_RCC;
+    cyg_uint32 cr;
+    
+    HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
+    cr &= ~(CYGHWR_HAL_STM32_RCC_CR_HSION | CYGHWR_HAL_STM32_RCC_CR_HSIRDY);
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
 }
 
 // ----------------------------------------------------------------------------
@@ -246,8 +278,6 @@ stm32_flash_hw_program( volatile STM32_TYPE* addr, const cyg_uint16* buf, cyg_ui
     cr |= CYGHWR_HAL_STM32_FLASH_CR_PG;
     HAL_WRITE_UINT32( base+CYGHWR_HAL_STM32_FLASH_CR, cr );
 
-    stf_diag("cr %08x\n", cr );
-    
     while( count-- )
     {
         cyg_uint32 timeout = 100000;
@@ -260,14 +290,11 @@ stm32_flash_hw_program( volatile STM32_TYPE* addr, const cyg_uint16* buf, cyg_ui
         do
         {
             HAL_READ_UINT32( base+CYGHWR_HAL_STM32_FLASH_SR, sr );
-//            stf_diag("sr %08x\n", sr );
         } while( (sr & CYGHWR_HAL_STM32_FLASH_SR_BSY) && timeout-- > 0 );
     }
 
     HAL_WRITE_UINT32( base+CYGHWR_HAL_STM32_FLASH_CR, 0 );
 
-    stf_diag("cr %08x sr %08x\n", cr, sr );
-    
     return sr;    
 }
 
@@ -279,28 +306,33 @@ static int
 stm32_flash_erase(struct cyg_flash_dev* dev, cyg_flashaddr_t dest)
 {
     int                     (*erase_fn)(cyg_uint32);
-    volatile STM32_TYPE*    uncached;
     cyg_flashaddr_t         block_start;
     size_t                  block_size;
     int                     result;
+    int                     hsi;
     STM32_INTSCACHE_STATE;
 
-    stf_diag("dest %p\n", dest);
+    stf_diag("dest %p\n", (void *) dest);
     CYG_CHECK_DATA_PTR(dev, "valid flash device pointer required");
     CYG_ASSERT((dest >= dev->start) && (dest <= dev->end), "flash address out of device range");
-
+    
     stm32_flash_get_block_info(dev, dest, &block_start, &block_size);
+    stf_diag("block_start %p block_size %d\n", (void *) block_start, block_size);
     CYG_ASSERT(dest == block_start, "erase address should be the start of a flash block");
 
-    uncached    = STM32_UNCACHED_ADDRESS(dest);
     erase_fn    = (int (*)(cyg_uint32)) cyg_flash_anonymizer( & stm32_flash_hw_erase );
-
+    
+    hsi = stm32_enable_hsi();
+    
     STM32_INTSCACHE_BEGIN();    
 
     result = (*erase_fn)(block_start);
     result = stm32_flash_decode_error( result );
     
     STM32_INTSCACHE_END();
+    
+    if (hsi)
+        stm32_disable_hsi();
     
     return result;
 }
@@ -318,10 +350,11 @@ stm32_flash_program(struct cyg_flash_dev* dev, cyg_flashaddr_t dest, const void*
     const cyg_uint16*       data;
     size_t                  to_write;
     int                     result  = CYG_FLASH_ERR_OK;
+    int                     hsi;
 
     STM32_INTSCACHE_STATE;
 
-    stf_diag("dest %p src %p len %p(%d)\n", dest, src, len, len);
+    stf_diag("dest %p src %p len %p(%d)\n", (void *) dest, src, (void *) len, len);
     CYG_CHECK_DATA_PTR(dev, "valid flash device pointer required");
     CYG_ASSERT((dest >= dev->start) && ((CYG_ADDRESS)dest <= dev->end), "flash address out of device range");
 
@@ -334,6 +367,8 @@ stm32_flash_program(struct cyg_flash_dev* dev, cyg_flashaddr_t dest, const void*
     data        = (const cyg_uint16*) src;
     to_write    = len / sizeof(STM32_TYPE);      // Number of words, not bytes
     program_fn  = (int (*)(volatile STM32_TYPE*, const cyg_uint16*, cyg_uint32)) cyg_flash_anonymizer( & stm32_flash_hw_program );
+
+    hsi = stm32_enable_hsi();
 
     STM32_INTSCACHE_BEGIN();
     while (to_write > 0)
@@ -359,6 +394,10 @@ stm32_flash_program(struct cyg_flash_dev* dev, cyg_flashaddr_t dest, const void*
         }
     }
     STM32_INTSCACHE_END();
+    
+    if (hsi)
+        stm32_disable_hsi();
+    
     return result;
 }
 
