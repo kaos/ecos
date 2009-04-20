@@ -710,10 +710,27 @@ do_abort(void *s)
     unlink_socket((tcp_socket_t *)s);
 }
 
+/*
+ * Abort a TCP connection, waiting for the connection to be closed, so
+ * it is save to reuse the tcp_socket_t structure. 
+ */
+
 void
 __tcp_abort(tcp_socket_t *s, unsigned long delay)
 {
+  int timeout = 1000;
+  
   __timer_set(&abort_timer, delay, do_abort, s);
+
+  while (s->state != _CLOSED)  {
+    if (--timeout <= 0)  {
+      diag_printf("TCP close - connection failed to close\n");
+      return;
+    }
+    
+    MS_TICKS_DELAY();
+    __tcp_poll();
+  }
 }
 
 /*

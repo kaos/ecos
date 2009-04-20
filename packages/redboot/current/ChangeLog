@@ -1,3 +1,10 @@
+2009-04-20  Andrew Lunn  <andrew@lunn.ch>
+
+	* src/net/tcp.c (__tcp_abort): Ensure the connection is closed
+	before returning. This fixes a race condition which Ilko Iliev
+	<iliev@ronetix.at> found when performing two back to back http
+	transfers.
+
 2009-04-02  Rene Schipp von Branitz Nielsen <rbn@vitesse.com>
 
 	* src/flash.c: Fix compilation warnings when redundant FIS
