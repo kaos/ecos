@@ -90,8 +90,7 @@
 // the bottom half of INTC0 is of interest, or interrupts 96-127 if
 // only the bottom half of INTC1 is of interest.
 //
-// Some newer ColdFire registers have additional set/clear mask
-// registers.
+// Some newer ColdFires have additional set/clear mask registers.
 
 #  ifdef HAL_MCFxxxx_INTCx_SIMR
 #   if (1 == HAL_MCFxxxx_HAS_MCF5282_INTC)
@@ -138,7 +137,7 @@
      if ( (CYGNUM_HAL_ISR_MAX < 32) || (_shift_ < 32)) {                    \
          _reg_   = HAL_MCFxxxx_INTC0_BASE + HAL_MCFxxxx_INTCx_IMRL;         \
      } else if ((CYGNUM_HAL_ISR_MAX < 64) || (_shift_ < 64)) {              \
-         _reg_    = HAL_MCFxxxx_INTC0_BASE + HAL_MCFx2xx_INTCx_IMRH;        \
+         _reg_    = HAL_MCFxxxx_INTC0_BASE + HAL_MCFxxxx_INTCx_IMRH;        \
          _shift_ -= 32;                                                     \
      } else if ((CYGNUM_HAL_ISR_MAX < 96) || (_shift_ < 96)) {              \
          _reg_    = HAL_MCFxxxx_INTC1_BASE + HAL_MCFxxxx_INTCx_IMRL;        \

@@ -1,3 +1,7 @@
+2009-04-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_intr.h: fix a couple of typos
+
 2009-02-09  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/var_io.h (HAL_MCFxxxx_SDRAMC_DACRx_CBM_xx): fix
