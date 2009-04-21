@@ -139,10 +139,10 @@
 #define AM29_OFFSET_CFI_Q                       AM29_OFFSET_CFI_DATA(0x0010)
 #define AM29_OFFSET_CFI_SIZE                    AM29_OFFSET_CFI_DATA(0x0027)
 #define AM29_OFFSET_CFI_BLOCK_REGIONS           AM29_OFFSET_CFI_DATA(0x002C)
-#define AM29_OFFSET_CFI_BLOCK_COUNT_LSB(_i_)    AM29_OFFSET_CFI_DATA(0x002D + (4 * _i_))
-#define AM29_OFFSET_CFI_BLOCK_COUNT_MSB(_i_)    AM29_OFFSET_CFI_DATA(0x002E + (4 * _i_))
-#define AM29_OFFSET_CFI_BLOCK_SIZE_LSB(_i_)     AM29_OFFSET_CFI_DATA(0x002F + (4 * _i_))
-#define AM29_OFFSET_CFI_BLOCK_SIZE_MSB(_i_)     AM29_OFFSET_CFI_DATA(0x0030 + (4 * _i_))
+#define AM29_OFFSET_CFI_BLOCK_COUNT_LSB(_i_)    AM29_OFFSET_CFI_DATA(0x002D + (4 * (_i_)))
+#define AM29_OFFSET_CFI_BLOCK_COUNT_MSB(_i_)    AM29_OFFSET_CFI_DATA(0x002E + (4 * (_i_)))
+#define AM29_OFFSET_CFI_BLOCK_SIZE_LSB(_i_)     AM29_OFFSET_CFI_DATA(0x002F + (4 * (_i_)))
+#define AM29_OFFSET_CFI_BLOCK_SIZE_MSB(_i_)     AM29_OFFSET_CFI_DATA(0x0030 + (4 * (_i_)))
 
 #define AM29_STATUS_DQ7             AM29_SWAP(AM29_PARALLEL(0x0080))
 #define AM29_STATUS_DQ6             AM29_SWAP(AM29_PARALLEL(0x0040))
@@ -509,6 +509,6 @@ am29_get_block_info(struct cyg_flash_dev* dev, const cyg_flashaddr_t addr, cyg_f
 #define AM29_OFFSET_DEVID3          0x001E
 #define AM29_OFFSET_AT49_LOCK_STATUS 04
 #define AM29_OFFSET_CFI             0x00AA
-#define AM29_OFFSET_CFI_DATA(_idx_) (2 * _idx_)
+#define AM29_OFFSET_CFI_DATA(_idx_) (2 * (_idx_))
 
 #include "am29xxxxx_aux.c"
