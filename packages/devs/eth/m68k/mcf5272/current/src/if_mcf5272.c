@@ -410,7 +410,7 @@ static void         mcfxxxx_eth_dsr_tx(cyg_vector_t, cyg_ucount32, cyg_addrword_
 // value.
 #ifdef CYGINT_DEVS_ETH_MCFxxxx_PLATFORM_MAC
 
-# if !defined(HAL_MCFxxxx_ETH_GET_MAC_ADDRESS) && !defined(HAL_MCFxxxx_ETH_GET_MAC_ADDRESS)
+# if !defined(HAL_MCFxxxx_ETH_GET_MAC_ADDRESS)
 #  error Platform HAL should have provided a MAC address macro
 # endif
 
@@ -734,7 +734,7 @@ mcfxxxx_eth_send(struct eth_drv_sc* sc,
     
     // Make sure all the buffer descriptors have been written to memory.
     // No need to invalidate the cache entries, the driver does not look
-    // for any bits changed by the hardware except on the xxxx which
+    // for any bits changed by the hardware except on the 5272 which
     // does not have a data cache at all.
 #ifdef HAL_DCACHE_STORE    
     HAL_DCACHE_STORE(&(eth->txbds[0]), TX_BUFFER_DESCRIPTOR_COUNT * sizeof(hal_mcfxxxx_eth_buffer_descriptor));

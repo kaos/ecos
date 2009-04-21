@@ -1,3 +1,7 @@
+2009-04-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/if_mcf5272.c: fix a couple of typos
+
 2008-11-17  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/mcf5272.cdl, doc/mcf5272_eth.sgml, src/if_mcf5272.c: minor
