@@ -1,3 +1,9 @@
+2009-04-28  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/watchdog.cdl: Move the CYGINT_WATCHDOG_IMPLEMENTATIONS
+	constraint to the interface declaration itself to ensure that the
+	eCos Configuration Tool presents implementators as radio buttons.
+
 2009-02-04  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/watchdog.cxx: switch to CYG_INIT_DEV_WATCHDOG init priority.

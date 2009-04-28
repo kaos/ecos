@@ -1,3 +1,9 @@
+2009-04-28  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/watchdog_lpc2xxx.cdl: Give CYGIMP_WATCHDOG_HARDWARE a default
+	value rather than a calculated value to accommodate other
+	implementations of CYGINT_WATCHDOG_IMPLEMENTATIONS.
+
 2009-02-09  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/watchdog_lpc2xxx.cxx: switch init priority to

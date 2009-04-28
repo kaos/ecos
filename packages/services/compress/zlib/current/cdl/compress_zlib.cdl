@@ -135,23 +135,23 @@ cdl_package CYGPKG_COMPRESS_ZLIB {
         }
 
         cdl_option CYGPKG_COMPRESS_ZLIB_LDFLAGS_ADD {
-            display "Additional compiler flags"
+            display "Additional linker flags"
             flavor  data
             no_define
             default_value { "" }
             description   "
-                This option modifies the set of compiler flags for
+                This option modifies the set of linker flags for
                 building this package. These flags are used in addition
                 to the set of global flags."
         }
 
         cdl_option CYGPKG_COMPRESS_ZLIB_LDFLAGS_REMOVE {
-            display "Suppressed compiler flags"
+            display "Suppressed linker flags"
             flavor  data
             no_define
             default_value { "" }
             description   "
-                This option modifies the set of compiler flags for
+                This option modifies the set of linker flags for
                 building this package. These flags are removed from
                 the set of global flags if present."
         }

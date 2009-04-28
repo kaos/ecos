@@ -1,3 +1,7 @@
+2009-04-28  John Dallaway  <john@dallaway.org.uk>
+
+	cdl/romfs.cdl: Use CYGPKG_IO_FILEIO as the parent.
+
 2009-02-07  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/romfs.cdl: Pass file2c.tcl to tclsh directly.

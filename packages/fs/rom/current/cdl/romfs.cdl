@@ -53,6 +53,7 @@ cdl_package CYGPKG_FS_ROM {
     doc            ref/fileio.html
     include_dir    cyg/romfs
 
+    parent         CYGPKG_IO_FILEIO
     requires       CYGPKG_IO_FILEIO
 
     requires       CYGPKG_ISOINFRA

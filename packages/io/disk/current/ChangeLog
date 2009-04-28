@@ -1,3 +1,7 @@
+2009-04-28  John Dallaway  <john@dallaway.org.uk>
+
+	cdl/io_disk.cdl: Use CYGPKG_IO as the parent.
+
 2006-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/disk.h (DISK_CHANNEL): No need for extra _part_dev
@@ -139,7 +143,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.      
+// Copyright (C) 2003, 2004, 2005, 2006, 2009 Free Software Foundation, Inc.      
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

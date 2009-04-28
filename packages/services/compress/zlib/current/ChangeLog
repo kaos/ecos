@@ -1,3 +1,8 @@
+2009-04-28  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/compress_zlib.cdl: Fix display and description strings for
+	LDFLAGS manipulation options.
+
 2009-03-09  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/compress_zlib.cdl: Reference test executable filenames for
