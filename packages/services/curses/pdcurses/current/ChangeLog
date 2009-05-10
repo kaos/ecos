@@ -1,0 +1,97 @@
+2009-03-26  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/pdcurses.cdl:
+	* ChangeLog:
+	* doc/intro.txt:
+	* examples/Makefile:
+	* examples/pdcecos_app.c:
+	* examples/pdcecos_app.h:
+	* examples/pdcecos_init.c:
+	* examples/pdcecos_thread.c:
+	* examples/README:
+	* HISTORY:
+	* IMPLEMNT:
+	* include/curses.h:
+	* include/curspriv.h:
+	* include/panel.h:
+	* include/term.h:
+	* README:
+	* src/drivers/serial.c:
+	* src/pdcurses/addch.c:
+	* src/pdcurses/addchstr.c:
+	* src/pdcurses/addstr.c:
+	* src/pdcurses/attr.c:
+	* src/pdcurses/beep.c:
+	* src/pdcurses/bkgd.c:
+	* src/pdcurses/border.c:
+	* src/pdcurses/clear.c:
+	* src/pdcurses/color.c:
+	* src/pdcurses/debug.c:
+	* src/pdcurses/delch.c:
+	* src/pdcurses/deleteln.c:
+	* src/pdcurses/deprec.c:
+	* src/pdcurses/getch.c:
+	* src/pdcurses/getstr.c:
+	* src/pdcurses/getyx.c:
+	* src/pdcurses/inch.c:
+	* src/pdcurses/inchstr.c:
+	* src/pdcurses/initscr.c:
+	* src/pdcurses/inopts.c:
+	* src/pdcurses/insch.c:
+	* src/pdcurses/insstr.c:
+	* src/pdcurses/instr.c:
+	* src/pdcurses/kernel.c:
+	* src/pdcurses/keyname.c:
+	* src/pdcurses/mouse.c:
+	* src/pdcurses/move.c:
+	* src/pdcurses/outopts.c:
+	* src/pdcurses/overlay.c:
+	* src/pdcurses/pad.c:
+	* src/pdcurses/panel.c:
+	* src/pdcurses/printw.c:
+	* src/pdcurses/README:
+	* src/pdcurses/refresh.c:
+	* src/pdcurses/scanw.c:
+	* src/pdcurses/scr_dump.c:
+	* src/pdcurses/scroll.c:
+	* src/pdcurses/slk.c:
+	* src/pdcurses/termattr.c:
+	* src/pdcurses/terminfo.c:
+	* src/pdcurses/touch.c:
+	* src/pdcurses/util.c:
+	* src/pdcurses/window.c:
+	* tests/firework.c:
+	* tests/newdemo.c:
+	* tests/ptest.c:
+	* tests/rain.c:
+	* tests/README:
+	* tests/testcurs.c:
+	* tests/tui.c:
+	* tests/tuidemo.c:
+	* tests/tui.h:
+	* tests/worm.c:
+	* tests/xmas.c: New files.
+
+//===========================================================================
+// ####GPLCOPYRIGHTBEGIN####                                                
+// -------------------------------------------                              
+// This file is part of eCos, the Embedded Configurable Operating System.   
+// Copyright (C) 2009 Free Software Foundation, Inc.                        
+//
+// This program is free software; you can redistribute it and/or modify     
+// it under the terms of the GNU General Public License as published by     
+// the Free Software Foundation; either version 2 or (at your option) any   
+// later version.                                                           
+//
+// This program is distributed in the hope that it will be useful, but      
+// WITHOUT ANY WARRANTY; without even the implied warranty of               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        
+// General Public License for more details.                                 
+//
+// You should have received a copy of the GNU General Public License        
+// along with this program; if not, write to the                            
+// Free Software Foundation, Inc., 51 Franklin Street,                      
+// Fifth Floor, Boston, MA  02110-1301, USA.                                
+// -------------------------------------------                              
+// ####GPLCOPYRIGHTEND####                                                  
+//===========================================================================

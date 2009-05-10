@@ -1,0 +1,65 @@
+* PDCurses + eCos Application
+  ---------------------------
+
+It is possible to run a curses program in a separate eCos thread. Look
+at the pdcecos_app.h, pdcecos_app.c, pdcecos_init.c, pdcecos_thread.c
+sources for details.
+
+As you can see you should put own curses code inside a pdcecos_main()
+function instead of traditional main() entry. In such a build you have
+to link your executable with a pdcecos_app.o object file, and a curses
+program must look as
+
+    #include <curses.h>
+    ...
+
+    int
+    pdcecos_main(int argc, char *argv[])
+    {
+        initscr();
+        ...
+    }
+
+The pdcecos_app.c has cyg_user_start() entry where a startup_thread()
+creates and resumes itself there.  The startup_tread() creates and
+invokes a set of threads are defined in a __PDC_APP_TAB__. By default
+only alone thread is registered in the table, it is pdcecos_thread(),
+but you can expand the table. When the pdcecos_thread() is started, it
+invokes the pdcecos_main() function -- your curses program.
+
+The "PDCECOS" thread uses a separate stack as well, you can change its
+size by default is ( CYGNUM_HAL_STACK_SIZE_TYPICAL * 2 ).
+
+To build a PDCurses+eCos demo application, first generate a Make.params
+file using the build_Make.params script which is placed under the eCos
+`examples' directory and then just type 'make'.
+
+There is an example of running the pdcecos_app demo in GDB the below. As
+you can see the "PDCECOS" thread starts and invokes pdcecos_main() then.
+
+    (gdb) break pdcecos_main
+    Breakpoint 1 at 0x100111b: pdcecos_thread.c, line 93.
+    (gdb) continue
+    Starting program: pdcecos_app
+    SYSTEM INITIALIZATION in progress
+    data index = 4
+    Creating system threads
+    Creating PDCECOS thread
+    Starting threads
+    Starting PDCECOS
+    SYSTEM THREADS STARTED!
+
+    Breakpoint 1, pdcecos_main (argc=0, argv=0x0)
+        at pdcecos_thread.c:93
+        88          initscr();
+        Current language:  auto; currently c
+    (gdb) continue
+
+Then you should see a message
+
+    Hello PDCurses+eCos World!
+    
+in a terminal program (minicom, hyperterm, etc.).
+
+
+------------------------------------------------------------------------

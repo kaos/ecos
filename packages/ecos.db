@@ -2529,6 +2529,13 @@ package CYGPKG_EZXML {
         description     "ezXML, Simple XML Parser"
 }
                  
+package CYGPKG_PDCURSES {
+	alias 		{ "PDCurses" pdcurses }
+	directory	services/curses/pdcurses
+	script		pdcurses.cdl
+        description     "Public Domain Curses."
+}
+
 package CYGPKG_UITRON {
 	alias		{ "uITRON compatibility" uitron }
 	directory	compat/uitron

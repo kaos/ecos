@@ -1,0 +1,258 @@
+# ====================================================================
+#
+#      pdcurses.cdl
+#
+#      Public Domain Curses for eCos
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2009 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later
+## version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with eCos; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+##
+## As a special exception, if other files instantiate templates or use
+## macros or inline functions from this file, or you compile this file
+## and link it with other works to produce a work based on this file,
+## this file does not by itself cause the resulting work to be covered by
+## the GNU General Public License. However the source code for this file
+## must still be made available in accordance with section (3) of the GNU
+## General Public License v2.
+##
+## This exception does not invalidate any other reasons why a work based
+## on this file might be covered by the GNU General Public License.
+## -------------------------------------------
+## ####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):     Sergei Gavrikov
+# Contributors:  Sergei Gavrikov
+# Date:          2009-03-26
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_PDCURSES {
+    display       "PDCurses"
+    requires      CYGPKG_INFRA
+    requires      CYGPKG_KERNEL
+    requires      CYGPKG_MEMALLOC
+    requires      CYGPKG_ISOINFRA
+    requires      CYGPKG_LIBC
+    requires      CYGPKG_LIBC_STARTUP
+    requires      CYGPKG_LIBC_STDIO
+    requires      CYGPKG_LIBC_STDLIB
+    requires      CYGPKG_LIBC_STRING
+    requires      CYGPKG_ERROR
+    description   "Public Domain Curses."
+
+    # PDCurses
+    compile                                     \
+        pdcurses/addch.c                        \
+        pdcurses/addchstr.c                     \
+        pdcurses/addstr.c                       \
+        pdcurses/attr.c                         \
+        pdcurses/beep.c                         \
+        pdcurses/bkgd.c                         \
+        pdcurses/border.c                       \
+        pdcurses/clear.c                        \
+        pdcurses/color.c                        \
+        pdcurses/debug.c                        \
+        pdcurses/delch.c                        \
+        pdcurses/deleteln.c                     \
+        pdcurses/deprec.c                       \
+        pdcurses/getch.c                        \
+        pdcurses/getstr.c                       \
+        pdcurses/getyx.c                        \
+        pdcurses/inch.c                         \
+        pdcurses/inchstr.c                      \
+        pdcurses/initscr.c                      \
+        pdcurses/inopts.c                       \
+        pdcurses/insch.c                        \
+        pdcurses/insstr.c                       \
+        pdcurses/instr.c                        \
+        pdcurses/kernel.c                       \
+        pdcurses/keyname.c                      \
+        pdcurses/mouse.c                        \
+        pdcurses/move.c                         \
+        pdcurses/outopts.c                      \
+        pdcurses/overlay.c                      \
+        pdcurses/pad.c                          \
+        pdcurses/panel.c                        \
+        pdcurses/printw.c                       \
+        pdcurses/refresh.c                      \
+        pdcurses/scanw.c                        \
+        pdcurses/scr_dump.c                     \
+        pdcurses/scroll.c                       \
+        pdcurses/slk.c                          \
+        pdcurses/termattr.c                     \
+        pdcurses/terminfo.c                     \
+        pdcurses/touch.c                        \
+        pdcurses/util.c                         \
+        pdcurses/window.c
+
+    # PDCurses demos
+    cdl_option CYGBLD_PDCURSES_DEMOS {
+        display       "Build PDCurses demos"
+        default_value 0
+
+        description   "
+            This option enables the building of the PDCurses demos:
+            firework, newdemo, ptest, rain, testcurs, tuidemo, worm,
+            and xmas.
+            Note: demos build itself as the standalone single-thread
+            executables."
+
+        requires      CYGINT_PDCURSES_TERMINAL_DRIVER
+    }
+
+    # Serial terminal driver
+    cdl_component CYGBLD_PDCURSES_TERMINAL_DRIVER_SERIAL {
+        display       "Build serial driver for PDCurses"
+        default_value 1
+
+        requires      1 == CYGPKG_IO_SERIAL_DEVICES
+
+        description   "
+            The PDCurses is a terminfo-less library. To build the curses
+            applications, a port must provide a few set of the PDC port
+            functions to drive the real hardware, read `IMPLEMNT' guide.
+            This driver provides an interaction with terminal program on
+            a specified serial device."
+
+        cdl_interface CYGINT_PDCURSES_TERMINAL_DRIVER {
+            display       "Serial terminal interface for PDCurses"
+            requires      1 == CYGINT_PDCURSES_TERMINAL_DRIVER
+            compile       drivers/serial.c
+
+            implements    CYGINT_PDCURSES_TERMINAL_DRIVER
+        }
+
+        cdl_option CYGDAT_PDCURSES_DRIVER_SERIAL_DEV {
+            display       "Physical serial device"
+            flavor        data
+            default_value \"\\\"/dev/ser0\\\"\"
+
+            description   "
+                This option selects the physical device to use for
+                PDCurses serial terminal driver."
+        }
+
+        cdl_option CYGDAT_PDCURSES_DRIVER_USE_VT100_ATTR {
+            display       "VT100 attributes"
+            flavor        bool
+            default_value 1
+
+            description   "
+                This option allows the driver to use the VT100 escape
+                sequences, i.e. the attributes such as bold, underline,
+                blink, reverse, etc."
+        }
+
+        cdl_option CYGDAT_PDCURSES_DRIVER_USE_ANSI_COLORS {
+            display       "ANSI colors"
+            flavor        bool
+            default_value 1
+
+            description   "
+                This option allows the driver to use the ANSI escape
+                sequences for a coloring (8 values for a foreground and
+                8 values for a background)."
+        }
+
+        cdl_option CYGDAT_PDCURSES_DRIVER_USE_KEYPAD_KEYS {
+            display       "Keypad keys"
+            flavor        bool
+            default_value 1
+
+            description   "
+                This option provides a minimal support for a curses
+                keypad function (the keypad of the user's terminal)."
+        }
+
+        cdl_option CYGDAT_PDCURSES_DRIVER_SCREEN_COLUMNS {
+            display       "Size of the screen in columns"
+            flavor        data
+            default_value 80
+
+            description   "
+                This option sets the size of the screen in columns."
+        }
+
+        cdl_option CYGDAT_PDCURSES_DRIVER_SCREEN_ROWS {
+            display       "Size of the screen in rows"
+            flavor        data
+            default_value 25
+
+            description   "
+                This option sets the size of the screen in rows."
+        }
+
+    }
+
+    cdl_component CYGPKG_PDCURSES_OPTIONS {
+        display "Build options"
+        flavor   none
+        no_define
+
+        description   "
+            Package specific build options including control over
+            compiler flags used only in building this package,
+            and details of which tests are built."
+
+        cdl_option CYGPKG_PDCURSES_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            # Most of targets are 32-bit. eCos LIBC conforms to C99.
+            default_value { "-D__ECOS__ -D_LP64=0 -DHAVE_VSNPRINTF -DHAVE_VSSCANF"}
+
+            description   "
+                This option modifies the set of compiler flags for
+                building the PDCurses package.
+                These flags are used in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_PDCURSES_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+
+            description   "
+                This option modifies the set of compiler flags for
+                building the PDCurses package.
+                These flags are removed from the set of global flags
+                if present."
+        }
+    }
+
+    # PDCurses tests
+    cdl_option CYGPKG_PDCURSES_TESTS {
+        display       "PDCurses tests"
+        no_define
+        flavor        data
+        calculated    { (CYGBLD_PDCURSES_DEMOS) ? "tests/firework tests/newdemo tests/ptest tests/rain tests/testcurs tests/tuidemo tests/worm tests/xmas" : "" }
+
+        description   "
+            This option specifies the set of tests for the PDCurses."
+
+    }
+
+}
+
