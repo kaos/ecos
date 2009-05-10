@@ -1,3 +1,7 @@
+* Port of PDCurses 3.4 by Sergei Gavrikov
+
+*********** eCos 3.0 release ************
+
 * Port to Olimex LPC-L2294-1MB include ethernet and Flash drvers by
   Sergei Gavrikov
 * Port to Olimex LPC-E2294 include ethernet and Flash drvers by
