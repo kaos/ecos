@@ -1,3 +1,9 @@
+2009-05-12  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* include/sys/types.h:
+	* include/limits.h:
+	Fixed typo in CYGBLD_ISO_SSIZET_HEADER.
+
 2009-02-24  Rutger Hofmman <rutger@cs.vu.nl>
 
         * include/sys/stat.h: chmod() prototype

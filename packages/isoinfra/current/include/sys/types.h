@@ -67,8 +67,8 @@
 #define __need_size_t
 #include <stddef.h>
 
-#ifdef CYGBLD_ISO_SSIZET_HEADER
-# include CYGBLD_ISO_SSIZET_HEADER
+#ifdef CYGBLD_ISO_SSIZE_T_HEADER
+# include CYGBLD_ISO_SSIZE_T_HEADER
 #else
 typedef long ssize_t;
 #endif
