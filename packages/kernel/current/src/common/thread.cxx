@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -365,7 +365,7 @@ Cyg_Thread::wake()
 {
     CYG_REPORT_FUNCTION();
 
-    CYG_INSTRUMENT_THREAD(WAKE,this,Cyg_Scheduler::current_thread);
+    CYG_INSTRUMENT_THREAD(WAKE,this,Cyg_Scheduler::get_current_thread());
     
     // Prevent preemption
     Cyg_Scheduler::lock();
@@ -506,7 +506,7 @@ Cyg_Thread::counted_wake()
 {
     CYG_REPORT_FUNCTION();
 
-    CYG_INSTRUMENT_THREAD(WAKE,this,Cyg_Scheduler::current_thread);
+    CYG_INSTRUMENT_THREAD(WAKE,this,Cyg_Scheduler::get_current_thread());
     
     // Prevent preemption
     Cyg_Scheduler::lock();
@@ -537,7 +537,7 @@ Cyg_Thread::cancel_counted_wake()
 {
     CYG_REPORT_FUNCTION();
 
-    CYG_INSTRUMENT_THREAD(WAKE,this,Cyg_Scheduler::current_thread);
+    CYG_INSTRUMENT_THREAD(WAKE,this,Cyg_Scheduler::get_current_thread());
     
     // Prevent preemption
     Cyg_Scheduler::lock();
@@ -561,7 +561,7 @@ Cyg_Thread::suspend()
 {
     CYG_REPORT_FUNCTION();
 
-    CYG_INSTRUMENT_THREAD(SUSPEND,this,Cyg_Scheduler::current_thread);
+    CYG_INSTRUMENT_THREAD(SUSPEND,this,Cyg_Scheduler::get_current_thread());
     
     // Prevent preemption
     Cyg_Scheduler::lock();
@@ -595,7 +595,7 @@ Cyg_Thread::resume()
 {
     CYG_REPORT_FUNCTION();
 
-    CYG_INSTRUMENT_THREAD(RESUME,this,Cyg_Scheduler::current_thread);
+    CYG_INSTRUMENT_THREAD(RESUME,this,Cyg_Scheduler::get_current_thread());
  
     // Prevent preemption
     Cyg_Scheduler::lock();
@@ -635,7 +635,7 @@ Cyg_Thread::force_resume()
 {
     CYG_REPORT_FUNCTION();
 
-    CYG_INSTRUMENT_THREAD(RESUME,this,Cyg_Scheduler::current_thread);
+    CYG_INSTRUMENT_THREAD(RESUME,this,Cyg_Scheduler::get_current_thread());
             
     // Prevent preemption
     Cyg_Scheduler::lock();
