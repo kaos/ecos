@@ -3038,6 +3038,20 @@
   }                                                                     \
   CYG_MACRO_END
 
+// Configure a GPIO pin MultiDrain on a specific PIO controller.
+#define HAL_ARM_AT91_GPIOX_CFG_MULTIDRAIN(_pin_, _enable_, _nr_, _pio_base_) \
+  CYG_MACRO_START                                                       \
+  if (HAL_ARM_AT91_PIO_CTRL(_pin_) == (_nr_)) {                         \
+    if (_enable_) {                                                     \
+      HAL_WRITE_UINT32((_pio_base_)+ AT91_PIO_MDER,                     \
+                       HAL_ARM_AT91_PIO_BIT(_pin_));                    \
+    } else {                                                            \
+      HAL_WRITE_UINT32((_pio_base_)+AT91_PIO_MDDR,                      \
+                         HAL_ARM_AT91_PIO_BIT(_pin_));                  \
+    }                                                                   \
+  }                                                                     \
+  CYG_MACRO_END
+
 // Set a GPIO pin on a specific PIO controller to generate interrupts
 #define HAL_ARM_AT91_GPIOX_CFG_INTERRUPT(_pin_, _enable_, _nr_, _pio_base_) \
   CYG_MACRO_START                                                       \
@@ -3086,6 +3100,9 @@
 #define AT91_PIN_PULLUP_DISABLE 0
 #define AT91_PIN_INTERRUPT_ENABLE  1
 #define AT91_PIN_INTERRUPT_DISABLE 0
+#define AT91_PIN_MULTIDRAIN_ENABLE 1
+#define AT91_PIN_MULTIDRAIN_DISABLE 0
+
 
 #ifndef AT91_PIOB
 //------------------------
@@ -3108,6 +3125,12 @@
 #define HAL_ARM_AT91_GPIO_CFG_PULLUP(_pin_, _enable_)               \
   CYG_MACRO_START                                                   \
   HAL_ARM_AT91_GPIOX_CFG_PULLUP(_pin_, _enable_, 0, AT91_PIO);      \
+  CYG_MACRO_END
+
+// Configure Multi Drain on a GPIO
+#define HAL_ARM_AT91_GPIO_CFG_MULTIDRAIN(_pin_, _enable_)           \
+  CYG_MACRO_START                                                   \
+  HAL_ARM_AT91_GPIOX_CFG_MULTIDRAIN(_pin_, _enable_, 0, AT91_PIO);  \
   CYG_MACRO_END
 
 // Configure a GPIO pin to generate interrupts
@@ -3158,6 +3181,13 @@
   CYG_MACRO_START                                                   \
   HAL_ARM_AT91_GPIOX_CFG_PULLUP(_pin_, _enable_, 0, AT91_PIO);      \
   HAL_ARM_AT91_GPIOX_CFG_PULLUP(_pin_, _enable_, 1, AT91_PIOB);     \
+  CYG_MACRO_END
+
+// Configure Multi Drain on a GPIO
+#define HAL_ARM_AT91_GPIO_CFG_MULTIDRAIN(_pin_, _enable_)           \
+  CYG_MACRO_START                                                   \
+  HAL_ARM_AT91_GPIOX_CFG_MULTIDRAIN(_pin_, _enable_, 0, AT91_PIO);  \
+  HAL_ARM_AT91_GPIOX_CFG_MULTIDRAIN(_pin_, _enable_, 1, AT91_PIOB); \
   CYG_MACRO_END
 
 // Configure a GPIO pin to generate interrupts
@@ -3214,6 +3244,14 @@
   HAL_ARM_AT91_GPIOX_CFG_PULLUP(_pin_, _enable_, 0, AT91_PIO);      \
   HAL_ARM_AT91_GPIOX_CFG_PULLUP(_pin_, _enable_, 1, AT91_PIOB);     \
   HAL_ARM_AT91_GPIOX_CFG_PULLUP(_pin_, _enable_, 2, AT91_PIOC);     \
+  CYG_MACRO_END
+
+// Configure Multi Drain on a GPIO
+#define HAL_ARM_AT91_GPIO_CFG_MULTIDRAIN(_pin_, _enable_)           \
+  CYG_MACRO_START                                                   \
+  HAL_ARM_AT91_GPIOX_CFG_MULTIDRAIN(_pin_, _enable_, 0, AT91_PIO);  \
+  HAL_ARM_AT91_GPIOX_CFG_MULTIDRAIN(_pin_, _enable_, 1, AT91_PIOB); \
+  HAL_ARM_AT91_GPIOX_CFG_MULTIDRAIN(_pin_, _enable_, 2, AT91_PIOC); \
   CYG_MACRO_END
 
 // Configure a GPIO pin to generate interrupts
