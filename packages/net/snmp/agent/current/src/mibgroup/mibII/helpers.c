@@ -1,6 +1,6 @@
 //=============================================================================
 //
-//      sntp.c
+//      helpers.c
 //
 //      Helper functions to access the interface information
 //
@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2003 Free Software Foundation, Inc.                        
+// Copyright (C) 2003, 2009 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -62,33 +62,24 @@
 extern struct ifaddr **ifnet_addrs;
 
 long cyg_snmp_num_interfaces(void) {
-  long long_ret=0;
-  int cnt = if_index - 1;
-  
-  while (cnt >= 0) {
-    if (ifnet_addrs[cnt] != 0) {
-      long_ret++;
-    }
-    cnt--;
-  }
-  return long_ret;
+  int i,n=0;
+
+  for (i=0; i<if_index; ++i)
+    if (ifnet_addrs[i])
+      ++n;
+
+  return n;
 }
 
 struct ifnet *cyg_snmp_get_if(int if_num) {
-  int index = 0;
-  struct ifnet *ifp;
-  
-  do {
-    while(0 == ifnet_addrs[index])
-      index++;
+  int i,n=0;
 
-    ifp = ifnet_addrs[index]->ifa_ifp;
-    
-    if_num--;	    
-    index++;
-  } while (if_num);
+  for (i=0; i<if_index; ++i)
+    if (ifnet_addrs[i])
+      if (++n == if_num)
+        return ifnet_addrs[i]->ifa_ifp;
 
-  return ifp;
+  return NULL;
 }
 #endif
 

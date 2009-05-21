@@ -1,8 +1,20 @@
+2009-05-11      Grant Edwards   <grant.b.edwards@gmail.com>
+	
+	* src/mibgroup/mibII/helpers.c (cyg_snmp_get_if): Rewrite it so that
+	when passed if_num<=0 it will no longer go into a 2^32 iteration
+	loop that walks through all of memory and then returns a rogue
+	pointer
+
+	* src/mibgroup/mibII/helpers.c (cyg_snmp_num_interfaces): Rewrite
+	it to to use the same (simpler, more obviously correct) loop
+	structure that cyg_snmp_get_if() now uses.
+
+	
 2004-05-14	Matt Jerdonek	<maj1224@yahoo.com>
 
 	* src/mibgroup/mibII/helpers.c (cyg_snmp_num_interfaces): return
 	correct number of interfaces including the loopback interface.  
-	* src/mibgroup/mibII/helpers (cyg_snmp_get_if) increment the
+	* src/mibgroup/mibII/helpers.c (cyg_snmp_get_if): increment the
 	interface index properly.  
 	* src/mibgroup/mibII/interfaces.c (var_ifTable): Add case 
 	for IFT_PPP interface type.
@@ -490,7 +502,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
