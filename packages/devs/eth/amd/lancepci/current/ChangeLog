@@ -1,3 +1,7 @@
+2009-05-25  John Dallaway  <john@dallaway.org.uk>
+
+	* src/if_lancepci.c: Fix casting in the use of HAL_PCI_CPU_TO_BUS().
+
 2004-08-12  Jani Monoses <jani@iv.ro>
 
 	* src/if_lancepci.c: Fix builing with lwip.
@@ -38,7 +42,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

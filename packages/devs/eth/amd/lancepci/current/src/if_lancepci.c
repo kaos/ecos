@@ -9,7 +9,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -525,7 +525,7 @@ amd_lancepci_init(struct cyg_netdevtab_entry *tab)
     memset(cpd->rx_buffers,0,_BUF_SIZE*cpd->rx_ring_cnt);
 
     for (i = 0; i < cpd->rx_ring_cnt; i++) {
-        HAL_PCI_CPU_TO_BUS(d, (cyg_uint8 *)b);
+        HAL_PCI_CPU_TO_BUS((cyg_uint32)d, b);
         _SU32(p, LANCE_RD_PTR) = (b & LANCE_RD_PTR_MASK) | LANCE_RD_PTR_OWN;
         _SU16(p, LANCE_RD_BLEN) = (-_BUF_SIZE);
         p += LANCE_RD_SIZE;
@@ -538,7 +538,7 @@ amd_lancepci_init(struct cyg_netdevtab_entry *tab)
 
     d = cpd->tx_buffers = (cyg_uint8*) CYGARC_UNCACHED_ADDRESS((cyg_uint32)pciwindow_mem_alloc(_BUF_SIZE*cpd->tx_ring_cnt));
     for (i = 0; i < cpd->tx_ring_cnt; i++) {
-        HAL_PCI_CPU_TO_BUS(d, (cyg_uint8 *)b);
+        HAL_PCI_CPU_TO_BUS((cyg_uint32)d, b);
         _SU32(p, LANCE_RD_PTR) = b & LANCE_TD_PTR_MASK;
         p += LANCE_TD_SIZE;
         d += _BUF_SIZE;
@@ -553,10 +553,10 @@ amd_lancepci_init(struct cyg_netdevtab_entry *tab)
     for (i = 0; i < 8; i++)
         _SU8(cpd->init_table, LANCE_IB_LADRF0+i) = 0;
 
-    HAL_PCI_CPU_TO_BUS(cpd->rx_ring, (cyg_uint8 *)b);
+    HAL_PCI_CPU_TO_BUS((cyg_uint32)cpd->rx_ring, b);
     _SU32(cpd->init_table, LANCE_IB_RDRA) = ((b & LANCE_IB_RDRA_PTR_mask)
                                         | (cpd->rx_ring_log_cnt << LANCE_IB_RDRA_CNT_shift));
-    HAL_PCI_CPU_TO_BUS(cpd->tx_ring, (cyg_uint8 *)b);
+    HAL_PCI_CPU_TO_BUS((cyg_uint32)cpd->tx_ring, b);
     _SU32(cpd->init_table, LANCE_IB_TDRA) = ((b & LANCE_IB_TDRA_PTR_mask)
                                         | (cpd->tx_ring_log_cnt << LANCE_IB_TDRA_CNT_shift));
 
@@ -586,7 +586,7 @@ amd_lancepci_init(struct cyg_netdevtab_entry *tab)
     // Note: There is a 16M limit on the addresses used by the driver
     // since the top 8 bits of the init_table address is appended to
     // all other addresses used by the controller.
-    HAL_PCI_CPU_TO_BUS(cpd->init_table, (cyg_uint8 *)b);
+    HAL_PCI_CPU_TO_BUS((cyg_uint32)cpd->init_table, b);
     put_reg(sc, LANCE_CSR_IBA0, (b >>  0) & 0xffff);
     put_reg(sc, LANCE_CSR_IBA1, (b >> 16) & 0xffff);
     // Disable automatic TX polling (_send will force a poll), pad
@@ -730,7 +730,7 @@ lancepci_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     cpd->rx_ring_next = 0;
     cpd->tx_ring_free = cpd->tx_ring_alloc = cpd->tx_ring_owned = 0;
     // Init the chip again
-    HAL_PCI_CPU_TO_BUS(cpd->init_table, (cyg_uint8 *)b);
+    HAL_PCI_CPU_TO_BUS((cyg_uint32)cpd->init_table, b);
     put_reg(sc, LANCE_CSR_IBA0, (b >>  0) & 0xffff);
     put_reg(sc, LANCE_CSR_IBA1, (b >> 16) & 0xffff);
     // Disable automatic TX polling (_send will force a poll), pad
@@ -966,7 +966,7 @@ lancepci_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 #endif
     _SU16(txd, LANCE_TD_LEN) = (-plen);
     _SU16(txd, LANCE_TD_MISC) = 0;
-    HAL_PCI_CPU_TO_BUS(buf, (cyg_uint8 *)b);
+    HAL_PCI_CPU_TO_BUS((cyg_uint32)buf, b);
     _SU32(txd, LANCE_TD_PTR) = ((b & LANCE_TD_PTR_MASK)
                                 | LANCE_TD_PTR_OWN | LANCE_TD_PTR_STP | LANCE_TD_PTR_ENP);
 
