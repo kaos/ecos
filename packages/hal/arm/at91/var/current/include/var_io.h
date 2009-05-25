@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -1884,6 +1884,10 @@
 #define AT91_SPI_SR_OVRES      0x00000008        // Overrun Error Status
 #define AT91_SPI_SR_ENDRX      0x00000010        // End of Receiver Transfer
 #define AT91_SPI_SR_ENDTX      0x00000020        // End of Transmitter Transfer
+#define AT91_SPI_SR_RXBUFF     0x00000040        // RX Buffer Full
+#define AT91_SPI_SR_TXBUFE     0x00000080        // TX Buffer Empty
+#define AT91_SPI_SR_NSSR       0x00000100        // NSS Rising
+#define AT91_SPI_SR_TXEMPTY    0x00000200        // Transmission Registers Empty
 #define AT91_SPI_SR_SPIENS     0x00010000        // SPI Enable Status
 #define AT91_SPI_IER           0x14              // Interrupt Enable Register
 #define AT91_SPI_IDR           0x18              // Interrupt Disable Register
