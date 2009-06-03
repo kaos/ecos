@@ -1,3 +1,7 @@
+2009-06-02  Ross Younger  <wry@ecoscentric.com>
+
+	* redboot.cdl: REDBOOT_IO_FILEIO requires CYGPKG_IO
+
 2009-04-20  Andrew Lunn  <andrew@lunn.ch>
 
 	* src/net/tcp.c (__tcp_abort): Ensure the connection is closed

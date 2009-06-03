@@ -1060,6 +1060,7 @@ cdl_package CYGPKG_REDBOOT {
             flavor        bool
             default_value 1
             active_if     CYGPKG_IO_FILEIO
+            requires      CYGPKG_IO
             description   "
               If this option is enabled then RedBoot will provide commands
               to load files from fileio file systems such as JFFS2."
