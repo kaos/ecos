@@ -61,6 +61,8 @@
 
 /* INCLUDES */
 
+#include <cyg/infra/cyg_type.h>       /* __externC */
+
 #ifdef CYGBLD_ISO_STAT_DEFS_HEADER
 # include CYGBLD_ISO_STAT_DEFS_HEADER
 #else

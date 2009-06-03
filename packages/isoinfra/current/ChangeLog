@@ -1,3 +1,7 @@
+2009-06-03  Ross Younger  <wry@ecoscentric.com>
+
+	* include/sys/stat.h: Include cyg_type.h for __externC
+
 2009-05-12  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* include/sys/types.h:
