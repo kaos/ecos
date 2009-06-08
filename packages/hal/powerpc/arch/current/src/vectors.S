@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -185,7 +185,7 @@
 # Reset vector macro
 
         .macro  reset_vector name
-        .p2align 8
+        .p2align CYGHWR_HAL_POWERPC_VECTOR_ALIGNMENT
         .globl  __exception_\name
 __exception_\name:
 #ifdef CYGSEM_HAL_POWERPC_RESET_USES_JUMP        
@@ -201,7 +201,7 @@ __exception_\name:
 # Generic vector macro
                 
         .macro  exception_vector name
-        .p2align 8
+        .p2align CYGHWR_HAL_POWERPC_VECTOR_ALIGNMENT
         .globl  __exception_\name
 __exception_\name:
         mtspr   SPRG1,r3                     # stash some work registers away
@@ -209,7 +209,7 @@ __exception_\name:
         mtspr   SPRG3,r5                    
         mfcr    r4                           # stash CR
         li      r5,__exception_\name-rom_vectors       # load low half of vector addr
-        srwi    r5,r5,6                      # shift right by 6      
+        srwi    r5,r5,(CYGHWR_HAL_POWERPC_VECTOR_ALIGNMENT-2) # shift right by alignment-2
         lwi     r3,hal_vsr_table             # table base
         lwzx    r3,r3,r5                     # address of vsr
         mflr    r5                           # save link register
@@ -233,7 +233,7 @@ rom_vectors:
         # are always present.
 #ifdef CYG_HAL_RESERVED_VECTOR_00000
         hal_reserved_vector_00000                
-#else                
+#else
         exception_vector        reserved_00000
 #endif        
         reset_vector            reset
@@ -252,6 +252,17 @@ rom_vectors:
         exception_vector        floatingpoint_assist
         exception_vector        reserved_00f00
 
+#if defined(CYGHWR_HAL_POWERPC_BOOK_E)
+        # Book E defines some extra vectors
+        exception_vector        critical_input
+        exception_vector        ap_unavailable
+        exception_vector        interval_timer
+        exception_vector        watchdog
+        exception_vector        data_tlb_miss
+        exception_vector        instruction_tlb_miss
+        exception_vector        debug        
+#endif
+        
         # Variants may define extra vectors.
         hal_extra_vectors
 
@@ -297,18 +308,8 @@ _start:
         .globl  _hal_hardware_init_done
 _hal_hardware_init_done:
 
-#ifdef CYGSEM_HAL_POWERPC_COPY_VECTORS
-        lwi     r3,rom_vectors-4
-        lwi     r4,((CYGHWR_HAL_POWERPC_VECTOR_BASE)-4)
-        lwi     r5,rom_vectors_end-4
-        sub     r5,r5,r3                # compute number of words to copy
-        srwi    r5,r5,2
-        mtctr   r5
-0:      lwzu    r0,4(r3)
-        stwu    r0,4(r4)
-        bdnz    0b
-#endif        
-
+        hal_vectors_init
+        
         # set up stack
         lwi     sp,__interrupt_stack
         mtspr   SPRG0,sp        # save in sprg0 for later use
@@ -469,8 +470,16 @@ cyg_hal_default_exception_vsr:
         stw     r4,CYGARC_PPCREG_CR(sp)        # stash CR
         stw     r5,CYGARC_PPCREG_LR(sp)        # stash LR
 
+        # Save exception PC and MSR
+        mfsrr0  r3
+        stw     r3,CYGARC_PPCREG_PC(sp)
+        mfsrr1  r3
+        stw     r3,CYGARC_PPCREG_MSR(sp)
+        
+cyg_hal_default_exception_vsr_common:   
+        
 #ifdef CYGDBG_HAL_POWERPC_FRAME_WALLS
-        # Mark this fram as an Exception frame
+        # Mark this frame as an Exception frame
         lwi     r3,0xDDDDDDE0
         stw     r3,CYGARC_PPCREG_WALL_HEAD(sp)
         lwi     r3,0xDDDDDDE1
@@ -511,13 +520,9 @@ cyg_hal_default_exception_vsr:
         # get remaining family CPU registers
         mfxer   r3
         mfctr   r4
-        mfsrr0  r5
-        mfsrr1  r6
         # and store them
         stw     r3,CYGARC_PPCREG_XER(sp)
         stw     r4,CYGARC_PPCREG_CTR(sp)
-        stw     r5,CYGARC_PPCREG_PC(sp)
-        stw     r6,CYGARC_PPCREG_MSR(sp)
 
         # Save variant registers
         hal_variant_save sp
@@ -547,7 +552,48 @@ cyg_hal_default_exception_vsr:
 
         # When the call returns it will go to restore_state below.
 
+#if defined(CYGHWR_HAL_POWERPC_BOOK_E)        
+##--------------------------------------------------------------------------
+## Critical exception handling code.
+##
+## Book E processors save the old PC and MSR in CSRR0/1 for certain
+## exceptions. This VSR saves the values from these registers before
+## branching to the common VSR code.
+        
+        .globl cyg_hal_default_critical_exception_vsr
+cyg_hal_default_critical_exception_vsr: 
+        
+        # We come here with all register containing their
+        # pre-exception values except:
+        # R3    = ls 16 bits of vector address
+        # R4    = saved CR
+        # R5    = saved LR
+        # LR    = VSR address
+        # SPRG1 = old R3
+        # SPRG2 = old R4
+        # SPRG3 = old R5
+        # CSRR0 = old PC
+        # CSRR1 = old MSR and the exception cause
 
+        subi    sp,sp,CYGARC_PPC_EXCEPTION_DECREMENT
+                                        # leave space for registers and
+                                        # a safety margin
+
+        # First, save away some registers
+        stw     r3,CYGARC_PPCREG_VECTOR(sp)    # stash vector
+        stw     r4,CYGARC_PPCREG_CR(sp)        # stash CR
+        stw     r5,CYGARC_PPCREG_LR(sp)        # stash LR
+
+        # Save exception PC and MSR
+        mfspr   r3,58
+        stw     r3,CYGARC_PPCREG_PC(sp)
+        mfspr   r3,59
+        stw     r3,CYGARC_PPCREG_MSR(sp)
+
+        b cyg_hal_default_exception_vsr_common
+
+#endif        
+        
 ##--------------------------------------------------------------------------
 ## The following macros are defined depending on whether the Interrupt
 ## system is using isr tables or chaining, and depending on the interrupt
@@ -616,8 +662,16 @@ cyg_hal_default_interrupt_vsr:
         stw     r4,CYGARC_PPCREG_CR(sp)        # stash CR
         stw     r5,CYGARC_PPCREG_LR(sp)        # stash LR
 
+        # Save exception PC and MSR
+        mfsrr0  r3
+        stw     r3,CYGARC_PPCREG_PC(sp)
+        mfsrr1  r3
+        stw     r3,CYGARC_PPCREG_MSR(sp)
+        
+cyg_hal_default_interrupt_vsr_common:   
+                
 #ifdef CYGDBG_HAL_POWERPC_FRAME_WALLS
-        # Mark this fram as an 1nterrupt frame
+        # Mark this frame as an interrupt frame
         lwi     r3,0xDDDDDD10
         stw     r3,CYGARC_PPCREG_WALL_HEAD(sp)
         lwi     r3,0xDDDDDD11
@@ -658,14 +712,10 @@ cyg_hal_default_interrupt_vsr:
         # get remaining family CPU registers
         mfxer   r3
         mfctr   r4
-        mfsrr0  r5
-        mfsrr1  r6
 
         # and store them
         stw     r3,CYGARC_PPCREG_XER(sp)
         stw     r4,CYGARC_PPCREG_CTR(sp)
-        stw     r5,CYGARC_PPCREG_PC(sp)
-        stw     r6,CYGARC_PPCREG_MSR(sp)
                 
         # Save variant registers
         hal_variant_save sp
@@ -869,8 +919,48 @@ restore_state:
         isync   
         rfi                             # and return
 
+#if defined(CYGHWR_HAL_POWERPC_BOOK_E)                        
+##---------------------------------------------------------------------------
+## Critical interrupt handling code.
+##
+## Book E processors save the old PC and MSR in CSRR0/1 for certain
+## exceptions. This VSR saves the values from these registers before
+## branching to the common VSR code.
+
+        .globl cyg_hal_default_interrupt_vsr
+cyg_hal_default_critical_interrupt_vsr:
+
+        # We come here with all register containing their
+        # pre-exception values except:
+        # R3    = ls 16 bits of vector address
+        # R4    = saved CR
+        # R5    = saved LR
+        # LR    = VSR address
+        # SPRG1 = old R3
+        # SPRG2 = old R4
+        # SPRG3 = old R5
+        # CSRR0 = old PC
+        # CSRR1 = old MSR
 
 
+        subi    sp,sp,CYGARC_PPC_EXCEPTION_DECREMENT
+                                        # leave space for registers and
+                                        # a safety margin
+              
+        stw     r3,CYGARC_PPCREG_VECTOR(sp)    # stash vector
+        stw     r4,CYGARC_PPCREG_CR(sp)        # stash CR
+        stw     r5,CYGARC_PPCREG_LR(sp)        # stash LR
+
+        # Save exception PC and MSR
+        mfspr   r3,58                          # Get CSSR0
+        stw     r3,CYGARC_PPCREG_PC(sp)
+        mfspr   r3,59                          # Get CSSR1
+        stw     r3,CYGARC_PPCREG_MSR(sp)
+
+        b cyg_hal_default_interrupt_vsr_common
+        
+#endif
+        
 ##-----------------------------------------------------------------------------
 ## Execute pending DSRs on the interrupt stack with interrupts enabled.
 ## Note: this can only be called from code running on a thread stack
@@ -906,7 +996,7 @@ FUNC_START(hal_interrupt_stack_call_pending_DSRs)
         mtlr    r3
         lwz     r5,12(sp)                       # get SP from saved state
         lwz     r3,16(sp)                       # restore interrupt setting
-        hal_cpu_int_merge r3
+        hal_cpu_int_merge r3,r4
 
         mr      sp,r5                           # restore stack pointer
         blr                                     # and return to caller

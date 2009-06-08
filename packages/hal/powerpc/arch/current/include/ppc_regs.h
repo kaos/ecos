@@ -11,7 +11,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2007 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -82,6 +82,7 @@
 
 //--------------------------------------------------------------------------
 // Some SPRs
+
 #define CYGARC_REG_DSISR    18
 #define CYGARC_REG_DAR      19
 #define CYGARC_REG_DEC      22
@@ -108,6 +109,9 @@
 
 //--------------------------------------------------------------------------
 // MSR bits
+
+#if !defined(CYGHWR_HAL_POWERPC_BOOK_E)
+
 #define CYGARC_REG_MSR_LE       0x00000001   // little-endian mode enable
 #define CYGARC_REG_MSR_RI       0x00000002   // recoverable exception
 #define CYGARC_REG_MSR_DR       0x00000010   // data address translation
@@ -142,13 +146,69 @@
 #define MSR_POW         CYGARC_REG_MSR_POW
 #endif // ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 
+#else
+
+// The MSR on BOOK E processors has some bits in common with the AIM
+// architecture, but also has some differences.
+
+#define CYGARC_REG_MSR_PMM      0x00000004   // performance monitor mark
+#define CYGARC_REG_MSR_DS       0x00000010   // data address space
+#define CYGARC_REG_MSR_IS       0x00000020   // instruction address space
+#define CYGARC_REG_MSR_FE1      0x00000100   // floating-point exception mode 1
+#define CYGARC_REG_MSR_DE       0x00000200   // debug interrupt enable
+#define CYGARC_REG_MSR_UBLE     0x00000400   // User BTB lock enable (e
+#define CYGARC_REG_MSR_FE0      0x00000800   // floating-point exception mode 0
+#define CYGARC_REG_MSR_ME       0x00001000   // machine check enable
+#define CYGARC_REG_MSR_FP       0x00002000   // floating-point available
+#define CYGARC_REG_MSR_PR       0x00004000   // privilege level
+#define CYGARC_REG_MSR_EE       0x00008000   // external interrupt enable
+#define CYGARC_REG_MSR_CE       0x00020000   // critical interrupt enable
+#define CYGARC_REG_MSR_WE       0x00040000   // wait state enable
+#define CYGARC_REG_MSR_SPE      0x02000000   // SPE enable
+#define CYGARC_REG_MSR_UCLE     0x04000000   // user cache lock enable
+
+#ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
+#define MSR_PMM         CYGARC_REG_MSR_PMM
+#define MSR_DS          CYGARC_REG_MSR_DS
+#define MSR_IS          CYGARC_REG_MSR_IS 
+#define MSR_FE1         CYGARC_REG_MSR_FE1
+#define MSR_DE          CYGARC_REG_MSR_DE 
+#define MSR_UBLE        CYGARC_REG_MSR_UBLE
+#define MSR_FE0         CYGARC_REG_MSR_FE0
+#define MSR_ME          CYGARC_REG_MSR_ME 
+#define MSR_FP          CYGARC_REG_MSR_FP 
+#define MSR_PR          CYGARC_REG_MSR_PR 
+#define MSR_EE          CYGARC_REG_MSR_EE 
+#define MSR_CE          CYGARC_REG_MSR_CE 
+#define MSR_WE          CYGARC_REG_MSR_WE 
+#define MSR_SPE         CYGARC_REG_MSR_SPE
+#define MSR_UCLE        CYGARC_REG_MSR_UCLE
+
+// The following bits are not defined by BOOK E processors. However
+// they are referenced in the architecture HAL. By defining them as
+// zero we neutralize their effect.
+#define MSR_RI          0
+#define MSR_DR          0
+#define MSR_IR          0
+
+#endif // ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
+
+#endif
+
 //--------------------------------------------------------------------------
 // Time Base Registers
-// READ and WRITE are different addresses!
+// READ and WRITE are different addresses on some variants!
+
 #define CYGARC_REG_TBL_W   284
 #define CYGARC_REG_TBU_W   285
+
+#if !defined(CYGHWR_HAL_POWERPC_BOOK_E)
 #define CYGARC_REG_TBL_R   268
 #define CYGARC_REG_TBU_R   269
+#else
+#define CYGARC_REG_TBL_R   284
+#define CYGARC_REG_TBU_R   285
+#endif
 
 #ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 #define TBL_W      CYGARC_REG_TBL_W
@@ -156,6 +216,47 @@
 #define TBL_R      CYGARC_REG_TBL_R
 #define TBU_R      CYGARC_REG_TBU_R
 #endif // ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
+
+#if defined(CYGHWR_HAL_POWERPC_BOOK_E)
+
+#define CYGARC_REG_DECAR    54
+#define CYGARC_REG_TCR     340
+#define CYGARC_REG_TSR     336
+
+#define CYGARC_REG_TCR_WP(__x)          ((((__x)&3)<<30)|(((__x)&0x3C)<<15))
+#define CYGARC_REG_TCR_WRC_NONE         (0<<28)
+#define CYGARC_REG_TCR_WRC_CHECKSTOP    (1<<28)
+#define CYGARC_REG_TCR_WRC_RESET        (2<<28)
+#define CYGARC_REG_TCR_WIE              (1<<27)
+#define CYGARC_REG_TCR_DIE              (1<<26)
+#define CYGARC_REG_TCR_FP(__x)          ((((__x)&3)<<24)|(((__x)&0x3C)<<11))
+#define CYGARC_REG_TCR_FIE              (1<<23)
+#define CYGARC_REG_TCR_ARE              (1<<22)
+
+
+#define CYGARC_REG_TSR_ENW              (1<<31)
+#define CYGARC_REG_TSR_WIS              (1<<30)
+#define CYGARC_REG_TSR_WRS_NONE         (0<<28)
+#define CYGARC_REG_TSR_WRS_CHECKSTOP    (1<<28)
+#define CYGARC_REG_TSR_WRS_RESET        (2<<28)
+#define CYGARC_REG_TSR_DIS              (1<<27)
+#define CYGARC_REG_TSR_FIS              (1<<26)
+
+#endif
+
+//-----------------------------------------------------------------------------
+// Exception Syndrome Register
+
+#if defined(CYGHWR_HAL_POWERPC_BOOK_E)
+
+#define CYGARC_REG_ESR          62
+
+#define CYGARC_REG_ESR_PIL      (1<<27)
+#define CYGARC_REG_ESR_PPR      (1<<26)
+#define CYGARC_REG_ESR_PTR      (1<<25)
+#define CYGARC_REG_ESR_FP       (1<<24)
+
+#endif
 
 //-----------------------------------------------------------------------------
 #endif // ifdef CYGONCE_HAL_PPC_REGS_H

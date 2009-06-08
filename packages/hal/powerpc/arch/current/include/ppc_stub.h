@@ -58,8 +58,29 @@ extern "C" {
 
 typedef unsigned long target_register_t;
 
+
+#ifndef CYGHWR_HAL_POWERPC_BOOK_E
+
+// Most PowerPCs use a standard register layout.
+    
 #define NUMREGS    71
-	
+
+#define REGSIZE( _x_ ) (((_x_) >= F0 && (_x_) <= F31) ? 8 : 4)
+    
+#else
+
+// BookE processors only have 70 registers, MQ is not supported. All
+// registers are 32 bit and instead of FP registers there are the top
+// 32 bits of the GPRs. The 64-bit registers are only used by SPE
+// instructions, which we don't currently support.
+    
+#define NUMREGS    70
+
+#define REGSIZE( _x_ ) (4)
+    
+#endif
+    
+    
 #ifdef CYGHWR_HAL_POWERPC_FPU
 // The PowerPC has floating point registers that are larger than what it
 // can hold in a target_register_t
@@ -74,7 +95,6 @@ typedef unsigned long target_register_t;
 #define HAL_STUB_REGISTERS_SIZE ((sizeof(GDB_Registers) + sizeof(target_register_t) - 1)/sizeof(target_register_t))
 #endif
 	
-#define REGSIZE( _x_ ) (((_x_) >= F0 && (_x_) <= F31) ? 8 : 4)
 
 enum regnames {
     R0, R1, R2, R3, R4, R5, R6, R7, 

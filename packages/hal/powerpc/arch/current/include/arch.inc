@@ -10,7 +10,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005, 2007 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -59,6 +59,7 @@
 
 #include <cyg/hal/variant.inc>
 #include <cyg/hal/ppc_offsets.inc>
+#include <cyg/hal/ppc_regs.h>
         
 #------------------------------------------------------------------------------
 # Easier to read names for the registers
@@ -194,11 +195,17 @@ name:
 ## operations that may have CPU specific implementations on different
 ## variants of the architecture.		
 
+#if !defined(CYGHWR_HAL_POWERPC_BOOK_E)
+#define CYGARC_REG_MSR_INTBITS     CYGARC_REG_MSR_EE
+#else
+#define CYGARC_REG_MSR_INTBITS     (CYGARC_REG_MSR_EE|CYGARC_REG_MSR_CE)
+#endif
+
 	# Enable interrupts
 	.macro hal_cpu_int_enable
         mfmsr   r0
-        ori     r3,r3,0x8000
-        rlwimi  r0,r3,0,16,16
+        lwi      r3,CYGARC_REG_MSR_INTBITS
+        or       r0,r0,r3
         sync
         mtmsr   r0
         sync
@@ -207,8 +214,8 @@ name:
 	# Disable interrupts
 	.macro hal_cpu_int_disable
         mfmsr   r0
-        li      r3,0
-        rlwimi  r0,r3,0,16,16
+        lwi      r3,~CYGARC_REG_MSR_INTBITS
+        and      r0,r0,r3
         sync
         mtmsr   r0
         sync
@@ -216,13 +223,91 @@ name:
 
 	# Merge the interrupt enable state of the status register in
 	# \sr with the current sr.
-	.macro	hal_cpu_int_merge sr
+	.macro	hal_cpu_int_merge sr,wr
         mfmsr   r0
-        rlwimi  r0,\sr,0,16,16
+        lwi      \wr,CYGARC_REG_MSR_INTBITS
+        and      \wr,\wr,\sr
+        or       r0,r0,\wr
         sync
         mtmsr   r0
         sync
 	.endm
+
+#------------------------------------------------------------------------------
+# Book E variations
+#
+# These macros implement things that vary between the AIM architecture and
+# Book E.
+
+#if !defined(CYGHWR_HAL_POWERPC_BOOK_E)
+
+#ifdef CYGSEM_HAL_POWERPC_COPY_VECTORS
+
+        .macro  hal_vectors_init
+        lwi     r3,rom_vectors-4
+        lwi     r4,((CYGHWR_HAL_POWERPC_VECTOR_BASE)-4)
+        lwi     r5,rom_vectors_end-4
+        sub     r5,r5,r3                # compute number of words to copy
+        srwi    r5,r5,2
+        mtctr   r5
+0:      lwzu    r0,4(r3)
+        stwu    r0,4(r4)
+        bdnz    0b
+        .endm
+
+#define HAL_VECTORS_INIT_DEFINED
+
+#endif
+
+#else // !defined(CYGHWR_HAL_POWERPC_BOOK_E)
+
+#if defined(CYGSEM_HAL_POWERPC_COPY_VECTORS)
+
+        .macro  hal_ivor_init   ivor,handler
+        lwi     r3,__exception_\handler
+        and     r3,r3,r4
+        mtspr   \ivor,r3
+        .endm
+
+        .macro  hal_vectors_init
+        lwi     r3,rom_vectors
+        lwi     r4,0xFFFF0000
+        and     r3,r3,r4
+        mtspr   63,r3
+#if defined(CYGHWR_HAL_POWERPC_NEED_VECTORS)
+        lwi     r4,0x0000FFF0
+        hal_ivor_init   400,critical_input
+        hal_ivor_init   401,machine_check
+        hal_ivor_init   402,data_storage
+        hal_ivor_init   403,instruction_storage
+        hal_ivor_init   404,external
+        hal_ivor_init   405,alignment
+        hal_ivor_init   406,program
+        hal_ivor_init   407,floatingpoint_unavailable
+        hal_ivor_init   408,system_call
+        hal_ivor_init   409,ap_unavailable
+        hal_ivor_init   410,decrementer
+        hal_ivor_init   411,interval_timer
+        hal_ivor_init   412,watchdog
+        hal_ivor_init   413,data_tlb_miss
+        hal_ivor_init   414,instruction_tlb_miss
+        hal_ivor_init   415,debug
+#endif        
+        .endm
+
+#define HAL_VECTORS_INIT_DEFINED
+
+#endif
+
+#endif // !defined(CYGHWR_HAL_POWERPC_BOOK_E)
+
+
+#if !defined(HAL_VECTORS_INIT_DEFINED)
+
+        .macro  hal_vectors_init
+        .endm
+
+#endif        
 
 #------------------------------------------------------------------------------
 # end of arch.inc

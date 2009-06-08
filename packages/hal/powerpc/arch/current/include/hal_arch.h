@@ -201,24 +201,43 @@ asm volatile (" .globl  " #_label_ ";"          \
 
 //-----------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.
+
+#ifndef CYGHWR_HAL_POWERPC_BOOK_E
+
 typedef struct {
     cyg_uint32  gpr[32];     // General purpose registers
-	double      f0[16];      // First sixteen floating point regs
-	cyg_uint32  pc;
-	cyg_uint32  msr;
-	cyg_uint32  cr;
-	cyg_uint32  lr;
-	cyg_uint32  ctr;
-	cyg_uint32  xer;
-	cyg_uint32  mq;
+    double      f0[16];      // First sixteen floating point regs
+    cyg_uint32  pc;
+    cyg_uint32  msr;
+    cyg_uint32  cr;
+    cyg_uint32  lr;
+    cyg_uint32  ctr;
+    cyg_uint32  xer;
+    cyg_uint32  mq;
 #ifdef CYGHWR_HAL_POWERPC_FPU
-	double     f16[16];      // Last sixteen floating point regs
-	                         // Could probably also be inserted in the middle
-	                         // Adding them at the end minimises the risk of
-	                         // breaking existing implementations that do not
-	                         // have floating point registers.
+    double     f16[16];      // Last sixteen floating point regs
+                             // Could probably also be inserted in the middle
+	                     // Adding them at the end minimises the risk of
+	                     // breaking existing implementations that do not
+	                     // have floating point registers.
 #endif
 } GDB_Registers;
+
+#else
+
+typedef struct {
+    cyg_uint32  gpr[32];     // General purpose registers
+    cyg_uint32  ev[32];      // SPE register extensions (not currently supported)
+    cyg_uint32  pc;
+    cyg_uint32  msr;
+    cyg_uint32  cr;
+    cyg_uint32  lr;
+    cyg_uint32  ctr;
+    cyg_uint32  xer;
+} GDB_Registers;
+
+#endif
+
 
 // Translate a stack pointer as saved by the thread context macros above into
 // a pointer to a HAL_SavedRegisters structure.

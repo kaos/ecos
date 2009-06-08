@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2007 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -106,6 +106,10 @@ int __computeSignal (unsigned int trap_number)
         // The 40x is b0rken, returning 0 for these bits. Translate to
         // SIGTRAP to allow thread debugging.
         return SIGTRAP;
+#elif defined(CYGHWR_HAL_POWERPC_BOOK_E)
+        // for Book E processor, we just translate all PROGRAM
+        // exceptions into SIGTRAP so that breakpoints work.
+        return SIGTRAP;
 #else
         // The register PS contains the value of SRR1 at the time of
         // exception entry. Bits 11-15 contain information about the
@@ -190,7 +194,7 @@ int __get_trap_number (void)
 {
     // The vector is not not part of the GDB register set so get it
     // directly from the save context.
-    return _hal_registers->vector >> 8;
+    return _hal_registers->vector >> CYGHWR_HAL_POWERPC_VECTOR_ALIGNMENT;
 }
 
 /* Set the currently-saved pc register value to PC. This also updates NPC

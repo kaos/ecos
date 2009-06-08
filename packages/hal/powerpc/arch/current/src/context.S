@@ -197,7 +197,7 @@ FUNC_START(hal_thread_load_context)
 #endif
 
         lwz     r3,CYGARC_PPCREG_MSR(sp)       # merge interrupt state
-        hal_cpu_int_merge r3
+        hal_cpu_int_merge r3,r2
 
         lwz     r0,CYGARC_PPCREG_REGS+0*4(sp)  # R0
         lwz     r2,CYGARC_PPCREG_REGS+2*4(sp)  # R2 = TOC

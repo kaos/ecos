@@ -11,7 +11,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -87,6 +87,32 @@
 #define CYGNUM_HAL_VECTOR_TRACE             13
 #define CYGNUM_HAL_VECTOR_FP_ASSIST         14
 
+#ifdef CYGHWR_HAL_POWERPC_BOOK_E
+
+// Additional exceptions on Book E CPUs. The numbers here do not
+// necessarily correspond to the IVOR register number for the
+// exception, but they must correspond to the table position in the
+// rom_vectors table defined in vectors.S.
+
+#define CYGNUM_HAL_VECTOR_RESERVED_F         15
+#define CYGNUM_HAL_VECTOR_CRITICAL_INPUT     16
+#define CYGNUM_HAL_VECTOR_AP_UNAVAILABLE     17
+#define CYGNUM_HAL_VECTOR_FIT                18
+#define CYGNUM_HAL_VECTOR_WATCHDOG           19
+#define CYGNUM_HAL_VECTOR_DTLB_MISS          20
+#define CYGNUM_HAL_VECTOR_ITLB_MISS          21
+#define CYGNUM_HAL_VECTOR_DEBUG              22
+#define CYGNUM_HAL_VECTOR_SPE_UNAVAILABLE    23
+#define CYGNUM_HAL_VECTOR_SPE_FP_DATA        24
+#define CYGNUM_HAL_VECTOR_SPE_FP_ROUND       25
+
+#ifndef CYGNUM_HAL_VSR_MAX
+#define CYGNUM_HAL_VSR_MAX                   CYGNUM_HAL_VECTOR_SPE_FP_ROUND
+#endif
+
+#endif
+
+
 #define CYGNUM_HAL_VSR_MIN                   CYGNUM_HAL_VECTOR_RESERVED_0
 #ifndef CYGNUM_HAL_VSR_MAX
 # define CYGNUM_HAL_VSR_MAX                  CYGNUM_HAL_VECTOR_FP_ASSIST
@@ -103,8 +129,24 @@
 // Define decrementer as the first interrupt since it is guaranteed to
 // be defined on all PowerPCs. External may expand into several interrupts
 // depending on interrupt controller capabilities.
+
+#ifndef CYGHWR_HAL_POWERPC_BOOK_E
+
 #define CYGNUM_HAL_INTERRUPT_DECREMENTER     0
 #define CYGNUM_HAL_INTERRUPT_EXTERNAL        1
+
+#else
+
+// For Book E processors, in addition the the decrementer, there are
+// also a fixed interval timer and a watchdog which can generate
+// asynchronous interrupts.
+
+#define CYGNUM_HAL_INTERRUPT_DECREMENTER     0
+#define CYGNUM_HAL_INTERRUPT_INTERVAL        1
+#define CYGNUM_HAL_INTERRUPT_WATCHDOG        2
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL        3
+
+#endif
 
 #define CYGNUM_HAL_ISR_MIN                   CYGNUM_HAL_INTERRUPT_DECREMENTER
 #ifndef CYGNUM_HAL_ISR_MAX
@@ -120,14 +162,29 @@
 #define CYGNUM_HAL_EXCEPTION_MACHINE_CHECK   CYGNUM_HAL_VECTOR_MACHINE_CHECK
 #define CYGNUM_HAL_EXCEPTION_DATA_ACCESS     CYGNUM_HAL_VECTOR_DSI
 #define CYGNUM_HAL_EXCEPTION_CODE_ACCESS     CYGNUM_HAL_VECTOR_ISI
-#define CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS  \
-           CYGNUM_HAL_VECTOR_ALIGNMENT
+#define CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS CYGNUM_HAL_VECTOR_ALIGNMENT
 #define CYGNUM_HAL_EXCEPTION_FPU_NOT_AVAIL   CYGNUM_HAL_VECTOR_FP_UNAVAILABLE
 #define CYGNUM_HAL_EXCEPTION_RESERVED_A      CYGNUM_HAL_VECTOR_RESERVED_A
 #define CYGNUM_HAL_EXCEPTION_RESERVED_B      CYGNUM_HAL_VECTOR_RESERVED_B
 #define CYGNUM_HAL_EXCEPTION_SYSTEM_CALL     CYGNUM_HAL_VECTOR_SYSTEM_CALL
 #define CYGNUM_HAL_EXCEPTION_TRACE           CYGNUM_HAL_VECTOR_TRACE
 #define CYGNUM_HAL_EXCEPTION_FP_ASSIST       CYGNUM_HAL_VECTOR_FP_ASSIST
+
+#ifdef CYGHWR_HAL_POWERPC_BOOK_E
+
+#define CYGNUM_HAL_EXCEPTION_RESERVED_F      CYGNUM_HAL_VECTOR_RESERVED_F
+#define CYGNUM_HAL_EXCEPTION_CRITICAL_INPUT  CYGNUM_HAL_VECTOR_CRITICAL_INPUT
+#define CYGNUM_HAL_EXCEPTION_AP_UNAVAILABLE  CYGNUM_HAL_VECTOR_AP_UNAVAILABLE
+#define CYGNUM_HAL_EXCEPTION_FIT             CYGNUM_HAL_VECTOR_FIT
+#define CYGNUM_HAL_EXCEPTION_WATCHDOG        CYGNUM_HAL_VECTOR_WATCHDOG
+#define CYGNUM_HAL_EXCEPTION_DTLB_MISS       CYGNUM_HAL_VECTOR_DTLB_MISS
+#define CYGNUM_HAL_EXCEPTION_ITLB_MISS       CYGNUM_HAL_VECTOR_ITLB_MISS
+#define CYGNUM_HAL_EXCEPTION_DEBUG           CYGNUM_HAL_VECTOR_DEBUG
+#define CYGNUM_HAL_EXCEPTION_SPE_UNAVAILABLE CYGNUM_HAL_VECTOR_SPE_UNAVAILABLE
+#define CYGNUM_HAL_EXCEPTION_SPE_FP_DATA     CYGNUM_HAL_VECTOR_SPE_FP_DATA
+#define CYGNUM_HAL_EXCEPTION_SPE_FP_ROUND    CYGNUM_HAL_VECTOR_SPE_FP_ROUND
+
+#endif
 
 #define CYGNUM_HAL_EXCEPTION_MIN             CYGNUM_HAL_EXCEPTION_RESERVED_0
 #ifndef CYGNUM_HAL_EXCEPTION_MAX
@@ -138,6 +195,7 @@
 
 #endif // CYGHWR_HAL_EXCEPTION_VECTORS_DEFINED
 
+#ifndef CYGHWR_HAL_POWERPC_BOOK_E
 // FIXME: This is still rather ugly. Should probably be made variant
 //        specific using a decode_hal_exception macro or somesuch.
 // decoded exception vectors
@@ -148,7 +206,7 @@
 
 #undef  CYGNUM_HAL_EXCEPTION_MIN
 #define CYGNUM_HAL_EXCEPTION_MIN             CYGNUM_HAL_EXCEPTION_FPU
-
+#endif
 
 #define CYGNUM_HAL_EXCEPTION_COUNT           \
                  ( CYGNUM_HAL_EXCEPTION_MAX - CYGNUM_HAL_EXCEPTION_MIN + 1 )
@@ -182,49 +240,58 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 //--------------------------------------------------------------------------
 // Interrupt control macros
 
+#if !defined(CYGHWR_HAL_POWERPC_BOOK_E)
+#define CYGARC_REG_MSR_INTBITS     CYGARC_REG_MSR_EE
+#else
+#define CYGARC_REG_MSR_INTBITS     (CYGARC_REG_MSR_EE|CYGARC_REG_MSR_CE)
+#endif
+
 #define HAL_DISABLE_INTERRUPTS(_old_)                   \
     CYG_MACRO_START                                     \
-    cyg_uint32 tmp1, tmp2;                              \
+    cyg_uint32 tmp1 = ~CYGARC_REG_MSR_INTBITS;          \
+    cyg_uint32 tmp2;                                    \
     asm volatile (                                      \
         "mfmsr  %0;"                                    \
         "mr     %2,%0;"                                 \
-        "li     %1,0;"                                  \
-        "rlwimi %2,%1,0,16,16;"                         \
+        "and    %2,%2,%1;"                              \
         "mtmsr  %2;"                                    \
-        : "=r"(_old_), "=r" (tmp1), "=r" (tmp2));       \
+        : "=r"(_old_), "+r" (tmp1), "=r" (tmp2));      \
     CYG_MACRO_END
 
-#define HAL_ENABLE_INTERRUPTS()         \
-    CYG_MACRO_START                     \
-    cyg_uint32 tmp1, tmp2;              \
-    asm volatile (                      \
-        "mfmsr  %0;"                    \
-        "ori    %1,%1,0x8000;"          \
-        "rlwimi %0,%1,0,16,16;"         \
-        "mtmsr  %0;"                    \
-        : "=r" (tmp1), "=r" (tmp2));    \
+#define HAL_ENABLE_INTERRUPTS()                 \
+    CYG_MACRO_START                             \
+    cyg_uint32 tmp1;                            \
+    cyg_uint32 tmp2 = CYGARC_REG_MSR_INTBITS;   \
+    asm volatile (                              \
+        "mfmsr  %0;"                            \
+        "or     %0,%0,%1;"                      \
+        "mtmsr  %0;"                            \
+        : "=r" (tmp1), "+r" (tmp2));            \
     CYG_MACRO_END
 
-#define HAL_RESTORE_INTERRUPTS(_old_)   \
-    CYG_MACRO_START                     \
-    cyg_uint32 tmp;                     \
-    asm volatile (                      \
-        "mfmsr  %0;"                    \
-        "rlwimi %0,%1,0,16,16;"         \
-        "mtmsr  %0;"                    \
-        : "=&r" (tmp)                   \
-        : "r" (_old_));                 \
+#define HAL_RESTORE_INTERRUPTS(_old_)           \
+    CYG_MACRO_START                             \
+    cyg_uint32 tmp1;                            \
+    cyg_uint32 tmp2 = ~CYGARC_REG_MSR_INTBITS;  \
+    asm volatile (                              \
+        "mfmsr  %0;"                            \
+        "and    %0,%0,%1;"                      \
+        "not    %1,%1;"                         \
+        "and    %1,%1,%2;"                      \
+        "or     %0,%0,%1;"                      \
+        "mtmsr  %0;"                            \
+        : "=&r" (tmp1), "+r" (tmp2)             \
+        : "r" (_old_));                         \
     CYG_MACRO_END
 
-#define HAL_QUERY_INTERRUPTS(_old_)     \
-    CYG_MACRO_START                     \
-    cyg_uint32 tmp;                     \
-    asm volatile (                      \
-        "mfmsr  %0;"                    \
-        "lis    %1,0;"                  \
-        "ori    %1,%1,0x8000;"          \
-        "and    %0,%0,%1;"              \
-        : "=&r"(_old_), "=r" (tmp));     \
+#define HAL_QUERY_INTERRUPTS(_old_)             \
+    CYG_MACRO_START                             \
+    cyg_uint32 tmp = CYGARC_REG_MSR_INTBITS;    \
+    asm volatile (                              \
+        "mfmsr  %0;"                            \
+        "and    %0,%0,%1;"                      \
+        : "=&r"(_old_)                          \
+        : "r" (tmp));                           \
     CYG_MACRO_END
 
 //--------------------------------------------------------------------------
@@ -416,7 +483,7 @@ externC void cyg_hal_default_exception_vsr( void );
         "mfdec  %0;"                                            \
         : "=r"(result)                                          \
         );                                                      \
-    *(_pvalue_) = CYGNUM_KERNEL_COUNTERS_RTC_PERIOD-result;     \
+    *(_pvalue_) = CYGNUM_HAL_RTC_PERIOD-result;                 \
     CYG_MACRO_END
 
 #ifdef CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY

@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -171,13 +171,14 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 
 #elif defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT) && \
       defined(CYGPKG_HAL_EXCEPTIONS)
-    int vector = regs->vector>>8;
+    int vector = regs->vector>>CYGHWR_HAL_POWERPC_VECTOR_ALIGNMENT;
 
     // We should decode the vector and pass a more appropriate
     // value as the second argument. For now we simply pass a
     // pointer to the saved registers. We should also divert
     // breakpoint and other debug vectors into the debug stubs.
 
+#ifndef CYGHWR_HAL_POWERPC_BOOK_E
     if (vector==CYGNUM_HAL_VECTOR_PROGRAM) {
         int srr1;
         CYGARC_MFSPR(CYGARC_REG_SRR1, srr1); // get srr1
@@ -199,6 +200,8 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
             CYG_FAIL("Unknown PROGRAM exception!!");
         }
     }
+#endif
+    
     cyg_hal_deliver_exception( vector, (CYG_ADDRWORD)regs );
 
 #else
@@ -298,7 +301,9 @@ hal_MMU_init (void)
 externC void
 hal_enable_caches(void)
 {
-#ifndef CYG_HAL_STARTUP_RAM
+#ifndef HAL_UCACHE_ENABLE
+        
+#if !(defined(CYG_HAL_STARTUP_RAM) || defined(CYG_HAL_STARTUP_JTAG))
     // Invalidate caches
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_ICACHE_INVALIDATE_ALL();
@@ -324,6 +329,25 @@ hal_enable_caches(void)
 #endif
 #endif
 #endif
+
+#else // HAL_UCACHE_ENABLE
+
+
+#if !(defined(CYG_HAL_STARTUP_RAM) || defined(CYG_HAL_STARTUP_JTAG))
+    // Invalidate cache
+    HAL_UCACHE_INVALIDATE_ALL();
+#endif
+
+    
+#if defined(CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP)
+
+    
+    HAL_UCACHE_ENABLE();    
+
+#endif
+    
+#endif // HAL_UCACHE_ENABLE
+    
 }
 
 //---------------------------------------------------------------------------

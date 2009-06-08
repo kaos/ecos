@@ -11,7 +11,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -68,8 +68,17 @@
 
 //-----------------------------------------------------------------------------
 // Enforce in-order IO for all HAL reads/writes using this macro.
+#ifndef HAL_IO_BARRIER_DEFINED
 #define HAL_IO_BARRIER()                        \
     asm volatile ( "eieio" : : : "memory" )
+#endif
+
+// Force memory writes to be flushed using this macro. This also
+// invalidates the pipeline, in case those writes affect the pipeline
+// (as with some flash drivers).
+#ifndef HAL_MEMORY_BARRIER_DEFINED
+#define HAL_MEMORY_BARRIER() __asm__ volatile ("sync ; isync " : : : "memory")
+#endif
 
 //-----------------------------------------------------------------------------
 // IO Register address.

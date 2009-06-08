@@ -1,3 +1,17 @@
+2009-04-24  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/hal_arch.h (GDB_Registers): Redefine for Book E
+	processors which need a slightly different register vector layout
+	and size.
+
+	* include/ppc_stub.h (REGSIZE, NUMREGS): Add definitions for Book
+	E processors.
+
+2009-01-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/arch.inc: Incorporate changes of 2008-09-23 and 2007-10-12
+	into hal_vectors_init.
+
 2008-10-31  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/powerpc.ld (SECTION_data): Do not define _GLOBAL_OFFSET_TABLE_
@@ -11,12 +25,102 @@
 
 2008-09-23  Shaun Louie <sal@microplex.com>
 
-    * src/vectors.S: Changed compile condition that determines whether
-      exception vectors should be copied to RAM.
+	* src/vectors.S: Changed compile condition that determines whether
+	exception vectors should be copied to RAM.
+
+2008-07-23  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/vectors.S: 
+	* src/context.S: Modify invocation of hal_cpu_int_merge.
+
+	* include/ppc_regs.h: Add full definitions of bits in TCR and TSR.
+
+	* include/hal_intr.h: Define additional interval timer and
+	watchdog interrupt vectors for Book E processors.
+	Rewrite interrupt control macros to allow for multiple interrupt
+	enable bits in MSR. Mainly for Book E, which has both external and
+	critical interrupt control bits.
+
+	* include/arch.inc: Rewrite interrupt control macros to allow for
+	multiple interrupt enable bits in MSR. Mainly for Book E, which
+	has both external and critical interrupt control bits.
+
+	* src/hal_mk_defs.c (main): Add CYGNUM_HAL_VECTOR_FIT definition.
+
+2008-07-04  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/hal_misc.c (hal_enable_caches): Change ifdefs controlling
+	cache invalidation and enable to permit a JTAG startup type.
+
+	* src/vectors.S (cyg_hal_default_critical_exception_vsr): Fix typo
+	in final branch destination.
+
+2007-11-29  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/hal_intr.h: For Book E processors, disable the negative
+	exception numbers. These cause various problems, in particular in
+	VSR setting routines. They are of little utility normally, so for
+	now are disabled.
+
+	* include/ppc_regs.h (CYGARC_REG_ESR): Add definitions for
+	exception syndrome register.
+
+	* src/ppc_stub.c (__computeSignal):
+	* src/hal_misc.c (cyg_hal_exception_handler): Disable decoding
+	program sub-exceptions from MSR/SRR1 in Book E processors.
+
+2007-11-28  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/vectors.S: Use CYGHWR_HAL_POWERPC_VECTOR_ALIGNMENT to place
+	vector trampolines and to generate vector numbers and table
+	offsets.
+	(rom_vectors): Add Book E vectors.
+	(_start): Replace inline code to copy vectors with call to
+	hal_vectors_init macro, which is processor type specific.
+	(cyg_hal_default_exception_vsr, cyg_hal_default_interrupt_vsr)
+	(cyg_hal_default_critical_exception_vsr) 
+	(cyg_hal_default_critical_interrupt_vsr): Reorganize saving of PC
+	and MSR from SRR0/1 or CSRR0/1 to accommodate critical
+	exceptions. This includes adding extra critical
+	exception/interrupt VSRs.
+
+	* src/ppc_stub.c (__get_trap_number):
+	Use CYGHWR_HAL_POWERPC_VECTOR_ALIGNMENT to generate vector number
+	from vector offset.
+
+	* src/hal_mk_defs.c (main): Add Book E definitions.
+
+	* src/hal_misc.c (hal_enable_caches): Add support for a unified
+	cache.
+
+	* include/ppc_regs.h: Add variations for Book E processors. These
+	have slightly different bits in the MSR and extra SPRs for
+	decrementer and timebase control.
+
+	* include/hal_intr.h: Add additional exception vectors for Book E
+	processors.
+
+	* include/arch.inc: Add variants of hal_vectors_init for Book E
+	and non-Book E processors.
+
+	* cdl/hal_powerpc.cdl: Add CYGHWR_HAL_POWERPC_BOOK_E and
+	CYGHWR_HAL_POWERPC_VECTOR_ALIGNMENT options to support Book E
+	processors.
+	Change CYGHWR_HAL_POWERPC_VECTOR_BASE to default_value from
+	calculated so that platform HALs can redfine it.
+
+2007-11-22  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/ppc_stub.c (__get_trap_number): Use
+	CYGHWR_HAL_POWERPC_VECTOR_ALIGNMENT to translate vector number.
 
 2007-10-12  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/vectors.S: Optimize system initialization of DATA/BSS/etc.
+
+2006-08-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/hal_io.h: Add default definition of HAL_MEMORY_BARRIER().
 
 2006-04-18  Gary Thomas  <gary@mlbassoc.com>
 
@@ -40,6 +144,11 @@
 2005-06-03  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/powerpc.ld: gcc_except_table needs to be marked KEEP.
+
+2005-06-02  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/arch.inc: Add multiple inclusion protection - recent
+	binutils now minds where it didn't before.
 
 2005-03-14  Peter Korsgaard  <jacmetd@sunsite.dk>
 
@@ -83,6 +192,11 @@
 
 	 * cdl/hal_powerpc.cdl :
 	 Invoke tail with stricter syntax that works in latest coreutils. 
+
+2004-01-05  Nick Garnett  <nickg@calivar.com>
+
+	* include/hal_intr.h: Changed use of
+	CYGNUM_KERNEL_COUNTERS_RTC_PERIOD to CYGNUM_HAL_RTC_PERIOD.
 
 2003-12-11  Gary Thomas  <gary@mlbassoc.com>
 
@@ -1815,7 +1929,7 @@ Mon Aug 17 16:23:46 1998  Jesper Skov  <jskov@cygnus.co.uk>
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
