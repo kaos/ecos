@@ -1,3 +1,9 @@
+2009-06-10  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* src/hal_diag.c: workaround for a suppressing a compiler warning,
+	cyg_hal_plf_serial_isr(): cyg_hal_is_break() claims ptr on signed
+	char as argument 1: fixed.
+
 2009-01-15  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* include/lpc2xxx_iap.h, src/lpc2xxx_iap.c, tests/iap_test.c: New

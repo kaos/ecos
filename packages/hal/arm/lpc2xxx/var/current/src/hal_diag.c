@@ -257,7 +257,7 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
 		// Rx data available or character timeout
 		// Read data in order to clear interrupt
         HAL_READ_UINT32(chan->base+CYGARC_HAL_LPC2XXX_REG_UxRBR, c);
-        if( cyg_hal_is_break( &c , 1 ) ) *__ctrlc = 1;
+        if( cyg_hal_is_break( (char *) &c , 1 ) ) *__ctrlc = 1;
 
         res = CYG_ISR_HANDLED;
     }
