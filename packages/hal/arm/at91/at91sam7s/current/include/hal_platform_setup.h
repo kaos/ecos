@@ -11,7 +11,8 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006 Free Software
+// Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -43,10 +44,10 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   gthomas
-// Contributors:gthomas, asl
-// Date:        2006-02-18
+// Contributors:gthomas, asl, Oliver Munz
+// Date:        2009-06-03
 // Purpose:     AT91SAM7S platform specific support routines
-// Description: 
+// Description:
 // Usage:       #include <cyg/hal/hal_platform_setup.h>
 //
 //####DESCRIPTIONEND####
@@ -56,27 +57,69 @@
 #include <cyg/hal/var_io.h>
 #include <cyg/hal/plf_io.h>
 
-// Macro to initialise the Memory Controller
-        .macro _flash_init
-__flash_init__:
-        ldr     r0,=AT91_MC
-#if CYGNUM_HAL_ARM_AT91_CLOCK_SPEED > 60000000
-        // When the clock is running faster than 60MHz we need two wait states
-        ldr     r1,=(AT91_MC_FMR_2FWS)
-#else 
-# if CYGNUM_HAL_ARM_AT91_CLOCK_SPEED > 30000000
-        // When the clock is running faster than 30MHz we need a wait state
-        ldr     r1,=(AT91_MC_FMR_1FWS)
-# else
-        // We have a slow clock, no extra wait states are needed
-        ldr     r1,=AT91_MC_FMR_0FWS
-# endif
+#ifdef CYG_HAL_STARTUP_ROM
+
+
+#define AT91_FLASH_FMCN_VALUE                           \
+  (CYGNUM_HAL_ARM_AT91_CLOCK_SPEED * 15 / 10000000 + 1)
+#if defined(CYGNUM_HAL_ARM_AT91_CLOCK_TYPE_EXTCLOCK)
+#define AT91_PMC_MOR_VALUE (AT91_PMC_MOR_OSCBYPASS)
+#else
+#define AT91_PMC_MOR_VALUE                                              \
+  (AT91_PMC_MOR_OSCCOUNT(CYGNUM_HAL_ARM_AT91_PMC_MOR_OSCCOUNT) |        \
+   AT91_PMC_MOR_MOSCEN)
 #endif
+#define AT91_PMC_PLLR_VALUE                                             \
+  (AT91_PMC_PLLR_DIV(CYGNUM_HAL_ARM_AT91_PLL_DIVIDER) |                 \
+   AT91_PMC_PLLR_PLLCOUNT(CYGNUM_HAL_ARM_AT91_PLL_COUNT) |              \
+   AT91_PMC_PLLR_MUL(CYGNUM_HAL_ARM_AT91_PLL_MULTIPLIER-1) |            \
+   AT91_PMC_PLLR_USBDIV_1)
+#define AT91_PMC_MCKR_VALUE                             \
+  (AT91_PMC_MCKR_PRES_CLK_2 | AT91_PMC_MCKR_PLL_CLK)
+
+#define AT91_PMC_FLASH_VALUE_SLOW                                       \
+  (AT91_MC_FMR_2FWS | (AT91_FLASH_FMCN_VALUE << AT91_MC_FMR_FMCN_SHIFT))
+#if CYGNUM_HAL_ARM_AT91_CLOCK_SPEED > 60000000
+// When the clock is running faster than 60MHz we need two wait states
+#define AT91_PMC_FLASH_VALUE                    \
+  AT91_PMC_FLASH_VALUE_SLOW
+#else
+#if CYGNUM_HAL_ARM_AT91_CLOCK_SPEED > 30000000
+// When the clock is running faster than 30MHz we need a wait state
+#define AT91_PMC_FLASH_VALUE                                            \
+  (AT91_MC_FMR_1FWS | (AT91_FLASH_FMCN_VALUE << AT91_MC_FMR_FMCN_SHIFT))
+#else
+// We have a slow clock, no extra wait states are needed
+#define AT91_PMC_FLASH_VALUE                                            \
+  (AT91_MC_FMR_0FWS | (AT91_FLASH_FMCN_VALUE << AT91_MC_FMR_FMCN_SHIFT))
+#endif
+#endif
+
+// Macro with subroutines
+        .macro  _subroutines
+        b       subroutines_end
+
+
+set_flash_from_r1:
+        push    {lr}
+        ldr     r0,=AT91_MC
         str     r1,[r0,#AT91_MC_FMR]
 #if defined(AT91_MC_FMR1)
-          // If we have a second flash controller we need to set that up as well
         str     r1,[r0,#AT91_MC_FMR1]
 #endif
+        pop     {pc}
+
+
+wait_for_flag_pcm_r0r1:
+        push    {r2, lr}
+wait_loop:
+        ldr     r2,[r0,#AT91_PMC_SR]
+        ands    r2,r1,r2
+        beq     wait_loop
+        pop     {r2, pc}
+
+
+subroutines_end:
         .endm
 
 // Macro to start the main clock.
@@ -84,50 +127,44 @@ __flash_init__:
 __main_clock_init__:
         ldr     r0,=AT91_PMC
 
-          // Check that we have a stable clock before we start switching
-wait_pmc_sr_0:
-        ldr     r1,[r0,#AT91_PMC_SR]
-        ands    r1,r1,#AT91_PMC_SR_MCKRDY
-        beq     wait_pmc_sr_0
+        ldr     r2,=AT91_PMC_MOR_VALUE // Load our PMC settings in registers
+        ldr     r3,=AT91_PMC_PLLR_VALUE
+        ldr     r4,=AT91_PMC_MCKR_VALUE
 
-          // Swap to the slow clock, just to be sure.
-        ldr     r1,=(AT91_PMC_MCKR_PRES_CLK|AT91_PMC_MCKR_SLOW_CLK)
-        str     r1,[r0,#AT91_PMC_MCKR]
+        ldr     r5,[r0,#AT91_PMC_MOR] // Test if the PMC is allready up
+        cmp     r2, r5
+        bne     set_pcm_registers // Do the init
+        ldr     r5,[r0,#AT91_PMC_PLLR]
+        cmp     r3, r5
+        bne     set_pcm_registers // Do the init
+        ldr     r5,[r0,#AT91_PMC_MCKR]
+        cmp     r4, r5
+        bne     set_pcm_registers // Do the init
+        b       pmc_done // All registers are where we want it...
 
-#if defined(CYGNUM_HAL_ARM_AT91_CLOCK_TYPE_EXTCLOCK)
-        ldr     r1,=(AT91_PMC_MOR_OSCBYPASS)
-#else
-        ldr     r1,=(AT91_PMC_MOR_OSCCOUNT(CYGNUM_HAL_ARM_AT91_PMC_MOR_OSCCOUNT)|AT91_PMC_MOR_MOSCEN)
-#endif
-        str     r1,[r0,#AT91_PMC_MOR]
-
+          // We have to set the PMC
+set_pcm_registers:
+        str     r2,[r0,#AT91_PMC_MOR]
         // Wait for oscilator start timeout
-wait_pmc_sr_1:  
-        ldr     r1,[r0,#AT91_PMC_SR]
-        ands    r1,r1,#AT91_PMC_SR_MOSCS
-        beq     wait_pmc_sr_1
+        ldr     r1, =AT91_PMC_SR_MOSCS
+        bl      wait_for_flag_pcm_r0r1
 
         // Set the PLL multiplier and divider. 16 slow clocks go by
         // before the LOCK bit is set. */
-        ldr     r1,=((AT91_PMC_PLLR_DIV(CYGNUM_HAL_ARM_AT91_PLL_DIVIDER))|(AT91_PMC_PLLR_PLLCOUNT(CYGNUM_HAL_ARM_AT91_PLL_COUNT))|(AT91_PMC_PLLR_MUL(CYGNUM_HAL_ARM_AT91_PLL_MULTIPLIER-1)))
-        str     r1,[r0,#AT91_PMC_PLLR]
-
+        str     r3,[r0,#AT91_PMC_PLLR]
         // Wait for PLL locked indication
-wait_pmc_sr_2:
-        ldr     r1,[r0,#AT91_PMC_SR]
-        ands    r1,r1,#AT91_PMC_SR_LOCK
-        beq     wait_pmc_sr_2
+        ldr     r1, =AT91_PMC_SR_LOCK
+        bl      wait_for_flag_pcm_r0r1
 
         // Enable the PLL clock and set the prescale to 2 */
-        ldr     r1,=(AT91_PMC_MCKR_PRES_CLK_2|AT91_PMC_MCKR_PLL_CLK)
-        str     r1,[r0,#AT91_PMC_MCKR]
-
+        str     r4,[r0,#AT91_PMC_MCKR]
         // Wait for the MCLK ready indication
-wait_pmc_sr_3:
-        ldr     r1,[r0,#AT91_PMC_SR]
-        ands    r1,r1,#AT91_PMC_SR_MCKRDY
-        beq     wait_pmc_sr_3
+        ldr     r1, =AT91_PMC_SR_MCKRDY
+        bl      wait_for_flag_pcm_r0r1
+
+pmc_done:
         .endm
+
 
 // Remap the flash from address 0x0 and place RAM there instead.
         .macro  _remap_flash
@@ -137,7 +174,7 @@ __remap_flash:
         ldr     r2,[r0]      // Save away copies so we can restore them
         ldr     r3,[r1]
         ldr     r4,=0xffffff
-        eor     r4,r3,r4     // XOR the contents of 0x20004 
+        eor     r4,r3,r4     // XOR the contents of 0x20004
         str     r4,[r1]      // and write it
         ldr     r5,[r0]      // Read from low memory
         cmp     r5,r4
@@ -148,11 +185,16 @@ __remap_flash:
 remap_done:
         str     r3,[r1]      // restore the value we changed
         .endm
-        
-#if defined(CYG_HAL_STARTUP_ROM)
-        .macro  _setup
-        _flash_init
+
+
+        .macro  _setup //The "main" of the macros...
+        _subroutines
+        ldr     sp,.__startup_stack
+        ldr     r1,=AT91_PMC_FLASH_VALUE_SLOW // May be we run >60Mhz at the moment
+        bl 		set_flash_from_r1
         _main_clock_init
+        ldr     r1,=AT91_PMC_FLASH_VALUE
+        bl 		set_flash_from_r1
         _remap_flash
         .endm
 

@@ -43,9 +43,9 @@
 //
 // Author(s):   tkoeller
 // Contributors: andrew lunn, Oliver Munz
-// Date:        2005-12-31
+// Date:        2009-06-03
 // Purpose:     Atmel AT91SAM7S board specific registers
-// Description: 
+// Description:
 // Usage:       #include <cyg/hal/plf_io.h>
 //
 //####DESCRIPTIONEND####
@@ -64,7 +64,7 @@
 
 #define AT91_SPI AT91_SPI0
 
-// DMA registers 
+// DMA registers
 #define AT91_SPI_RPR  0x100 // Receive Pointer Register
 #define AT91_SPI_RCR  0x104 // Receive Counter Register
 #define AT91_SPI_TPR  0x108 // Transmit Pointer Register
@@ -94,8 +94,8 @@
 // Define USART2 to be the debug UART. It is similar enough to a USART
 // that both the hal_diag and interrupt driven driver will work.
 // However trying to change parity, start/stop bits etc will not work.
-#define CYGNUM_HAL_INTERRUPT_USART2 CYGNUM_HAL_INTERRUPT_DBG 
-#define AT91_USART2 AT91_DBG 
+#define CYGNUM_HAL_INTERRUPT_USART2 CYGNUM_HAL_INTERRUPT_DBG
+#define AT91_USART2 AT91_DBG
 
 #ifndef __ASSEMBLER__
 #ifdef CYGBLD_HAL_ARM_AT91_BAUD_DYNAMIC
@@ -110,7 +110,7 @@ extern cyg_uint32 hal_at91_us_baud(cyg_uint32 baud);
 #define AT91_US_TCR  0x10C // Transmit Counter Register
 #define AT91_US_NRPR 0x110 // Next Receive Pointer Register
 #define AT91_US_NRCR 0x114 // Next Receive Counter Register
-#define AT91_US_NTPR 0x118 // Next Transmit Pointer Register 
+#define AT91_US_NTPR 0x118 // Next Transmit Pointer Register
 #define AT91_US_NTCR 0x11C // Next Transmit Counter Register
 #define AT91_US_PTCR 0x120 // PDC Transfer Control Register
 #define AT91_US_PTSR 0x124 // PDC Transfer Status Register
@@ -177,16 +177,19 @@ extern cyg_uint32 hal_at91_us_baud(cyg_uint32 baud);
 
 // CAN - Controller Area Network
 
-#define AT91_CAN 0xFFFD0000 
+#define AT91_CAN 0xFFFD0000
 
 #endif
 
 #if defined(CYGHWR_HAL_ARM_AT91SAM7_at91sam7x512) || \
     defined(CYGHWR_HAL_ARM_AT91SAM7_at91sam7s512) || \
     defined(CYGHWR_HAL_ARM_AT91SAM7_at91sam7se512)
-#define AT91_MC_FMR0 0x60
-#define AT91_MC_FMR1 0x70
-#define AT91_MC_FMR AT91_MC_FMR0
+#define AT91_MC_FMR0 AT91_MC_FMR
+#define AT91_MC_FCR0 AT91_MC_FCR
+#define AT91_MC_FSR0 AT91_MC_FSR
+#define AT91_MC_FMR1 (AT91_MC_FMR + 0x10)
+#define AT91_MC_FCR1 (AT91_MC_FCR + 0x10)
+#define AT91_MC_FSR1 (AT91_MC_FSR + 0x10)
 #endif
 
 //----------------------------------------------------------------------
@@ -201,9 +204,9 @@ extern void hal_plf_hardware_init(void);
 extern void hal_plf_eth_init(void);
 #define HAL_PLF_ETH_INIT() \
     hal_plf_eth_init()
-#endif          
+#endif
 
-#endif  //__ASSEMBLER__         
+#endif  //__ASSEMBLER__
 
 #endif //CYGONCE_HAL_PLF_IO_H
 

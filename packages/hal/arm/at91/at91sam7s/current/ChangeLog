@@ -1,3 +1,9 @@
+2009-06-03 Oliver Munz <oli@snr.ch>
+
+ 	* Fix the the problem of switching the PCM-settings if 
+ 	the PCM is already up. And improve the flash-controller 
+ 	programming. 
+ 
 2009-01-31  Bart Veer <bartv@ecoscentric.com>
 
 	* cdl/hal_arm_at91sam7s.cdl: update compiler flags for gcc 4.x
