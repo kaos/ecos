@@ -1,3 +1,11 @@
+2009-06-03 Oliver Munz <oli@snr.ch>
+
+ 	* Fix the a problem in the kernel delay_us, if the PIT is
+	initialised later then the period. If the PIT has a big
+	period (after reset) and has to be set to a lower period one has
+	to be sure that the counter is lower then the period value one
+	want to set...	
+ 
 2009-05-25  John Dallaway  <john@dallaway.org.uk>
 
 	* include/var_io.h: Provide additional SPI status register defines as

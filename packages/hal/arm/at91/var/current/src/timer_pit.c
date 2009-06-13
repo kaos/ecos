@@ -41,9 +41,9 @@
 //
 // Author(s):    asl, Oliver Munz
 // Contributors: asl, Oliver Munz
-// Date:         2006-02-12
+// Date:         2009-06-03
 // Purpose:      Clock support using the PIT
-// Description:  
+// Description:
 //
 //####DESCRIPTIONEND####
 //
@@ -59,21 +59,46 @@
 // -------------------------------------------------------------------------
 // Use system clock
 void
-hal_clock_initialize(cyg_uint32 period)
-{
-  cyg_uint32 sr;
+hal_clock_initialize(cyg_uint32 period){
+
+  cyg_uint32 ir;
+  cyg_uint32 pimr;
   
   CYG_ASSERT(CYGNUM_HAL_INTERRUPT_RTC == CYGNUM_HAL_INTERRUPT_PITC,
              "Invalid timer interrupt");
+  CYG_ASSERT(period <= AT91_PITC_VALUE_MASK,
+             "Invalid timer period");
   
-  /* Set Period Interval timer and enable interrupt */
-  HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), 
-                   (period - 1) |  
-                   AT91_PITC_PIMR_PITEN |
-                   AT91_PITC_PIMR_PITIEN);
+  pimr = (period - 1); /* This is what we want */
+  HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIIR, ir); /* Counter */
+  ir = ir & AT91_PITC_VALUE_MASK; /* The current count */
   
-  // Read the status register to clear any pending interrupt
-  HAL_READ_UINT32(AT91_PITC + AT91_PITC_PISR, sr);
+  do { /* Test if the new PITC-Modulus is overrun by the counter */
+    if (ir > pimr){ /* If the counter is already too high */
+      
+      pimr = (ir + 100) & AT91_PITC_VALUE_MASK; /* Set the comparator ahead */
+      HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR),
+                       pimr | AT91_PITC_PIMR_PITEN);
+    }
+    if (ir < (period - 1)){ /* If we can try it */
+      pimr = (period - 1); /* This is what we want */
+      /* Set the real Period Interval timer */
+      HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR),
+                       pimr | AT91_PITC_PIMR_PITEN);
+    }
+    HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIMR, pimr); /* The real value */
+    pimr = pimr & AT91_PITC_VALUE_MASK; /* Value */
+    HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIIR, ir); /* Counter */
+    ir = ir & AT91_PITC_VALUE_MASK; /* The current counts */
+    
+  } while (ir > (period - 1) || pimr != (period - 1)); // Is it correct?
+  
+  /* Enable interrupt */
+  HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), (period - 1) |
+                   AT91_PITC_PIMR_PITEN | AT91_PITC_PIMR_PITIEN);
+  
+  /* Read the status register to clear any pending interrupt */
+  HAL_READ_UINT32(AT91_PITC + AT91_PITC_PISR, ir);
 }
 
 // This routine is called during a clock interrupt.
@@ -82,14 +107,14 @@ hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
 {
   cyg_uint32 reg;
   cyg_uint32 pimr;
-  
+
   CYG_ASSERT(period < AT91_PITC_VALUE_MASK, "Invalid HAL clock configuration");
-  
+
   // Check that the PIT has the right period.
   HAL_READ_UINT32((AT91_PITC + AT91_PITC_PIMR), pimr);
   if ((pimr & AT91_PITC_VALUE_MASK) != (period - 1)) {
-    HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), 
-                     (period - 1) |  
+    HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR),
+                     (period - 1) |
                      AT91_PITC_PIMR_PITEN |
                      AT91_PITC_PIMR_PITIEN);
   }
@@ -106,14 +131,14 @@ hal_clock_read(cyg_uint32 *pvalue)
 {
   cyg_uint32 ir;
   cyg_uint32 pimr;
-  
+
   // Check that the PIT is running. If not start it.
   HAL_READ_UINT32((AT91_PITC + AT91_PITC_PIMR),pimr);
   if (!(pimr & AT91_PITC_PIMR_PITEN)) {
-    HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), 
+    HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR),
                      AT91_PITC_VALUE_MASK | AT91_PITC_PIMR_PITEN);
   }
-  
+
   HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIIR, ir);
   *pvalue = ir & AT91_PITC_VALUE_MASK;
 }
@@ -128,23 +153,23 @@ void hal_delay_us(cyg_int32 usecs)
   cyg_int64 ticks;
   cyg_uint32 val1, val2;
   cyg_uint32 piv;
-  
+
   // Calculate how many PIT ticks the required number of microseconds
   // equate to. We do this calculation in 64 bit arithmetic to avoid
   // overflow.
-  ticks = (((cyg_uint64)usecs) * 
+  ticks = (((cyg_uint64)usecs) *
            ((cyg_uint64)CYGNUM_HAL_ARM_AT91_CLOCK_SPEED))/16/1000000LL;
-  
-  // Calculate the wrap around period. 
+
+  // Calculate the wrap around period.
   HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIMR, piv);
-  piv = (piv & AT91_PITC_VALUE_MASK) - 1; 
-  
+  piv = (piv & AT91_PITC_VALUE_MASK) - 1;
+
   hal_clock_read(&val1);
   while (ticks > 0) {
     hal_clock_read(&val2);
     if (val2 < val1)
       ticks -= ((piv + val2) - val1); //overflow occurred
-    else 
+    else
       ticks -= (val2 - val1);
     val1 = val2;
   }
