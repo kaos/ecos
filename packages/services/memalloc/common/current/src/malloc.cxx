@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -283,6 +283,27 @@ mallinfo( void )
     CYG_REPORT_RETURN();
     return ret;
 } // mallinfo()
+
+
+inline void *
+operator new(size_t size,  CYGCLS_MEMALLOC_MALLOC_IMPL *ptr)
+{ return (void *)ptr; };
+
+externC cyg_bool
+cyg_memalloc_heap_reinit( cyg_uint8 *base, cyg_uint32 size )
+{
+#if CYGMEM_HEAP_COUNT == 0
+    CYGCLS_MEMALLOC_MALLOC_IMPL *m = new(&cyg_memalloc_mallocpool)
+        CYGCLS_MEMALLOC_MALLOC_IMPL( base, size );
+    return true;
+#elif CYGMEM_HEAP_COUNT == 1    
+    cygmem_memalloc_heaps[0] = new(cygmem_memalloc_heaps[0])
+        CYGCLS_MEMALLOC_MALLOC_IMPL( base, size );
+    return true;
+#else
+    return false;
+#endif
+}
 
 #endif // ifdef CYGPKG_MEMALLOC_MALLOC_ALLOCATORS
 

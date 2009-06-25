@@ -1,3 +1,12 @@
+2009-06-24  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/redboot.cdl:
+	* src/main.c (cyg_start): Added options and code to reinitialize
+ 	the heap, if it exists, to an arena cut off the end of the
+ 	workspace.
+	[Imported from eCosPro sources, mainly to support use of
+	filesystems in RedBoot].
+ 
 2009-06-02  Ross Younger  <wry@ecoscentric.com>
 
 	* redboot.cdl: REDBOOT_IO_FILEIO requires CYGPKG_IO

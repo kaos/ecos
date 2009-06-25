@@ -1284,6 +1284,32 @@ cdl_package CYGPKG_REDBOOT {
                     size of one flash sector."
             }
         }
+
+        cdl_component CYGMEM_REDBOOT_WORKSPACE_HEAP {
+            display     	"Allocate heap in RedBoot workspace"
+            flavor	    	bool
+            active_if   	CYGPKG_MEMALLOC
+            active_if   	CYGPKG_MEMALLOC_MALLOC_ALLOCATORS
+            default_value	0
+            description 	"
+                    If the MEMALLOC package is present, it usually allocates
+                    the whole of memory not used by the program to the heap.
+                    In RedBoot this is not a good idea, since we need space to
+                    load application programs. Setting this option causes RedBoot
+                    to allocate the heap at the top of RAM by reserving part of
+                    RedBoot's workspace memory, leaving the rest of memory free."
+
+            cdl_option CYGMEM_REDBOOT_WORKSPACE_HEAP_SIZE {
+                display 	"Size of RedBoot heap"
+                flavor  	data
+                default_value   0x10000
+                legal_values    0x4000 to 0x80000000
+                description     "
+                    Size of RedBoot heap. This defines how much memory is to be
+                    allocated for the heap."
+            }
+        }
+
         cdl_option CYGNUM_REDBOOT_GETC_BUFFER {
             display       "Buffer size in getc when loading images"
             flavor        data

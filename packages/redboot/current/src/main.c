@@ -301,6 +301,17 @@ cyg_start(void)
         workspace_end = ram_end;
     }
 
+#if defined(CYGMEM_REDBOOT_WORKSPACE_HEAP)
+    {
+        extern cyg_bool cyg_memalloc_heap_reinit( cyg_uint8 *base, cyg_uint32 size );
+
+        workspace_end -= CYGMEM_REDBOOT_WORKSPACE_HEAP_SIZE;
+
+        if( !cyg_memalloc_heap_reinit( (cyg_uint8 *)workspace_end, CYGMEM_REDBOOT_WORKSPACE_HEAP_SIZE ) )
+            diag_printf("Heap reinitialization failed\n");
+    }
+#endif
+
     workspace_end_init=workspace_end;
 
     // Nothing has ever been loaded into memory
