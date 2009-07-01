@@ -50,6 +50,10 @@
 	* cdl/io_flash.cdl: remove CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM, no
 	longer needed.
 
+2008-11-24  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* tests/flashdev.c: Some warnings cleanup. [ Bugzilla 1000643 ]
+
 2008-11-23  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* doc/flash.sgml: Fix flash.h header name typos.

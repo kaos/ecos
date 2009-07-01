@@ -106,14 +106,17 @@ cyg_start( void )
     cyg_io_flash_getconfig_erase_t e;
     cyg_io_flash_getconfig_devsize_t d;
     cyg_io_flash_getconfig_blocksize_t b;
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
     cyg_io_flash_getconfig_lock_t l;
     cyg_io_flash_getconfig_unlock_t u;
+#endif
     CYG_ADDRWORD flash_start, flash_end;
     CYG_ADDRWORD flash_test_start, flash_addr;
     cyg_uint32 flash_block_size, flash_num_blocks;
     CYG_ADDRWORD test_buf1, test_buf2;
     cyg_uint32 *lp1, *lp2;
-    int i, len;
+    int i;
+    unsigned len;
     cyg_bool passed, ok;
 
     CYG_TEST_INIT();
