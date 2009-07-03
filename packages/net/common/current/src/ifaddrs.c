@@ -177,7 +177,7 @@ getifaddrs(struct ifaddrs **pif)
 #ifdef CYGPKG_NET_INET6
     if ((sock6 = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
       free(buf);
-      free(data);
+      free(ifa);
       close(sock);
       return (-1);
     }
