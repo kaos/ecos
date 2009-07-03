@@ -8,7 +8,7 @@
  * ####ECOSGPLCOPYRIGHTBEGIN####                                     
  * -------------------------------------------                       
  * This file is part of eCos, the Embedded Configurable Operating System.
- * Copyright (C) 2005 Free Software Foundation, Inc.                 
+ * Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.                 
  *
  * eCos is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -51,7 +51,6 @@
  */
 
 #include <cyg/infra/diag.h>     // For diagnostic printing.
-#include <pkgconf/io_fileio.h>
 #include <cyg/hal/hal_tables.h>
 #include <stdio.h>
 
@@ -73,14 +72,16 @@ cyg_ldr_print_section_data(PELF_OBJECT p)
     char   strname[32];
     char  *p_strtab = (char*)p->sections[p->p_elfhdr->e_shstrndx];
     
-    diag_printf("\n\nSection Headers:\n"); 
-    diag_printf("[Nr]  Name                  Addr    Offset    Size     Info\n");
+    diag_printf("Section Headers:\n"); 
+    diag_printf("----------------------------------------------------------\n"); 
+    diag_printf("[Nr]  Name                  Addr    Offset"
+                                                         "    Size     Info\n");
     for (i = 0; i < p->p_elfhdr->e_shnum; i++)
     {
         sprintf(strname, "%s", p_strtab + p->p_sechdr[i].sh_name);
         while (strlen(strname) < 20)
             strcat(strname, " ");
-        diag_printf("[%02d] %s %08X %08X %08X %08X\n",  
+        diag_printf("[%2d] %s %08X %08X %08X %08X\n",  
                      i, 
                      strname,
                      p->p_sechdr[i].sh_addr,
@@ -97,39 +98,22 @@ cyg_ldr_print_symbol_names(PELF_OBJECT p)
     int        i;
     Elf32_Sym *p_symtab = (Elf32_Sym*)p->sections[p->hdrndx_symtab];
     char      *p_strtab = (char*)p->sections[p->hdrndx_strtab];
-    char       strname[32];
+//    char       strname[32];
 
     // Total number of entries in the symbol table.
     int symtab_entries = p->p_sechdr[p->hdrndx_symtab].sh_size / 
                                 p->p_sechdr[p->hdrndx_symtab].sh_entsize;
-    diag_printf("Num  Value     Size Ndx   Name\n"); 
+    diag_printf("Symbol Table Entries\n"); 
+    diag_printf("----------------------------------------\n"); 
+    diag_printf("[Nr]   Value   Size  Ndx     Name\n"); 
     for (i = 1; i < symtab_entries; i++)
-    {
-        sprintf(strname, "%d", i);
-        while (strlen(strname) < 5)
-            strcat(strname, " ");
-        diag_printf(strname);         
-        
-        sprintf(strname, 
-                 "%08X  %d", 
-                 p_symtab[i].st_value, 
-                 p_symtab[i].st_size);
-        while (strlen(strname) < 15)
-            strcat(strname, " ");
-        diag_printf(strname);         
-        
-        sprintf(strname, "%d", p_symtab[i].st_shndx);
-        while (strlen(strname) < 6)
-            strcat(strname, " ");
-        diag_printf(strname);         
-        
-        strncpy(strname, 
-                 p_strtab + p_symtab[i].st_name, 
-                 sizeof(strname) - 1);
-        strname[strlen(p_strtab + p_symtab[i].st_name)] = '\0';
-        diag_printf(strname);         
-        diag_printf("\n");         
-    }
+        diag_printf("[%3d] %08X %04d %5d %s\n",
+                    i,
+                    p_symtab[i].st_value, 
+                    p_symtab[i].st_size,
+                    p_symtab[i].st_shndx,
+                    p_strtab + p_symtab[i].st_name);
+    diag_printf("\n");
 }
 
 void 
@@ -325,8 +309,9 @@ cyg_ldr_relocate_section(PELF_OBJECT p, cyg_uint32 r_shndx)
 #if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 0
     diag_printf("Relocating section \"%s\"\n",
             p_shstrtab + p->p_sechdr[r_target_shndx].sh_name);
+    diag_printf("----------------------------------------\n"); 
 #if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
-    diag_printf("Ndx   Type   Offset    Name\"\n");
+    diag_printf(" Ndx  Type             Offset   Name\"\n");
 #endif
 #endif
 
@@ -348,22 +333,13 @@ cyg_ldr_relocate_section(PELF_OBJECT p, cyg_uint32 r_shndx)
 #endif
 
         cyg_uint32 sym_value = (cyg_uint32)cyg_ldr_symbol_address(p, sym_index);
-        if (sym_value == 0)
-        {
-#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 0
-            diag_printf("Unknown symbol value: %s Index: %d\n",
-                         p_strtab + p_symtab[sym_index].st_name,
-                         sym_index);
-#endif
-            return -1;
-        }    
         
         // This is architecture dependent, and deals with whether we have
         //  '.rel' or '.rela' sections.
 #if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
-        diag_printf("%04X  %04X  %08X  ",
+        diag_printf("%5d %s %08X  ",
                      sym_index,
-                     r_type,
+                     relocation_name[r_type],
                      r_offset);
         if (strlen(p_strtab + p_symtab[sym_index].st_name) > 0)
             diag_printf(p_strtab + p_symtab[sym_index].st_name);         
@@ -377,15 +353,15 @@ cyg_ldr_relocate_section(PELF_OBJECT p, cyg_uint32 r_shndx)
         diag_printf("\n");         
 #endif
         rc = cyg_ldr_relocate(r_type,
-                               r_target_addr + r_offset, 
-                               sym_value + r_addend);
+                              r_target_addr + r_offset, 
+                              sym_value + r_addend);
         if (rc != 0)
         {
-#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 0
-            diag_printf("Relocation error: Cannot find symbol: %s\n",
-                      p_strtab + p_symtab[sym_index].st_name);
-#endif
+#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
+            diag_printf("Error while relocating symbol: %s\n",
+                        p_strtab + p_symtab[sym_index].st_name);
             return -1;
+#endif
         }    
     }
 

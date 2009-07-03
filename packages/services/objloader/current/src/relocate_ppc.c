@@ -8,7 +8,7 @@
  * ####ECOSGPLCOPYRIGHTBEGIN####                                     
  * -------------------------------------------                       
  * This file is part of eCos, the Embedded Configurable Operating System.
- * Copyright (C) 2005 Free Software Foundation, Inc.                 
+ * Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.                 
  *
  * eCos is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -50,7 +50,6 @@
  */
 
 #include <cyg/infra/diag.h>     // For diagnostic printing.
-#include <pkgconf/io_fileio.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -69,6 +68,19 @@ cyg_ldr_flush_cache(void)
     HAL_DCACHE_SYNC();
     HAL_ICACHE_SYNC();
 }
+
+#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
+// Always 16 characters long, with blank padding is necessary, so
+//  the printing is pretty. If the name is longer than 16, shorten it.
+// We print the relocation symbols only is 
+//  CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL is set to 2.
+char *relocation_name[] =
+{
+    "", "R_PPC_ADDR32    ", "", "", "R_PPC_ADDR16_LO ", "R_PPC_ADDR16_HI ",
+    "R_PPC_ADDR16_HA ", "", "", "", "R_PPC_REL24     ", "", "", "", "", "",
+    "", "", "", "", "R_PPC_REL32     "
+};
+#endif
 
 // in:
 // 

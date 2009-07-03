@@ -8,7 +8,7 @@
  * ####ECOSGPLCOPYRIGHTBEGIN####                                     
  * -------------------------------------------                       
  * This file is part of eCos, the Embedded Configurable Operating System.
- * Copyright (C) 2005 Free Software Foundation, Inc.                 
+ * Copyright (C) 2005, 2008 Free Software Foundation, Inc.                 
  *
  * eCos is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -62,19 +62,19 @@
 #include <cyg/objloader/objelf.h>
 #include <cyg/objloader/loader_fs.h>
 
-size_t 
+static size_t 
 cyg_ldr_fs_read(PELF_OBJECT p, size_t s, size_t n, void *mem)
 {
     return fread(mem, s, n, (FILE*)p->ptr);
 }
 
-cyg_int32 
+static cyg_int32 
 cyg_ldr_fs_seek(PELF_OBJECT p, cyg_uint32 offs)
 {
     return fseek((FILE*)p->ptr, offs, SEEK_SET);
 }
 
-cyg_int32 
+static cyg_int32 
 cyg_ldr_fs_close(PELF_OBJECT p)
 {
     return fclose((FILE*)p->ptr);

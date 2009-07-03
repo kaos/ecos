@@ -8,7 +8,7 @@
  * ####ECOSGPLCOPYRIGHTBEGIN####                                     
  * -------------------------------------------                       
  * This file is part of eCos, the Embedded Configurable Operating System.
- * Copyright (C) 2005 Free Software Foundation, Inc.                 
+ * Copyright (C) 2005, 2008 Free Software Foundation, Inc.                 
  *
  * eCos is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -57,6 +57,17 @@
 #include <cyg/objloader/elf.h>
 #include <cyg/objloader/objelf.h>
 
+#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
+// Always 16 characters long, with blank padding is necessary, so
+//  the printing is pretty. If the name is longer than 16, shorten it.
+// We print the relocation symbols only is 
+//  CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL is set to 2.
+char *relocation_name[] =
+{
+    "", "R_386_32        ", "R_386_PC32      "
+};
+#endif
+
 #if defined(CYGPKG_HAL_I386) || defined(CYGPKG_HAL_SYNTH_I386)
 void
 cyg_ldr_flush_cache(void)
@@ -87,7 +98,7 @@ cyg_ldr_relocate(cyg_int32 sym_type, cyg_uint32 mem, cyg_int32 sym_value)
         HAL_WRITE_UINT32(mem,  i + sym_value - mem);
         return 0;
       default:
-        ELFDEBUG("FIXME: Unknown relocation value!!!\n");
+        diag_printf("FIXME: Unknown relocation value!!!\n");
         return -1;
     }
 }

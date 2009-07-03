@@ -9,7 +9,7 @@
  * ####ECOSGPLCOPYRIGHTBEGIN####                                     
  * -------------------------------------------                       
  * This file is part of eCos, the Embedded Configurable Operating System.
- * Copyright (C) 2005 Free Software Foundation, Inc.                 
+ * Copyright (C) 2005, 2008 Free Software Foundation, Inc.                 
  *
  * eCos is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -50,9 +50,6 @@
  * =================================================================
  */
 
-size_t    cyg_ldr_fs_read(PELF_OBJECT, size_t, size_t, void*);
-cyg_int32 cyg_ldr_fs_seek(PELF_OBJECT, cyg_uint32);
-cyg_int32 cyg_ldr_fs_close(PELF_OBJECT);
 PELF_OBJECT cyg_ldr_open_library_fs(char *);
 void cyg_ldr_close_library_fs(PELF_OBJECT);
 

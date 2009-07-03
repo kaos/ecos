@@ -11,7 +11,7 @@
  * ####ECOSGPLCOPYRIGHTBEGIN####                                     
  * -------------------------------------------                       
  * This file is part of eCos, the Embedded Configurable Operating System.
- * Copyright (C) 2005 Free Software Foundation, Inc.                 
+ * Copyright (C) 2005, 2008 Free Software Foundation, Inc.                 
  *
  * eCos is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -64,5 +64,6 @@
 
 void      cyg_ldr_flush_cache(void);
 cyg_int32 cyg_ldr_relocate(cyg_int32, cyg_uint32, cyg_int32);
+extern char *relocation_name[];
 
 #endif //__RELOCATE_I386_H__

@@ -8,7 +8,7 @@
  * ####ECOSGPLCOPYRIGHTBEGIN####                                     
  * -------------------------------------------                       
  * This file is part of eCos, the Embedded Configurable Operating System.
- * Copyright (C) 2005 Free Software Foundation, Inc.                 
+ * Copyright (C) 2005, 2008 Free Software Foundation, Inc.                 
  *
  * eCos is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -129,7 +129,8 @@ void cyg_user_start(void)
     if(err < 0) 
         SHOW_RESULT(chdir, err);
 
-    lib_handle = cyg_ldr_open_library((CYG_ADDRWORD)"/hello.o", 0);
+    lib_handle = cyg_ldr_open_library((CYG_ADDRWORD)"/hello.o",
+                                      CYG_LDR_MODE_FILESYSTEM);
     CYG_TEST_CHECK(lib_handle , "Unable to load object file to load");
 
     fn = cyg_ldr_find_symbol(lib_handle, "print_message");

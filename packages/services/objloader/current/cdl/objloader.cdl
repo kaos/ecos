@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2005, 2009 Free Software Foundation, Inc.                        
+## Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.                        
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -53,9 +53,9 @@ cdl_package CYGPKG_OBJLOADER {
                    object files within eCos."
     include_dir   cyg/objloader
     include_files elf.h objelf.h loader_fs.h relocate_ppc.h relocate_i386.h
-    compile       objloader.c objelf.c loader_fs.c
+    include_files relocate_arm.h loader_memory.h
+    compile       objloader.c objelf.c
     requires      CYGPKG_MEMALLOC
-    requires      CYGPKG_IO_FILEIO
 # ====================================================================
 
     cdl_component CYGPKG_SERVICES_OBJLOADER_ARCHITECTURE {
@@ -95,17 +95,45 @@ cdl_package CYGPKG_OBJLOADER {
            compile relocate_i386.c
         }
 
-#        cdl_option CYGBLD_OBJLOADER_ARCHITECTURE_ARM {
-#            display       "Support loading on ARM processors"
-#            calculated    CYGPKG_HAL_ARM
-#            define_proc {
-#               puts $::cdl_header "#include <cyg/objloader/relocate_arm.h>"
-#            }
-#            compile relocate_arm.c
-#        }
+        cdl_option CYGBLD_OBJLOADER_ARCHITECTURE_ARM {
+            display       "Support loading on ARM processors"
+            calculated    CYGPKG_HAL_ARM
+            implements    CYGINT_SERVICES_OBJLOADER_RELOCATOR
+            define_proc {
+               puts $::cdl_header "#include <cyg/objloader/relocate_arm.h>"
+            }
+            compile relocate_arm.c
+        }
         
     }
  
+    cdl_component CYGOPT_SERVICES_OBJLOADER_LOADERS {
+        display "Loaders to compile"
+        flavor  none
+        no_define
+        description   "Options to select which types of loaders (e.g. from file
+                       system, memory, http etc. to compile."
+
+      cdl_option CYGOPT_SERVICES_OBJLOADER_LOADERS_FS {
+          display       "Load module from file system"
+          flavor        bool
+          default_value 1
+          requires      CYGPKG_IO_FILEIO
+          description   "This option will compile the code required to load an
+                         object library from a generic file system." 
+          compile       loader_fs.c
+      }
+
+      cdl_option CYGOPT_SERVICES_OBJLOADER_LOADERS_MEMORY {
+          display       "Load module from memory"
+          flavor        bool
+          default_value 1
+          description   "This option will compile the module required to load an
+                         object library from a ROM memory." 
+          compile       loader_memory.c
+      }
+    }  
+
     cdl_option CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL {
         display          "Verbosity of debug output"
         flavor           data

@@ -24,7 +24,7 @@ Init/fini functions
 When the library is loaded the loader will look for a symbol with the name of 
 "library_open" and, if found, will call the symbol with a prototype of
 
-void library_open( void )
+void library_open(void)
 
 When the cyg_ldr_close_library() function is called, the loader will also 
 look for a function called library close() and call it. The prototype is the 
@@ -46,7 +46,7 @@ resolve all references.
 The following is an example of how to add an entry to the external references 
 table:
 
-CYG_LDR_TABLE_ENTRY( diag_printf_entry, "diag_printf", diag_printf );
+CYG_LDR_TABLE_ENTRY(diag_printf_entry, "diag_printf", diag_printf);
 
 The first parameter is a unique identifier, the second is a string containing
 the name of the function, and the third is the pointer to the function itself.
@@ -64,7 +64,7 @@ A relocator for a new architecture must provide a function with the following
 prototype:
 
 cyg_int32 
-cyg_ldr_relocate( cyg_int32 sym_type, cyg_uint32 mem, cyg_int32 sym_value )
+cyg_ldr_relocate(cyg_int32 sym_type, cyg_uint32 mem, cyg_int32 sym_value)
 
 The sym type is the type of relocation to apply. This value is architecture
 dependent and it is obtained from the r_info field of the relocation entry.
@@ -86,21 +86,25 @@ An example of the definition for the PowerPC processor is the following:
 
 #define ELF_ARCH_MACHINE_TYPE         20              // PowerPC.
 #define ELF_ARCH_ENDIANNESS           ELFDATA2MSB     // Big Endian.
-#define ELF_ARCH_RELTYPE              Elf_Rela        // With addend.
+#define ELF_ARCH_RELTYPE              Elf_Rela        // With explicit addend.
 
 These definitions can be found in the relocate_ppc.h file.
 
-The user must also provide a way to flush the data and address caches. This
-is architecture dependent and usually the macros to do this are already part
-of the eCos HAL.
+The user must also provide a function with the following prototype:
+
+void cyg_ldr_flush_cache(void)
+
+tha is used to flush the data and address caches. This is architecture
+dependent and usually the macros to do this are already part of the eCos HAL.
+An empty function can be used is caches are not available.
 
 --------------------------------------------------------------------------------
 CDL File
 --------------------------------------------------------------------------------
 
 The CDL file allows the selective compilation of the architecture dependent
-file. If a new architecture is added, the CDL file must be updated to
-include the architecture dependent files.
+file. If a new architecture is added or a new loader is added, the CDL file
+must be updated to include the architecture dependent files.
 
 --------------------------------------------------------------------------------
 Test program
@@ -152,5 +156,12 @@ tftp. In order to do this some functions must be added:
 - In case you have a statically allocated memory pool, you might want to
   define your own cyg_ldr_malloc() and cyg_ldr_free(). Currently they are
   defined as weak bindings to wrappers of the malloc() and free() functions
-
+- The relocator for the ARM architecture only works for ARMv4T cores and
+   later ones. The problem arises from the fact that without the Thumb
+   instruction set the loader should replace every "BX Rm" in the library
+   with "MOV PC, Rm". This assumes that the library can find out what core it
+   is running on at runtime, which is not possible at the moment. Given that
+   ARMv4T cores are the ones used by most IC suppliers (Atmel, NXP, ST just
+   to name a few) it is expected that the current code will work for nearly
+   everyone. 
 

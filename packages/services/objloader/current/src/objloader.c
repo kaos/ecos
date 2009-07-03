@@ -8,7 +8,7 @@
  * ####ECOSGPLCOPYRIGHTBEGIN####                                     
  * -------------------------------------------                       
  * This file is part of eCos, the Embedded Configurable Operating System.
- * Copyright (C) 2005 Free Software Foundation, Inc.                 
+ * Copyright (C) 2005, 2008 Free Software Foundation, Inc.                 
  *
  * eCos is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -60,6 +60,7 @@
 #include <cyg/objloader/elf.h>
 #include <cyg/objloader/objelf.h>
 #include <cyg/objloader/loader_fs.h>
+#include <cyg/objloader/loader_memory.h>
 
 char *cyg_ldr_last_error;
 
@@ -131,7 +132,7 @@ cyg_ldr_find_common_size(PELF_OBJECT p)
         }    
 
 #if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 0
-    diag_printf("common_size = %d\n", common_size);
+    diag_printf("common_size = %d\n\n", common_size);
 #endif
     return common_size;
 }
@@ -161,7 +162,6 @@ cyg_uint32
 {
     if (p->sections[idx] == 0)
         p->sections[idx] = cyg_ldr_load_elf_section(p, idx);
-
     return p->sections[idx];
 }
 
@@ -180,7 +180,13 @@ void
     {
         char* tmp2 = p_strtab + p_symtab[i].st_name;
         if (!strcmp(tmp2, sym_name))
-            return cyg_ldr_symbol_address(p, i);
+        {
+            void *const funcPtr = cyg_ldr_symbol_address(p, i);
+
+            // Synch up the caches before calling any function in the library.
+            cyg_ldr_flush_cache();
+            return funcPtr;
+        }            
     }
 
     // Symbol not found.
@@ -202,13 +208,20 @@ static char
     if (p->p_elfhdr->e_type != ET_REL)
         return "NOT RELOCATABLE";
         
+#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 0
+    diag_printf("Machine type: %d\n",  p->p_elfhdr->e_machine);
+#endif
+
     // These #defines are sitting in the hal.
     if (p->p_elfhdr->e_machine != ELF_ARCH_MACHINE_TYPE)
+    {
         return "INVALID ARCHITECTURE";
+    }    
 
     if (p->p_elfhdr->e_ident[EI_DATA] != ELF_ARCH_ENDIANNESS)
         return "INVALID ENDIAN";
-    return 0;  }     
+    return 0;
+}     
 
 // Load only the ELF header and the sections header. These are the only
 //  sections loaded during library initialization. All the other sections
@@ -273,12 +286,31 @@ cyg_ldr_open_library(CYG_ADDRWORD ptr, cyg_int32 mode)
 {
     int (*fn)(void);
     int         i;
+    PELF_OBJECT e_obj = (PELF_OBJECT)0;
 
     // In the future there might be a switch() (against 'mode') that calls an
     //  open function other than cyg_ldr_open_library_fs(). These function
     //  fetch and open a library using ftp, http or libraries that are already 
     //  in ROM.
-    PELF_OBJECT e_obj = cyg_ldr_open_library_fs((char*)ptr);
+    switch (mode)
+    {
+#if defined(CYGOPT_SERVICES_OBJLOADER_LOADERS_FS)
+    case CYG_LDR_MODE_FILESYSTEM: 
+        // Here the prt is a path to the library to load.
+        e_obj = cyg_ldr_open_library_fs((char*)ptr);
+        break;
+#endif        
+#if defined(CYGOPT_SERVICES_OBJLOADER_LOADERS_MEMORY)
+    case CYG_LDR_MODE_MEMORY:
+        // In this case the ptr pointer is the location in ROM memory where the
+        //  library has been statically stored.
+        e_obj = cyg_ldr_open_library_memory(ptr);
+        break;
+#endif        
+    default:
+        break;
+    }        
+
     if (e_obj == 0)
         return 0;
     int rc = cyg_ldr_load_sections(e_obj);
@@ -361,15 +393,8 @@ cyg_ldr_open_library(CYG_ADDRWORD ptr, cyg_int32 mode)
                               e_obj->p_sechdr[e_obj->hdrndx_symtab].sh_entsize;
         Elf32_Sym *p_symtab = (Elf32_Sym*)e_obj->sections[e_obj->hdrndx_symtab];
     
-#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
-        diag_printf("Num   Value   Size Ndx Name\n"); 
-#endif
         for (i = 1; i < symtab_entries; i++)
         {
-#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
-            cyg_uint8 *p_strtab = (cyg_uint8*)cyg_ldr_section_address(e_obj, 
-                                                        e_obj->hdrndx_strtab);
-#endif        
             if (p_symtab[i].st_shndx == SHN_COMMON)
             {             
                 cyg_uint32 boundary = p_symtab[i].st_value - 1;
@@ -379,16 +404,10 @@ cyg_ldr_open_library(CYG_ADDRWORD ptr, cyg_int32 mode)
                 p_symtab[i].st_value = com_offset;
                 com_offset += p_symtab[i].st_size;
             }
-    
-#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
-            diag_printf("%03d  %08X %04X %03d %s\n", 
-                         i, 
-                         p_symtab[i].st_value,
-                         p_symtab[i].st_size,
-                         p_symtab[i].st_shndx,
-                         p_strtab + p_symtab[i].st_name);
-#endif        
         }    
+#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
+        diag_printf("\n"); 
+#endif        
     }
 
 #if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 0
@@ -408,8 +427,8 @@ cyg_ldr_open_library(CYG_ADDRWORD ptr, cyg_int32 mode)
             rc = cyg_ldr_relocate_section(e_obj, i);
             if (rc < 0)
             { 
-#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 0
-                ELFDEBUG("Relocation unsuccessful\n");
+#if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
+                diag_printf("Relocation unsuccessful\n");
 #endif
                 cyg_ldr_free_elf_object(e_obj);
                 return 0;
