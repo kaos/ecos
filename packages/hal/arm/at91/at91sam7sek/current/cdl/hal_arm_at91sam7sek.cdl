@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2006 Free Software Foundation, Inc.                        
+## Copyright (C) 2006, 2009 Free Software Foundation, Inc.                        
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -60,7 +60,8 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7SEK {
     compile       at91sam7sek_misc.c
     
     requires      { CYGHWR_HAL_ARM_AT91 == "AT91SAM7S" }
-    requires      { CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s256" ||
+    requires      { CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s512" ||
+                    CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s256" ||
                     CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s128" ||
                     CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s64"  ||
                     CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s32"  ||

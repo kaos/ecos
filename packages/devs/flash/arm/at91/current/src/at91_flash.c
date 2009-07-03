@@ -9,7 +9,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -41,8 +41,8 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, dmoseley, Andrew Lunn, Oliver Munz
-// Date:         2000-07-26
+// Contributors: gthomas, dmoseley, Andrew Lunn, Oliver Munz, Kasim Malla
+// Date:         2009-06-03
 // Purpose:      
 // Description:  
 //              
@@ -62,7 +62,10 @@
 
 #include <string.h>
 
+/* timeout depends on the CPU clock speed */
 #define FLASH_TIMEOUT       100000
+#define AT91_FLASH_FMCN_VALUE \
+  (CYGNUM_HAL_ARM_AT91_CLOCK_SPEED * 15 / 10000000 + 1)
 
 #ifdef CYGBLD_DEV_FLASH_AT91_LOCKING
 static cyg_uint32 sector_size;
@@ -70,6 +73,13 @@ static cyg_uint32 sector_size;
 
 // Disable the flash controller from erasing the page before
 // programming it
+
+#ifdef AT91_MC_FMR1
+    #define PAGE_AT_WHICH_WE_USE_THE_EFC1 1024
+    #define SECTOR_AT_WHICH_WE_USE_THE_EFC1 16
+#endif
+
+
 static void 
 flash_erase_before_write_disable (void)
 {
@@ -78,6 +88,9 @@ flash_erase_before_write_disable (void)
   HAL_READ_UINT32(AT91_MC+AT91_MC_FMR, fmr);
   fmr = fmr | AT91_MC_FMR_NEBP;
   HAL_WRITE_UINT32(AT91_MC+AT91_MC_FMR, fmr);
+#ifdef AT91_MC_FMR1  /* or in other words at91sam7x512 */
+  HAL_WRITE_UINT32(AT91_MC+AT91_MC_FMR1, fmr);
+#endif
 }
 
 // Enable the flash controller to erase the page before programming
@@ -91,32 +104,40 @@ flash_erase_before_write_enable (void)
   HAL_READ_UINT32(AT91_MC+AT91_MC_FMR, fmr);
   fmr = fmr & ~((cyg_uint32) AT91_MC_FMR_NEBP);
   HAL_WRITE_UINT32(AT91_MC+AT91_MC_FMR, fmr);
+#ifdef AT91_MC_FMR1  /* or in other words at91sam7x512 */
+  HAL_WRITE_UINT32(AT91_MC+AT91_MC_FMR1, fmr);
+#endif
 }
 
 // Is the flash controller ready to accept the next command?
 static __inline__ cyg_bool 
-flash_controller_is_ready(void) 
+flash_controller_is_ready(cyg_uint32 page)
 CYGBLD_ATTRIB_SECTION(".2ram.flash_run_command");
 
 static __inline__ cyg_bool 
-flash_controller_is_ready(void) 
+flash_controller_is_ready(cyg_uint32 page)
 {
   cyg_uint32 fsr;
-  
+#ifdef AT91_MC_FMR1
+  if (page >= PAGE_AT_WHICH_WE_USE_THE_EFC1){
+    HAL_READ_UINT32(AT91_MC+AT91_MC_FSR1, fsr);
+  } else 
+#endif
   HAL_READ_UINT32(AT91_MC+AT91_MC_FSR, fsr);
+  
   return (fsr & AT91_MC_FSR_FRDY ? true : false);
 }
 
 // Busy loop waiting for the controller to finish the command.
 // Wait a maximum of timeout loops and then return an error.
 static __inline__ int 
-flash_wait_for_controller (cyg_uint32 timeout) 
+flash_wait_for_controller (cyg_uint32 page, cyg_uint32 timeout)
 CYGBLD_ATTRIB_SECTION(".2ram.flash_run_command");
 
 static __inline__ int 
-flash_wait_for_controller (cyg_uint32 timeout)
+flash_wait_for_controller (cyg_uint32 page, cyg_uint32 timeout)
 {
-  while (!flash_controller_is_ready()){
+  while (!flash_controller_is_ready(page)){
     timeout--;
     if (!timeout) {
       return FLASH_ERR_DRV_TIMEOUT;
@@ -143,24 +164,37 @@ flash_run_command(cyg_uint32 address,
   cyg_uint32 fsr;
   cyg_uint32 mask;
   cyg_uint32 page;
+  cyg_uint32 page_in_flash;
+  cyg_uint32 fcr_addr = AT91_MC+AT91_MC_FCR;
+  cyg_uint32 fsr_addr= AT91_MC+AT91_MC_FSR;
   
   page = ((cyg_uint32) address - (cyg_uint32) flash_info.start) / 
     flash_info.block_size;
+  page_in_flash = page;
+  
+#ifdef AT91_MC_FMR1
+  if (page >= PAGE_AT_WHICH_WE_USE_THE_EFC1){
+    fcr_addr = AT91_MC+AT91_MC_FCR1;
+    fsr_addr = AT91_MC+AT91_MC_FSR1;
+    page_in_flash = page - PAGE_AT_WHICH_WE_USE_THE_EFC1;
+  }
+#endif
   
   // Wait for the last command to finish
-  retcode = flash_wait_for_controller(timeout);
+  retcode = flash_wait_for_controller(page, timeout);
   if (retcode != FLASH_ERR_OK){
     return retcode;
   }
   
   HAL_DISABLE_INTERRUPTS(mask);
   
-  HAL_WRITE_UINT32(AT91_MC+AT91_MC_FCR, 
+  HAL_WRITE_UINT32(fcr_addr,
                    command |
-                   ((page & AT91_MC_FCR_PAGE_MASK) << AT91_MC_FCR_PAGE_SHIFT) |
+                   ((page_in_flash & AT91_MC_FCR_PAGE_MASK) 
+                    << AT91_MC_FCR_PAGE_SHIFT) |
                    AT91_MC_FCR_KEY);
 
-  retcode = flash_wait_for_controller(timeout);
+  retcode = flash_wait_for_controller(page, timeout);
 
   HAL_RESTORE_INTERRUPTS(mask);
 
@@ -169,7 +203,7 @@ flash_run_command(cyg_uint32 address,
   }
 
   // Check for an error
-  HAL_READ_UINT32(AT91_MC+AT91_MC_FSR, fsr);
+  HAL_READ_UINT32(fsr_addr, fsr);
 
   if ((fsr & AT91_MC_FSR_LOCKE) == AT91_MC_FSR_LOCKE)
     return FLASH_ERR_PROTECT;
@@ -202,7 +236,6 @@ flash_hwr_init(void){
 
   cyg_uint32 chipID1r;
   cyg_uint32 flash_mode;
-  cyg_uint8  fmcn;
   cyg_uint32 lock_bits;
   
   flash_query (&chipID1r);
@@ -220,8 +253,7 @@ flash_hwr_init(void){
     goto out;
   
 
-  if ((chipID1r & AT91_DBG_C1R_NVPTYP_MASK) != AT91_DBG_C1R_NVPTYP_ROMFLASH)
-  {
+  if ((chipID1r & AT91_DBG_C1R_NVPTYP_MASK) != AT91_DBG_C1R_NVPTYP_ROMFLASH) {
   switch (chipID1r & AT91_DBG_C1R_FLASH_MASK) {
     case AT91_DBG_C1R_FLASH_32K:
       flash_info.block_size = 128;
@@ -243,21 +275,24 @@ flash_hwr_init(void){
       flash_info.blocks = 1024;
       lock_bits = 16;
       break;
-#ifdef AT91_MC_FMR1
 		case AT91_DBG_C1R_FLASH_512K:
 		  flash_info.block_size = 256;
+#ifdef AT91_MC_FMR1
+        flash_info.blocks = 2048;
+        lock_bits = 32;
+#else
 		  flash_info.blocks = 1024;
 		  lock_bits = 16;
-		  (*flash_info.pf)("at91_flash: Only EFC0 is supported for writes and locks");
-		  //flash_info.blocks = 2048;
-		  //lock_bits = 32;
-		  break;
+        (*flash_info.pf)
+          ("at91_flash: Only EFC0 is supported for writes and locks");
 #endif
+        break;
 		default:
 		  goto out;
 	  }
   } else {
-	  // if there is both flash & ROM then: ROM=AT91_DBG_C1R_FLASH, flash=AT91_DBG_C1R_FLASH2
+    // if there is both flash & ROM then:
+    // ROM=AT91_DBG_C1R_FLASH, flash=AT91_DBG_C1R_FLASH2
 	  switch (chipID1r & AT91_DBG_C1R_FLASH2_MASK) {
 		case AT91_DBG_C1R_FLASH2_32K:
 		  flash_info.block_size = 128;
@@ -279,16 +314,18 @@ flash_hwr_init(void){
 		  flash_info.blocks = 1024;
 		  lock_bits = 16;
 		  break;
-#ifdef AT91_MC_FMR1
 		case AT91_DBG_C1R_FLASH2_512K:
 		  flash_info.block_size = 256;
+#ifdef AT91_MC_FMR1
+        flash_info.blocks = 2048;
+        lock_bits = 32;
+#else
 		  flash_info.blocks = 1024;
 		  lock_bits = 16;
-		  (*flash_info.pf)("at91_flash: Only EFC0 is supported for writes and locks");
-		  //flash_info.blocks = 2048;
-		  //lock_bits = 32;
-		  break;
+        (*flash_info.pf)
+          ("at91_flash: Only EFC0 is supported for writes and locks");
 #endif
+        break;
     default:
       goto out;
   }
@@ -303,15 +340,11 @@ flash_hwr_init(void){
   // Set the FLASH clock to 1.5 microseconds based on the MCLK.  This
   // assumes the CPU is still running from the PLL clock as defined in
   // the HAL CDL and the HAL startup code. 
-  fmcn = CYGNUM_HAL_ARM_AT91_CLOCK_SPEED * 1.5 / 1000000 + 0.999999; // We must round up!
   HAL_READ_UINT32(AT91_MC+AT91_MC_FMR, flash_mode);
   flash_mode = flash_mode & ~AT91_MC_FMR_FMCN_MASK;
-  flash_mode = flash_mode | (fmcn << AT91_MC_FMR_FMCN_SHIFT);
+  flash_mode = flash_mode | (AT91_FLASH_FMCN_VALUE << AT91_MC_FMR_FMCN_SHIFT);
   HAL_WRITE_UINT32(AT91_MC+AT91_MC_FMR, flash_mode);
 #ifdef AT91_MC_FMR1
-  HAL_READ_UINT32(AT91_MC+AT91_MC_FMR1, flash_mode);
-  flash_mode = flash_mode & ~AT91_MC_FMR_FMCN_MASK;
-  flash_mode = flash_mode | (fmcn << AT91_MC_FMR_FMCN_SHIFT);
   HAL_WRITE_UINT32(AT91_MC+AT91_MC_FMR1, flash_mode);
 #endif
   
@@ -390,11 +423,18 @@ flash_unlock_block(volatile unsigned long block, int block_size, int blocks)
   cyg_uint32 sector;
   cyg_uint32 retcode;
   cyg_uint32 status;
+  cyg_uint32 fsr_addr = AT91_MC + AT91_MC_FSR;
   
   sector = (((cyg_uint32) block) - (cyg_uint32) flash_info.start) / 
     sector_size;
  
-  HAL_READ_UINT32(AT91_MC + AT91_MC_FSR, status);
+#ifdef AT91_MC_FMR1  /* or in other words at91sam7x512 */
+  if (sector >= SECTOR_AT_WHICH_WE_USE_THE_EFC1){
+    fsr_addr = AT91_MC + AT91_MC_FSR1;
+    sector -= SECTOR_AT_WHICH_WE_USE_THE_EFC1;
+  }
+#endif
+  HAL_READ_UINT32(fsr_addr, status);
   
   if (status & (1 << (sector + 16))){
       retcode = flash_run_command(block, 
@@ -415,11 +455,18 @@ flash_lock_block(volatile unsigned long block, int block_size, int blocks)
   cyg_uint32 sector;
   cyg_uint32 retcode;
   cyg_uint32 status;
+  cyg_uint32 fsr_addr = AT91_MC + AT91_MC_FSR;
   
   sector = (((cyg_uint32) block) - (cyg_uint32) flash_info.start) / 
     sector_size;
 
-  HAL_READ_UINT32(AT91_MC + AT91_MC_FSR, status);
+#ifdef AT91_MC_FMR1  /* or in other words at91sam7x512 */
+  if (sector >= SECTOR_AT_WHICH_WE_USE_THE_EFC1){
+    fsr_addr = AT91_MC + AT91_MC_FSR1;
+    sector -= SECTOR_AT_WHICH_WE_USE_THE_EFC1;
+  }
+#endif
+  HAL_READ_UINT32(fsr_addr, status);
   
   if (!(status & (1 << (sector + 16)))){
       retcode = flash_run_command(block, 
@@ -431,7 +478,7 @@ flash_lock_block(volatile unsigned long block, int block_size, int blocks)
     return FLASH_ERR_OK;
   }
 }
-#endif 
+#endif /*CYGBLD_DEV_FLASH_AT91_LOCKING */
   
 // Map a hardware status to a package error. NOP since the errors are
 // already mapped.

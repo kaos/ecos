@@ -1,3 +1,8 @@
+2009-03-07  Oliver Munz  <munz@speag.ch>
+
+	* cdl/hal_arm_at91sam7sek.cdl: Support the at91sam7s512 part on this
+	platform.
+
 2007-10-16  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/at91sam7sek_misc.c (hal_at91_led): Fix off by one error on
@@ -6,7 +11,7 @@
 
 2007-01-02  Uwe Kindler <uwe_kindler@web.de>
 
-	* cdl/hal_arm_at91sam7s.cdl Moved HAL_PLATFORM_XXX defines and
+	* cdl/hal_arm_at91sam7sek.cdl: Moved HAL_PLATFORM_XXX defines and
 	definition of platform header file (CYGBLD_HAL_PLATFORM_H) from
 	package CYGPKG_HAL_ARM_AT91SAM7 into board specific packages.
 	
@@ -18,7 +23,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2006 Free Software Foundation, Inc.                        
+// Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
