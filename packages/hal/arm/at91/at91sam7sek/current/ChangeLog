@@ -1,4 +1,4 @@
-2009-03-07  Oliver Munz  <munz@speag.ch>
+2009-07-03  Oliver Munz  <munz@speag.ch>
 
 	* cdl/hal_arm_at91sam7sek.cdl: Support the at91sam7s512 part on this
 	platform.
