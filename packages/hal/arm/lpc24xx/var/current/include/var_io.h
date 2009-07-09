@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2004 Free Software Foundation, Inc.                        
+// Copyright (C) 2004, 2009 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -409,7 +409,7 @@
 #define CYGARC_HAL_LPC24XX_REG_FIO0DIR                   0x0000
 #define CYGARC_HAL_LPC24XX_REG_FIO1DIR                   0x0020
 #define CYGARC_HAL_LPC24XX_REG_FIO2DIR                   0x0040
-#define CYGARC_HAL_LPC24XX_REG_FIO3DIR                   0x0050
+#define CYGARC_HAL_LPC24XX_REG_FIO3DIR                   0x0060
 #define CYGARC_HAL_LPC24XX_REG_FIO4DIR                   0x0080
 
 #define CYGARC_HAL_LPC24XX_REG_FIO0SET                   0x0018
