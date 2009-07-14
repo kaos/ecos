@@ -4704,6 +4704,8 @@ target at91sam7sek {
                    CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
+                   CYGPKG_IO_USB
+                   CYGPKG_IO_USB_SLAVE
                    CYGPKG_DEVS_USB_AT91
         }
         description "
@@ -4722,6 +4724,8 @@ target at91sam7xek {
                    CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
+                   CYGPKG_IO_USB
+                   CYGPKG_IO_USB_SLAVE
                    CYGPKG_DEVS_USB_AT91
                    CYGPKG_DEVS_ETH_PHY
                    CYGPKG_DEVS_ETH_ARM_AT91
@@ -4742,6 +4746,8 @@ target sam7ex256 {
                    CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
+                   CYGPKG_IO_USB
+                   CYGPKG_IO_USB_SLAVE
                    CYGPKG_DEVS_USB_AT91
                    CYGPKG_DEVS_ETH_PHY
                    CYGPKG_DEVS_ETH_ARM_AT91

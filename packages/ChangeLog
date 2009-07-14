@@ -1,3 +1,8 @@
+2009-07-14  John Dallaway  <john@dallaway.org.uk>
+
+	* ecos.db: Add CYGPKG_IO_USB and CYGPKG_IO_USB_SLAVE hardware packages
+	to targets at91sam7sek, at91sam7xek and sam7ex256.
+
 2009-03-19  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* ecos.db: target mac7100evb added word "Freescale" to the description.
