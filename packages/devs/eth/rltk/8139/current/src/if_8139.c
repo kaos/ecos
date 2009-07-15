@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -296,9 +296,10 @@ static inline cyg_uint32 INL(cyg_uint32 io_address)
  * Table of all known PCI device/vendor ID combinations for the RealTek 8139.
  * Add them as you get to know them.
  */
-#define CYGNUM_DEVS_ETH_RLTK_8139_KNOWN_ALIASES 3
+#define CYGNUM_DEVS_ETH_RLTK_8139_KNOWN_ALIASES 4
 static pci_identifier_t
 known_8139_aliases[CYGNUM_DEVS_ETH_RLTK_8139_KNOWN_ALIASES] = {
+  { 0x1186, 0x1300, NULL }, /* D-Link DFE-530TX+ PCI card */
   { 0x10ec, 0x8139, NULL }, /* This is the official RealTek vendor/device code of 8139D(L) */
   { 0x11db, 0x1234, NULL}, /* SEGA DreamCast BroadBandAdapter */
   { 0x10ec, 0x8129, NULL } /* This is the official RealTek vendor/device code of 8139C(L) */
