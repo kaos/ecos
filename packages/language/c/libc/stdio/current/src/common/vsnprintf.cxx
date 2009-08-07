@@ -71,8 +71,6 @@ class Cyg_VsnprintfStream: public Cyg_OutputStream
 public:
     Cyg_VsnprintfStream(char* s): s_(s) {}
 
-    virtual ~Cyg_VsnprintfStream() { *s_ = '\0'; }
-
     virtual Cyg_ErrNo write( const cyg_uint8 *buffer,
         cyg_ucount32 buffer_length, cyg_ucount32 *bytes_written );
 
@@ -88,6 +86,11 @@ Cyg_VsnprintfStream::write(
     cyg_ucount32 buffer_length,
     cyg_ucount32 *bytes_written )
 {
+#ifdef WHEN_MEMCPY_OPTIMISED_IN_ECOS_EVENTUALLY
+    memcpy(s_, buffer, buffer_length);
+    s_ += buffer_length;
+    *bytes_written = buffer_length;
+#else
     char *dest = s_;
     char const *src = (char const *)buffer;
     char const *end = src + buffer_length;
@@ -95,14 +98,22 @@ Cyg_VsnprintfStream::write(
         *dest++ = *src++;
     s_ = dest;
     *bytes_written = buffer_length;
+#endif
     return ENOERR;
 }
 
 externC int
 vsnprintf( char *s, size_t size, const char *format, va_list arg ) __THROW
 {
+    int ret;
     Cyg_VsnprintfStream stream(s);
-    return vfnprintf( (FILE *)(void *)&stream, size, format, arg );
+    ret = vfnprintf( (FILE *)(void *)&stream, size, format, arg );
+    /* If no error, and string not truncated, then apply null termination in
+     * correct place
+     */
+    if ( (ret >= 0) && ((size_t)ret < size) )
+        s[ret] = '\0';
+    return ret;
 } // vsnprintf()
 
 // EOF vsnprintf.cxx

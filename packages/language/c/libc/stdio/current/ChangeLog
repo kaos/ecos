@@ -1,3 +1,9 @@
+2009-08-07  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/common/vsnprintf.cxx (class Cyg_VsnprintfStream):
+	Remove destructor.
+	(vsnprintf): Apply null terminator correctly when truncated.
+
 2009-02-16  Lars Povlsen  <lpovlsen@vitesse.com>
 
 	* include/stdio.h: Removed extra semicolon after scanf()
