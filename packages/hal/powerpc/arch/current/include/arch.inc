@@ -263,15 +263,27 @@ name:
 
 #if defined(CYGSEM_HAL_POWERPC_COPY_VECTORS)
 
+
+#if defined(CYGHWR_HAL_POWERPC_BOOK_E_FIXED_VECTORS)
+        .macro  hal_ivor_init   ivor,handler
+        .endm
+#else	
         .macro  hal_ivor_init   ivor,handler
         lwi     r3,__exception_\handler
         and     r3,r3,r4
         mtspr   \ivor,r3
         .endm
+#endif	
 
         .macro  hal_vectors_init
+
+#if defined(CYGHWR_HAL_POWERPC_BOOK_E_FIXED_VECTORS)
+        lwi     r3,hal_fixed_vectors_base
+        lwi     r4,0xFFFFF000
+#else
         lwi     r3,rom_vectors
         lwi     r4,0xFFFF0000
+#endif
         and     r3,r3,r4
         mtspr   63,r3
 #if defined(CYGHWR_HAL_POWERPC_NEED_VECTORS)
@@ -298,6 +310,40 @@ name:
 #define HAL_VECTORS_INIT_DEFINED
 
 #endif
+		
+#if defined(CYGHWR_HAL_POWERPC_BOOK_E_FIXED_VECTORS)
+
+        .macro  exception_vector_fixed name
+        .p2align 4
+        .globl   exception_vector_fixed\name
+exception_vector_fixed\name:
+        b        __exception_\name
+        .endm
+
+        .macro  hal_fixed_vectors
+hal_fixed_vectors_base:
+        exception_vector_fixed          critical_input
+        exception_vector_fixed          machine_check
+        exception_vector_fixed          data_storage
+        exception_vector_fixed          instruction_storage
+        exception_vector_fixed          external
+        exception_vector_fixed          alignment
+        exception_vector_fixed          program
+        exception_vector_fixed          floatingpoint_unavailable
+        exception_vector_fixed          system_call
+        exception_vector_fixed          ap_unavailable 
+        exception_vector_fixed          decrementer
+        exception_vector_fixed          interval_timer
+        exception_vector_fixed          watchdog
+        exception_vector_fixed          data_tlb_miss
+        exception_vector_fixed          instruction_tlb_miss
+        exception_vector_fixed          debug  
+        .endm
+
+#define HAL_FIXED_VECTORS_DEFINED
+
+#endif  
+
 
 #endif // !defined(CYGHWR_HAL_POWERPC_BOOK_E)
 
@@ -307,6 +353,13 @@ name:
         .macro  hal_vectors_init
         .endm
 
+#endif        
+
+#ifndef HAL_FIXED_VECTORS_DEFINED
+
+        .macro   hal_fixed_vectors
+        .endm
+        
 #endif        
 
 #------------------------------------------------------------------------------

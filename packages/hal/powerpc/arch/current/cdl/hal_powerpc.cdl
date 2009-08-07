@@ -162,6 +162,16 @@ cdl_package CYGPKG_HAL_POWERPC {
             exception delivery."
     }
 
+    cdl_option CYGHWR_HAL_POWERPC_BOOK_E_FIXED_VECTORS {
+        display       "Enable Book E fixed vector support"
+        active_if     CYGHWR_HAL_POWERPC_BOOK_E
+        default_value 0
+        description "
+            This option indicates that the Book E variant only supports
+            a fixed sized vector table of 16 bytes each. This requires some
+            extra handling in the HAL."
+    }
+    
     cdl_option CYGHWR_HAL_POWERPC_VECTOR_ALIGNMENT {
         display       "Exception vector aligment"
         flavor        data

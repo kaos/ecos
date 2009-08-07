@@ -227,7 +227,9 @@ __exception_\name:
 #ifdef CYG_HAL_FUDGE_VECTOR_ALIGNMENT        
         hal_fudge_vector_alignment
 #endif
-                
+
+        hal_fixed_vectors
+        
 rom_vectors:
         # These are the architecture defined vectors that
         # are always present.

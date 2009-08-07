@@ -301,7 +301,7 @@ hal_MMU_init (void)
 externC void
 hal_enable_caches(void)
 {
-#ifndef HAL_UCACHE_ENABLE
+#ifndef HAL_CACHE_UNIFIED
         
 #if !(defined(CYG_HAL_STARTUP_RAM) || defined(CYG_HAL_STARTUP_JTAG))
     // Invalidate caches
@@ -330,7 +330,7 @@ hal_enable_caches(void)
 #endif
 #endif
 
-#else // HAL_UCACHE_ENABLE
+#else // HAL_CACHE_UNIFIED
 
 
 #if !(defined(CYG_HAL_STARTUP_RAM) || defined(CYG_HAL_STARTUP_JTAG))
@@ -346,7 +346,7 @@ hal_enable_caches(void)
 
 #endif
     
-#endif // HAL_UCACHE_ENABLE
+#endif // HAL_CACHE_UNIFIED
     
 }
 

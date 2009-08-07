@@ -1,3 +1,15 @@
+2009-08-07  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/hal_powerpc.cdl: Add CYGHWR_HAL_POWERPC_BOOK_E_FIXED_VECTORS
+	to enable support for fixed vectors.
+
+	* include/arch.inc:
+	* src/vectors.S: Add support for small fixed sized vector table
+	present on some variants.
+
+	* src/hal_misc.c (hal_enable_caches): Change test for unified
+	cache to use HAL_CACHE_UNIFIED rather than HAL_UCACHE_ENABLE.
+
 2009-04-24  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/hal_arch.h (GDB_Registers): Redefine for Book E
