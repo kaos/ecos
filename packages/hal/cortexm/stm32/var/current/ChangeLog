@@ -1,3 +1,7 @@
+2009-08-10  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* include/var_io.h: Added more register definitions for FSMC
+
 2009-04-17  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* src/hal_diag.c (hal_stm32_serial_getc_timeout): Fix for higher

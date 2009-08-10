@@ -1071,6 +1071,64 @@ __externC void hal_stm32_bd_protect( int protect );
 #define CYGHWR_HAL_STM32_FSMC_BCR4              0x18
 #define CYGHWR_HAL_STM32_FSMC_BTR4              0x1C
 
+#define CYGHWR_HAL_STM32_FSMC_BWTR1             0x104
+#define CYGHWR_HAL_STM32_FSMC_BWTR2             0x10C
+#define CYGHWR_HAL_STM32_FSMC_BWTR3             0x114
+#define CYGHWR_HAL_STM32_FSMC_BWTR4             0x11C
+
+#define CYGHWR_HAL_STM32_FSMC_PCR2              0x60
+#define CYGHWR_HAL_STM32_FSMC_SR2               0x64
+#define CYGHWR_HAL_STM32_FSMC_PMEM2             0x68
+#define CYGHWR_HAL_STM32_FSMC_PATT2             0x6C
+#define CYGHWR_HAL_STM32_FSMC_PCR3              0x80
+#define CYGHWR_HAL_STM32_FSMC_SR3               0x84
+#define CYGHWR_HAL_STM32_FSMC_PMEM3             0x88
+#define CYGHWR_HAL_STM32_FSMC_PATT3             0x8C
+#define CYGHWR_HAL_STM32_FSMC_PCR4              0xC0
+#define CYGHWR_HAL_STM32_FSMC_SR4               0xC4
+#define CYGHWR_HAL_STM32_FSMC_PMEM4             0xC8
+#define CYGHWR_HAL_STM32_FSMC_PATT4             0xCC
+
+#define CYGHWR_HAL_STM32_FSMC_PIO4              0xB0
+
+#define CYGHWR_HAL_STM32_FSMC_ECCR2             0x54
+#define CYGHWR_HAL_STM32_FSMC_ECCR3             0x74
+
+#define CYGHWR_HAL_STM32_FSMC_BANK2_BASE        0x70000000
+#define CYGHWR_HAL_STM32_FSMC_BANK3_BASE        0x80000000
+#define CYGHWR_HAL_STM32_FSMC_BANK4_BASE        0x90000000
+
+#define CYGHWR_HAL_STM32_FSMC_BANK_CMD          0x10000
+#define CYGHWR_HAL_STM32_FSMC_BANK_ADDR         0x20000
+
+// PCR fields
+
+#define CYGHWR_HAL_STM32_FSMC_PCR_PWAITEN       BIT_(1)
+#define CYGHWR_HAL_STM32_FSMC_PCR_PBKEN         BIT_(2)
+#define CYGHWR_HAL_STM32_FSMC_PCR_PTYP_NAND     BIT_(3)
+#define CYGHWR_HAL_STM32_FSMC_PCR_PWID_8        VALUE_(4,0)
+#define CYGHWR_HAL_STM32_FSMC_PCR_PWID_16       VALUE_(4,1)
+#define CYGHWR_HAL_STM32_FSMC_PCR_EECEN         BIT_(6)
+#define CYGHWR_HAL_STM32_FSMC_PCR_ADLOW         BIT_(8)
+#define CYGHWR_HAL_STM32_FSMC_PCR_TCLR(__x)     VALUE_(9,__x)
+#define CYGHWR_HAL_STM32_FSMC_PCR_TAR(__x)      VALUE_(13,__x)
+#define CYGHWR_HAL_STM32_FSMC_PCR_ECCPS_256     VALUE_(17,0)
+#define CYGHWR_HAL_STM32_FSMC_PCR_ECCPS_512     VALUE_(17,1)
+#define CYGHWR_HAL_STM32_FSMC_PCR_ECCPS_1024    VALUE_(17,2)
+#define CYGHWR_HAL_STM32_FSMC_PCR_ECCPS_2048    VALUE_(17,3)
+#define CYGHWR_HAL_STM32_FSMC_PCR_ECCPS_4096    VALUE_(17,4)
+#define CYGHWR_HAL_STM32_FSMC_PCR_ECCPS_8192    VALUE_(17,5)
+
+// SR fields
+
+#define CYGHWR_HAL_STM32_FSMC_SR_IRS            BIT_(0)
+#define CYGHWR_HAL_STM32_FSMC_SR_ILS            BIT_(1)
+#define CYGHWR_HAL_STM32_FSMC_SR_IFS            BIT_(2)
+#define CYGHWR_HAL_STM32_FSMC_SR_IREN           BIT_(3)
+#define CYGHWR_HAL_STM32_FSMC_SR_ILEN           BIT_(4)
+#define CYGHWR_HAL_STM32_FSMC_SR_IFEN           BIT_(5)
+#define CYGHWR_HAL_STM32_FSMC_SR_FEMPT          BIT_(6)
+
 //-----------------------------------------------------------------------------
 // end of var_io.h
 #endif // CYGONCE_HAL_VAR_IO_H
