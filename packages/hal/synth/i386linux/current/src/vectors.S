@@ -72,6 +72,7 @@
 
         .file   "vectors.S"
 
+        .extern _hal_synth_user_desc
 	.extern	_linux_entry
         
         .data
@@ -97,5 +98,34 @@ _start:
         addl    %eax, %eax
         addl    %eax, %ebx
         movl    %ebx, cyg_hal_sys_environ
+
+        // Clear the frame pointer, to facilitate debugging
+        xorl    %ebp, %ebp
+
+        // Align the stack to a 16-byte boundary.
+        andl    $0xFFFFFFF0, %esp
+
+        // Set up the TLS section. This must be done before any
+        // C code gets to run, or -fstack-protector-all will fail.
         
+        // _hal_synth_user_desc is statically initialized in tls.c
+        movl    $_hal_synth_user_desc,%ebx
+        // Syscall 243, set_thread_area
+        movl    $0xf3, %eax
+        int     $0x80
+
+        // The syscall may have failed. That should only happen if running
+        // on an old kernel which predates set_thread_area(), in which case
+        // we are probably also using an old gcc which does not yet support
+        // -fstack-protector. There is no obvious way forward if we are trying
+        // to run an executable built with recent gcc on an old kernel.
+        test    %eax, %eax
+        jne     1f
+
+        // gs value = (_hal_synth_user_desc.ud_entry_number * 8) + 3
+        movl    _hal_synth_user_desc,%eax
+        lea     0x3(,%eax,8),%eax
+        mov     %eax,%gs
+        
+1:      
 	jmp	_linux_entry

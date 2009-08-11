@@ -11,7 +11,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -71,6 +71,24 @@ typedef struct
     cyg_bool    interrupts;             // Are interrupts enabled for this thread?
 } HAL_SavedRegisters;
 
+// An additional structure used for per-thread data. This is not
+// actually part of the standard HAL. However gcc can generate code
+// which expects one of these structures to be accessible via
+// %gs:0, e.g. when -fstack-protector is enabled.
+//
+// This definition is based on one in the glibc sources.
+typedef struct _HAL_TLS_Data {
+    void*       tls_tcb;
+    void*       tls_dtv;
+    void*       tls_self;
+    int         tls_multiple_threads;
+    void*       tls_sysinfo;
+    void*       tls_stack_guard;
+    void*       tls_pointer_guard;
+    int         tls_gscope_flag;
+    int         tls_private_futex;
+    void*       tls_private_tm[5];
+} _HAL_TLS_Data;
 
 //-----------------------------------------------------------------------------
 // Bit manipulation routines. These are provided by the processor variant

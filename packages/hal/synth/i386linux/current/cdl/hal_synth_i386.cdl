@@ -76,7 +76,7 @@ cdl_package CYGPKG_HAL_SYNTH_I386 {
         @echo >> $(notdir $@).deps
         @rm vectors.tmp
     }
-    compile       context.S syscall-i386-linux-1.0.S profile.c
+    compile       context.S syscall-i386-linux-1.0.S profile.c tls.c
 
     cdl_component CYG_HAL_STARTUP {
         display       "Startup type"

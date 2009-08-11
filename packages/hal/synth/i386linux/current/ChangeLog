@@ -1,3 +1,12 @@
+2009-08-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/tls.c: new module for TLS (thread local storage) support as
+	expected by gcc.
+
+	* cdl/hal_synth_i386.cdl, include/var_arch.h,
+	include/pkgconf/mlt_synth_i386_rom.ldi, src/vectors.s: add TLS
+	support.
+
 2009-01-31  Bart Veer <bartv@ecoscentric.com>
 
 	* cdl/hal_synth_i386.cdl: update compiler flags for gcc 4.x
