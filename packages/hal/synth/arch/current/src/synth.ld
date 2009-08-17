@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -108,13 +108,24 @@ GROUP(libtarget.a libgcc.a)
       _EXCEPT_END_ = ABSOLUTE(.);}                                      	\
     > _region_
 
-#define SECTION_eh_frame(_region_, _vma_, _lma_)      \
-  .eh_frame _vma_ : _lma_                             \
-    {                                                 \
-       FORCE_OUTPUT;  __EH_FRAME_BEGIN__ = .;         \
-       KEEP(*(.eh_frame*))                             \
-       __FRAME_END__ = .;                             \
-       . = . + 8;                                     \
+#define SECTION_eh_frame(_region_, _vma_, _lma_)                            \
+    . = _vma_ ;                                                             \
+    . = ALIGN(ALIGN_LMA) ;                                                  \
+    .eh_frame_hdr . : _lma_                                                 \
+    {                                                                       \
+       FORCE_OUTPUT;                                                        \
+       *(.eh_frame_hdr)                                                     \
+    } > _region_ = 0                                                        \
+    . = ALIGN(ALIGN_LMA) ;                                                  \
+    .eh_frame . : FOLLOWING(.eh_frame_hdr)                                  \
+    {                                                                       \
+       FORCE_OUTPUT;                                                        \
+       __EH_FRAME_BEGIN__ = .;                                              \
+       KEEP(*(.eh_frame))                                                   \
+       KEEP(*(.eh_frame*))                                                  \
+       __EH_FRAME_END__ = .;                                                \
+       . = ALIGN(4) ;                                                       \
+       . = . + 8;                                                           \
     } > _region_ = 0
 
 #define SECTION_RELOCS(_region_, _vma_, _lma_)                              \

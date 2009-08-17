@@ -1,3 +1,8 @@
+2009-08-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth.ld (SECTION_eh_frame): allow for a .eh_frame_hdr
+	section.
+
 2009-02-07  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/hal_synth.cdl: Parent under the common HAL package as with
