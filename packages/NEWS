@@ -1,12 +1,13 @@
+* Port of uSTL 1.3 by Uwe Kindler
 * Port of PDCurses 3.4 by Sergei Gavrikov
 
 *********** eCos 3.0 release ************
 
-* Port to Olimex LPC-L2294-1MB include ethernet and Flash drvers by
+* Port to Olimex LPC-L2294-1MB including ethernet and Flash drivers by
   Sergei Gavrikov
-* Port to Olimex LPC-E2294 include ethernet and Flash drvers by
+* Port to Olimex LPC-E2294 including ethernet and Flash drivers by
   Sergei Gavrikov
-* Port to Olimex LPC-H2294 include a Flash drvers by Sergei Gavrikov
+* Port to Olimex LPC-H2294 including Flash drivers by Sergei Gavrikov
 * Intel Strataflash v2 flash driver contributed by eCosCentric Ltd.
 * New Flash API with lots of new goodies.
 * ADC device driver for EA2468 OEM board

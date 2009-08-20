@@ -2672,6 +2672,18 @@ ISO standard floating point mathematical library containing many
 useful functions for mathematical calculations."
 }
 
+package CYGPKG_USTL {
+	alias		{ "uSTL library" ustl }
+	directory	language/cxx/ustl
+	script		ustl.cdl
+	description  "
+This package provides the uSTL library. uSTL is a 
+partial implementation of the STL specification intended to 
+reduce code size of the derivative programs. This allows the 
+user application to use well known standard C++ STL library 
+containers, streams, iterators, algorithms and functors."
+}
+
 package CYGPKG_ERROR {
 	alias 		{ "Common error code support" error errors }
 	directory	error

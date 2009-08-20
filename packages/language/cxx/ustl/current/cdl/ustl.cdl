@@ -1,0 +1,197 @@
+# ====================================================================
+#
+#      ustl.cdl
+#
+#      uSTL - "Size-optimized STL" library package configuration data
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2009 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Uwe Kindler
+# Contributors:   
+# Date:           2009-07-28
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+
+cdl_package CYGPKG_USTL {
+    display       "uSTL library"
+    description   "
+        This package provides the uSTL library. uSTL is a 
+        partial implementation of the STL specification intended to 
+        reduce code size of the derivative programs. This allows the 
+        user application to use well known standard C++ STL library 
+        containers, streams, iterators, algorithms and functors."
+    requires CYGPKG_IO
+    requires CYGPKG_ERROR
+    requires CYGPKG_ISOINFRA
+    requires CYGPKG_LIBM
+    
+    # malloc
+    requires CYGINT_ISO_MALLOC
+    
+    # stdio
+    requires CYGINT_ISO_STDIO_FORMATTED_IO
+    requires CYGINT_ISO_STDIO_CHAR_IO
+    requires CYGINT_ISO_STDIO_DIRECT_IO
+    requires CYGINT_ISO_STDIO_ERROR
+    
+    # signals
+    requires CYGINT_ISO_SIGNAL_NUMBERS
+    requires CYGINT_ISO_SIGNAL_IMPL
+
+    # time
+    requires CYGINT_ISO_C_TIME_TYPES
+    
+    # startup
+    requires CYGINT_ISO_EXIT
+    requires CYGINT_ISO_MAIN_STARTUP
+    requires CYGINT_ISO_ENVIRON
+    
+    #string 
+    requires CYGINT_ISO_STRTOK_R
+    requires CYGINT_ISO_STRING_LOCALE_FUNCS
+    requires CYGINT_ISO_STRING_MEMFUNCS
+    requires CYGINT_ISO_STRING_STRFUNCS
+    
+    # common
+    requires CYGINT_ISO_CTYPE
+    requires CYGINT_ISO_ERRNO_CODES
+    requires CYGINT_ISO_ERRNO
+    requires CYGINT_ISO_LOCALE
+    requires CYGIMP_LIBC_STDIO_C99_SNPRINTF
+    
+    compile bktrace.cpp     \
+            cmemlink.cpp    \
+            memblock.cpp    \
+            memlink.cpp     \
+            ualgobase.cpp   \
+            ubitset.cpp     \
+            uexception.cpp  \
+            unew.cpp        \
+            ustdxept.cpp    \
+            ustring.cpp     \
+            ustlecos.cpp    \
+            mistream.cpp    \
+            sistream.cpp    \
+            sostream.cpp
+                      
+    cdl_component CYGCLS_USTL_FSTREAMS {
+        display "File streams support"
+        flavor  bool
+        default_value CYGPKG_IO_FILEIO 
+        description   "
+            This option enables file stream support. For file stream
+            support the File I/O package is required."
+        requires CYGPKG_IO_FILEIO
+		requires CYGINT_ISO_STDIO_FILETYPES
+        requires CYGINT_ISO_STDIO_FILEACCESS
+        requires CYGINT_ISO_STDIO_FILEPOS
+		requires CYGINT_ISO_STDIO_STREAMS
+        compile fstream.cpp     \
+                ofstream.cpp 
+                
+        cdl_option CYGVAR_USTL_CIN_COUT_CERR {
+            display "cin, cout & cerr support"
+            flavor  bool
+            default_value 1 
+            description "
+                Enable this option if you want the standard streams
+                cin, cout and cerr to be included. You will not be able 
+                to run bvt tests if you don't enable this option."
+        }
+    }
+        
+    cdl_option CYGSEM_USTL_STREAM_BOUNDS_CHECK {
+        display "Stream bounds checking"
+        flavor  bool
+        default_value 0
+        description "
+            Enable this option if you want stream operations to throw 
+            exceptions on insufficient data or insufficient space. 
+            All these errors should be preventable in output code; 
+            the input code should verify the data in a separate step. 
+            It slows down stream operations a lot, but it's your call. 
+            Debug builds always throws exceptions - this option is
+            only valid for release builds."
+    }
+    
+    cdl_component CYGPKG_USTL_OPTIONS {
+        display "uSTL library build options"
+        flavor  none
+        no_define
+        description   "
+            Package specific build options including control over
+            compiler flags used only in building this package,
+            and details of which tests are built."
+
+
+        cdl_option CYGPKG_USTL_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the uSTL library. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_USTL_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "-Wundef" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the uSTL library. These flags are removed from
+                the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_USTL_TESTS {
+            display "uSTL tests"
+            flavor  data
+            no_define
+            calculated { (CYGVAR_USTL_CIN_COUT_CERR ? "tests/bvt00 tests/bvt01 tests/bvt02 tests/bvt03 tests/bvt04 tests/bvt05 tests/bvt06 tests/bvt07 tests/bvt08 tests/bvt09 tests/bvt10 tests/bvt11 tests/bvt12 tests/bvt13 tests/bvt14 tests/bvt15 tests/bvt16 tests/bvt17 tests/bvt18 tests/bvt19 tests/bvt20 tests/bvt21 tests/bvt22 tests/bvt23 tests/bvt24 tests/bvt25 tests/bvt26 tests/bvt27" : "" )}
+            description   "
+                This option specifies the set of tests for the uSTL library."
+        }
+    }
+}
+
+# ====================================================================
+# EOF ustl.cdl
