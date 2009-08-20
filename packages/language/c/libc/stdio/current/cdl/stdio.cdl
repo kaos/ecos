@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -378,6 +378,19 @@ cdl_package CYGPKG_LIBC_STDIO {
             the streams to be locked when accessed by
             multiple threads simultaneously."
     }
+	
+    cdl_option CYGIMP_LIBC_STDIO_C99_SNPRINTF {
+        display       "C99 compliant snprintf() family"
+        default_value 0
+        description   "
+                This option allows C99 compliant implementation of 
+                snprintf() family (i.e. snprintf(), vsnprintf()) 
+                of functions. C99 compliant snprintf() functions
+                return the number of characters that would have been written 
+                to a sufficiently sized buffer (excluding the '\\0'). 
+                If this option is disabled, the functions simply return 
+                the number of bytes that have been written to the buffer."
+    }
     
 
 # ====================================================================
@@ -435,7 +448,7 @@ cdl_package CYGPKG_LIBC_STDIO {
             flavor  data
             no_define
             calculated { 
-                "tests/sprintf1 tests/sprintf2 tests/sscanf tests/stdiooutput " 
+                "tests/sprintf1 tests/sprintf2 tests/snprintf tests/sscanf tests/stdiooutput " 
                 . ((CYGPKG_IO_FILEIO && CYGPKG_FS_RAM) ? "tests/fileio " : "")
             }
             description   "

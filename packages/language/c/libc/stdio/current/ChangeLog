@@ -1,3 +1,12 @@
+2009-08-20  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/stdio.cdl Added option CYGIMP_LIBC_STDIO_C99_SNPRINTF
+	for activation of C99 compliant snprintf() return value.
+	* src/output/vfnprintf.cxx: Added optional C99 compliant return
+	value calculation.
+	* tests/snprintf.c: New test for snprintf including C99
+	implementation.
+
 2009-08-07  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/common/vsnprintf.cxx (class Cyg_VsnprintfStream):

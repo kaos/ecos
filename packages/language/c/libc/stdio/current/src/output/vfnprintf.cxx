@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -206,6 +206,17 @@ vfnprintf ( FILE *stream, size_t n, const char *format, va_list arg) __THROW
         /*
          * BEWARE, these `goto error' on error, and PAD uses `n'.
          */
+#ifdef CYGIMP_LIBC_STDIO_C99_SNPRINTF
+#define PRINT(ptr, len)                                                      \
+CYG_MACRO_START                                                              \
+    if ((size_t)(ret + 1) < n) {                                             \
+        cyg_ucount32 length = MIN( (cyg_ucount32) len, n - ret - 1);         \
+        if (((Cyg_OutputStream *)stream)->write( (const cyg_uint8 *)ptr,     \
+                                            length, &length ))               \
+            goto error;                                                      \
+    }                                                                        \
+CYG_MACRO_END
+#else
 #define PRINT(ptr, len)                                                      \
 CYG_MACRO_START                                                              \
     cyg_ucount32 length = MIN( (cyg_ucount32) len, n - ret - 1);             \
@@ -217,7 +228,7 @@ CYG_MACRO_START                                                              \
         goto done;                                                           \
     }                                                                        \
 CYG_MACRO_END
-
+#endif // CYGIMP_LIBC_STDIO_C99_SNPRINTF
 
 #define PAD(howmany, with)                                                   \
 CYG_MACRO_START                                                              \
@@ -276,7 +287,11 @@ CYG_MACRO_END
                         PRINT(cp, y);
                         ret += y;
                 }
+#ifdef CYGIMP_LIBC_STDIO_C99_SNPRINTF
+                if (x <= 0)
+#else
                 if ((x <= 0) || (ret >= (int)n))  // @@@ this check with n isn't good enough
+#endif
                         goto done;
                 fmt++;          /* skip over '%' */
 
