@@ -507,7 +507,9 @@ externC int             cyg_hal_sys_execve(const char*, const char* [], const ch
 externC int             cyg_hal_sys_pipe(int []);
 externC int             cyg_hal_sys_close(int);
 externC int             cyg_hal_sys_dup2(int, int);
- 
+externC int             cyg_hal_sys_unlink(const char*);
+externC int             cyg_hal_sys_rename(const char*, const char*);
+
 #define CYG_HAL_SYS_IPCOP_semop          1
 #define CYG_HAL_SYS_IPCOP_semget         2
 #define CYG_HAL_SYS_IPCOP_semctl         3
