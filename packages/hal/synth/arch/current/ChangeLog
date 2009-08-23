@@ -3,6 +3,24 @@
 	* src/synth.ld (SECTION_eh_frame): allow for a .eh_frame_hdr
 	section.
 
+2009-07-16  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth_diag.c: add locking to the HAL diag code. Remove an
+	unnecessary fdatasync().
+
+2009-07-14  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/configure.in: allow builds on x86_64 machines.
+
+	* host/configure, host/Makefile.in, host/aclocal.m4: regenerate.
+
+2009-07-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/ecosynth.tcl: fix problems with balloon help when widgets
+	are deleted.
+
+	* include/hal_io.h: add unlink() and rename() prototypes
+
 2009-02-07  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/hal_synth.cdl: Parent under the common HAL package as with
@@ -57,7 +75,6 @@
 	* src/synth.ld: add new section to contain the heap memory rather
 	than rely on brk().
 	
-
 2005-11-05  Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* include/hal_io.h (struct cyg_hal_sys_old_stat): Make the

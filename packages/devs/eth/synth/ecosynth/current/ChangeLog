@@ -1,3 +1,9 @@
+2009-07-14  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/configure.in: allow builds on x86_64 machines.
+
+	* host/configure, host/Makefile.in, host/aclocal.m4: regenerate
+
 2008-08-18  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/Makefile.am, host/configure.in: update host-configury.

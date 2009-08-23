@@ -78,6 +78,7 @@ ECOS_PACKAGE_DIRS
 
 case "${host}" in
     i[[34567]]86-*-linux-gnu* ) SUPPORTED="yes";;
+    x86_64-*-linux-gnu* ) SUPPORTED="yes";;
     * ) SUPPORTED="no"
 esac
 if test "${SUPPORTED}" = "no" ; then
