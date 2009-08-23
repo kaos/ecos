@@ -10,7 +10,7 @@
 # ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                         
 # -------------------------------------------                               
 # This file is part of the eCos host tools.                                 
-# Copyright (C) 2002 Free Software Foundation, Inc.                         
+# Copyright (C) 2002, 2009 Free Software Foundation, Inc.                         
 #
 # This program is free software; you can redistribute it and/or modify      
 # it under the terms of the GNU General Public License as published by      
@@ -938,7 +938,7 @@ namespace eval synth {
     proc tdf_get_all_options { devname } {
         set result [list]
         for { set i 0 } { [info exists synth::_tdf_device_options($devname,$i)] } { incr i } {
-            lappend synth::_tdf_consumed_options "$devname,$index"
+            lappend synth::_tdf_consumed_options "$devname,$i"
             lappend result $synth::_tdf_device_options($devname,$i)
         }
         return $result
@@ -1181,11 +1181,12 @@ namespace eval synth {
 
 namespace eval synth {
 
-    variable _balloon_messages
-    variable _balloon_pending ""
+    variable _balloon_current   ""
+    array set _balloon_messages [list]
+    variable _balloon_pending   ""
     
     toplevel .balloon
-    label .balloon.info -borderwidth 2 -relief groove -background "light yellow"
+    label .balloon.info -borderwidth 2 -relief groove -background "light yellow" -anchor w
     pack .balloon.info -side left -fill both -expand 1
     wm overrideredirect .balloon 1
     wm withdraw .balloon
@@ -1194,6 +1195,7 @@ namespace eval synth {
         set synth::_balloon_messages($widget) $message
         bind $widget <Enter> { synth::_balloonhelp_pending %W }
         bind $widget <Leave> { synth::_balloonhelp_cancel }
+        bind $widget <Destroy> {+synth::_balloonhelp_destroy %W }
     }
     
     proc _balloonhelp_pending { widget } {
@@ -1207,16 +1209,28 @@ namespace eval synth {
             set synth::_balloon_pending ""
         } else {
             wm withdraw .balloon
+            set synth::_balloon_current ""
         }
     }
 
+    proc _balloonhelp_destroy { widget } {
+        if { $synth::_balloon_current == $widget } {
+            wm withdraw .balloon
+            set synth::_balloon_current ""
+        }
+        unset synth::_balloon_messages($widget)
+    }
+
     proc _balloonhelp_show { widget } {
-        .balloon.info configure -text $synth::_balloon_messages($widget)
-        set x [expr [winfo rootx $widget] + 2]
-        set y [expr [winfo rooty $widget] + [winfo height $widget] + 2]
-        wm geometry .balloon +$x+$y
-        wm deiconify .balloon
-        raise .balloon
+        if { [winfo exists $widget] } {
+            set synth::_balloon_current $widget
+            .balloon.info configure -text $synth::_balloon_messages($widget)
+            set x [expr [winfo rootx $widget] + 2]
+            set y [expr [winfo rooty $widget] + [winfo height $widget] + 2]
+            wm geometry .balloon +$x+$y
+            wm deiconify .balloon
+            raise .balloon
+        }
         set synth::_balloon_pending ""
     }
 }
@@ -1586,6 +1600,8 @@ namespace eval synth {
     } else {
         set _repo $synth::_ecos_repository
     }
+    # FIXME: cope with multiple repositories.
+    
     if { ![file exists [file join $_repo "ecos.db"]] } {
         synth::report_warning "Failed to locate eCos component repository.\n   \
         Please define an environment variable ECOS_REPOSITORY.\n"
