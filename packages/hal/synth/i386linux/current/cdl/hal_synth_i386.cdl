@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005, 2009 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -104,11 +104,13 @@ cdl_package CYGPKG_HAL_SYNTH_I386 {
             display "Global command prefix"
             flavor  data
             no_define
-	    if { ($tcl_platform(os) == "Linux") && [string match "i*86" $tcl_platform(machine)] } {
-		default_value { "" }
-	    } else {
-		default_value { "i686-pc-linux-gnu" }
-	    }
+            if { ($tcl_platform(os) == "Linux") && [string match "i*86" $tcl_platform(machine)] } {
+                default_value { "" }
+            } elseif { ($tcl_platform(os) == "Linux") && [string equal "x86_64" $tcl_platform(machine)] } {
+                default_value { "" }
+            } else {
+                default_value { "i686-pc-linux-gnu" }
+            }
             description "
                 This option specifies the command prefix used when
                 invoking the build tools. You must be using gcc-2.95.2 or
@@ -120,7 +122,11 @@ cdl_package CYGPKG_HAL_SYNTH_I386 {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { CYGBLD_GLOBAL_WARNFLAGS . " -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions " }
+            if { ($tcl_platform(os) == "Linux") && [string equal "x86_64" $tcl_platform(machine)] } {
+                default_value { CYGBLD_GLOBAL_WARNFLAGS . " -m32 -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions " }
+            } else {
+                default_value { CYGBLD_GLOBAL_WARNFLAGS . " -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions " }
+            }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
@@ -132,7 +138,11 @@ cdl_package CYGPKG_HAL_SYNTH_I386 {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static" }
+            if { ($tcl_platform(os) == "Linux") && [string equal "x86_64" $tcl_platform(machine)] } {
+                default_value { "-m32 -g -nostdlib -Wl,--gc-sections -Wl,-static" }
+            } else {
+                default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static" }
+            }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."
