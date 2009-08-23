@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -61,6 +61,7 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_diag.h>
 #include <cyg/hal/hal_io.h>
+#include <cyg/hal/hal_intr.h>
 #include <cyg/infra/cyg_ass.h>
 
 //-----------------------------------------------------------------------------
@@ -102,10 +103,12 @@ void hal_diag_init( void )
 
 void hal_diag_write_char(char c)
 {
-    static int  diag_index = 0;
+    static int      diag_index = 0;
     static unsigned char diag_buffer[128];
-
+    int             ints_state;
+    
     CYG_ASSERT(diag_index < 128, "Diagnostic buffer overflow");
+    HAL_DISABLE_INTERRUPTS(ints_state);
     
     diag_buffer[diag_index++] = (unsigned char) c;
     if (('\n' == c) || (128 == diag_index)) {
@@ -129,9 +132,9 @@ void hal_diag_write_char(char c)
             }
             CYG_ASSERT(0 == diag_index, "All data should have been written out");
             diag_index = 0;
-            cyg_hal_sys_fdatasync(1);
         }
     }
+    HAL_RESTORE_INTERRUPTS(ints_state);
 }
 
 // Diagnostic input. It is not clear that this is actually useful,
