@@ -1,3 +1,8 @@
+2009-08-24  John Dallaway  <john@dallaway.org.uk>
+
+	* doc/kernel.sgml: Use "reinterpret_cast" throughout the C++ thread
+	entry point example. [ Bugzilla 1000550 ]
+
 2009-05-14  John Dallaway  <john@dallaway.org.uk>
 
 	* src/common/thread.cxx: Use the Cyg_Scheduler::get_current_thread()
