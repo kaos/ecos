@@ -35,7 +35,7 @@ void exception::info (string& msgbuf, const char*) const throw()
 /// Reads the exception from stream \p is.
 void exception::read (istream& is)
 {
-    uint32_t stmSize;
+    uint32_t stmSize = 0;
     xfmt_t fmt = xfmt_Exception;
     is >> fmt >> stmSize >> m_Backtrace;
     assert (fmt == m_Format && "The saved exception is of a different type.");

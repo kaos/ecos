@@ -1,3 +1,10 @@
+2009-08-21  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* src/bktrace.cpp: prevent inclusion of host header <execinfo.h>
+	(eCos builds for Linux synthetic target).
+	* src/uexception.cpp:exception::read(): initialise local
+	variable stmSize.
+
 2009-08-20  Uwe Kindler <uwe_kindler@web.de>
 
 	* Initial contribution of uSTL library
