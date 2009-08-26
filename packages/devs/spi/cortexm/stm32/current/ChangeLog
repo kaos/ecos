@@ -1,3 +1,8 @@
+2009-08-24  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* cdl/spi_stm32.cdl: added testcase.
+	* include/spi_stm32.h: initializing spi_cr1_val with zero.
+
 2009-02-10  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/spi_stm32.c (cyg_spi_cortexm_stm32_init): mark as

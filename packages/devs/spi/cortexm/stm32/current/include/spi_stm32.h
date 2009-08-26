@@ -93,6 +93,7 @@ cyg_spi_cortexm_stm32_device_t _name_ ##_stm32 CYG_SPI_DEVICE_ON_BUS(_bus_) = { 
   .cs_up_udly = _csup_dly_, \
   .cs_dw_udly = _csdw_dly_, \
   .tr_bt_udly = _trbt_dly_, \
+  .spi_cr1_val = 0, \
 }; \
 extern cyg_spi_device _name_ __attribute__((alias ( #_name_ "_stm32" )));
 

@@ -219,5 +219,12 @@ cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3 {
     }
 }
 
+cdl_option CYGPKG_DEVS_SPI_CORTEXM_STM32_TESTS {
+    display         "SPI tests"
+    flavor          data
+    no_define
+    calculated      { "tests/loopback" } 
+}
+
 }
 # EOF spi_stm32.cdl
