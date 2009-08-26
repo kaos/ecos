@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -92,13 +92,16 @@ static const cyg_uint16 crc16_tab[] = {
 cyg_uint16
 cyg_crc16(unsigned char *buf, int len)
 {
-    int i;
-    cyg_uint16 cksum;
-
-    cksum = 0;
-    for (i = 0;  i < len;  i++) {
-        cksum = crc16_tab[((cksum>>8) ^ *buf++) & 0xFF] ^ (cksum << 8);
-    }
-    return cksum;
+    return cyg_crc16_accumulate(0, buf, len);
 }
 
+cyg_uint16
+cyg_crc16_accumulate(cyg_uint16 crc16val, unsigned char *buf, int len)
+{
+    int i;
+
+    for (i = 0;  i < len;  i++) {
+        crc16val = crc16_tab[((crc16val>>8) ^ *buf++) & 0xFF] ^ (crc16val << 8);
+    }
+    return crc16val;
+}

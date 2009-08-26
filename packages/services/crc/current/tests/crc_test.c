@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2002 Free Software Foundation, Inc.                        
+// Copyright (C) 2002, 2009 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -125,10 +125,25 @@ cyg_start( void )
     CYG_TEST_PASS("Gary S. Browns' crc32 accumulate calculation");
   }
     
-  if (32256UL != cyg_crc16((unsigned char *)license_txt,
-                           sizeof(license_txt)-1)) {
-    CYG_TEST_FAIL_FINISH("Wrong 16bit CRC calculation");
+  if (32256 != cyg_crc16((unsigned char *)license_txt,
+                          sizeof(license_txt)-1)) {
+    CYG_TEST_FAIL("Wrong 16bit CRC calculation");
   } else {
-    CYG_TEST_PASS_FINISH("16bit CRC calculation");
+    CYG_TEST_PASS("16bit CRC calculation");
+  }
+  
+  if (0 != cyg_crc16_accumulate(0,0,0)) {
+    CYG_TEST_FAIL("16bit CRC accumulate setup");
+  } else {
+    crc1= cyg_crc16_accumulate(0, (unsigned char *)license_txt,
+                                   sizeof(license_txt)-1);
+    crc2 = cyg_crc16_accumulate(crc1, (unsigned char *)license_txt,
+                                       sizeof(license_txt)-1);
+    
+    if ((32256 != crc1) || (48052 != crc2)) {
+      CYG_TEST_FAIL_FINISH("Wrong 16bit CRC accumulate");
+    } else {
+      CYG_TEST_PASS_FINISH("16bit CRC accumulate");
+    }
   }
 }

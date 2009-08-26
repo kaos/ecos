@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2002 Free Software Foundation, Inc.                        
+// Copyright (C) 2002, 2009 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -95,6 +95,9 @@ cyg_ether_crc32_accumulate(cyg_uint32 crc, unsigned char *s, int len);
 
 __externC cyg_uint16
 cyg_crc16(unsigned char *s, int len);
+
+__externC cyg_uint16
+cyg_crc16_accumulate(cyg_uint16 crc, unsigned char *s, int len);
 
 #endif // _SERVICES_CRC_CRC_H_
 

@@ -1,3 +1,9 @@
+2009-08-26  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* include/crc.h, src/crc16.c:  Add cyg_crc16_accumulate() to continue
+	a previous crc calculation.
+	* tests/crc_test.c: Extend to test cyg_crc16_accumulate().
+
 2005-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/crc_test.c: casts to make it gcc 4.0.1 frendly.
@@ -42,7 +48,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2002 Free Software Foundation, Inc.                        
+// Copyright (C) 2002, 2009 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
