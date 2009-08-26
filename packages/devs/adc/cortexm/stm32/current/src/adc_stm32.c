@@ -341,17 +341,9 @@ stm32_adc_set_rate( cyg_adc_channel *chan, cyg_uint32 rate)
     HAL_WRITE_UINT32(info->setup->tim_base + CYGHWR_HAL_STM32_TIM_ARR,
                      period - 1);
     
-    // Set direction = down, clock divider = 1
-    cr = CYGHWR_HAL_STM32_TIM_CR1_DIR | CYGHWR_HAL_STM32_TIM_CR1_CKD_1;
-    HAL_WRITE_UINT32(info->setup->tim_base + CYGHWR_HAL_STM32_TIM_CR1, cr);
-    
     // Reinitialize timer
     cr = CYGHWR_HAL_STM32_TIM_EGR_UG;
     HAL_WRITE_UINT32(info->setup->tim_base + CYGHWR_HAL_STM32_TIM_EGR, cr);
-    
-    // Enable generation of TRGO event
-    cr = CYGHWR_HAL_STM32_TIM_CR2_MMS_UPDATE;
-    HAL_WRITE_UINT32(info->setup->tim_base + CYGHWR_HAL_STM32_TIM_CR2, cr);
 }
 
 //-----------------------------------------------------------------------------
@@ -367,12 +359,16 @@ stm32_dma_isr(cyg_vector_t vector, cyg_addrword_t data)
     cyg_uint32 chan_active = info->chan_mask;
     cyg_uint16 *sample = info->dma_buf;
     cyg_adc_channel **chan = info->chan;
-    cyg_uint32 res = 0;
+    cyg_uint32 isr;
+    cyg_uint32 res = CYG_ISR_HANDLED;
+    
+    HAL_READ_UINT32(info->setup->dma_base + CYGHWR_HAL_STM32_DMA_ISR, isr);
+    if (!(isr & CYGHWR_HAL_STM32_DMA_ISR_MASK(info->setup->dma_channel)))
+        return 0;
     
     while (chan_active) {
         if (chan_active & 0x1)
-            res |= (CYG_ISR_HANDLED |
-                    cyg_adc_receive_sample(*chan, *sample++ & 0xfff));
+            res |= cyg_adc_receive_sample(*chan, *sample++ & 0xfff);
         chan_active >>= 1;
         chan++;
     }
@@ -486,7 +482,17 @@ stm32_adc_init_device(cyg_adc_device *device)
     // Enable scanning
     cr = CYGHWR_HAL_STM32_ADC_CR1_SCAN;
     HAL_WRITE_UINT32(info->setup->adc_base + CYGHWR_HAL_STM32_ADC_CR1, cr);
+
+
+    // Set timer direction = down, clock divider = 1
+    cr = CYGHWR_HAL_STM32_TIM_CR1_DIR | CYGHWR_HAL_STM32_TIM_CR1_CKD_1;
+    HAL_WRITE_UINT32(info->setup->tim_base + CYGHWR_HAL_STM32_TIM_CR1, cr);
+
+    // Enable generation of TRGO event
+    cr = CYGHWR_HAL_STM32_TIM_CR2_MMS_UPDATE;
+    HAL_WRITE_UINT32(info->setup->tim_base + CYGHWR_HAL_STM32_TIM_CR2, cr);
     
+
     // Setup DMA channel
     HAL_WRITE_UINT32(info->setup->dma_base + 
                      CYGHWR_HAL_STM32_DMA_CPAR(info->setup->dma_channel),

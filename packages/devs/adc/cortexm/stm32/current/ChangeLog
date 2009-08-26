@@ -1,3 +1,8 @@
+2009-03-05  Simon Kallweit  <simon.kallweit@intefo.ch>
+
+	* src/adc_stm32.c:
+	Fixed a bug in setup and usage of the timer.
+
 2009-02-24  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* cdl/adc_stm32.cdl:
