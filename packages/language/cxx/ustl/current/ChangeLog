@@ -1,3 +1,11 @@
+2009-08-24  Uwe Kindler <uwe_kindler@web.de>
+
+	* doc/ustl.sgml: Moved documentation from README file into
+	ustl.sgml documentation file.
+	* README: Remove.
+	* cdl/ustl.cdl: Reference per-package documentation.
+	* tests/stdtest.h: Removed unused code.
+
 2009-08-21  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* src/bktrace.cpp: prevent inclusion of host header <execinfo.h>

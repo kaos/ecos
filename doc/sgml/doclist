@@ -2,6 +2,7 @@ kernel/current/doc/kernel.sgml
 hal/common/current/doc/hal.sgml
 hal/common/current/doc/porting.sgml
 language/c/libc/common/current/doc/libc.sgml
+language/cxx/ustl/current/doc/ustl.sgml
 io/common/current/doc/io.sgml
 io/fileio/current/doc/fileio.sgml
 io/pci/current/doc/pci.sgml

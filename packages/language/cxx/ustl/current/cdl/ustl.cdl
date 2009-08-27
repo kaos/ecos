@@ -50,6 +50,7 @@
 
 cdl_package CYGPKG_USTL {
     display       "uSTL library"
+    doc           ref/ustl.html
     description   "
         This package provides the uSTL library. uSTL is a 
         partial implementation of the STL specification intended to 

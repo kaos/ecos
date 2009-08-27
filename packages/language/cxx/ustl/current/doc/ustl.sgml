@@ -1,0 +1,153 @@
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     ustl.sgml                                                  -->
+<!--                                                                 -->
+<!--     eCos uSTL library port                                         -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTBEGIN####                                       -->
+<!-- ===============================================================     -->
+<!-- Copyright (C) 2009 Free Software Foundation, Inc.                   -->
+<!-- This material may be distributed only subject to the terms          -->
+<!-- and conditions set forth in the Open Publication License, v1.0      -->
+<!-- or later (the latest version is presently available at              -->
+<!-- http://www.opencontent.org/openpub/)                                -->
+<!-- Distribution of the work or derivative of the work in any           -->
+<!-- standard (paper) book form is prohibited unless prior               -->
+<!-- permission obtained from the copyright holder                       -->
+<!-- ===============================================================     -->
+<!-- ####ECOSDOCCOPYRIGHTEND####                                         -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<PART id="ustl">
+<TITLE>The uSTL Library</TITLE>
+<CHAPTER id="ustl-overview">
+<TITLE>uSTL library overview</TITLE>
+<PARA>
+The eCos uSTL library is a port of Mike Sharov's uSTL - a size-optimized
+STL implementation. It has the particular feature of generating small 
+object code sizes - an important requirement for embedded eCos-based 
+applications. The latest version can be found at 
+<ulink url="http://sourceforge.net/projects/ustl">http://sourceforge.net/projects/ustl</ulink>.
+</PARA>
+
+<PARA>
+The library provides a subset of the full C++ 
+<ulink url="http://en.wikipedia.org/wiki/Standard_Template_Library">
+Standard Template Library</ulink>.
+uSTL is a partial implementation of the STL specification intended to 
+reduce code size of the derivative programs. This allows eCos applications
+to use well known standard C++ STL library containers, streams, 
+iterators, algorithms and functors.
+</PARA>
+
+<PARA>
+For changes, see the <filename>HISTORY</filename> file. A detailed introduction 
+to the uSTL library is available on Mike Sharov's 
+<ulink url="http://ustl.sourceforge.net/">uSTL web page</ulink>. 
+Additional information on all the classes is available in the header 
+files and in the <ulink url="http://ustl.sourceforge.net/html/index.html">
+Doxygen reference</ulink>.
+</PARA>
+<SECT1 id="ustl-ecos-changes">
+<TITLE>eCos specific changes/enhancements</TITLE>
+
+<PARA>
+All features of the uSTL library are available except for memory mapped
+files and memory mapped streams.
+</PARA>
+
+<PARA>
+By default, an eCos image is build without exceptions and without RTTI support 
+(compiler switches -fno-exceptions -fno-rtti). Normally the uSTL 
+library relies on C++ exceptions to propagate errors and exceptions.
+To build uSTL for eCos, all occurrences of <FUNCTION>try</FUNCTION>, 
+<FUNCTION>catch</FUNCTION> and <FUNCTION>throw</FUNCTION> 
+are replaced by macros <varname>USTL_TRY</varname>, 
+<varname>USTL_CATCH_ALL</varname>, and 
+<varname>USTL_THROW</varname>. Thus the eCos uSTL port compiles without 
+exceptions and without RTTI support but also works if RTTI and exceptions 
+are enabled.
+</PARA>
+
+<PARA>
+To handle and propagate uSTL exceptions when RTTI und C++ exceptions are 
+not available, the eCos uSTL port was extended by some simple exception 
+handling functions. An application can use the function 
+<FUNCTION>ustl::set_app_exception_handler()</FUNCTION> to register an
+exception handler that is called by the <varname>USTL_THROW</varname> 
+macro as soon as an exception is thrown by any uSTL function.
+</PARA>
+
+<PROGRAMLISTING>
+void ustl::set_app_exception_handler(app_exception_handler_t func);
+</PROGRAMLISTING>
+
+<PARA>
+If an exception handler is registered by an application then it replaces the 
+default eCos uSTL exception handler. The default exception handler simply 
+prints the error message of an exception to the diagnostic channel by calling 
+<FUNCTION>void ustl::diag_print_exception()</FUNCTION>. This function
+can also be called from an application exception handler as illustrated 
+in the test cases.
+</PARA>
+
+<PROGRAMLISTING>
+void ustl::set_app_exception_handler(app_exception_handler_t func);
+</PROGRAMLISTING>
+</SECT1>
+
+<SECT1 id="using-ustl-library">
+<TITLE>Using uSTL in eCos applications</TITLE>
+<PARA>
+To build an eCos library with uSTL support, you can start from the 
+<EMPHASIS>default</EMPHASIS> template and then add the uSTL package 
+CYGPKG_USTL. If you need file streams support or would like
+to build all uSTL tests, then you must also add the File I/O package 
+CYGPKG_IO_FILEIO.
+</PARA>
+
+<PARA>
+To use uSTL in your eCos application, simply include the file 
+<filename>&lt;ustl.h&gt;</filename>. All uSTL classes are in the
+<varname>ustl</varname> namespace.
+</PARA>
+
+<PROGRAMLISTING>
+#include &lt;ustl.h&gt;
+using namespace ustl;
+
+int main (int argc, char* argv[])
+{
+    cout &lt;&lt; "Hello world!\n";
+    cout.flush();
+    return EXIT_SUCCESS;
+}
+</PROGRAMLISTING>
+
+<NOTE>
+<PARA>
+If you use <varname>cout</varname> for printing to the console, 
+then data will be flushed only if you finish the output with 
+<varname>endl</varname> or '\n' and then call 
+<function>cout.flush()</function> as in the example above.
+</PARA>
+</NOTE>
+
+<PARA>
+The uSTL library is subject of copyright under MIT license. For
+the license text see <filename>LICENSE</filename> file.
+</PARA>
+
+</SECT1>
+</CHAPTER>
+</PART>
+

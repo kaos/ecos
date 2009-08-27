@@ -20,7 +20,7 @@ cat > makefile <<EOF
 # ####ECOSGPLCOPYRIGHTBEGIN####                                             
 # -------------------------------------------                               
 # This file is part of eCos, the Embedded Configurable Operating System.    
-# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
 #
 # eCos is free software; you can redistribute it and/or modify it under     
 # the terms of the GNU General Public License as published by the Free      
@@ -121,6 +121,7 @@ cat >> ecos-ref.sgml <<EOF
       <year>2006</year>
       <year>2007</year>
       <year>2008</year>
+      <year>2009</year>
       <holder>Free Software Foundation, Inc.</holder>
     </copyright>
 
@@ -149,6 +150,7 @@ permission is obtained from the copyright holder.
 <para>Cirrus Logic&reg; and Maverick&trade; are registered trademarks of Cirrus Logic, Inc.</para>
 <para>Cogent&trade; is a trademark of Cogent Computer Systems, Inc.</para>
 <para>Compaq&reg; is a registered trademark of the Compaq Computer Corporation.</para>
+<para>eCos&reg; is a registered trademark of eCosCentric Limited.</para>
 <para>Fujitsu&reg; is a registered trademark of Fujitsu Limited.</para>
 <para>IBM&reg;, and PowerPC&trade; are trademarks of International Business Machines Corporation.</para>
 <para>IDT&reg; is a registered trademark of Integrated Device Technology Inc.</para>
@@ -161,7 +163,7 @@ permission is obtained from the copyright holder.
 <para>Motorola&reg;, ColdFire&reg; is a trademark of Motorola, Inc.</para>
 <para>NEC&reg; V800&trade;, V850&trade;, V850/SA1&trade;, V850/SB1&trade;, VR4300&trade;, and VRC4375&trade; are trademarks of NEC Corporation.</para>
 <para>PMC-Sierra&reg; RM7000&trade; and Ocelot&trade; are trademarks of PMC-Sierra Incorporated. </para>
-<para>Red Hat, eCos&trade;, RedBoot&trade;, GNUPro&reg;, and Insight&trade; are trademarks of Red Hat, Inc. </para>
+<para>Red Hat, RedBoot&trade;, GNUPro&reg;, and Insight&trade; are trademarks of Red Hat, Inc. </para>
 <para>Samsung&reg; and CalmRISC&trade; are trademarks or registered trademarks of Samsung, Inc. </para>
 <para>Sharp&reg; is a registered trademark of Sharp Electronics Corp.</para>
 <para>SPARC&reg; is a registered trademark of SPARC International, Inc., and is used under license by Sun Microsystems, Inc. </para>

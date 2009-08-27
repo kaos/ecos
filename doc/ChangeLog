@@ -1,3 +1,8 @@
+2009-08-24  Uwe Kindler <uwe_kindler@web.de>
+
+	* sgml/doclist: Add uSTL documentation.
+	* sgml/makemakefile: Update copyright dates.
+	
 2008-12-10  John Dallaway  <jld@ecoscentric.com>
 
 	* sgml/doclist: reference all documentation files.

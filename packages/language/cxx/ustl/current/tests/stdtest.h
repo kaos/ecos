@@ -31,22 +31,6 @@ static void OnSignal (int sig)
     exit (sig);
 }
 
-/*
-/// Called by the framework on unrecoverable exception handling errors.
-static void Terminate (void)
-{
-    CYG_TEST_FAIL_FINISH("Unrecoverable exception handling error detected.");
-    raise (SIGABRT);
-    exit (EXIT_FAILURE);
-}
-
-/// Called when an exception violates a throw specification.
-static void OnUnexpected (void)
-{
-    CYG_TEST_FAIL("Fatal internal error: unexpected exception caught.\n");
-    Terminate();
-}
-*/
 /// Installs OnSignal as handler for signals.
 static void InstallCleanupHandlers (void)
 {
