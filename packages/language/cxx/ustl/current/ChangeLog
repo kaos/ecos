@@ -1,3 +1,12 @@
+2009-08-30  John Dallaway  <john@dallaway.org.uk>
+
+	* include/*.h: Move all headers to include/ustl/ except ustl.h and
+	stdint.h to avoid pollution of the root include directory in the
+	eCos install tree.
+	* include/ustl.h: Specify ustl/ directory when including header files.
+	* cdl/ustl.h: Add include/ustl/ to the header file directory list
+	using CYGPKG_USTL_CFLAGS_ADD.
+
 2009-08-24  Uwe Kindler <uwe_kindler@web.de>
 
 	* doc/ustl.sgml: Moved documentation from README file into

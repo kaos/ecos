@@ -165,7 +165,7 @@ cdl_package CYGPKG_USTL {
             display "Additional compiler flags"
             flavor  data
             no_define
-            default_value { "" }
+            default_value { "-I$(PREFIX)/include/ustl" }
             description   "
                 This option modifies the set of compiler flags for
                 building the uSTL library. These flags are used in addition

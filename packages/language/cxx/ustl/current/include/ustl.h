@@ -6,19 +6,19 @@
 #ifndef USTL_H_6A5A10410D2CD7FC2D78FE470F045EB7
 #define USTL_H_6A5A10410D2CD7FC2D78FE470F045EB7
 
-#include "uspecial.h"
-#include "umap.h"
-#include "umultimap.h"
-#include "ustack.h"
-#include "uqueue.h"
+#include "ustl/uspecial.h"
+#include "ustl/umap.h"
+#include "ustl/umultimap.h"
+#include "ustl/ustack.h"
+#include "ustl/uqueue.h"
 #ifdef CYGCLS_USTL_FSTREAMS
-#include "ofstream.h"
+#include "ustl/ofstream.h"
 #endif
-#include "unumeric.h"
-#include "ulist.h"
-#include "uheap.h"
-#include "ustdxept.h"
-#include "ustlecos.h"
+#include "ustl/unumeric.h"
+#include "ustl/ulist.h"
+#include "ustl/uheap.h"
+#include "ustl/ustdxept.h"
+#include "ustl/ustlecos.h"
 
 #endif
 
