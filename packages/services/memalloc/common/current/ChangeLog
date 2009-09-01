@@ -1,3 +1,8 @@
+2009-09-01  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/heapgen.tcl (tcl_path): use the makefile's HOST instead of
+	tcl_platform() to figure out host details.
+
 2009-06-24  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/malloc.cxx (cyg_memalloc_heap_reinit): Added this function
