@@ -1,3 +1,8 @@
+2009-09-10  John Dallaway  <john@dallaway.org.uk>
+
+	* src/sys/netinet/tcp_input.c, src/sys/netinet/tcp_timer.c: Remove
+	lvalue casts.
+
 2005-10-23  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/sys/kern/kern_subr.c (uiomove): Remove lvalue cast to
@@ -1730,7 +1735,7 @@
 # ####GPLCOPYRIGHTBEGIN####                                       
 # -------------------------------------------                     
 # This file is part of eCos, the Embedded Configurable Operating System.
-# Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.   
+# Copyright (C) 2000, 2001, 2002, 2009 Free Software Foundation, Inc.   
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
