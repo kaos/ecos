@@ -1,3 +1,8 @@
+2009-09-17	Jay Foster <jay@systech.com>
+
+	* src/dhcp_prot.c (do_dhcp): Fix packet parsing for DHCP servers
+	that do not terminate the options with an END tag.
+
 2009-06-23  Rene Schipp von Branitz Nielsen <rbn@vitesse.com>
 
 	* src/ifaddrs.c (getifaddrs): If socket() call for IPv6 fails,

@@ -654,6 +654,35 @@ static void set_default_dhcp_tags( struct bootp *xmit )
 }
 
 // ------------------------------------------------------------------------
+// Get BOOTP/DHCP response.
+// Wait up to the amount of time specified by *tvp.
+
+static int
+get_response(int s, struct bootp *response, struct sockaddr_in *from, struct timeval *tvp)
+{
+    int pktlen;
+    socklen_t addrlen;
+
+    setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, tvp, sizeof(*tvp));
+
+    addrlen = sizeof(*from);
+    pktlen = recvfrom(s, response, sizeof(*response), 0, (struct sockaddr *)from, &addrlen);
+    /* Some DHCP servers don't terminate the options list with
+     * an END tag.  Append one if we can.
+     */
+    if ((pktlen >= 0) && (pktlen < sizeof(*response)))
+    {
+        /* Do not count the added END tag in the returned packet length.
+         * The returned packet length is the number of bytes received
+         * from the DHCP server.  The added END tag is only used
+         * internally for packet parsing purposes.
+         */
+        ((unsigned char *)response)[pktlen] = TAG_END;
+    }
+    return pktlen;
+}
+
+// ------------------------------------------------------------------------
 // the DHCP state machine - this does all the work
 
 int
@@ -663,7 +692,6 @@ do_dhcp(const char *intf, struct bootp *res,
     struct ifreq ifr;
     struct sockaddr_in cli_addr, broadcast_addr, server_addr, rx_addr;
     int s = -1;
-    socklen_t addrlen;
     int one = 1;
     unsigned char mincookie[] = {99,130,83,99,255} ;
     struct timeval tv;
@@ -844,11 +872,7 @@ do_dhcp(const char *intf, struct bootp *res,
             
             // listen for the DHCPOFFER reply
 
-            setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
-            addrlen = sizeof(rx_addr);
-            if (recvfrom(s, received, sizeof(struct bootp), 0,
-                         (struct sockaddr *)&rx_addr, &addrlen) < 0) {
+            if (get_response(s, received, &rx_addr, &tv) < 0) {
                 // No packet arrived (this time)
                 if ( seen_bootp_reply ) { // then already have a bootp reply
                     // Save the good packet in *xmit
@@ -953,11 +977,7 @@ do_dhcp(const char *intf, struct bootp *res,
             // wait for an ACK or a NACK - retry by going back to
             // DHCPSTATE_REQUESTING; NACK means go back to INIT.
 
-            setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
-            addrlen = sizeof(rx_addr);
-            if (recvfrom(s, received, sizeof(struct bootp), 0,
-                         (struct sockaddr *)&rx_addr, &addrlen) < 0) {
+            if (get_response(s, received, &rx_addr, &tv) < 0) {
                 // No packet arrived
                 // go to the next larger timeout and re-send:
                 if ( ! next_timeout( &tv, &timeout_scratch ) ) {
@@ -1099,11 +1119,7 @@ do_dhcp(const char *intf, struct bootp *res,
             // DHCPSTATE_RENEWING; NACK means go to NOTBOUND.
             // No answer means just wait for T2, to broadcast.
 
-            setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
-            addrlen = sizeof(rx_addr);
-            if (recvfrom(s, received, sizeof(struct bootp), 0,
-                         (struct sockaddr *)&rx_addr, &addrlen) < 0) {
+            if (get_response(s, received, &rx_addr, &tv) < 0) {
                 // No packet arrived
                 // go to the next larger timeout and re-send:
                 if ( ! next_timeout( &tv, &timeout_scratch ) ) {
@@ -1207,11 +1223,7 @@ do_dhcp(const char *intf, struct bootp *res,
             // DHCPSTATE_REBINDING; NACK means go to NOTBOUND.
             // No answer means just wait for expiry; we tried!
 
-            setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
-            addrlen = sizeof(rx_addr);
-            if (recvfrom(s, received, sizeof(struct bootp), 0,
-                         (struct sockaddr *)&rx_addr, &addrlen) < 0) {
+            if (get_response(s, received, &rx_addr, &tv) < 0) {
                 // No packet arrived
                 // go to the next larger timeout and re-send:
                 if ( ! next_timeout( &tv, &timeout_scratch ) ) {
