@@ -1,3 +1,9 @@
+2009-09-25  John Dallaway  <john@dallaway.org.uk>
+
+	* common/eCosTestPlatform.cpp (CeCosTestPlatform::LoadFromDir): Use
+	PATH_MAX to accommodate long directory names. Issue reported by Paul
+	Chavent.
+
 2009-02-09  John Dallaway  <john@dallaway.org.uk>
 
 	* common/eCosTest.cpp (CygPath): Accommodate UNC file paths.

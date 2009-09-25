@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003 Free Software Foundation, Inc.      
+// Copyright (C) 1998, 1999, 2000, 2003, 2009 Free Software Foundation, Inc.      
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -58,7 +58,7 @@ bool CeCosTestPlatform::LoadFromDir(LPCTSTR pszDir)
   bool rc=true;
   TRACE(_T("CeCosTestPlatform::LoadFromDir %s\n"),pszDir);
   // Find all the files in directory pszDir and load from each of them
-  TCHAR szOrigDir[256];
+  TCHAR szOrigDir[PATH_MAX];
   _tgetcwd(szOrigDir,sizeof szOrigDir-1);
   if(0==_tchdir(pszDir)){
     String strFile;
