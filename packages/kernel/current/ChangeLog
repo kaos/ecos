@@ -1,3 +1,8 @@
+2009-10-04  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/instrument.cdl: Add CYGDBG_KERNEL_INSTRUMENT_MLQ option. Issue
+	reported by Pieter-Jan Busschaert.
+
 2009-08-24  John Dallaway  <john@dallaway.org.uk>
 
 	* doc/kernel.sgml: Use "reinterpret_cast" throughout the C++ thread
