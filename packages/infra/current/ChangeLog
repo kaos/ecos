@@ -1,3 +1,9 @@
+2009-10-06  Uwe Kindler  <uwe_kindler@web.de>
+
+	* include/cyg_type.h: Changed definition of macro
+	CYG_REFERENCE_OBJECT according to proposal of Bart Veer on
+	ecos-discuss mailing list.
+	
 2009-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/cxxsupp.cxx (cyg_start): Only test 'new' with ARM tools after

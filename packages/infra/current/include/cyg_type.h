@@ -196,15 +196,16 @@ typedef cyg_halbool bool;
 CYG_MACRO_END
 
 
-// -------------------------------------------------------------------------
-// Reference a symbol without explicitly making use of it. Ensures that
-// the object containing the symbol will be included when linking.
+//----------------------------------------------------------------------------
+// The unused attribute stops the compiler warning about the variable
+// not being used.
+// The used attribute prevents the compiler from optimizing it away.
 
-#define CYG_REFERENCE_OBJECT(__object__)                                 \
-     CYG_MACRO_START                                                     \
-     static void *__cygvar_discard_me__ __attribute__ ((unused)) =       \
-                                                          &(__object__); \
-     CYG_MACRO_END
+#define CYG_REFERENCE_OBJECT(__object__)                            \
+    CYG_MACRO_START                                                 \
+    static const void*  __cygvar_discard_me__                       \
+    __attribute__ ((unused, used)) = (const void*)&(__object__);    \
+    CYG_MACRO_END
 
 // -------------------------------------------------------------------------
 // Define basic types for using integers in memory and structures;
