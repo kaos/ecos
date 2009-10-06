@@ -118,7 +118,9 @@ CYGPKG_IO_FILEIO.
 <PARA>
 To use uSTL in your eCos application, simply include the file 
 <filename>&lt;ustl.h&gt;</filename>. All uSTL classes are in the
-<varname>ustl</varname> namespace.
+<varname>ustl</varname> namespace. To prevent compiler warnings
+when compiling your eCos application with uSTL support, you need to
+add the compiler flag <OPTION>-Wno-undef</OPTION>. 
 </PARA>
 
 <PROGRAMLISTING>
@@ -128,7 +130,6 @@ using namespace ustl;
 int main (int argc, char* argv[])
 {
     cout &lt;&lt; "Hello world!\n";
-    cout.flush();
     return EXIT_SUCCESS;
 }
 </PROGRAMLISTING>
@@ -136,9 +137,8 @@ int main (int argc, char* argv[])
 <NOTE>
 <PARA>
 If you use <varname>cout</varname> for printing to the console, 
-then data will be flushed only if you finish the output with 
-<varname>endl</varname> or '\n' and then call 
-<function>cout.flush()</function> as in the example above.
+then data will get sent only if you finish the output with 
+<varname>endl</varname> or '\n'.
 </PARA>
 </NOTE>
 
