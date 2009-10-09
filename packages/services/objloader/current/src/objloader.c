@@ -8,7 +8,7 @@
  * ####ECOSGPLCOPYRIGHTBEGIN####                                     
  * -------------------------------------------                       
  * This file is part of eCos, the Embedded Configurable Operating System.
- * Copyright (C) 2005, 2008 Free Software Foundation, Inc.                 
+ * Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.                 
  *
  * eCos is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -81,6 +81,8 @@ cyg_ldr_free(void *s)
 void
 cyg_ldr_delete_elf_section(PELF_OBJECT p, cyg_uint32 idx)
 {
+    if (p->sections[idx] == 0)
+        return;
     cyg_ldr_free(p->sections[idx]);
     p->sections[idx] = 0; 
 }    
@@ -94,7 +96,7 @@ cyg_ldr_free_elf_object(PELF_OBJECT p)
     cyg_int32 i;
         
     for (i = 0; i < p->p_elfhdr->e_shnum + 1; i++)
-        if (p->sections[i])
+        if (p->sections[i] != 0)
             cyg_ldr_delete_elf_section(p, i);
 
     if (p->sections != 0)
@@ -142,16 +144,27 @@ cyg_ldr_find_common_size(PELF_OBJECT p)
 cyg_uint32 
 *cyg_ldr_load_elf_section(PELF_OBJECT p, cyg_uint32 idx)
 {
-    cyg_uint32 *addr = (cyg_uint32 *)cyg_ldr_malloc(p->p_sechdr[idx].sh_size);
-    CYG_ASSERT(addr != 0, "Cannot malloc() section");
-    if (addr == 0)
+    // Make sure we are not requesting the loading of a section for which we
+    //  have no pointer.
+    CYG_ASSERT(idx < p->p_elfhdr->e_shnum + 1, "Invalid section id.");
+    
+    // If this section has already been loaded its pointer is already available
+    //  in the sections[] array.
+    if (p->sections[idx] != 0)
+        return p->sections[idx];
+    p->sections[idx] = (cyg_uint32)cyg_ldr_malloc(p->p_sechdr[idx].sh_size);
+    CYG_ASSERT(p->sections[idx] != 0, "Cannot malloc() section");
+    if (p->sections[idx] == 0)
     {
         cyg_ldr_last_error = "ERROR IN MALLOC";
         return (void*)0;
     }
     p->seek(p, p->p_sechdr[idx].sh_offset);
-    p->read(p, sizeof(char), p->p_sechdr[idx].sh_size, addr);
-    return addr;
+    p->read(p,
+            sizeof(char),
+            p->p_sechdr[idx].sh_size,
+            (void *)p->sections[idx]);
+    return p->sections[idx];
 }    
 
 // Returns the starting address of a section. If the section is not already
@@ -277,7 +290,9 @@ cyg_ldr_load_sections(PELF_OBJECT p)
     // Load the section header string table. This is a byte oriented table,
     //  so alignment is not an issue.
     idx = p->p_elfhdr->e_shstrndx;
-    p->sections[idx] = cyg_ldr_load_elf_section(p, idx);
+    cyg_uint32 section_addr = cyg_ldr_load_elf_section(p, idx);
+    if (section_addr == 0)
+        return -1;
     return 0;
 }
 
@@ -339,7 +354,7 @@ cyg_ldr_open_library(CYG_ADDRWORD ptr, cyg_int32 mode)
         if (!strcmp(p_shstrtab + e_obj->p_sechdr[i].sh_name, ELF_STRING_symtab))
         {              
             e_obj->hdrndx_symtab = i;
-            e_obj->sections[i] = cyg_ldr_load_elf_section(e_obj, i);
+            cyg_ldr_load_elf_section(e_obj, i);
             if (e_obj->sections[i] == 0)
             {
                 cyg_ldr_free_elf_object(e_obj);
@@ -353,7 +368,7 @@ cyg_ldr_open_library(CYG_ADDRWORD ptr, cyg_int32 mode)
         if (!strcmp(p_shstrtab + e_obj->p_sechdr[i].sh_name, ELF_STRING_strtab))
         {              
             e_obj->hdrndx_strtab = i;
-            e_obj->sections[i] = cyg_ldr_load_elf_section(e_obj, i);
+            cyg_ldr_load_elf_section(e_obj, i);
             if (e_obj->sections[i] == 0)
             {
                 cyg_ldr_free_elf_object(e_obj);

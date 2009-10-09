@@ -69,12 +69,17 @@ cdl_package CYGPKG_FS_ROM {
         flavor        bool
         default_value 1
 
+        make -priority 98 {
+            <PREFIX>/bin/file2c.tcl: <PACKAGE>/support/file2c.tcl
+            @mkdir -p "$(dir $@)"
+            @cp $< $@
+        }
+
         # FIXME: host compiler/flags should be provided by config system
-        make -priority 100 {
-            <PREFIX>/bin/mk_romfs: <PACKAGE>/support/mk_romfs.c <PREFIX>/bin/file2c.tcl
+        make -priority 98 {
+            <PREFIX>/bin/mk_romfs: <PACKAGE>/support/mk_romfs.c
             @mkdir -p "$(dir $@)"
             @$(HOST_CC) -g -O2 -o $@ $< || cc -g -O2 -o $@ $< || gcc -g -O2 -o $@ $<
-            @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl $(PREFIX)/bin
         }
 
         description "
@@ -112,24 +117,17 @@ cdl_package CYGPKG_FS_ROM {
                 This option enables the building of the ROM filesystem tests."
 
         make -priority 100 {
-            <PREFIX>/include/cyg/romfs/testromfs_le.h : <PREFIX>/bin/mk_romfs <PACKAGE>/support/file2c.tcl
-            $(PREFIX)/bin/mk_romfs $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs_le.bin
+            <PREFIX>/include/cyg/romfs/testromfs_le.h : <PACKAGE>/tests/testromfs <PREFIX>/bin/mk_romfs <PREFIX>/bin/file2c.tcl
+            $(PREFIX)/bin/mk_romfs $< testromfs_le.bin
             @mkdir -p "$(dir $@)"
-            # work around cygwin path problems by copying to build dir
-            @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl .
-            tclsh file2c.tcl testromfs_le.bin testromfs_le.h
-            @rm -f $@ file2c.tcl
-            @cp testromfs_le.h $@
+            tclsh $(PREFIX)/bin/file2c.tcl testromfs_le.bin $@
         }
     
         make -priority 100 {
-            <PREFIX>/include/cyg/romfs/testromfs_be.h : <PREFIX>/bin/mk_romfs <PACKAGE>/support/file2c.tcl
-            $(PREFIX)/bin/mk_romfs -b $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs_be.bin
+            <PREFIX>/include/cyg/romfs/testromfs_be.h : <PACKAGE>/tests/testromfs <PREFIX>/bin/mk_romfs <PREFIX>/bin/file2c.tcl
+            $(PREFIX)/bin/mk_romfs -b $< testromfs_be.bin
             @mkdir -p "$(dir $@)"
-            # work around cygwin path problems by copying to bin dir
-            @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl $(PREFIX)/bin/
-            tclsh $(PREFIX)/bin/file2c.tcl testromfs_be.bin testromfs_be.h
-            @cp testromfs_be.h $@
+            tclsh $(PREFIX)/bin/file2c.tcl testromfs_be.bin $@
         }
     
         cdl_option CYGPKG_FS_ROM_TESTS {

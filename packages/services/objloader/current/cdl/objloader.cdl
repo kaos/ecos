@@ -191,25 +191,23 @@ cdl_package CYGPKG_OBJLOADER {
             application for testing the loader." 
         
         make -priority 320 {
-            tests/testromfs/hello.o : <PACKAGE>/tests/library/hello.c
-            @sh -c "mkdir -p tests tests/testromfs"
-            $(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -o $@ $<
+            testobj/hello.o : <PACKAGE>/tests/library/hello.c
+            @mkdir -p "$(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(ACTUAL_CFLAGS) -o $@ $<
         }
 
         make -priority 322 {
-            <PREFIX>/include/cyg/objloader/testromfs_be.h : tests/testromfs/hello.o 
-            $(PREFIX)/bin/mk_romfs -b tests/testromfs testromfs_be.bin 
-	    @mkdir -p "$(dir $@)"
-            @tclsh $(PREFIX)/bin/file2c.tcl testromfs_be.bin testromfs_be.h
-            @cp testromfs_be.h $@
+            <PREFIX>/include/cyg/objloader/testromfs_be.h : testobj/hello.o
+            $(PREFIX)/bin/mk_romfs -b $(dir $<) testromfs_be.bin
+            @mkdir -p "$(dir $@)"
+            @tclsh $(PREFIX)/bin/file2c.tcl testromfs_be.bin $@
         }
         
         make -priority 322 {
-            <PREFIX>/include/cyg/objloader/testromfs_le.h : tests/testromfs/hello.o 
-            $(PREFIX)/bin/mk_romfs tests/testromfs testromfs_le.bin
-	    @mkdir -p "$(dir $@)"
-            @tclsh $(PREFIX)/bin/file2c.tcl testromfs_le.bin testromfs_le.h
-            @cp testromfs_le.h $@
+            <PREFIX>/include/cyg/objloader/testromfs_le.h : testobj/hello.o
+            $(PREFIX)/bin/mk_romfs $(dir $<) testromfs_le.bin
+            @mkdir -p "$(dir $@)"
+            @tclsh $(PREFIX)/bin/file2c.tcl testromfs_le.bin $@
         }
     
         cdl_option CYGPKG_OBJLOADER_TESTS {

@@ -1,6 +1,12 @@
+2009-10-09  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/romfs.cdl: Eliminate workarounds for file path handling
+	issue in obsolete Cygwin tclsh. Build the mk_romfs tool with higher
+	priority than the custom rules which use it.
+
 2009-04-28  John Dallaway  <john@dallaway.org.uk>
 
-	cdl/romfs.cdl: Use CYGPKG_IO_FILEIO as the parent.
+	* cdl/romfs.cdl: Use CYGPKG_IO_FILEIO as the parent.
 
 2009-02-07  John Dallaway  <john@dallaway.org.uk>
 

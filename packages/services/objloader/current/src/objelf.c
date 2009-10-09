@@ -51,6 +51,7 @@
  */
 
 #include <cyg/infra/diag.h>     // For diagnostic printing.
+#include <cyg/infra/cyg_ass.h>
 #include <cyg/hal/hal_tables.h>
 #include <stdio.h>
 
@@ -116,7 +117,7 @@ cyg_ldr_print_symbol_names(PELF_OBJECT p)
     diag_printf("\n");
 }
 
-void 
+cyg_int32
 cyg_ldr_print_rel_names(PELF_OBJECT p)
 {
     int        i, j, r_entries, sym_index;
@@ -135,16 +136,20 @@ cyg_ldr_print_rel_names(PELF_OBJECT p)
         if ((p->p_sechdr[i].sh_type == SHT_REL) ||
                                   (p->p_sechdr[i].sh_type == SHT_RELA))
         {                                  
-            // Calculate the total number of entries in the .rela section.
+            // Calculate the total number of entries in the .rela/.rel section.
             r_entries = p->p_sechdr[i].sh_size / p->p_sechdr[i].sh_entsize;
 
             diag_printf("\n\nSymbols at: %s\n\n", 
                          p_shstrtab + p->p_sechdr[i].sh_name);
 #if ELF_ARCH_RELTYPE == Elf_Rela        
-            p_rela = (Elf32_Rela*)cyg_ldr_load_elf_section(p, i);
+            p_rela = (Elf32_Rela *)cyg_ldr_load_elf_section(p, i);
+            if (p_rela == 0)
+                return -1;
             printf("Offset    Info      Name [+ Addend]\n");
 #else
-            p_rel = (Elf32_Rel*)cyg_ldr_load_elf_section(p, i);
+            p_rel = (Elf32_Rel *)cyg_ldr_load_elf_section(p, i);
+            if (p_rel == 0)
+                return -1;
             printf("Offset    Info     Name\n");
 #endif
 
@@ -288,17 +293,21 @@ cyg_ldr_relocate_section(PELF_OBJECT p, cyg_uint32 r_shndx)
 {
     int         i, rc;
 #if ELF_ARCH_RELTYPE == Elf_Rela        
-    Elf32_Rela* p_rela = (Elf32_Rela*)cyg_ldr_load_elf_section(p, r_shndx);
+    Elf32_Rela *p_rela = (Elf32_Rela *)cyg_ldr_load_elf_section(p, r_shndx);
+    if (p_rela == 0)
+        return -1;
 #else
-    Elf32_Rel*  p_rel = (Elf32_Rel*)cyg_ldr_load_elf_section(p, r_shndx);
+    Elf32_Rel *p_rel = (Elf32_Rel *)cyg_ldr_load_elf_section(p, r_shndx);
+    if (p_rel == 0)
+        return -1;
 #endif
 
 #if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 0
-    Elf32_Sym *p_symtab = (Elf32_Sym*)cyg_ldr_section_address(p, 
+    Elf32_Sym *p_symtab = (Elf32_Sym *)cyg_ldr_section_address(p, 
                                                            p->hdrndx_symtab);
-    char      *p_strtab = (char*)cyg_ldr_section_address(p, p->hdrndx_strtab);
-    char      *p_shstrtab = (char*)cyg_ldr_section_address(p, 
-                                                     p->p_elfhdr->e_shstrndx);
+    char *p_strtab = (char *)cyg_ldr_section_address(p, p->hdrndx_strtab);
+    char *p_shstrtab = (char *)cyg_ldr_section_address(p, 
+                                                       p->p_elfhdr->e_shstrndx);
 #endif
 
     // Now we can get the address of the contents of the section to modify.
@@ -311,7 +320,7 @@ cyg_ldr_relocate_section(PELF_OBJECT p, cyg_uint32 r_shndx)
             p_shstrtab + p->p_sechdr[r_target_shndx].sh_name);
     diag_printf("----------------------------------------\n"); 
 #if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
-    diag_printf(" Ndx  Type             Offset   Name\"\n");
+    diag_printf(" Ndx  Type             Offset    Name\n");
 #endif
 #endif
 

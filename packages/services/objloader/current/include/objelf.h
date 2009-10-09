@@ -9,7 +9,7 @@
  * ####ECOSGPLCOPYRIGHTBEGIN####                                     
  * -------------------------------------------                       
  * This file is part of eCos, the Embedded Configurable Operating System.
- * Copyright (C) 2005, 2008 Free Software Foundation, Inc.                 
+ * Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.                 
  *
  * eCos is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -98,9 +98,9 @@ typedef struct ELF_OBJECT
 // Debug functions.
 
 #if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 0
-void       cyg_ldr_print_section_data(PELF_OBJECT);
-void       cyg_ldr_print_symbol_names(PELF_OBJECT);
-void       cyg_ldr_print_rel_names(PELF_OBJECT);
+void      cyg_ldr_print_section_data(PELF_OBJECT);
+void      cyg_ldr_print_symbol_names(PELF_OBJECT);
+cyg_int32 cyg_ldr_print_rel_names(PELF_OBJECT);
 #endif
 
 //==============================================================================

@@ -1,3 +1,16 @@
+2009-10-09  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/objloader.cdl: Eliminate workarounds for file path handling
+	issue in obsolete Cygwin tclsh. Use ACTUAL_CFLAGS for robustness.
+
+2009-09-13  Anthony Tonizzo  <atonizzo@gmail.com>
+
+	* src/objloader.c, src/objelf.c, include/objelf.h : Fixed a memory
+	leak where a library section was loaded but memory allocated was not
+	released. This bug was reported by Davy Wouters on the eCos list.
+	Added minor cosmetics and a number of CYG_ASSERT and if() to test the
+	values returnedby cyg_ldr_load_elf_section().
+
 2009-07-03  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/objloader.cdl, src/objelf.c, src/relocate_ppc.c,
