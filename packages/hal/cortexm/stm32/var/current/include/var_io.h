@@ -1080,10 +1080,14 @@ __externC void hal_stm32_bd_protect( int protect );
 #define CYGHWR_HAL_STM32_FSMC_SR2               0x64
 #define CYGHWR_HAL_STM32_FSMC_PMEM2             0x68
 #define CYGHWR_HAL_STM32_FSMC_PATT2             0x6C
+#define CYGHWR_HAL_STM32_FSMC_ECCR2             0x74
+
 #define CYGHWR_HAL_STM32_FSMC_PCR3              0x80
 #define CYGHWR_HAL_STM32_FSMC_SR3               0x84
 #define CYGHWR_HAL_STM32_FSMC_PMEM3             0x88
 #define CYGHWR_HAL_STM32_FSMC_PATT3             0x8C
+#define CYGHWR_HAL_STM32_FSMC_ECCR3             0x94
+
 #define CYGHWR_HAL_STM32_FSMC_PCR4              0xC0
 #define CYGHWR_HAL_STM32_FSMC_SR4               0xC4
 #define CYGHWR_HAL_STM32_FSMC_PMEM4             0xC8
@@ -1091,8 +1095,6 @@ __externC void hal_stm32_bd_protect( int protect );
 
 #define CYGHWR_HAL_STM32_FSMC_PIO4              0xB0
 
-#define CYGHWR_HAL_STM32_FSMC_ECCR2             0x54
-#define CYGHWR_HAL_STM32_FSMC_ECCR3             0x74
 
 #define CYGHWR_HAL_STM32_FSMC_BANK2_BASE        0x70000000
 #define CYGHWR_HAL_STM32_FSMC_BANK3_BASE        0x80000000
@@ -1108,7 +1110,7 @@ __externC void hal_stm32_bd_protect( int protect );
 #define CYGHWR_HAL_STM32_FSMC_PCR_PTYP_NAND     BIT_(3)
 #define CYGHWR_HAL_STM32_FSMC_PCR_PWID_8        VALUE_(4,0)
 #define CYGHWR_HAL_STM32_FSMC_PCR_PWID_16       VALUE_(4,1)
-#define CYGHWR_HAL_STM32_FSMC_PCR_EECEN         BIT_(6)
+#define CYGHWR_HAL_STM32_FSMC_PCR_ECCEN         BIT_(6)
 #define CYGHWR_HAL_STM32_FSMC_PCR_ADLOW         BIT_(8)
 #define CYGHWR_HAL_STM32_FSMC_PCR_TCLR(__x)     VALUE_(9,__x)
 #define CYGHWR_HAL_STM32_FSMC_PCR_TAR(__x)      VALUE_(13,__x)

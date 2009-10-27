@@ -1,3 +1,7 @@
+2009-10-26  Ross Younger  <wry@ecoscentric.com>
+
+	* include/var_io.h: Minor corrections to the FSMC register defs.
+
 2009-08-10  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* include/var_io.h: Added more register definitions for FSMC
