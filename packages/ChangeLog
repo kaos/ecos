@@ -1,3 +1,8 @@
+2009-11-13  John Dallaway  <john@dallaway.org.uk>
+
+	* ecosadmin.tcl: Keep target records containing removed packages
+	by default. Add "--remove_targets" switch to force removal.
+
 2009-08-20  John Dallaway  <john@dallaway.org.uk>
 
 	* ecos.db: Add uSTL package.

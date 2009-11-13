@@ -12,7 +12,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -118,7 +118,7 @@ namespace eval ecosadmin {
 	variable extract_license_arg 0;     # --extract_license
 	variable add_package        "";     # add FILE
 	variable remove_package     "";     # remove PACKAGE
-	variable keep_targets_arg   "";     # --keep_targets
+	variable keep_targets_arg    1;     # --keep_targets, --remove_targets
 	variable merge_repository   "";     # merge REPOSITORY
 	variable version_arg        "";     # --version VER
 	
@@ -433,6 +433,12 @@ proc ecosadmin::parse_arguments { argv0 argv } {
 				continue
 			}
 
+			# check for --remove_targets
+			if { [regexp -- {^-?-remove_targets$} $args($i)] == 1 } {
+				set ecosadmin::keep_targets_arg 0
+				continue
+			}
+
 			# check for the add command
 			if { [regexp -- {^-?-?add=?(.*)$} $args($i) dummy match1] == 1 } {
 				if { $match1 != "" } {
@@ -509,10 +515,10 @@ proc ecosadmin::argument_help { } {
 
 	puts "Usage: ecosadmin \[ command \]"
 	puts "  commands are:"
-	puts "    list                                   : list packages"
-	puts "    check                                  : check database"
-	puts "    add FILE                               : add packages"
-	puts "    remove PACKAGE \[ --version VER \]       : remove a package"
+	puts "    list                                                   : list packages"
+	puts "    check                                                  : check database"
+	puts "    add FILE                                               : add packages"
+	puts "    remove PACKAGE \[ --version VER \] \[ --remove_targets \]  : remove a package"
 }
 
 # }}}
@@ -1188,10 +1194,10 @@ proc ecosadmin::filter_old_packages { old_packages } {
 		if { ( $command == "target" ) && ( ( [ target_requires_any_package $name $ecosadmin::removed_packages ] != 0 ) || ( [ target_requires_missing_package $name ] != 0 ) ) } {
 			# the target requires a package which has been removed
 			if { $ecosadmin::keep_targets_arg != 1 } {
-				# "--keep_targets" not specified so remove targets with missing packages
+				# "--remove_targets" specified so remove the target
 				ecosadmin::report "removing target $name"
 			} else {
-				# "--keep_targets" specified so remove missing packages from the target definition
+				# remove missing packages from the target definition
 				puts $ecosadmin::outfile "$command $name \{\n$ecosadmin::target_attributes \tpackages \{"
 				foreach pkg $ecosadmin::target_packages {
 					if { ([ lsearch $ecosadmin::removed_packages $pkg ] == -1) && ([ lsearch $ecosadmin::known_packages $pkg ] != -1) } {

@@ -1,3 +1,8 @@
+2009-11-13  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/usb_serial.cdl: Specify test executable names for compatibility
+	with the eCos Configuration Tool.
+
 2008-11-03  Gabor Toeroek <tgabor84@gmail.com>
 
 	* cdl/usbs_serial.cdl: Fix typo introduced by Andrew Lunn in the
@@ -33,7 +38,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
