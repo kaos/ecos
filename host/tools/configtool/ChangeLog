@@ -1,3 +1,8 @@
+2009-11-17  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/packagesdlg.cpp: Fix the selection of a new
+	package version in the packages dialog. [ Bugzilla 1000860 ]
+
 2009-03-26  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/settingsdlg.cpp: Further tweaks to the widths of

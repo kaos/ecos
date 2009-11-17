@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2005 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2009 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -25,7 +25,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   julians, jld
-// Contact(s):  julians
+// Contact(s):  julians, jld
 // Date:        2000/09/28
 // Version:     $Id: packagesdlg.cpp,v 1.9 2001/12/14 17:34:03 julians Exp $
 // Purpose:
@@ -683,7 +683,7 @@ void ecPackagesDialog::OnSelectVersion(wxCommandEvent& event)
     for (nIndex = 0; nIndex < nListSelCount; nIndex++) // for each selected package
     {
         // set the package version to that specified in the version combo box
-        wxString str = versionChoice->GetString(nIndex);
+        wxString str = versionChoice->GetString(versionChoice->GetSelection());
         
         // itemIndex is the index into the list of item names. It gets stored with all the listbox items.
         int itemIndex = (int) pListBox->GetClientData((*selected)[nIndex]);
