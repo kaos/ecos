@@ -627,7 +627,7 @@ static Cyg_ErrNo can_set_config(cyg_io_handle_t handle,
         //
         // wait until all messages in outbut buffer are sent
         //      
-        case CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN:
+        case CYG_IO_SET_CONFIG_CAN_OUTPUT_DRAIN:
              {
                  // Wait for any pending output to complete
                  if (out_cbuf->len == 0) 
@@ -647,7 +647,7 @@ static Cyg_ErrNo can_set_config(cyg_io_handle_t handle,
                  cyg_drv_dsr_unlock();
                  cyg_drv_mutex_unlock(&out_cbuf->lock);
              }
-             break;// CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN:
+             break;// CYG_IO_SET_CONFIG_CAN_OUTPUT_DRAIN:
              
         //     
         // Abort any outstanding I/O, including blocked reads

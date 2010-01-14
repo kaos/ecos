@@ -1,3 +1,10 @@
+2010-01-13  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* include/can.h: EOF footer: s/SERIAL/CAN/.
+	* src/can.c: can_set_config(): Fixed key's name to drain output:
+	s{CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN
+	}{CYG_IO_SET_CONFIG_CAN_OUTPUT_DRAIN}.
+
 2007-08-23 Alexey Shusharin <mrfinch@mail.ru>
 	
 	* doc/can.sgml: Callback on event documentation.

@@ -237,4 +237,4 @@ can_lowlevel_funs _l = {                                                        
 
 extern cyg_devio_table_t cyg_io_can_devio;
 //-------------------------------------------------------------------------
-#endif // CYGONCE_SERIAL_H
+#endif // CYGONCE_CAN_H
