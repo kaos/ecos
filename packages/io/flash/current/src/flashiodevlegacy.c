@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2009, 2010 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -337,7 +337,7 @@ static struct flashiodev_priv_t priv1 = CYG_FLASHIODEV_DEV(
 #ifdef CYGNUM_IO_FLASH_BLOCK_CFG_STATIC_ABSOLUTE_1 
 static struct flashiodev_priv_t priv1 = CYG_FLASHIODEV_DEV(
   CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_START_1,       // start
-  CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_START_1 + CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_LENGTH_1,
+  CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_LENGTH_1,      // end
   0,       // use_fis
   1,       // use_static
   0,       // use_offset
@@ -385,7 +385,7 @@ static struct flashiodev_priv_t priv2 = CYG_FLASHIODEV_DEV(
 #ifdef CYGNUM_IO_FLASH_BLOCK_CFG_STATIC_ABSOLUTE_2 
 static struct flashiodev_priv_t priv2 = CYG_FLASHIODEV_DEV(
   CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_START_2,       // start
-  CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_START_2 + CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_LENGTH_2,
+  CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_LENGTH_2,      // end
   0,       // use_fis
   1,       // use_static
   0,       // use_offset
