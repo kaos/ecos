@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -154,6 +154,9 @@ struct arpcom {
 #ifdef CYGPKG_NET_LWIP
 struct arpcom {
     struct netif ac_if;
+# ifdef CYGFUN_LWIP_MODE_SEQUENTIAL
+    cyg_sem_t send_sem;
+# endif
 };
 #endif
 

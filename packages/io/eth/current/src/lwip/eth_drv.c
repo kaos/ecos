@@ -2,13 +2,13 @@
 //
 //      src/lwip/eth_drv.c
 //
-//      Hardware independent ethernet driver for lwIP
+//      Hardware independent networking support for lwIP
 //
 //==========================================================================
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -39,12 +39,12 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    Jani Monoses <jani@iv.ro>
-// Contributors: 
-// Date:         2002-04-05
-// Purpose:      Hardware independent ethernet driver
+// Author(s):    Simon Kallweit
+// Contributors:
+// Date:         2008-12-09
+// Purpose:      Hardware independent networking support for lwIP.
 // Description:  Based on the standalone driver for RedBoot.
-//               
+//
 //####DESCRIPTIONEND####
 //
 //==========================================================================
@@ -64,77 +64,52 @@
 #include <cyg/hal/hal_tables.h>
 #include <cyg/kernel/kapi.h>
 
-#include "lwip/opt.h"
-#include "lwip/ip.h"
-#include "lwip/mem.h"
-#include "lwip/pbuf.h"
-#include "lwip/sys.h"
+#include <lwip/opt.h>
+#include <lwip/ip.h>
+#include <lwip/mem.h>
+#include <lwip/pbuf.h>
+#include <lwip/sys.h>
+#include <lwip/dhcp.h>
+#include <netif/etharp.h>
 
-#include "netif/etharp.h"
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
+#include <cyg/hal/hal_if.h>
 
-// Interfaces exported to drivers
-
-static void eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr);
-static void eth_drv_recv(struct eth_drv_sc *sc, int total_len);
-static void eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status);
-
-struct eth_drv_funs eth_drv_funs = { eth_drv_init, eth_drv_recv, eth_drv_tx_done };
-
-#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG 
-int cyg_io_eth_net_debug = CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY;
-#endif
-
-extern void lwip_dsr_stuff(void);
-extern void lwip_set_addr(struct netif *);
-extern void lwip_dhcp_init(struct netif *);
-
-//DSR called from the low level driver.Signals the input_thread
-void
-eth_drv_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
-{
-  struct eth_drv_sc *sc = (struct eth_drv_sc *) data;
-  sc->state |= ETH_DRV_NEEDS_DELIVERY;
-  lwip_dsr_stuff();	
-}
-
-err_t ecosif_init(struct netif *netif);
-
-// This function is called during system initialization to register a
-// network interface with the system.
-static void
-eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr)
-{
-  struct netif *netif = &sc->sc_arpcom.ac_if;
-  
-  netif->state = sc;
-  ecosif_init(netif);
-  
-  // enaddr == 0 -> hardware init was incomplete (no ESA)
-  if (enaddr != 0) {
-    // Set up hardware address
-    memcpy(netif->hwaddr, enaddr, ETHER_ADDR_LEN);
-    // Perform any hardware initialization
-    (sc->funs->start) (sc, (unsigned char *) &netif->hwaddr, 0);
-  }
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
-// Set up interfaces so debug environment can share this device
-    {
-        void *dbg = CYGACC_CALL_IF_DBG_DATA();
-        if (!dbg) {
-            CYGACC_CALL_IF_DBG_DATA_SET((void *)sc);
-        }
+// Use with care!  Local variable defined!
+#define START_CONSOLE()                                                                 \
+{   /* NEW BLOCK */                                                                     \
+    int _cur_console =                                                                  \
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);      \
+    {                                                                                   \
+        int i;                                                                          \
+        if ( CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,                 \
+                                          "info_console_force", &i,                     \
+                                          CYGNUM_FLASH_CFG_TYPE_CONFIG_BOOL ) ) {       \
+            if ( i ) {                                                                  \
+                if ( CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,         \
+                                                  "info_console_number", &i,            \
+                                                  CYGNUM_FLASH_CFG_TYPE_CONFIG_INT ) ){ \
+                    /* Then i is the console to force it to: */                         \
+                    CYGACC_CALL_IF_SET_CONSOLE_COMM( i );                               \
+                }                                                                       \
+            }                                                                           \
+        }                                                                               \
     }
+
+#define END_CONSOLE()                                   \
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(_cur_console);      \
+}   /* END BLOCK */
+
+#else
+#define START_CONSOLE()
+#define END_CONSOLE()
 #endif
-    //
-    // we call this after the driver was started successfully
-    //
-    lwip_dhcp_init(netif);
-}
+// ------------------------------------------------------------------------
 
 //
 // Control whether any special locking needs to take place if we intend to
-// cooperate with a ROM monitor (e.g. RedBoot) using this hardware.  
+// cooperate with a ROM monitor (e.g. RedBoot) using this hardware.
 //
 #if defined(CYGSEM_HAL_USE_ROM_MONITOR) && \
     defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) && \
@@ -147,49 +122,142 @@ eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr)
 // using the network hardware for the debug channel.
 #define RedBoot_TCP_CHANNEL CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS
 
+// Define this if you ever need to call 'diag_printf()' from interrupt level
+// code (ISR) and the debug channel might be using the network hardware. If
+// this is not the case, then disabling interrupts here is over-kill.
+//#define _LOCK_USING_INTERRUPTS
 #endif
 
-//
-// Send a packet of data to the hardware
-//
+// Static device configurations
 
-static void
-eth_drv_send(struct netif *netif, struct pbuf *p)
+#include "eth_conf.inl"
+
+// Interfaces exported to drivers
+
+static void eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr);
+static void eth_drv_recv(struct eth_drv_sc *sc, int total_len);
+static void eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status);
+
+struct eth_drv_funs eth_drv_funs = {eth_drv_init, eth_drv_recv, eth_drv_tx_done};
+
+static void eth_drv_send(struct netif *netif, struct pbuf *p);
+
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+int cyg_io_eth_net_debug = CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY;
+// Usually just the header is enough, the body slows things too much.
+#define DIAG_DUMP_BUF_HDR( a, b ) if (0 < cyg_io_eth_net_debug) diag_dump_buf( (a), (b) )
+#define DIAG_DUMP_BUF_BDY( a, b ) if (1 < cyg_io_eth_net_debug) diag_dump_buf( (a), (b) )
+#else
+#define DIAG_DUMP_BUF_HDR( a, b )
+#define DIAG_DUMP_BUF_BDY( a, b )
+#endif
+
+#define MAX_ETH_MSG 1540
+
+// Interface to lwIP glue code
+
+extern void lwip_eth_drv_new(struct netif *netif);
+extern void lwip_eth_drv_dsr(void);
+extern err_t lwip_eth_drv_input(struct pbuf *p, struct netif *netif);
+
+
+
+//
+// Called by lwIP to do the actual transmission of a packet. The packet passed
+// to this function may be chained. This function passes the data to the
+// hardware driver
+//
+static err_t eth_netif_linkoutput(struct netif *netif, struct pbuf *p)
 {
-  struct eth_drv_sg sg_list[MAX_ETH_DRV_SG];
-  struct eth_drv_sc *sc = netif->state;
-  int sg_len = 0;
-  struct pbuf *q;
+    eth_drv_send(netif, p);
+    
+    return ERR_OK;
+}
 
-#ifdef _LOCK_WITH_ROM_MONITOR
-    bool need_lock = false;
-    int debug_chan;
+//
+// Called by lwIP when an IP packet should be sent.
+//
+static err_t eth_netif_output(struct netif *netif, struct pbuf *p,
+                          struct ip_addr *ipaddr)
+{
+    // Resolve hardware address, then send (or queue) packet
+    return etharp_output(netif, p, ipaddr);
+}
+
+//
+// Called by lwIP to init the netif.
+//
+static err_t eth_netif_init(struct netif *netif)
+{
+    netif->name[0] = 'e';
+    netif->name[1] = 't';
+    netif->hwaddr_len = 6;
+    netif->output = eth_netif_output;
+    netif->linkoutput = eth_netif_linkoutput;
+    netif->mtu = 1500;
+
+    netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
+    
+    return ERR_OK;
+}
+
+//
+// This function is called during system initialization to register a
+// network interface with the system.
+//
+static void
+eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr)
+{
+    struct netif *netif = &sc->sc_arpcom.ac_if;
+    struct eth_conf *conf;
+    struct ip_addr addr, netmask, gateway;
+    
+#ifdef CYGFUN_LWIP_MODE_SEQUENTIAL
+    cyg_semaphore_init(&sc->sc_arpcom.send_sem, 1);
 #endif
 
-  while (!(sc->funs->can_send) (sc)); 
+    // enaddr == 0 -> hardware init was incomplete (no ESA)
+    if (enaddr == 0)
+        return;
+    
+    netif->state = sc;
 
-  for (q = p; q != NULL; q = q->next) {
-    sg_list[sg_len].buf = (CYG_ADDRESS) q->payload;
-    sg_list[sg_len++].len = q->len;
-  }
-#ifdef _LOCK_WITH_ROM_MONITOR
-  debug_chan = CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-  if (debug_chan == RedBoot_TCP_CHANNEL) {
-    need_lock = true;
-    cyg_drv_dsr_lock();
-  }
-#endif // _LOCK_WITH_ROM_MONITOR
-
-  (sc->funs->send) (sc, sg_list, sg_len, p->tot_len,
-		    (CYG_ADDRWORD) p);
-
-#ifdef _LOCK_WITH_ROM_MONITOR
-  // Unlock the driver & hardware.  It can once again be safely shared.
-  if (need_lock) {
-    cyg_drv_dsr_unlock();
-  }
-#endif // _LOCK_WITH_ROM_MONITOR
-
+    // Configure the IP address
+    conf = next_eth_conf();
+    if (conf && !conf->dhcp) {
+        IP4_ADDR(&addr,    conf->addr[0], conf->addr[1],
+                           conf->addr[2], conf->addr[3]);
+        IP4_ADDR(&netmask, conf->netmask[0], conf->netmask[1],
+                           conf->netmask[2], conf->netmask[3]);
+        IP4_ADDR(&gateway, conf->gateway[0], conf->gateway[1],
+                           conf->gateway[2], conf->gateway[3]);
+    } else {
+        IP4_ADDR(&addr,    0, 0, 0, 0);
+        IP4_ADDR(&netmask, 0, 0, 0, 0);
+        IP4_ADDR(&gateway, 0, 0, 0, 0);
+    }
+    
+    netif_add(netif, &addr, &netmask, &gateway, netif->state,
+              eth_netif_init, lwip_eth_drv_input);
+    
+    lwip_eth_drv_new(netif);
+    
+    if (conf && conf->def)
+        netif_set_default(netif);
+    
+    // Set up hardware address
+    memcpy(netif->hwaddr, enaddr, ETHER_ADDR_LEN);
+    (sc->funs->start)(sc, (unsigned char *) &netif->hwaddr, 0);
+    
+    if (conf && !conf->dhcp)
+        netif_set_up(netif);
+    
+#if LWIP_DHCP
+    // Start DHCP if configured
+    if (conf && conf->dhcp) {
+        dhcp_start(netif);
+    }
+#endif
 }
 
 //
@@ -199,18 +267,127 @@ eth_drv_send(struct netif *netif, struct pbuf *p)
 static void
 eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status)
 {
-#if 0	
-  struct pbuf *p = (struct pbuf *)key;
-  struct netif *netif = &sc->sc_arpcom.ac_if;
-
-  CYGARC_HAL_SAVE_GP();
-  CYGARC_HAL_RESTORE_GP();
-#endif  
+#ifdef CYGFUN_LWIP_MODE_SIMPLE
+    // Stop polling
+    cyg_bool *done = (cyg_bool *) key;
+    *done = true;
+#endif
+#ifdef CYGFUN_LWIP_MODE_SEQUENTIAL
+    // Wake-up the lwip-thread
+    cyg_semaphore_post(&sc->sc_arpcom.send_sem);
+#endif    
 }
 
-static void ecosif_input(struct netif *netif, struct pbuf* pbuf);
+//
+// Send a packet of data to the hardware.
+//
+static void
+eth_drv_send(struct netif *netif, struct pbuf *p)
+{
+    struct eth_drv_sg sg_list[MAX_ETH_DRV_SG];
+    struct eth_drv_sc *sc = netif->state;
+    int sg_len = 0;
+    struct pbuf *q;
+#ifdef _LOCK_WITH_ROM_MONITOR
+#ifdef _LOCK_USING_INTERRUPTS
+    cyg_uint32 ints;
+#endif
+    bool need_lock = false;
+    int debug_chan;
+#endif
+#ifdef CYGFUN_LWIP_MODE_SIMPLE
+    cyg_bool done = false;
+    int wait_cycles = 100;
+#endif
+    
+#ifdef CYGFUN_LWIP_MODE_SIMPLE
+    // Wait until we can send
+    while (!(sc->funs->can_send)(sc)) {
+        // Give driver a chance to service hardware
+        (sc->funs->poll)(sc);
+        if (--wait_cycles <= 0) {
+            START_CONSOLE();
+            diag_printf("cannot send packet\n");
+            END_CONSOLE();
+            return;
+        }
+    }
+#endif // CYGFUN_LWIP_MODE_SIMPLE
+    
+#ifdef CYGFUN_LWIP_MODE_SEQUENTIAL
+    // Wait until we can send
+    if ((sc->funs->can_send)(sc) < 1)
+        cyg_semaphore_wait(&sc->sc_arpcom.send_sem);
+    if ((sc->funs->can_send)(sc) < 1)
+        CYG_FAIL("cannot send packet");
+#endif // CYGFUN_LWIP_MODE_SEQUENTIAL
+    
+    // Create scatter list
+    for (q = p; q != NULL && sg_len < MAX_ETH_DRV_SG; q = q->next) {
+        sg_list[sg_len].buf = (CYG_ADDRESS) q->payload;
+        sg_list[sg_len++].len = q->len;
+    }
+    
+#ifdef _LOCK_WITH_ROM_MONITOR
+    // Firm lock on this portion of the driver.  Since we are about to
+    // start messing with the actual hardware, it is imperative that the
+    // current thread not loose control of the CPU at this time.  Otherwise,
+    // the hardware could be left in an unusable state.  This caution is
+    // only warranted if there is a possibility of some other thread trying
+    // to use the hardware simultaneously.  The network stack would prevent
+    // this implicitly since all accesses are controlled by the "splX()"
+    // locks, but if there is a ROM monitor, such as RedBoot, also using
+    // the hardware, all bets are off.
 
-#define MAX_ETH_MSG 1540
+    // Note: these operations can be avoided if it were well known that
+    // RedBoot was not using the network hardware for diagnostic I/O.  This
+    // can be inferred by checking which I/O channel RedBoot is currently
+    // hooked to.
+    debug_chan = CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    if (debug_chan == RedBoot_TCP_CHANNEL) {
+        need_lock = true;
+#ifdef _LOCK_USING_INTERRUPTS
+        HAL_DISABLE_INTERRUPTS(ints);
+#endif
+        cyg_drv_dsr_lock();
+    }
+#endif // _LOCK_WITH_ROM_MONITOR
+
+#ifdef CYGFUN_LWIP_MODE_SIMPLE
+    // Tell hardware to send this packet
+    if (sg_len)
+        (sc->funs->send)(sc, sg_list, sg_len, p->tot_len, (CYG_ADDRWORD) &done);
+    // Wait until packet has been sent
+    wait_cycles = 100;
+    while (!done) {
+        (sc->funs->poll)(sc);
+        if (--wait_cycles <= 0) {
+            START_CONSOLE();
+            diag_printf("packet failed to send\n");
+            END_CONSOLE();
+            break;
+        }
+    }
+#endif // CYGFUN_LWIP_MODE_SIMPLE
+
+#ifdef CYGFUN_LWIP_MODE_SEQUENTIAL
+    // Tell hardware to send this packet
+    if (sg_len)
+        (sc->funs->send)(sc, sg_list, sg_len, p->tot_len, 0);
+#endif // CYGFUN_LWIP_MODE_SEQUENTIAL
+
+#ifdef _LOCK_WITH_ROM_MONITOR
+    // Unlock the driver & hardware.  It can once again be safely shared.
+    if (need_lock) {
+        cyg_drv_dsr_unlock();
+#ifdef _LOCK_USING_INTERRUPTS
+        HAL_RESTORE_INTERRUPTS(ints);
+#endif
+    }
+#endif // _LOCK_WITH_ROM_MONITOR
+#undef _LOCK_WITH_ROM_MONITOR
+}
+
 //
 // This function is called from a hardware driver to indicate that an input
 // packet has arrived.  The routine will set up appropriate network resources
@@ -219,112 +396,51 @@ static void ecosif_input(struct netif *netif, struct pbuf* pbuf);
 static void
 eth_drv_recv(struct eth_drv_sc *sc, int total_len)
 {
-  struct eth_drv_sg sg_list[MAX_ETH_DRV_SG];
-  struct netif *netif = &sc->sc_arpcom.ac_if;
+    struct eth_drv_sg sg_list[MAX_ETH_DRV_SG];
+    struct netif *netif = &sc->sc_arpcom.ac_if;
+    struct pbuf *p, *q;
+    int sg_len = 0;
+    
+    CYG_ASSERT(total_len != 0, "total_len is zero!");
+    CYG_ASSERT(total_len >= 0, "total_len is negative!");
+    
+    CYGARC_HAL_SAVE_GP();
 
-  struct pbuf *p, *q;
+    if ((total_len > MAX_ETH_MSG) || (total_len < 0))
+        total_len = MAX_ETH_MSG;
 
-  int sg_len = 0;
-  CYGARC_HAL_SAVE_GP();
+    // Allocate buffer to store received packet
+    p = pbuf_alloc(PBUF_RAW, total_len, PBUF_POOL);
+    if (p == NULL) {
+        START_CONSOLE();
+        diag_printf("cannot allocate pbuf to receive packet\n");
+        END_CONSOLE();
+        return;
+    }
 
-  if ((total_len > MAX_ETH_MSG) || (total_len < 0)) {
-    total_len = MAX_ETH_MSG;
-  }
-
-  p = pbuf_alloc(PBUF_RAW, total_len, PBUF_POOL);
-
-  if (p == NULL) {
-    LWIP_DEBUGF(0, ("ecosif_input: low_level_input returned NULL\n"));
-    return;
-  }
-
-  for (q = p; q != NULL; q = q->next) {
-    sg_list[sg_len].buf = (CYG_ADDRESS) q->payload;
-    sg_list[sg_len++].len = q->len;
-  }
-  (sc->funs->recv) (sc, sg_list, sg_len);
-  ecosif_input(netif, p);
-  CYGARC_HAL_RESTORE_GP();
-}
-
-
-#define IFNAME0 'e'
-#define IFNAME1 't'
-
-
-
-//
-// low_level_output():
-//
-// Should do the actual transmission of the packet. The packet is
-// contained in the pbuf that is passed to the function. This pbuf
-// might be chained.We pass the data down to the eCos hw independent 
-// ethernet driver
-//
-
-static err_t
-low_level_output(struct netif *netif, struct pbuf *p)
-{
-  eth_drv_send(netif, p);
-  return ERR_OK;
-}
-
-//
-// ecosif_output():
-//
-// This function is called by the TCP/IP stack when an IP packet
-// should be sent. It calls the function called low_level_output() to
-// do the actual transmission of the packet.
-//
-//
-static err_t
-ecosif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
-{
-  // resolve hardware address, then send (or queue) packet
-  return etharp_output(netif, ipaddr, p);
-}
-
-
-
-//
-// ecosif_input():
-// This function is called when the eCos hw independent driver
-// has some data to pass up to lwIP.It does it through ecosif_input.
-//
-static void
-ecosif_input(struct netif *netif, struct pbuf *p)
-{
-  struct eth_hdr *ethhdr;
-  
-  ethhdr = p->payload;
-
-  switch (htons(ethhdr->type)) {
-  case ETHTYPE_IP:
-    LWIP_DEBUGF(0, ("ecosif_input: IP packet\n"));
-    etharp_ip_input(netif, p);
-    pbuf_header(p, -14);
+    // Create scatter list
+    for (q = p; q != NULL && sg_len < MAX_ETH_DRV_SG; q = q->next) {
+        sg_list[sg_len].buf = (CYG_ADDRESS) q->payload;
+        sg_list[sg_len++].len = q->len;
+    }
+    
+    // Get buffers from hardware
+    (sc->funs->recv)(sc, sg_list, sg_len);
+    
+    // Pass received packet to the interface
     netif->input(p, netif);
-    break;
-  case ETHTYPE_ARP:
-    LWIP_DEBUGF(0, ("ecosif_input: ARP packet\n"));
-    etharp_arp_input(netif, (struct eth_addr *) &netif->hwaddr, p);
-    break;
-  default:
-    pbuf_free(p);
-    break;
-  }
 
+    CYGARC_HAL_RESTORE_GP();
 }
 
-err_t
-ecosif_init(struct netif *netif)
+//
+// DSR called from the low level driver.
+//
+void
+eth_drv_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {
-  netif->name[0] = IFNAME0;
-  netif->name[1] = IFNAME1;
-  netif->hwaddr_len = 6;
-  netif->output = ecosif_output;
-  netif->linkoutput = low_level_output;
-  netif->mtu = 1500;
-  lwip_set_addr(netif);
-  return ERR_OK;
+    struct eth_drv_sc *sc = (struct eth_drv_sc *) data;
+
+    sc->state |= ETH_DRV_NEEDS_DELIVERY;
+    lwip_eth_drv_dsr();
 }

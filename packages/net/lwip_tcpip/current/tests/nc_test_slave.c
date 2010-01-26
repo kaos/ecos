@@ -5,13 +5,16 @@
 //      Network characterizations test (slave portion)
 //
 //==========================================================================
-// ####BSDALTCOPYRIGHTBEGIN####                                             
-// -------------------------------------------                              
-// Portions of this software may have been derived from FreeBSD, OpenBSD,   
-// or other sources, and if so are covered by the appropriate copyright     
-// and license included herein.                                             
-// -------------------------------------------                              
-// ####BSDALTCOPYRIGHTEND####                                               
+//####BSDCOPYRIGHTBEGIN####
+//
+// -------------------------------------------
+//
+// Portions of this software may have been derived from OpenBSD or other sources,
+// and are covered by the appropriate copyright disclaimers included herein.
+//
+// -------------------------------------------
+//
+//####BSDCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -26,20 +29,23 @@
 //
 //==========================================================================
 
-// Network characterization test code - slave portion
-#include <cyg/kernel/kapi.h>
 #include <cyg/hal/hal_arch.h>
-
-#include "nc_test_framework.h"
-
 #include <cyg/infra/diag.h>
-
-#include <lwip/inet.h>
-#include <lwip/arch.h>
-#include <lwip/sys.h>
-#define LWIP_TIMEVAL_PRIVATE 1
-#include <lwip/sockets.h>
 #include <cyg/infra/testcase.h>
+
+#include <pkgconf/net_lwip.h>
+
+#include <lwip.h>
+#include <lwip/sockets.h>
+
+#ifdef CYGFUN_LWIP_MODE_SEQUENTIAL
+#if LWIP_SOCKET
+#if LWIP_TCP
+#if LWIP_UDP
+#if LWIP_COMPAT_SOCKETS
+#if LWIP_POSIX_SOCKETS_IO_NAMES
+#if 1 // SO_REUSE
+
 
 #ifndef CYGPKG_LIBC_STDIO
 #include <cyg/error/errno.h>
@@ -47,6 +53,10 @@
 #else
 #include <stdio.h>
 #endif
+
+#include "nc_test_framework.h"
+
+
 #define STACK_SIZE               (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 #define MAX_LOAD_THREAD_LEVEL    20
 #define MIN_LOAD_THREAD_LEVEL    0
@@ -56,20 +66,8 @@
 #define LOAD_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY-1
 #define MAIN_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY-2
 #define DESIRED_BACKGROUND_LOAD  20
-#define CYGHWR_NET_DRIVERS 1
 
-#if SO_REUSE
-#ifdef CYGPKG_LWIP_TCP
-#ifdef CYGPKG_LWIP_UDP
-
-
-#if 0
-static char         main_thread_stack[CYGHWR_NET_DRIVERS][STACK_SIZE];
-static cyg_thread   main_thread_data[CYGHWR_NET_DRIVERS];
-static cyg_handle_t main_thread_handle[CYGHWR_NET_DRIVERS];
-#endif
-
-
+static char         main_thread_stack[STACK_SIZE];
 static char         idle_thread_stack[STACK_SIZE];
 static cyg_thread   idle_thread_data;
 static cyg_handle_t idle_thread_handle;
@@ -188,13 +186,13 @@ do_udp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
                 if ((ntohl(tdp->key1) == NC_TEST_DATA_KEY1) &&
                     (ntohl(tdp->key2) == NC_TEST_DATA_KEY2)) {
                     if (ntohl(tdp->seq) != seq) {
-                        test_printf("Packets out of sequence - recvd: %d, expected: %d\n",
+                        test_printf("Packets out of sequence - recvd: %lu, expected: %d\n",
                                     ntohl(tdp->seq), seq);
                         seq = ntohl(tdp->seq);
                         seq_errors++;
                     }
                 } else {
-                    test_printf("Bad data packet - key: %lx/%lx, seq: %d\n",
+                    test_printf("Bad data packet - key: %lx/%lx, seq: %lu\n",
                                 ntohl(tdp->key1), ntohl(tdp->key2),
                                 ntohl(tdp->seq));
                 }
@@ -281,13 +279,13 @@ do_read(int fd, void *buf, int buflen)
 static void
 do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
 {
-    int i, s, len, td_len, seq, seq_errors, lost, test_chan, res;
+    int i, s, td_len, seq, seq_errors, lost, test_chan, res;
     struct sockaddr_in test_chan_slave, test_chan_master;
+    socklen_t len;
     struct nc_test_results results;
     struct nc_test_data *tdp;
     int nsent, nrecvd;
     int need_recv, need_send;
-    int one = 1;
     static int slave_tcp_port = -1;
 
     need_recv = true;  need_send = true;
@@ -309,15 +307,18 @@ do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
         if (s < 0) {
             pexit("datagram socket");
         }
-
-        if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
-            perror("setsockopt SO_REUSEADDR");
-            return;
-        }
-#ifdef SO_REUSEPORT
-        if (setsockopt(s, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one))) {
-            perror("setsockopt SO_REUSEPORT");
-            return;
+#if SO_REUSE
+        {
+            int one = 1;
+            
+            if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
+                perror("setsockopt SO_REUSEADDR");
+                return;
+            }
+            if (setsockopt(s, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one))) {
+                perror("setsockopt SO_REUSEPORT");
+                return;
+            }
         }
 #endif
         memset((char *) &test_chan_slave, 0, sizeof(test_chan_slave));
@@ -341,8 +342,8 @@ do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
     }
     len = sizeof(test_chan_master);
     getpeername(test_chan, (struct sockaddr *)&test_chan_master, &len);
-//    test_printf("connection from %s.%d\n", inet_ntoa(test_chan_master.sin_addr), 
-  //              ntohs(test_chan_master.sin_port));
+    test_printf("connection from %s.%d\n", inet_ntoa(test_chan_master.sin_addr), 
+                ntohs(test_chan_master.sin_port));
 
     nsent = 0;  nrecvd = 0;  seq = 0;  seq_errors = 0;  lost = 0;
     for (i = 0;  i < ntohl(req->nbufs);  i++) {
@@ -361,13 +362,13 @@ do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
                 if ((ntohl(tdp->key1) == NC_TEST_DATA_KEY1) &&
                     (ntohl(tdp->key2) == NC_TEST_DATA_KEY2)) {
                     if (ntohl(tdp->seq) != seq) {
-                        test_printf("Packets out of sequence - recvd: %d, expected: %d\n",
+                        test_printf("Packets out of sequence - recvd: %lu, expected: %d\n",
                                     ntohl(tdp->seq), seq);
                         seq = ntohl(tdp->seq);
                         seq_errors++;
                     }
                 } else {
-                    test_printf("Bad data packet - key: %lx/%lx, seq: %d\n",
+                    test_printf("Bad data packet - key: %lx/%lx, seq: %lu\n",
                                 ntohl(tdp->key1), ntohl(tdp->key2),
                                 ntohl(tdp->seq));
                 }
@@ -416,8 +417,9 @@ do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
 static void
 nc_slave(test_param_t param)
 {
-    int s, masterlen;
+    int s;
     struct sockaddr_in my_addr, master;
+    socklen_t masterlen;
     struct nc_request req;
     struct nc_reply reply;
     int done = false;
@@ -444,10 +446,8 @@ nc_slave(test_param_t param)
         if (recvfrom(s, &req, sizeof(req), 0, (struct sockaddr *)&master, &masterlen) < 0) {
             pexit("recvfrom");
         }
-#if 0
-        test_printf("Request %d from %s:%d\n", ntohl(req.type), 
+        test_printf("Request %lu from %s:%d\n", ntohl(req.type), 
                     inet_ntoa(master.sin_addr), ntohs(master.sin_port));
-#endif
         reply.response = htonl(NC_REPLY_ACK);
         reply.seq = req.seq;
         switch (ntohl(req.type)) {
@@ -455,22 +455,22 @@ nc_slave(test_param_t param)
             done = true;
             break;
         case NC_REQUEST_UDP_SEND:
-            test_printf("UDP send - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("UDP send - %lu buffers, %lu bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_UDP_RECV:
-            test_printf("UDP recv - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("UDP recv - %lu buffers, %lu bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_UDP_ECHO:
-            test_printf("UDP echo - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("UDP echo - %lu buffers, %lu bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_TCP_SEND:
-            test_printf("TCP send - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("TCP send - %lu buffers, %lu bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_TCP_RECV:
-            test_printf("TCP recv - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("TCP recv - %lu buffers, %lu bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_TCP_ECHO:
-            test_printf("TCP echo - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("TCP echo - %lu buffers, %lu bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_SET_LOAD:
             start_load(ntohl(req.nbufs));
@@ -490,7 +490,7 @@ nc_slave(test_param_t param)
             reply.misc.idle_results.count[1] = htonl((long)idle_thread_count);
             break;
         default:
-            test_printf("Unrecognized request: %d\n", ntohl(req.type));
+            test_printf("Unrecognized request: %lu\n", ntohl(req.type));
             reply.response = htonl(NC_REPLY_NAK);
             reply.reason = htonl(NC_REPLY_NAK_UNKNOWN_REQUEST);
             break;
@@ -557,18 +557,14 @@ calibrate_load(int desired_load)
     // Set limits
     high = MAX_LOAD_THREAD_LEVEL;
     low = MIN_LOAD_THREAD_LEVEL;
-        test_printf("Start Network Characterization - SLAVE\n");
 
     // Compute the "no load" idle value
     idle_thread_count = 0;
     cyg_semaphore_post(&idle_thread_sem);  // Start idle thread
-        test_printf("Start Network Characterization - SLAVE\n");
     cyg_thread_delay(1*100);               // Pause for one second
-        test_printf("Start Network Characterization - SLAVE\n");
     cyg_semaphore_wait(&idle_thread_sem);  // Stop idle thread
-        test_printf("Start Network Characterization - SLAVE\n");
     no_load_idle = idle_thread_count;
-    diag_printf("No load = %d\n", (int)idle_thread_count);
+    test_printf("No load = %d\n", (int)idle_thread_count);
 
     // First ensure that the HIGH level is indeed higher
     while (true) {
@@ -581,7 +577,7 @@ calibrate_load(int desired_load)
         load_idle = idle_thread_count;
         start_load(0);                         // Shut down background load
         percent_load = 100 - ((load_idle * 100) / no_load_idle);
-        diag_printf("High Load[%ld] = %d => %d%%\n", load_thread_level, 
+        test_printf("High Load[%ld] = %d => %d%%\n", load_thread_level, 
                     (int)idle_thread_count, percent_load);
         if ( percent_load > desired_load )
             break; // HIGH level is indeed higher
@@ -600,7 +596,7 @@ calibrate_load(int desired_load)
         load_idle = idle_thread_count;
         start_load(0);                         // Shut down background load
         percent_load = 100 - ((load_idle * 100) / no_load_idle);
-        diag_printf("Load[%ld] = %d => %d%%\n", load_thread_level, 
+        test_printf("Load[%ld] = %d => %d%%\n", load_thread_level, 
                     (int)idle_thread_count, percent_load);
         if (((high-low) <= 1) || (abs(desired_load-percent_load) <= 2)) break;
         if (percent_load < desired_load) {
@@ -622,7 +618,7 @@ calibrate_load(int desired_load)
     load_idle = idle_thread_count;
     start_load(0);                         // Shut down background load
     percent_load = 100 - ((load_idle * 100) / no_load_idle);
-    diag_printf("Final load[%ld] = %d => %d%%\n", load_thread_level, 
+    test_printf("Final load[%ld] = %d => %d%%\n", load_thread_level, 
                 (int)idle_thread_count, percent_load);
 //    no_load_idle_count_1_second = no_load_idle;
 }
@@ -699,24 +695,25 @@ net_idle(cyg_addrword_t param)
         cyg_semaphore_post(&idle_thread_sem);
     }
 }
-#if 0
+
+static char stack[STACK_SIZE];
+static cyg_thread thread_data;
+static cyg_handle_t thread_handle;
+
 void
-cyg_start(void *n)
+tmain(cyg_addrword_t p)
+{
+    cyg_lwip_sequential_init();
+    cyg_lwip_thread_new("main", net_test, NULL, main_thread_stack, STACK_SIZE, MAIN_THREAD_PRIORITY);
+}
+
+externC void
+cyg_start( void )
 {
     int i;
-    // Create processing threads
-    for (i = 0;  i < CYGHWR_NET_DRIVERS;  i++) {
-        cyg_thread_create(MAIN_THREAD_PRIORITY,     // Priority
-                          net_test,                 // entry
-                          i,                        // entry parameter
-                          "Network test",           // Name
-                          &main_thread_stack[i][0], // Stack
-                          STACK_SIZE,               // Size
-                          &main_thread_handle[i],   // Handle
-                          &main_thread_data[i]      // Thread data structure
-            );
-    }
-    cyg_thread_resume(main_thread_handle[0]);   // Start first one
+    
+    CYG_TEST_INIT();
+    
     // Create the idle thread environment
     cyg_semaphore_init(&idle_thread_sem, 0);
     cyg_thread_create(IDLE_THREAD_PRIORITY,     // Priority
@@ -727,10 +724,11 @@ cyg_start(void *n)
                       STACK_SIZE,               // Size
                       &idle_thread_handle,      // Handle
                       &idle_thread_data         // Thread data structure
-            );
+    );
     cyg_thread_resume(idle_thread_handle);      // Start it
+    
     // Create the load threads and their environment(s)
-    for (i = 0;  i < NUM_LOAD_THREADS;  i++) {
+    for (i = 0;  i < NUM_LOAD_THREADS; i++) {
         cyg_semaphore_init(&load_thread_sem[i], 0);
         cyg_thread_create(LOAD_THREAD_PRIORITY,     // Priority
                           net_load,                 // entry
@@ -740,88 +738,54 @@ cyg_start(void *n)
                           STACK_SIZE,               // Size
                           &load_thread_handle[i],   // Handle
                           &load_thread_data[i]      // Thread data structure
-            );
+        );
         cyg_thread_resume(load_thread_handle[i]);   // Start it
     }
-    cyg_scheduler_start();
-}
-
-#endif
-
-void
-tmain(cyg_addrword_t p)
-{
-  lwip_init();
-  sys_thread_new(net_test, 0, MAIN_THREAD_PRIORITY);
-}
-
-static char stack[STACK_SIZE];
-static cyg_thread thread_data;
-static cyg_handle_t thread_handle;
-
-void
-nc_slave_main(void)
-{
-	int i;	
-	
-	CYG_TEST_INIT();
-   // Create the idle thread environment
-    cyg_semaphore_init(&idle_thread_sem, 0);
-    cyg_thread_create(IDLE_THREAD_PRIORITY,     // Priority
-                      net_idle,                 // entry
-                      0,                        // entry parameter
-                      "Network idle",           // Name
-                      &idle_thread_stack[0],    // Stack
-                      STACK_SIZE,               // Size
-                      &idle_thread_handle,      // Handle
-                      &idle_thread_data         // Thread data structure
-            );
-    cyg_thread_resume(idle_thread_handle);      // Start it
-    // Create the load threads and their environment(s)
-    for (i = 0;  i < NUM_LOAD_THREADS;  i++) {
-        cyg_semaphore_init(&load_thread_sem[i], 0);
-        cyg_thread_create(LOAD_THREAD_PRIORITY,     // Priority
-                          net_load,                 // entry
-                          i,                        // entry parameter
-                          "Background load",        // Name
-                          &load_thread_stack[i][0], // Stack
-                          STACK_SIZE,               // Size
-                          &load_thread_handle[i],   // Handle
-                          &load_thread_data[i]      // Thread data structure
-            );
-        cyg_thread_resume(load_thread_handle[i]);   // Start it
-    }
+    
     // Create a main thread, so we can run the scheduler and have time 'pass'
-    cyg_thread_create(10,                // Priority - just a number
-                      tmain,          // entry
-                      0,                 // entry parameter
-                      "socket echo test",        // Name
-                      &stack[0],         // Stack
-                      STACK_SIZE,        // Size
-                      &thread_handle,    // Handle
-                      &thread_data       // Thread data structure
+    cyg_thread_create(10,                       // Priority
+                      tmain,                    // entry
+                      0,                        // entry parameter
+                      "socket echo test",       // Name
+                      &stack[0],                // Stack
+                      STACK_SIZE,               // Size
+                      &thread_handle,           // Handle
+                      &thread_data              // Thread data structure
             );
-    cyg_thread_resume(thread_handle);  // Start it
+    cyg_thread_resume(thread_handle);           // Start it
+    
     cyg_scheduler_start();
+    
     CYG_TEST_FAIL_FINISH("Not reached");
 }
 
-
-externC void
-cyg_start( void )
-{
-    nc_slave_main();
-}
-
-#else // def CYGPKG_LWIP_UDP
-#define N_A_MSG "UDP support disabled"
-#endif // def CYGPKG_LWIP_UDP
-#else // def CYGPKG_LWIP_TCP
-#define N_A_MSG "TCP support disabled"
-#endif // def CYGPKG_LWIP_TCP
 #else // SO_REUSE
 #define N_A_MSG "SO_REUSE currently unavailable"
 #endif // SO_REUSE
+
+#else // LWIP_POSIX_SOCKETS_IO_NAMES
+#define N_A_MSG "POSIX socket function names disabled"
+#endif
+
+#else // LWIP_COMPAT_SOCKETS
+#define N_A_MSG "Compatible socket support disabled"
+#endif // LWIP_COMPAT_SOCKETS
+
+#else // LWIP_UDP
+#define N_A_MSG "UDP support disabled"
+#endif // LWIP_UDP
+
+#else // LWIP_TCP
+#define N_A_MSG "TCP support disabled"
+#endif // LWIP_TCP
+
+#else // LWIP_SOCKET
+#define N_A_MSG "Socket support disabled"
+#endif // LWIP_SOCKET
+
+#else // CYGFUN_LWIP_MODE_SEQUENTIAL
+#define N_A_MSG "Not configured in 'Sequential' mode"
+#endif // CYGFUN_LWIP_MODE_SEQUENTIAL
 
 #ifdef N_A_MSG
 externC void

@@ -7,13 +7,13 @@
 * The authors hereby grant permission to use, copy, modify, distribute,
 * and license this software and its documentation for any purpose, provided
 * that existing copyright notices are retained in all copies and that this
-* notice and the following disclaimer are included verbatim in any 
+* notice and the following disclaimer are included verbatim in any
 * distributions. No written agreement, license, or royalty fee is required
 * for any of the authorized uses.
 *
 * THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
 * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-* OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
+* OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 * IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
 * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
 * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
@@ -28,7 +28,7 @@
 * 03-01-01 Marc Boucher <marc@mbsi.ca>
 *   Ported to lwIP.
 * 97-12-04 Guy Lancaster <lancasterg@acm.org>, Global Election Systems Inc.
-*	Original based on BSD magic.c.
+*   Original based on BSD magic.c.
 *****************************************************************************/
 /*
  * magic.c - PPP Magic Number routines.
@@ -49,10 +49,13 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#include "ppp.h"
+#include "lwip/opt.h"
+
+#if PPP_SUPPORT
+
+#include "netif/ppp/ppp.h"
 #include "randm.h"
 #include "magic.h"
-
 
 /***********************************/
 /*** PUBLIC FUNCTION DEFINITIONS ***/
@@ -63,17 +66,17 @@
  * Since we use another random number generator that has its own
  * initialization, we do nothing here.
  */
-void magicInit()
+void magic_init()
 {
-	return;
+  return;
 }
 
 /*
  * magic - Returns the next magic number.
  */
-u32_t magic()
+u32_t magic_next()
 {
-    return avRandom();
+  return randm_rand();
 }
 
-
+#endif /* PPP_SUPPORT */

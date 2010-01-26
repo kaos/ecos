@@ -31,25 +31,30 @@
  ***********************************************************************
  */
 
-#include "ppp.h"
-#include "md5.h"
+#include "lwip/opt.h"
+
+#if PPP_SUPPORT /* don't build if not configured for use in lwipopts.h */
+
+#if CHAP_SUPPORT || MD5_SUPPORT
+
+#include "netif/ppp/ppp.h"
 #include "pppdebug.h"
 
-#if CHAP_SUPPORT > 0 || MD5_SUPPORT > 0
+#include "md5.h"
 
 /*
  ***********************************************************************
  **  Message-digest routines:                                         **
  **  To form the message digest for a message M                       **
- **    (1) Initialize a context buffer mdContext using MD5Init        **
- **    (2) Call MD5Update on mdContext and M                          **
- **    (3) Call MD5Final on mdContext                                 **
- **  The message digest is now in mdContext->digest[0...15]           **
+ **    (1) Initialize a context buffer ctx using md5_init             **
+ **    (2) Call md5_update on ctx and M                               **
+ **    (3) Call md5_final on ctx                                      **
+ **  The message digest is now in ctx->digest[0...15]                 **
  ***********************************************************************
  */
 
 /* forward declaration */
-static void Transform (u32_t *buf, u32_t *in);
+static void transform(u32_t *buf, u32_t *in);
 
 static unsigned char PADDING[64] = {
   0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -95,116 +100,122 @@ static unsigned char PADDING[64] = {
   }
 
 #ifdef __STDC__
-#define UL(x)	x##UL
+#define UL(x) x##UL
 #else
 #ifdef WIN32
-#define UL(x)	x##UL
+#define UL(x) x##UL
 #else
-#define UL(x)	x
+#define UL(x) x
 #endif
 #endif
 
-/* The routine MD5Init initializes the message-digest context
+/* The routine md5_init initializes the message-digest context
    mdContext. All fields are set to zero.
  */
-void MD5Init (MD5_CTX *mdContext)
+void
+md5_init(md5_ctx *ctx)
 {
-  mdContext->i[0] = mdContext->i[1] = (u32_t)0;
+  ctx->i[0] = ctx->i[1] = (u32_t)0;
 
-  /* Load magic initialization constants.
-   */
-  mdContext->buf[0] = (u32_t)0x67452301UL;
-  mdContext->buf[1] = (u32_t)0xefcdab89UL;
-  mdContext->buf[2] = (u32_t)0x98badcfeUL;
-  mdContext->buf[3] = (u32_t)0x10325476UL;
+  /* Load magic initialization constants. */
+  ctx->buf[0] = (u32_t)0x67452301UL;
+  ctx->buf[1] = (u32_t)0xefcdab89UL;
+  ctx->buf[2] = (u32_t)0x98badcfeUL;
+  ctx->buf[3] = (u32_t)0x10325476UL;
 }
 
-/* The routine MD5Update updates the message-digest context to
-   account for the presence of each of the characters inBuf[0..inLen-1]
+/* The routine md5_update updates the message-digest context to
+   account for the presence of each of the characters buf[0..inLen-1]
    in the message whose digest is being computed.
  */
-void MD5Update(MD5_CTX *mdContext, unsigned char *inBuf, unsigned int inLen)
+void
+md5_update(md5_ctx *ctx, unsigned char *buf, unsigned int len)
 {
   u32_t in[16];
   int mdi;
   unsigned int i, ii;
 
 #if 0
-  ppp_trace(LOG_INFO, "MD5Update: %u:%.*H\n", inLen, MIN(inLen, 20) * 2, inBuf);
-  ppp_trace(LOG_INFO, "MD5Update: %u:%s\n", inLen, inBuf);
+  ppp_trace(LOG_INFO, "MD5Update: %u:%.*H\n", len, MIN(len, 20) * 2, buf);
+  ppp_trace(LOG_INFO, "MD5Update: %u:%s\n", len, buf);
 #endif
-  
+
   /* compute number of bytes mod 64 */
-  mdi = (int)((mdContext->i[0] >> 3) & 0x3F);
+  mdi = (int)((ctx->i[0] >> 3) & 0x3F);
 
   /* update number of bits */
-  if ((mdContext->i[0] + ((u32_t)inLen << 3)) < mdContext->i[0])
-    mdContext->i[1]++;
-  mdContext->i[0] += ((u32_t)inLen << 3);
-  mdContext->i[1] += ((u32_t)inLen >> 29);
+  if ((ctx->i[0] + ((u32_t)len << 3)) < ctx->i[0]) {
+    ctx->i[1]++;
+  }
+  ctx->i[0] += ((u32_t)len << 3);
+  ctx->i[1] += ((u32_t)len >> 29);
 
-  while (inLen--) {
+  while (len--) {
     /* add new character to buffer, increment mdi */
-    mdContext->in[mdi++] = *inBuf++;
+    ctx->in[mdi++] = *buf++;
 
     /* transform if necessary */
     if (mdi == 0x40) {
-      for (i = 0, ii = 0; i < 16; i++, ii += 4)
-        in[i] = (((u32_t)mdContext->in[ii+3]) << 24) |
-                (((u32_t)mdContext->in[ii+2]) << 16) |
-				(((u32_t)mdContext->in[ii+1]) << 8) |
-                ((u32_t)mdContext->in[ii]);
-      Transform (mdContext->buf, in);
+      for (i = 0, ii = 0; i < 16; i++, ii += 4) {
+        in[i] = (((u32_t)ctx->in[ii+3]) << 24) |
+                (((u32_t)ctx->in[ii+2]) << 16) |
+                (((u32_t)ctx->in[ii+1]) << 8)  |
+                ((u32_t)ctx->in[ii]);
+      }
+      transform (ctx->buf, in);
       mdi = 0;
     }
   }
 }
 
-/* The routine MD5Final terminates the message-digest computation and
-   ends with the desired message digest in mdContext->digest[0...15].
+/* The routine md5_final terminates the message-digest computation and
+   ends with the desired message digest in ctx->digest[0...15].
  */
-void MD5Final (unsigned char hash[], MD5_CTX *mdContext)
+void
+md5_final(unsigned char hash[], md5_ctx *ctx)
 {
   u32_t in[16];
   int mdi;
   unsigned int i, ii;
-  unsigned int padLen;
+  unsigned int pad_len;
 
   /* save number of bits */
-  in[14] = mdContext->i[0];
-  in[15] = mdContext->i[1];
+  in[14] = ctx->i[0];
+  in[15] = ctx->i[1];
 
   /* compute number of bytes mod 64 */
-  mdi = (int)((mdContext->i[0] >> 3) & 0x3F);
+  mdi = (int)((ctx->i[0] >> 3) & 0x3F);
 
   /* pad out to 56 mod 64 */
-  padLen = (mdi < 56) ? (56 - mdi) : (120 - mdi);
-  MD5Update (mdContext, PADDING, padLen);
+  pad_len = (mdi < 56) ? (56 - mdi) : (120 - mdi);
+  md5_update (ctx, PADDING, pad_len);
 
   /* append length in bits and transform */
-  for (i = 0, ii = 0; i < 14; i++, ii += 4)
-    in[i] = (((u32_t)mdContext->in[ii+3]) << 24) |
-            (((u32_t)mdContext->in[ii+2]) << 16) |
-            (((u32_t)mdContext->in[ii+1]) << 8) |
-            ((u32_t)mdContext->in[ii]);
-  Transform (mdContext->buf, in);
+  for (i = 0, ii = 0; i < 14; i++, ii += 4) {
+    in[i] = (((u32_t)ctx->in[ii+3]) << 24) |
+            (((u32_t)ctx->in[ii+2]) << 16) |
+            (((u32_t)ctx->in[ii+1]) << 8)  |
+            ((u32_t)ctx->in[ii]);
+  }
+  transform (ctx->buf, in);
 
   /* store buffer in digest */
   for (i = 0, ii = 0; i < 4; i++, ii += 4) {
-    mdContext->digest[ii] = (unsigned char)(mdContext->buf[i] & 0xFF);
-	mdContext->digest[ii+1] =
-      (unsigned char)((mdContext->buf[i] >> 8) & 0xFF);
-    mdContext->digest[ii+2] =
-      (unsigned char)((mdContext->buf[i] >> 16) & 0xFF);
-    mdContext->digest[ii+3] =
-      (unsigned char)((mdContext->buf[i] >> 24) & 0xFF);
+    ctx->digest[ii]   = (unsigned char)(ctx->buf[i] & 0xFF);
+    ctx->digest[ii+1] =
+      (unsigned char)((ctx->buf[i] >> 8)  & 0xFF);
+    ctx->digest[ii+2] =
+      (unsigned char)((ctx->buf[i] >> 16) & 0xFF);
+    ctx->digest[ii+3] =
+      (unsigned char)((ctx->buf[i] >> 24) & 0xFF);
   }
-  memcpy(hash, mdContext->digest, 16);
+  SMEMCPY(hash, ctx->digest, 16);
 }
 
 /* Basic MD5 step. Transforms buf based on in.
  */
-static void Transform (u32_t *buf, u32_t *in)
+static void
+transform (u32_t *buf, u32_t *in)
 {
   u32_t a = buf[0], b = buf[1], c = buf[2], d = buf[3];
 
@@ -302,5 +313,6 @@ static void Transform (u32_t *buf, u32_t *in)
   buf[3] += d;
 }
 
-#endif
+#endif /* CHAP_SUPPORT || MD5_SUPPORT */
 
+#endif /* PPP_SUPPORT */

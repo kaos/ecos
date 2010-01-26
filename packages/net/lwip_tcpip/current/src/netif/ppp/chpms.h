@@ -7,13 +7,13 @@
 * The authors hereby grant permission to use, copy, modify, distribute,
 * and license this software and its documentation for any purpose, provided
 * that existing copyright notices are retained in all copies and that this
-* notice and the following disclaimer are included verbatim in any 
+* notice and the following disclaimer are included verbatim in any
 * distributions. No written agreement, license, or royalty fee is required
 * for any of the authorized uses.
 *
 * THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
 * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-* OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
+* OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 * IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
 * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
 * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
@@ -28,7 +28,7 @@
 * 03-01-01 Marc Boucher <marc@mbsi.ca>
 *   Ported to lwIP.
 * 98-01-30 Guy Lancaster <lancasterg@acm.org>, Global Election Systems Inc.
-*	Original built from BSD network code.
+*   Original built from BSD network code.
 ******************************************************************************/
 /*
  * chap.h - Challenge Handshake Authentication Protocol definitions.
@@ -51,14 +51,14 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: chpms.h,v 1.2 2006/03/29 10:33:28 asl Exp $
+ * $Id: chpms.h,v 1.3 2010/01/26 11:27:49 jld Exp $
  */
 
 #ifndef CHPMS_H
 #define CHPMS_H
 
-#define MAX_NT_PASSWORD	256	/* Maximum number of (Unicode) chars in an NT password */
+#define MAX_NT_PASSWORD 256 /* Maximum number of (Unicode) chars in an NT password */
 
-void ChapMS (chap_state *, char *, int, char *, int);
+void chapms(chap_state *, char *, int, char *, int);
 
 #endif /* CHPMS_H */

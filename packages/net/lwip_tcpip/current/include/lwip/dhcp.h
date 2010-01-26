@@ -5,32 +5,39 @@
 #define __LWIP_DHCP_H__
 
 #include "lwip/opt.h"
+
+#if LWIP_DHCP /* don't build if not configured for use in lwipopts.h */
+
 #include "lwip/netif.h"
 #include "lwip/udp.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** period (in seconds) of the application calling dhcp_coarse_tmr() */
 #define DHCP_COARSE_TIMER_SECS 60 
+/** period (in milliseconds) of the application calling dhcp_coarse_tmr() */
+#define DHCP_COARSE_TIMER_MSECS (DHCP_COARSE_TIMER_SECS * 1000UL)
 /** period (in milliseconds) of the application calling dhcp_fine_tmr() */
 #define DHCP_FINE_TIMER_MSECS 500 
 
 struct dhcp
 {
-  /** current DHCP state machine state */
-  u8_t state;
-  /** retries of current request */
-  u8_t tries;
   /** transaction identifier of last sent request */ 
   u32_t xid;
   /** our connection to the DHCP server */ 
   struct udp_pcb *pcb;
-  /** (first) pbuf of incoming msg */
-  struct pbuf *p;
   /** incoming msg */
   struct dhcp_msg *msg_in;
   /** incoming msg options */
-  struct dhcp_msg *options_in; 
+  void *options_in; 
   /** ingoing msg options length */
   u16_t options_in_len;
+  /** current DHCP state machine state */
+  u8_t state;
+  /** retries of current request */
+  u8_t tries;
 
   struct pbuf *p_out; /* pbuf of outcoming msg */
   struct dhcp_msg *msg_out; /* outgoing msg */
@@ -50,6 +57,9 @@ struct dhcp
   u32_t offered_t0_lease; /* lease period (in seconds) */
   u32_t offered_t1_renew; /* recommended renew time (usually 50% of lease period) */
   u32_t offered_t2_rebind; /* recommended rebind time (usually 66% of lease period)  */
+#if LWIP_DHCP_AUTOIP_COOP
+  u8_t autoip_coop_state;
+#endif
 /** Patch #1308
  *  TODO: See dhcp.c "TODO"s
  */
@@ -112,6 +122,8 @@ err_t dhcp_release(struct netif *netif);
 void dhcp_stop(struct netif *netif);
 /** inform server of our manual IP address */
 void dhcp_inform(struct netif *netif);
+/** Handle a possible change in the network configuration */
+void dhcp_network_changed(struct netif *netif);
 
 /** if enabled, check whether the offered IP address is not in use, using ARP */
 #if DHCP_DOES_ARP_CHECK
@@ -161,6 +173,10 @@ void dhcp_fine_tmr(void);
 /** not yet implemented #define DHCP_RELEASING 11 */
 #define DHCP_BACKING_OFF 12
 #define DHCP_OFF 13
+
+/** AUTOIP cooperatation flags */
+#define DHCP_AUTOIP_COOP_STATE_OFF 0
+#define DHCP_AUTOIP_COOP_STATE_ON 1
  
 #define DHCP_BOOTREQUEST 1
 #define DHCP_BOOTREPLY 2
@@ -210,6 +226,7 @@ void dhcp_fine_tmr(void);
 
 #define DHCP_OPTION_T1 58 /* T1 renewal time */
 #define DHCP_OPTION_T2 59 /* T2 rebinding time */
+#define DHCP_OPTION_US 60
 #define DHCP_OPTION_CLIENT_ID 61
 #define DHCP_OPTION_TFTP_SERVERNAME 66
 #define DHCP_OPTION_BOOTFILE 67
@@ -219,5 +236,11 @@ void dhcp_fine_tmr(void);
 #define DHCP_OVERLOAD_FILE 1
 #define DHCP_OVERLOAD_SNAME  2
 #define DHCP_OVERLOAD_SNAME_FILE 3
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* LWIP_DHCP */
 
 #endif /*__LWIP_DHCP_H__*/

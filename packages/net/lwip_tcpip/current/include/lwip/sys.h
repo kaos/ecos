@@ -32,10 +32,11 @@
 #ifndef __LWIP_SYS_H__
 #define __LWIP_SYS_H__
 
-#include "arch/cc.h"
-
 #include "lwip/opt.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if NO_SYS
 
@@ -43,7 +44,7 @@
    definitions of the sys_ functions. */
 typedef u8_t sys_sem_t;
 typedef u8_t sys_mbox_t;
-struct sys_timeout {u8_t dummy;};
+struct sys_timeo {u8_t dummy;};
 
 #define sys_init()
 #define sys_timeout(m,h,a)
@@ -51,32 +52,42 @@ struct sys_timeout {u8_t dummy;};
 #define sys_sem_new(c) c
 #define sys_sem_signal(s)
 #define sys_sem_wait(s)
+#define sys_sem_wait_timeout(s,t)
+#define sys_arch_sem_wait(s,t)
 #define sys_sem_free(s)
-#define sys_mbox_new() 0
+#define sys_mbox_new(s) 0
 #define sys_mbox_fetch(m,d)
+#define sys_mbox_tryfetch(m,d)
 #define sys_mbox_post(m,d)
+#define sys_mbox_trypost(m,d)
 #define sys_mbox_free(m)
 
-#define sys_thread_new(t,a,p)
+#define sys_thread_new(n,t,a,s,p)
 
 #else /* NO_SYS */
 
-#include "arch/sys_arch.h"
-
 /** Return code for timeouts from sys_arch_mbox_fetch and sys_arch_sem_wait */
-#define SYS_ARCH_TIMEOUT 0xffffffff
+#define SYS_ARCH_TIMEOUT 0xffffffffUL
+
+/* sys_mbox_tryfetch returns SYS_MBOX_EMPTY if appropriate.
+ * For now we use the same magic value, but we allow this to change in future.
+ */
+#define SYS_MBOX_EMPTY SYS_ARCH_TIMEOUT 
+
+#include "lwip/err.h"
+#include "arch/sys_arch.h"
 
 typedef void (* sys_timeout_handler)(void *arg);
 
-struct sys_timeout {
-  struct sys_timeout *next;
+struct sys_timeo {
+  struct sys_timeo *next;
   u32_t time;
   sys_timeout_handler h;
   void *arg;
 };
 
 struct sys_timeouts {
-  struct sys_timeout *next;
+  struct sys_timeo *next;
 };
 
 /* sys_init() must be called before anthing else. */
@@ -112,22 +123,25 @@ u32_t sys_jiffies(void); /* since power up. */
 #endif
 
 /* Mailbox functions. */
-sys_mbox_t sys_mbox_new(void);
+sys_mbox_t sys_mbox_new(int size);
 void sys_mbox_post(sys_mbox_t mbox, void *msg);
+err_t sys_mbox_trypost(sys_mbox_t mbox, void *msg);
 u32_t sys_arch_mbox_fetch(sys_mbox_t mbox, void **msg, u32_t timeout);
+#ifndef sys_arch_mbox_tryfetch /* Allow port to override with a macro */
+u32_t sys_arch_mbox_tryfetch(sys_mbox_t mbox, void **msg);
+#endif
+/* For now, we map straight to sys_arch implementation. */
+#define sys_mbox_tryfetch(mbox, msg) sys_arch_mbox_tryfetch(mbox, msg)
 void sys_mbox_free(sys_mbox_t mbox);
 void sys_mbox_fetch(sys_mbox_t mbox, void **msg);
 
-
 /* Thread functions. */
-sys_thread_t sys_thread_new(void (* thread)(void *arg), void *arg, int prio);
-
-/* The following functions are used only in Unix code, and
-   can be omitted when porting the stack. */
-/* Returns the current time in microseconds. */
-unsigned long sys_now(void);
+sys_thread_t sys_thread_new(char *name, void (* thread)(void *arg), void *arg, int stacksize, int prio);
 
 #endif /* NO_SYS */
+
+/** Returns the current time in milliseconds. */
+u32_t sys_now(void);
 
 /* Critical Region Protection */
 /* These functions must be implemented in the sys_arch.c file.
@@ -179,5 +193,51 @@ void sys_arch_unprotect(sys_prot_t pval);
 #endif /* SYS_LIGHTWEIGHT_PROT */
 
 #endif /* SYS_ARCH_PROTECT */
+
+/*
+ * Macros to set/get and increase/decrease variables in a thread-safe way.
+ * Use these for accessing variable that are used from more than one thread.
+ */
+
+#ifndef SYS_ARCH_INC
+#define SYS_ARCH_INC(var, val) do { \
+                                SYS_ARCH_DECL_PROTECT(old_level); \
+                                SYS_ARCH_PROTECT(old_level); \
+                                var += val; \
+                                SYS_ARCH_UNPROTECT(old_level); \
+                              } while(0)
+#endif /* SYS_ARCH_INC */
+
+#ifndef SYS_ARCH_DEC
+#define SYS_ARCH_DEC(var, val) do { \
+                                SYS_ARCH_DECL_PROTECT(old_level); \
+                                SYS_ARCH_PROTECT(old_level); \
+                                var -= val; \
+                                SYS_ARCH_UNPROTECT(old_level); \
+                              } while(0)
+#endif /* SYS_ARCH_DEC */
+
+#ifndef SYS_ARCH_GET
+#define SYS_ARCH_GET(var, ret) do { \
+                                SYS_ARCH_DECL_PROTECT(old_level); \
+                                SYS_ARCH_PROTECT(old_level); \
+                                ret = var; \
+                                SYS_ARCH_UNPROTECT(old_level); \
+                              } while(0)
+#endif /* SYS_ARCH_GET */
+
+#ifndef SYS_ARCH_SET
+#define SYS_ARCH_SET(var, val) do { \
+                                SYS_ARCH_DECL_PROTECT(old_level); \
+                                SYS_ARCH_PROTECT(old_level); \
+                                var = val; \
+                                SYS_ARCH_UNPROTECT(old_level); \
+                              } while(0)
+#endif /* SYS_ARCH_SET */
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __LWIP_SYS_H__ */

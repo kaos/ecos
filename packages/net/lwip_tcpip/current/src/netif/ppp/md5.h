@@ -42,14 +42,14 @@
 
 /* Data structure for MD5 (Message-Digest) computation */
 typedef struct {
-  u32_t i[2];                   /* number of _bits_ handled mod 2^64 */
-  u32_t buf[4];                                    /* scratch buffer */
-  unsigned char in[64];                              /* input buffer */
-  unsigned char digest[16];     /* actual digest after MD5Final call */
-} MD5_CTX;
+  u32_t i[2];               /* number of _bits_ handled mod 2^64 */
+  u32_t buf[4];             /* scratch buffer */
+  unsigned char in[64];     /* input buffer */
+  unsigned char digest[16]; /* actual digest after md5_final call */
+} md5_ctx;
 
-void MD5Init (MD5_CTX *mdContext);
-void MD5Update (MD5_CTX *mdContext, unsigned char *inBuf, unsigned int inLen);
-void MD5Final (unsigned char hash[], MD5_CTX *mdContext);
+void md5_init(md5_ctx *ctx);
+void md5_update(md5_ctx *ctx, unsigned char *buf, unsigned int len);
+void md5_final(unsigned char hash[], md5_ctx *ctx);
 
 #endif /* MD5_H */

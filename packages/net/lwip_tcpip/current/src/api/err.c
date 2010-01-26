@@ -1,3 +1,9 @@
+/**
+ * @file
+ * Error Management module
+ *
+ */
+
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved. 
@@ -34,26 +40,35 @@
 
 #ifdef LWIP_DEBUG
 
-static char *err_strerr[] = {"Ok.",
-           "Out of memory error.",
-           "Buffer error.",
-           "Connection aborted.",
-           "Connection reset.",
-           "Connection closed.",
-           "Not connected.",
-           "Illegal value.",
-           "Illegal argument.",
-           "Routing problem.",
-           "Address in use."
+static const char *err_strerr[] = {
+           "Ok.",                    /* ERR_OK          0  */
+           "Out of memory error.",   /* ERR_MEM        -1  */
+           "Buffer error.",          /* ERR_BUF        -2  */
+           "Timeout.",               /* ERR_TIMEOUT    -3 */
+           "Routing problem.",       /* ERR_RTE        -4  */
+           "Connection aborted.",    /* ERR_ABRT       -5  */
+           "Connection reset.",      /* ERR_RST        -6  */
+           "Connection closed.",     /* ERR_CLSD       -7  */
+           "Not connected.",         /* ERR_CONN       -8  */
+           "Illegal value.",         /* ERR_VAL        -9  */
+           "Illegal argument.",      /* ERR_ARG        -10 */
+           "Address in use.",        /* ERR_USE        -11 */
+           "Low-level netif error.", /* ERR_IF         -12 */
+           "Already connected.",     /* ERR_ISCONN     -13 */
+           "Operation in progress."  /* ERR_INPROGRESS -14 */
 };
 
-
-char *
+/**
+ * Convert an lwip internal error to a string representation.
+ *
+ * @param err an lwip internal err_t
+ * @return a string representation for err
+ */
+const char *
 lwip_strerr(err_t err)
 {
   return err_strerr[-err];
 
 }
-
 
 #endif /* LWIP_DEBUG */

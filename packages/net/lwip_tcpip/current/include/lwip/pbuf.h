@@ -33,8 +33,12 @@
 #ifndef __LWIP_PBUF_H__
 #define __LWIP_PBUF_H__
 
-#include "arch/cc.h"
+#include "lwip/opt.h"
+#include "lwip/err.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define PBUF_TRANSPORT_HLEN 20
 #define PBUF_IP_HLEN        20
@@ -47,21 +51,15 @@ typedef enum {
 } pbuf_layer;
 
 typedef enum {
-  PBUF_RAM,
-  PBUF_ROM,
-  PBUF_REF,
-  PBUF_POOL
-} pbuf_flag;
+  PBUF_RAM, /* pbuf data is stored in RAM */
+  PBUF_ROM, /* pbuf data is stored in ROM */
+  PBUF_REF, /* pbuf comes from the pbuf pool */
+  PBUF_POOL /* pbuf payload refers to RAM */
+} pbuf_type;
 
-/* Definitions for the pbuf flag field. These are NOT the flags that
- * are passed to pbuf_alloc(). */
-#define PBUF_FLAG_RAM   0x00U    /* Flags that pbuf data is stored in RAM */
-#define PBUF_FLAG_ROM   0x01U    /* Flags that pbuf data is stored in ROM */
-#define PBUF_FLAG_POOL  0x02U    /* Flags that the pbuf comes from the pbuf pool */
-#define PBUF_FLAG_REF   0x04U    /* Flags thet the pbuf payload refers to RAM */
 
-/** indicates this packet was broadcast on the link */
-#define PBUF_FLAG_LINK_BROADCAST 0x80U
+/** indicates this packet's data should be immediately passed to the application */
+#define PBUF_FLAG_PUSH 0x01U
 
 struct pbuf {
   /** next pbuf in singly linked pbuf chain */
@@ -82,9 +80,12 @@ struct pbuf {
   /** length of this buffer */
   u16_t len;  
 
-  /** flags telling the type of pbuf, see PBUF_FLAG_ */
-  u16_t flags;
-  
+  /** pbuf_type as u8_t instead of enum to save space */
+  u8_t /*pbuf_type*/ type;
+
+  /** misc flags */
+  u8_t flags;
+
   /**
    * the reference count always equals the number of pointers
    * that refer to this pbuf. This can be pointers from an application,
@@ -94,20 +95,26 @@ struct pbuf {
   
 };
 
-void pbuf_init(void);
+/* Initializes the pbuf module. This call is empty for now, but may not be in future. */
+#define pbuf_init()
 
-struct pbuf *pbuf_alloc(pbuf_layer l, u16_t size, pbuf_flag flag);
+struct pbuf *pbuf_alloc(pbuf_layer l, u16_t size, pbuf_type type);
 void pbuf_realloc(struct pbuf *p, u16_t size); 
 u8_t pbuf_header(struct pbuf *p, s16_t header_size);
 void pbuf_ref(struct pbuf *p);
 void pbuf_ref_chain(struct pbuf *p);
 u8_t pbuf_free(struct pbuf *p);
 u8_t pbuf_clen(struct pbuf *p);  
-void pbuf_cat(struct pbuf *h, struct pbuf *t);
-void pbuf_chain(struct pbuf *h, struct pbuf *t);
-struct pbuf *pbuf_take(struct pbuf *f);
+void pbuf_cat(struct pbuf *head, struct pbuf *tail);
+void pbuf_chain(struct pbuf *head, struct pbuf *tail);
 struct pbuf *pbuf_dechain(struct pbuf *p);
-void pbuf_queue(struct pbuf *p, struct pbuf *n);
-struct pbuf * pbuf_dequeue(struct pbuf *p);
+err_t pbuf_copy(struct pbuf *p_to, struct pbuf *p_from);
+u16_t pbuf_copy_partial(struct pbuf *p, void *dataptr, u16_t len, u16_t offset);
+err_t pbuf_take(struct pbuf *buf, const void *dataptr, u16_t len);
+struct pbuf *pbuf_coalesce(struct pbuf *p, pbuf_layer layer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __LWIP_PBUF_H__ */

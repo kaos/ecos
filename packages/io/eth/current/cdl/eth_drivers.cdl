@@ -173,7 +173,7 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
     cdl_component CYGPKG_IO_ETH_DRIVERS_STAND_ALONE {
         display       "Support for stand-alone network stack."
         flavor        bool
-        active_if     !CYGPKG_NET
+        active_if     { !CYGPKG_NET && !CYGPKG_NET_LWIP }
         requires      CYGINT_ISO_STRING_MEMFUNCS 
         default_value 1
         compile       stand_alone/eth_drv.c

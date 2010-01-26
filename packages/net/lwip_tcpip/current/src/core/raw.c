@@ -1,11 +1,11 @@
 /**
  * @file
- * 
  * Implementation of raw protocol PCBs for low-level handling of
  * different types of protocols besides (or overriding) those
  * already available in lwIP.
  *
  */
+
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
@@ -38,9 +38,9 @@
  *
  */
 
-#include <string.h>
-
 #include "lwip/opt.h"
+
+#if LWIP_RAW /* don't build if not configured for use in lwipopts.h */
 
 #include "lwip/def.h"
 #include "lwip/memp.h"
@@ -48,22 +48,14 @@
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
 #include "lwip/raw.h"
-
 #include "lwip/stats.h"
-
-#include "arch/perf.h"
 #include "lwip/snmp.h"
+#include "arch/perf.h"
 
-#if LWIP_RAW
+#include <string.h>
 
 /** The list of RAW PCBs */
-static struct raw_pcb *raw_pcbs = NULL;
-
-void
-raw_init(void)
-{
-  raw_pcbs = NULL;
-}
+static struct raw_pcb *raw_pcbs;
 
 /**
  * Determine if in incoming IP packet is covered by a RAW PCB
@@ -73,9 +65,9 @@ raw_init(void)
  * finds a corresponding RAW PCB and calls the corresponding receive
  * callback function.
  *
- * @param pbuf pbuf to be demultiplexed to a RAW PCB.
- * @param netif network interface on which the datagram was received.
- * @Return - 1 if the packet has been eaten by a RAW PCB receive
+ * @param p pbuf to be demultiplexed to a RAW PCB.
+ * @param inp network interface on which the datagram was received.
+ * @return - 1 if the packet has been eaten by a RAW PCB receive
  *           callback function. The caller MAY NOT not reference the
  *           packet any longer, and MAY NOT call pbuf_free().
  * @return - 0 if packet is not eaten (pbuf is still referenced by the
@@ -85,32 +77,48 @@ raw_init(void)
 u8_t
 raw_input(struct pbuf *p, struct netif *inp)
 {
-  struct raw_pcb *pcb;
+  struct raw_pcb *pcb, *prev;
   struct ip_hdr *iphdr;
   s16_t proto;
   u8_t eaten = 0;
 
+  LWIP_UNUSED_ARG(inp);
+
   iphdr = p->payload;
   proto = IPH_PROTO(iphdr);
 
+  prev = NULL;
   pcb = raw_pcbs;
   /* loop through all raw pcbs until the packet is eaten by one */
   /* this allows multiple pcbs to match against the packet by design */
   while ((eaten == 0) && (pcb != NULL)) {
     if (pcb->protocol == proto) {
-      /* receive callback function available? */
-      if (pcb->recv != NULL) {
-        /* the receive callback function did not eat the packet? */
-        if (pcb->recv(pcb->recv_arg, pcb, p, &(iphdr->src)) != 0)
-        {
-          /* receive function ate the packet */
-          p = NULL;
-          eaten = 1;
+#if IP_SOF_BROADCAST_RECV
+      /* broadcast filter? */
+      if ((pcb->so_options & SOF_BROADCAST) || !ip_addr_isbroadcast(&(iphdr->dest), inp))
+#endif /* IP_SOF_BROADCAST_RECV */
+      {
+        /* receive callback function available? */
+        if (pcb->recv != NULL) {
+          /* the receive callback function did not eat the packet? */
+          if (pcb->recv(pcb->recv_arg, pcb, p, &(iphdr->src)) != 0) {
+            /* receive function ate the packet */
+            p = NULL;
+            eaten = 1;
+            if (prev != NULL) {
+            /* move the pcb to the front of raw_pcbs so that is
+               found faster next time */
+              prev->next = pcb->next;
+              pcb->next = raw_pcbs;
+              raw_pcbs = pcb;
+            }
+          }
         }
+        /* no receive callback function was set for this raw PCB */
       }
-      /* no receive callback function was set for this raw PCB */
       /* drop the packet */
     }
+    prev = pcb;
     pcb = pcb->next;
   }
   return eaten;
@@ -202,7 +210,7 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *ipaddr)
   struct ip_addr *src_ip;
   struct pbuf *q; /* q will be sent down the stack */
   
-  LWIP_DEBUGF(RAW_DEBUG | DBG_TRACE | 3, ("raw_sendto\n"));
+  LWIP_DEBUGF(RAW_DEBUG | LWIP_DBG_TRACE, ("raw_sendto\n"));
   
   /* not enough space to add an IP header to first pbuf in given p chain? */
   if (pbuf_header(p, IP_HLEN)) {
@@ -210,7 +218,7 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *ipaddr)
     q = pbuf_alloc(PBUF_IP, 0, PBUF_RAM);
     /* new header pbuf could not be allocated? */
     if (q == NULL) {
-      LWIP_DEBUGF(RAW_DEBUG | DBG_TRACE | 2, ("raw_sendto: could not allocate header\n"));
+      LWIP_DEBUGF(RAW_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS, ("raw_sendto: could not allocate header\n"));
       return ERR_MEM;
     }
     /* chain header q in front of given pbuf p */
@@ -220,20 +228,32 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *ipaddr)
   }  else {
     /* first pbuf q equals given pbuf */
     q = p;
-    pbuf_header(q, -IP_HLEN);
+    if(pbuf_header(q, -IP_HLEN)) {
+      LWIP_ASSERT("Can't restore header we just removed!", 0);
+      return ERR_MEM;
+    }
   }
-  
+
   if ((netif = ip_route(ipaddr)) == NULL) {
-    LWIP_DEBUGF(RAW_DEBUG | 1, ("raw_sendto: No route to 0x%"X32_F"\n", ipaddr->addr));
-#if RAW_STATS
-    /*    ++lwip_stats.raw.rterr;*/
-#endif /* RAW_STATS */
+    LWIP_DEBUGF(RAW_DEBUG | LWIP_DBG_LEVEL_WARNING, ("raw_sendto: No route to 0x%"X32_F"\n", ipaddr->addr));
     /* free any temporary header pbuf allocated by pbuf_header() */
     if (q != p) {
       pbuf_free(q);
     }
     return ERR_RTE;
   }
+
+#if IP_SOF_BROADCAST
+  /* broadcast filter? */
+  if ( ((pcb->so_options & SOF_BROADCAST) == 0) && ip_addr_isbroadcast(ipaddr, netif) ) {
+    LWIP_DEBUGF(RAW_DEBUG | LWIP_DBG_LEVEL_WARNING, ("raw_sendto: SOF_BROADCAST not enabled on pcb %p\n", (void *)pcb));
+    /* free any temporary header pbuf allocated by pbuf_header() */
+    if (q != p) {
+      pbuf_free(q);
+    }
+    return ERR_VAL;
+  }
+#endif /* IP_SOF_BROADCAST */
 
   if (ip_addr_isany(&pcb->local_ip)) {
     /* use outgoing network interface IP address as source address */
@@ -243,7 +263,13 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *ipaddr)
     src_ip = &(pcb->local_ip);
   }
 
+#if LWIP_NETIF_HWADDRHINT
+  netif->addr_hint = &(pcb->addr_hint);
+#endif /* LWIP_NETIF_HWADDRHINT*/
   err = ip_output_if (q, src_ip, ipaddr, pcb->ttl, pcb->tos, pcb->protocol, netif);
+#if LWIP_NETIF_HWADDRHINT
+  netif->addr_hint = NULL;
+#endif /* LWIP_NETIF_HWADDRHINT*/
 
   /* did we chain a header earlier? */
   if (q != p) {
@@ -258,7 +284,6 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *ipaddr)
  *
  * @param pcb the raw pcb which to send
  * @param p the IP payload to send
- * @param ipaddr the destination address of the IP packet
  *
  */
 err_t
@@ -284,11 +309,13 @@ raw_remove(struct raw_pcb *pcb)
     /* make list start at 2nd pcb */
     raw_pcbs = raw_pcbs->next;
     /* pcb not 1st in list */
-  } else for(pcb2 = raw_pcbs; pcb2 != NULL; pcb2 = pcb2->next) {
-    /* find pcb in raw_pcbs list */
-    if (pcb2->next != NULL && pcb2->next == pcb) {
-      /* remove pcb from list */
-      pcb2->next = pcb->next;
+  } else {
+    for(pcb2 = raw_pcbs; pcb2 != NULL; pcb2 = pcb2->next) {
+      /* find pcb in raw_pcbs list */
+      if (pcb2->next != NULL && pcb2->next == pcb) {
+        /* remove pcb from list */
+        pcb2->next = pcb->next;
+      }
     }
   }
   memp_free(MEMP_RAW_PCB, pcb);
@@ -305,10 +332,10 @@ raw_remove(struct raw_pcb *pcb)
  * @see raw_remove()
  */
 struct raw_pcb *
-raw_new(u16_t proto) {
+raw_new(u8_t proto) {
   struct raw_pcb *pcb;
 
-  LWIP_DEBUGF(RAW_DEBUG | DBG_TRACE | 3, ("raw_new\n"));
+  LWIP_DEBUGF(RAW_DEBUG | LWIP_DBG_TRACE, ("raw_new\n"));
 
   pcb = memp_malloc(MEMP_RAW_PCB);
   /* could allocate RAW PCB? */

@@ -42,6 +42,15 @@
 
 #include "arch/cc.h"
 
+/** Temporary: define format string for size_t if not defined in cc.h */
+#ifndef SZT_F
+#define SZT_F U32_F
+#endif /* SZT_F */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef PACK_STRUCT_BEGIN
 #define PACK_STRUCT_BEGIN
 #endif /* PACK_STRUCT_BEGIN */
@@ -54,6 +63,10 @@
 #define PACK_STRUCT_FIELD(x) x
 #endif /* PACK_STRUCT_FIELD */
 
+
+#ifndef LWIP_UNUSED_ARG
+#define LWIP_UNUSED_ARG(x) (void)x
+#endif /* LWIP_UNUSED_ARG */ 
 
 
 #ifdef LWIP_PROVIDE_ERRNO
@@ -187,30 +200,34 @@
 #define  EMEDIUMTYPE  124  /* Wrong medium type */
 
 
-#define	ENSROK		0	/* DNS server returned answer with no data */
-#define	ENSRNODATA	160	/* DNS server returned answer with no data */
-#define	ENSRFORMERR	161	/* DNS server claims query was misformatted */
-#define	ENSRSERVFAIL 162	/* DNS server returned general failure */
-#define	ENSRNOTFOUND 163	/* Domain name not found */
-#define	ENSRNOTIMP	164	/* DNS server does not implement requested operation */
-#define	ENSRREFUSED	165	/* DNS server refused query */
-#define	ENSRBADQUERY 166	/* Misformatted DNS query */
-#define	ENSRBADNAME	167	/* Misformatted domain name */
-#define	ENSRBADFAMILY 168	/* Unsupported address family */
-#define	ENSRBADRESP	169	/* Misformatted DNS reply */
-#define	ENSRCONNREFUSED	170	/* Could not contact DNS servers */
-#define	ENSRTIMEOUT	171	/* Timeout while contacting DNS servers */
-#define	ENSROF		172	/* End of file */
-#define	ENSRFILE	173	/* Error reading file */
-#define	ENSRNOMEM	174	/* Out of memory */
-#define	ENSRDESTRUCTION	175	/* Application terminated lookup */
-#define	ENSRQUERYDOMAINTOOLONG	176	/* Domain name is too long */
-#define	ENSRCNAMELOOP	177	/* Domain name is too long */
+#define ENSROK    0 /* DNS server returned answer with no data */
+#define ENSRNODATA  160 /* DNS server returned answer with no data */
+#define ENSRFORMERR 161 /* DNS server claims query was misformatted */
+#define ENSRSERVFAIL 162  /* DNS server returned general failure */
+#define ENSRNOTFOUND 163  /* Domain name not found */
+#define ENSRNOTIMP  164 /* DNS server does not implement requested operation */
+#define ENSRREFUSED 165 /* DNS server refused query */
+#define ENSRBADQUERY 166  /* Misformatted DNS query */
+#define ENSRBADNAME 167 /* Misformatted domain name */
+#define ENSRBADFAMILY 168 /* Unsupported address family */
+#define ENSRBADRESP 169 /* Misformatted DNS reply */
+#define ENSRCONNREFUSED 170 /* Could not contact DNS servers */
+#define ENSRTIMEOUT 171 /* Timeout while contacting DNS servers */
+#define ENSROF    172 /* End of file */
+#define ENSRFILE  173 /* Error reading file */
+#define ENSRNOMEM 174 /* Out of memory */
+#define ENSRDESTRUCTION 175 /* Application terminated lookup */
+#define ENSRQUERYDOMAINTOOLONG  176 /* Domain name is too long */
+#define ENSRCNAMELOOP 177 /* Domain name is too long */
 
 #ifndef errno
 extern int errno;
 #endif
 
 #endif /* LWIP_PROVIDE_ERRNO */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __LWIP_ARCH_H__ */
