@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -99,6 +99,8 @@ Cyg_Thread *Cyg_Scheduler_Implementation::schedule()
     cyg_uint32 index;
 
     HAL_LSBIT_INDEX(index, run_queue);
+
+    CYG_INSTRUMENT_BITMAP(SCHEDULE, thread_table[index], index);
     
     return thread_table[index];
 }
@@ -108,6 +110,8 @@ Cyg_Thread *Cyg_Scheduler_Implementation::schedule()
 void Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
+
+    CYG_INSTRUMENT_BITMAP(ADD, thread, thread->priority);
         
     CYG_ASSERT((CYG_THREAD_MIN_PRIORITY >= thread->priority) 
                && (CYG_THREAD_MAX_PRIORITY <= thread->priority),
@@ -142,6 +146,8 @@ void Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
 void Cyg_Scheduler_Implementation::rem_thread(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
+
+    CYG_INSTRUMENT_BITMAP(REM, thread, thread->priority);
         
     CYG_ASSERT( thread_table[thread->priority] == thread,
                 "Invalid thread priority" );
@@ -257,6 +263,8 @@ Cyg_ThreadQueue_Implementation::Cyg_ThreadQueue_Implementation()
 void Cyg_ThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
+
+    CYG_INSTRUMENT_BITMAP(ENQUEUE, this, thread);
         
     wait_queue |= 1<<thread->priority;
     thread->queue = CYG_CLASSFROMBASE(Cyg_ThreadQueue,
@@ -273,7 +281,11 @@ Cyg_Thread *Cyg_ThreadQueue_Implementation::dequeue()
     // Isolate ls bit in run_queue.
     cyg_sched_bitmap next_thread = wait_queue & -wait_queue;
 
-    if( next_thread == 0 ) return NULL;
+    if( next_thread == 0 )
+    {
+        CYG_INSTRUMENT_BITMAP(DEQUEUE, this, NULL);
+        return NULL;
+    }
 
     wait_queue &= ~next_thread;
 
@@ -282,6 +294,8 @@ Cyg_Thread *Cyg_ThreadQueue_Implementation::dequeue()
     HAL_LSBIT_INDEX(index, next_thread);
     
     Cyg_Thread *thread = Cyg_Scheduler::scheduler.thread_table[index];
+
+    CYG_INSTRUMENT_BITMAP(DEQUEUE, this, thread);
 
     thread->queue = NULL;
 
@@ -311,6 +325,8 @@ Cyg_Thread *Cyg_ThreadQueue_Implementation::highpri()
 void Cyg_ThreadQueue_Implementation::remove(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
+
+    CYG_INSTRUMENT_BITMAP(REMOVE, this, thread);
         
     wait_queue &= ~(1<<thread->priority);
     thread->queue = NULL;

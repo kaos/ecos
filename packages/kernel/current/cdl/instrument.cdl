@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009, 2010 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -63,7 +63,7 @@ cdl_option CYGVAR_KERNEL_INSTRUMENT_EXTERNAL_BUFFER {
 }
 
 cdl_option CYGNUM_KERNEL_INSTRUMENT_BUFFER_SIZE {
-    display       "Size of instrumentation buffer size"
+    display       "Instrumentation buffer size"
     flavor        data
     legal_values  16 to 0x100000
     default_value 256
@@ -77,7 +77,7 @@ cdl_option CYGNUM_KERNEL_INSTRUMENT_BUFFER_SIZE {
 }
 
 cdl_option CYGDBG_KERNEL_INSTRUMENT_BUFFER_WRAP {
-    display       "Wrap instrument buffer"
+    display       "Wrap instrumentation buffer"
     default_value 1
     description   "
         When the instrumentation buffer is full it can either be restarted
@@ -103,7 +103,7 @@ cdl_option CYGDBG_KERNEL_INSTRUMENT_FLAGS {
 }
 
 cdl_option CYGDBG_KERNEL_INSTRUMENT_SCHED {
-    display       "Instrument the scheduler"
+    display       "Instrument common scheduler operations"
     default_value 1
     active_if     CYGPKG_KERNEL_SCHED
     description   "
@@ -129,7 +129,7 @@ cdl_option CYGDBG_KERNEL_INSTRUMENT_THREAD {
 }
 
 cdl_option CYGDBG_KERNEL_INSTRUMENT_INTR {
-    display       "Instrument interrupts"
+    display       "Instrument interrupt-related operations"
     default_value 1
     active_if     CYGPKG_KERNEL_INTERRUPTS
     description   "
@@ -206,6 +206,19 @@ cdl_option CYGDBG_KERNEL_INSTRUMENT_MBOXT {
         the message box code."
 }
 
+cdl_option CYGDBG_KERNEL_INSTRUMENT_FLAG {
+    display       "Instrument event flag operations"
+    default_value 1
+    active_if     CYGPKG_KERNEL_SYNCH
+    description   "
+        It is possible to perform selective instrumentation at
+        run-time. It is also possible to disable instrumentation
+        in various kernel components at compile-time, thus
+        reducing the code size overheads. This option controls
+        whether or not instrumentation support is compiled into
+        the event flag code."
+}
+
 cdl_option CYGDBG_KERNEL_INSTRUMENT_CLOCK {
     display       "Instrument clock operations"
     default_value 1
@@ -258,6 +271,19 @@ cdl_option CYGDBG_KERNEL_INSTRUMENT_MLQ {
         the code for the multi-level queue scheduler."
 }
 
+cdl_option CYGDBG_KERNEL_INSTRUMENT_BITMAP {
+    display       "Instrument bitmap scheduler operations"
+    default_value 1
+    active_if     CYGSEM_KERNEL_SCHED_BITMAP
+    description   "
+        It is possible to perform selective instrumentation at
+        run-time. It is also possible to disable instrumentation
+        in various kernel components at compile-time, thus
+        reducing the code size overheads. This option controls
+        whether or not instrumentation support is compiled into
+        the code for the bitmap scheduler."
+}
+
 cdl_option CYGDBG_KERNEL_INSTRUMENT_USER {
     display       "Support application-level instrumentation"
     default_value 1
@@ -271,7 +297,7 @@ cdl_option CYGDBG_KERNEL_INSTRUMENT_USER {
 }
 
 cdl_component CYGDBG_KERNEL_INSTRUMENT_MSGS {
-    display       "Print user friendly instrument messages"
+    display       "Provide user-friendly instrumentation messages"
     default_value 1
     description   "
         Include code which will convert the instrument type field 

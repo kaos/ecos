@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -137,6 +137,9 @@ Cyg_Flag::maskbits( Cyg_FlagValue arg )
     Cyg_Scheduler::lock();
 
     value &= arg;
+
+    CYG_INSTRUMENT_FLAG(MASKBITS, this, value);
+
     // no need to wake anyone up; no waiter can become valid in
     // consequence of this operation.
 
@@ -164,6 +167,8 @@ Cyg_Flag::setbits( Cyg_FlagValue arg )
     // OR in the argument to get a new flag value.
     value |= arg;
 
+    CYG_INSTRUMENT_FLAG(SETBITS, this, value);
+
     // anyone waiting?
     if ( !(queue.empty()) ) {
         FlagWaitInfo   *p;
@@ -183,6 +188,9 @@ Cyg_Flag::setbits( Cyg_FlagValue arg )
                 // success!  awaken the thread
                 thread->set_wake_reason( Cyg_Thread::DONE );
                 thread->wake();
+
+                CYG_INSTRUMENT_FLAG(WAKE, this, thread);
+
                 // return the successful value to it
                 p->value_out = value;
                 // do we clear the value; is this the end?
@@ -250,8 +258,12 @@ Cyg_Flag::wait( Cyg_FlagValue pattern, WaitMode mode )
         // keep track of myself on the queue of waiting threads
         queue.enqueue( self );
 
+        CYG_INSTRUMENT_FLAG(WAIT, this, value);
+
         // Allow other threads to run
         Cyg_Scheduler::reschedule();
+
+        CYG_INSTRUMENT_FLAG(WOKE, this, value);
 
         CYG_ASSERT( ((CYG_ADDRWORD)&saveme) == 
                     Cyg_Thread::self()->get_wait_info(),
@@ -337,8 +349,12 @@ Cyg_Flag::wait( Cyg_FlagValue pattern, WaitMode mode,
         // keep track of myself on the queue of waiting threads
         queue.enqueue( self );
 
+        CYG_INSTRUMENT_FLAG(WAIT, this, value);
+
         // Allow other threads to run
         Cyg_Scheduler::reschedule();
+
+        CYG_INSTRUMENT_FLAG(WOKE, this, value);
 
         CYG_ASSERT( ((CYG_ADDRWORD)&saveme) == 
                     Cyg_Thread::self()->get_wait_info(),
@@ -347,6 +363,7 @@ Cyg_Flag::wait( Cyg_FlagValue pattern, WaitMode mode,
         switch( self->get_wake_reason() )
         {
         case Cyg_Thread::TIMEOUT:
+            CYG_INSTRUMENT_FLAG(TIMEOUT, this, value);
             result = false;
             break;
             
@@ -405,6 +422,8 @@ Cyg_Flag::poll( Cyg_FlagValue pattern, WaitMode mode )
     // result != 0 <=> test passed
     if ( result && (Cyg_Flag::CLR & mode) )
         value = 0;
+
+    CYG_INSTRUMENT_FLAG(POLL, this, result);
 
     Cyg_Scheduler::unlock();
 

@@ -1,3 +1,12 @@
+2010-01-27  John Dallaway  <john@dallaway.org.uk>
+
+	* include/instrmnt.h: Add instrumentation macros for event flags and
+	the bitmap scheduler.
+	* include/instrument_desc.h: Regenerate.
+	* src/sync/flag.cxx, src/sched/bitmap.cxx: Add instrumentation.
+	* cdl/instrument.cdl: Add CYGDBG_KERNEL_INSTRUMENT_FLAG and
+	CYGDBG_KERNEL_INSTRUMENT_BITMAP options.
+
 2009-10-04  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/instrument.cdl: Add CYGDBG_KERNEL_INSTRUMENT_MLQ option. Issue
@@ -4756,7 +4765,7 @@ Wed Mar 11 13:18:17 GMT 1998  Chris Provenzano  <proven@cygnus.com>
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009, 2010 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

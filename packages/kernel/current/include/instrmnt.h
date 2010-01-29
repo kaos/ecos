@@ -11,7 +11,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -120,6 +120,8 @@ externC char * cyg_instrument_msg(CYG_WORD16 type);
 #define CYG_INSTRUMENT_CLASS_MBOXT              0x0a00
 #define CYG_INSTRUMENT_CLASS_SMP                0x0b00
 #define CYG_INSTRUMENT_CLASS_MLQ                0x0c00
+#define CYG_INSTRUMENT_CLASS_FLAG               0x0d00
+#define CYG_INSTRUMENT_CLASS_BITMAP             0x0e00
 
 #define CYG_INSTRUMENT_CLASS_USER               0x0f00
 
@@ -244,6 +246,24 @@ externC char * cyg_instrument_msg(CYG_WORD16 type);
 #define CYG_INSTRUMENT_EVENT_MLQ_DEQUEUE        8
 #define CYG_INSTRUMENT_EVENT_MLQ_REMOVE         9
 
+// Flag events
+
+#define CYG_INSTRUMENT_EVENT_FLAG_WAIT          1
+#define CYG_INSTRUMENT_EVENT_FLAG_WOKE          2
+#define CYG_INSTRUMENT_EVENT_FLAG_SETBITS       3
+#define CYG_INSTRUMENT_EVENT_FLAG_MASKBITS      4
+#define CYG_INSTRUMENT_EVENT_FLAG_TIMEOUT       5
+#define CYG_INSTRUMENT_EVENT_FLAG_WAKE          6
+#define CYG_INSTRUMENT_EVENT_FLAG_POLL          7
+
+// Bitmap scheduler events
+
+#define CYG_INSTRUMENT_EVENT_BITMAP_SCHEDULE    1
+#define CYG_INSTRUMENT_EVENT_BITMAP_ADD         2
+#define CYG_INSTRUMENT_EVENT_BITMAP_REM         3
+#define CYG_INSTRUMENT_EVENT_BITMAP_ENQUEUE     4
+#define CYG_INSTRUMENT_EVENT_BITMAP_DEQUEUE     5
+#define CYG_INSTRUMENT_EVENT_BITMAP_REMOVE      6
 
 // User events
 
@@ -441,6 +461,34 @@ externC char * cyg_instrument_msg(CYG_WORD16 type);
 #else
 
 #define CYG_INSTRUMENT_MLQ(_event_,_arg1_,_arg2_)
+
+#endif
+
+// -------------------------------------------------------------------------
+// Flag instrumentation
+
+#ifdef CYGDBG_KERNEL_INSTRUMENT_FLAG
+            
+#define CYG_INSTRUMENT_FLAG(_event_,_arg1_,_arg2_) \
+    CYG_INSTRUMENT(CYGINST_EVENT(FLAG,_event_),_arg1_,_arg2_)
+
+#else
+
+#define CYG_INSTRUMENT_FLAG(_event_,_arg1_,_arg2_)
+
+#endif
+
+// -------------------------------------------------------------------------
+// Bitmap instrumentation
+
+#ifdef CYGDBG_KERNEL_INSTRUMENT_BITMAP
+            
+#define CYG_INSTRUMENT_BITMAP(_event_,_arg1_,_arg2_) \
+    CYG_INSTRUMENT(CYGINST_EVENT(BITMAP,_event_),_arg1_,_arg2_)
+
+#else
+
+#define CYG_INSTRUMENT_BITMAP(_event_,_arg1_,_arg2_)
 
 #endif
 
