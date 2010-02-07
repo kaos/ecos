@@ -1,3 +1,8 @@
+2010-02-07  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/lwip_net.cdl: Rename CFLAGS_ADD and CFLAGS_REMOVE options to
+	match package macro name.
+
 2010-01-25  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* all: Updated to lwIP 1.3.2
@@ -212,7 +217,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2004 eCosCentric  
+// Copyright (C) 2004, 2010 Free Software Foundation 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

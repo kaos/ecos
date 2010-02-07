@@ -1900,12 +1900,12 @@ cdl_package CYGPKG_NET_LWIP {
         }
     }
 
-    cdl_component CYGPKG_LWIP_OPTIONS {
+    cdl_component CYGPKG_NET_LWIP_OPTIONS {
         display         "lwIP build options"
         flavor          none
         no_define
 
-        cdl_option CYGPKG_LWIP_CFLAGS_ADD {
+        cdl_option CYGPKG_NET_LWIP_CFLAGS_ADD {
             display         "Additional compiler flags"
             flavor          data
             no_define
@@ -1916,7 +1916,7 @@ cdl_package CYGPKG_NET_LWIP {
                 global flags."
         }
 
-        cdl_option CYGPKG_LWIP_CFLAGS_REMOVE {
+        cdl_option CYGPKG_NET_LWIP_CFLAGS_REMOVE {
             display         "Suppressed compiler flags"
             flavor          data
             no_define
