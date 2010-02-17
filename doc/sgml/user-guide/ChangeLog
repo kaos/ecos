@@ -1,3 +1,11 @@
+2010-02-17  John Dallaway  <john@dallaway.org.uk>
+
+	* introduction.sgml: Mention PPP, lwIP and uSTL. Mention
+	Cortex-M and FR30 architectural support.
+	* programming-concepts-techniques.sgml: Extend list of kernel
+	instrumention event classes.
+	* user-guide.sgml: Update copyright dates.
+
 2009-03-20  John Dallaway  <john@dallaway.org.uk>
 
 	* installation.sgml: Update supported host list to include
