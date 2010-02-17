@@ -1,3 +1,8 @@
+2010-02-17  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/common/ecosconfig.cxx: Fix compilation on recent
+	Cygwin hosts using NOMINMAX macro.
+
 2009-11-17  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/packagesdlg.cpp: Fix the selection of a new

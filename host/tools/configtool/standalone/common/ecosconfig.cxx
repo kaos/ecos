@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2010 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -41,6 +41,8 @@
 #include <unistd.h> /* for realpath() */
 #endif
 #ifdef __CYGWIN__
+// suppress min/max macro definitions in windef.h
+#define NOMINMAX
 #include <windows.h>
 #include <sys/cygwin.h> /* for cygwin_conv_to_win32_path() */
 #endif
@@ -48,7 +50,7 @@
 #include "ecosconfig.hxx"
 
 #define TOOL_VERSION "3.net"
-#define TOOL_COPYRIGHT "Copyright (c) 2002-2009 Free Software Foundation, Inc."
+#define TOOL_COPYRIGHT "Copyright (c) 2002-2010 Free Software Foundation, Inc."
 #define DEFAULT_SAVE_FILE "ecos.ecc"
 static const char* tool = "ecosconfig";
 
