@@ -1,3 +1,9 @@
+2010-02-25  John Dallaway  <john@dallaway.org.uk>
+
+	* doc/kernel.sgml: Indicate that cyg_alarm_initialize() takes an
+	absolute trigger value. Issue reported by Grant Edwards.
+	* cdl/kernel.cdl: Reference the kernel instrumentation documentation.
+
 2010-01-27  John Dallaway  <john@dallaway.org.uk>
 
 	* include/instrmnt.h: Add instrumentation macros for event flags and

@@ -20,7 +20,7 @@ cat > makefile <<EOF
 # ####ECOSGPLCOPYRIGHTBEGIN####                                             
 # -------------------------------------------                               
 # This file is part of eCos, the Embedded Configurable Operating System.    
-# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 #
 # eCos is free software; you can redistribute it and/or modify it under     
 # the terms of the GNU General Public License as published by the Free      
@@ -122,6 +122,7 @@ cat >> ecos-ref.sgml <<EOF
       <year>2007</year>
       <year>2008</year>
       <year>2009</year>
+      <year>2010</year>
       <holder>Free Software Foundation, Inc.</holder>
     </copyright>
 
