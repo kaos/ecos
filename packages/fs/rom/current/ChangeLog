@@ -1,3 +1,9 @@
+2010-02-28  Øyvind Harboe  <oyvind.harboe@zylin.com>
+
+	* src/romfs.c: file name comparison was broken for two files
+	with the same stem. A directory/file called "foo" would not
+	be found if there was a file "foo*" before "foo".
+
 2009-10-09  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/romfs.cdl: Eliminate workarounds for file path handling

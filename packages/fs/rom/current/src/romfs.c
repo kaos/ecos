@@ -336,7 +336,7 @@ static bool match( const char *a, const char *b, int len )
 {
     for ( ; len > 0 && *a && *b && *a == *b ; a++, b++, len-- )
 	;
-    return ( len == 0 );
+    return ( len == 0 && *a == 0 );
 }
 
 		
