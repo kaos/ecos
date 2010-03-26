@@ -219,7 +219,7 @@ cdl_package CYGPKG_IO_FLASH {
         default_value    1
         compile          legacy_api.c
         description      "
-            Provide an implementation of the lagacy user API. This is mapped 
+            Provide an implementation of the legacy user API. This is mapped
             onto the new API via a small layer of code"
     }
         
