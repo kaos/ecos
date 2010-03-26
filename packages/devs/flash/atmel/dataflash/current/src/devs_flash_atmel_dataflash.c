@@ -172,7 +172,7 @@ static const cyg_dataflash_dev_info_t df_dev_info[] =
                         32, 32, 32, 32, 32, 32, 32, 32,
                         32, 32, 32, 32, 32, 32, 32, 32,
                         32, 32, 32, 32, 32, 32, 32, 32, 32 },
-        sector_count: 35
+        sector_count: 33
     },
     { 0 }
 };

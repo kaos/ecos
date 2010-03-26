@@ -1,3 +1,10 @@
+2010-03-25  Daniel Helgason  <dhelgason@shaw.ca>
+
+	* src/devs_flash_atmel_dataflash.c: Correct bad sector count for
+	AT45DB642 dataflash device.
+	* cdl/devs_flash_atmel_dataflash.cdl: Mark CYGPKG_IO_FLASH as the
+	parent of this package.
+
 2005-06-29  Jani Monoses <ani@iv.ro>
 
 	* include/dataflash.h: Allow the package to be compiled without

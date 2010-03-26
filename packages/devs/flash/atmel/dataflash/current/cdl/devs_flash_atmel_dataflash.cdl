@@ -49,6 +49,7 @@
 cdl_package CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH {
     display       "Atmel DataFlash parts support"
     description   "Support for Atmel DataFlash"
+    parent        CYGPKG_IO_FLASH
     active_if	  CYGPKG_IO_SPI
     requires      CYGPKG_ERROR    
     hardware
