@@ -283,7 +283,7 @@ cdl_package CYGPKG_IO_FLASH {
 			display         "Length"
 			flavor          data
 			default_value   0
-			requires        0 != CYGNUM_IO_FLASH_BLOCK_OFFSET_$::dev
+			requires        0 != CYGNUM_IO_FLASH_BLOCK_LENGTH_$::dev
 			description     "
                             This gives the length of the region of flash given over
                             to this block device."

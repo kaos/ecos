@@ -1,3 +1,10 @@
+2010-03-25  Daniel Helgason  <dhelgason@shaw.ca>
+
+	* cdl/io_flash.cdl: Fix "requires" constraint on
+	CYGNUM_IO_FLASH_BLOCK_OFFSET_n to allow positioning of block
+	device at offset 0 in flash when using static configuration via
+	offset.  Fix display string for CYGSEM_IO_FLASH_LEGACY_API option.
+
 2010-01-17  John Dallaway  <john@dallaway.org.uk>
 
 	* src/flashiodevlegacy.c: Specify flash block device lengths correctly
