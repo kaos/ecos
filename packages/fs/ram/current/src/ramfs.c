@@ -1122,6 +1122,9 @@ static int add_direntry( ramfs_node *dir,       // dir to add to
                        )
 {
     off_t pos = 0;
+#ifdef CYGPKG_FS_RAM_SIMPLE
+    off_t prev_pos = 0;
+#endif
     ramfs_dirent *d = NULL, *dp = NULL;
     cyg_bool isfirst = true;
 
@@ -1154,6 +1157,20 @@ static int add_direntry( ramfs_node *dir,       // dir to add to
             break;
         }
 
+#ifdef CYGPKG_FS_RAM_SIMPLE
+        // Tricky! Here we have to look up the previous segment as
+        // reallocating could have moved it.
+        if( !isfirst ) {
+            cyg_uint8 *buf;
+            size_t size;
+            int err;
+            err = findbuffer_node( dir, prev_pos, &buf, &size, false );
+            if( err != ENOERR ) return err;
+
+            dp = (ramfs_dirent *) buf;
+        }
+#endif
+
         // d now points to a free dirent structure
 
         d->node         = node;
@@ -1167,6 +1184,9 @@ static int add_direntry( ramfs_node *dir,       // dir to add to
 
         name            += fraglen;
         namelen         -= fraglen;
+#ifdef CYGPKG_FS_RAM_SIMPLE
+        prev_pos        = pos;
+#endif
         pos             += sizeof(ramfs_dirent);
         dp              = d;
         isfirst         = false;
@@ -1339,7 +1359,7 @@ static int find_entry( ramfs_dirsearch *ds )
     ramfs_node *dir = ds->dir;
     const char *name = ds->path;
     const char *n = name;
-    char namelen = 0;
+    int namelen = 0;
     ramfs_dirent *d;
     
     // check that we really have a directory

@@ -1,3 +1,15 @@
+2010-03-29  Oyvind Harboe  <oyvind.harboe@zylin.com>
+            Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/ramfs.c (add_direntry): Fix directory file name corruption
+	with the SIMPLE allocation method: do not cache pointers returned
+	from findbuffer_node(), but do a fresh lookup based on position.
+
+2010-02-27  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* src/ramfs.c (find_entry): Fixed wrong type for a local counter
+	(namelen): s/char/int/.
+
 2009-04-28  John Dallaway  <john@dallaway.org.uk>
 
 	cdl/ramfs.cdl: Use CYGPKG_IO_FILEIO as the parent.
