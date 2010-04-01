@@ -1,3 +1,8 @@
+2010-03-03  Stanislav Karpenko  <s.o.karpenko@gmail.com>
+
+	* include/objelf.h: Add missed entry to CYG_LDR_TABLE_KAPI_MUTEX
+	definition (cyg_mutex_lock_entry).
+
 2009-10-09  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/objloader.cdl: Eliminate workarounds for file path handling

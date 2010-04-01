@@ -342,6 +342,8 @@ CYG_LDR_TABLE_ENTRY(cyg_mutex_init_entry,                                     \
                      "cyg_mutex_init", cyg_mutex_init);                       \
 CYG_LDR_TABLE_ENTRY(cyg_mutex_destroy_entry,                                  \
                      "cyg_mutex_destroy", cyg_mutex_destroy);                 \
+CYG_LDR_TABLE_ENTRY(cyg_mutex_lock_entry,                                     \
+                     "cyg_mutex_lock", cyg_mutex_lock);                       \
 CYG_LDR_TABLE_ENTRY(cyg_mutex_trylock_entry,                                  \
                      "cyg_mutex_trylock", cyg_mutex_trylock);                 \
 CYG_LDR_TABLE_ENTRY(cyg_mutex_unlock_entry,                                   \
