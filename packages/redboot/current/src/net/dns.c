@@ -76,7 +76,7 @@ RedBoot_config_option("DNS domain name",
                       dns_domain,
                       ALWAYS_ENABLED, true,
                       CONFIG_STRING,
-                      0
+                      ""
         );
 #endif
 

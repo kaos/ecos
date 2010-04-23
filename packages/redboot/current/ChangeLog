@@ -1,3 +1,9 @@
+2010-04-23  John Dallaway  <john@dallaway.org.uk>
+
+	* src/net/dns.c: Initialise DNS domain with an empty string to
+	avoid possible invalid memory access. Issue reported by
+	Kirill Berezin.
+
 2009-06-24  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/redboot.cdl:
