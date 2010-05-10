@@ -1211,7 +1211,7 @@ Cyg_ThreadTimer::alarm(
 #endif // CYGNUM_HAL_STACK_SIZE_MINIMUM
 
 // Loop counter for debugging/housekeeping
-cyg_uint32 idle_thread_loops[CYGNUM_KERNEL_CPU_MAX];
+cyg_uint32 volatile idle_thread_loops[CYGNUM_KERNEL_CPU_MAX];
 
 static char idle_thread_stack[CYGNUM_KERNEL_CPU_MAX][CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE];
 

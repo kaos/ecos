@@ -58,6 +58,7 @@
 #include <cyg/kernel/kapi.h>
 #include <cyg/hal/hal_arch.h> 
 #include <cyg/cpuload/cpuload.h>
+#include <cyg/kernel/sched.hxx>
 
 /* Here we run the idle thread as a high priority thread for 0.1
    second.  We see how much the counter in the idle loop is
@@ -65,7 +66,7 @@
    running at priority 1 and 2 */
 
 static cyg_thread thread;
-externC cyg_uint32 idle_thread_loops;
+externC cyg_uint32 volatile idle_thread_loops[CYGNUM_KERNEL_CPU_MAX];
 char idle_stack[CYGNUM_HAL_STACK_SIZE_MINIMUM];
 
 extern void idle_thread_main( CYG_ADDRESS data );
@@ -108,7 +109,7 @@ cyg_cpuload_calibrate(cyg_uint32  *calibration) {
   cyg_alarm_initialize(alarmH,cyg_current_time()+10,0);
   cyg_alarm_enable(alarmH);
   
-  idle_loops_start = idle_thread_loops;
+  idle_loops_start = idle_thread_loops[CYG_KERNEL_CPU_THIS()];
   
   /* Dont be decieved, remember this is a multithreaded system ! */
   old_priority = cyg_thread_get_priority(cyg_thread_self());
@@ -116,7 +117,7 @@ cyg_cpuload_calibrate(cyg_uint32  *calibration) {
   cyg_thread_resume(idleH);
   cyg_thread_set_priority(cyg_thread_self(),old_priority);
   
-  *calibration = idle_thread_loops - idle_loops_start;
+  *calibration = idle_thread_loops[CYG_KERNEL_CPU_THIS()] - idle_loops_start;
   cyg_alarm_delete(alarmH);
   cyg_thread_kill(idleH);
   cyg_thread_delete(idleH);
@@ -125,7 +126,7 @@ cyg_cpuload_calibrate(cyg_uint32  *calibration) {
 static void 
 cpuload_alarm_func(cyg_handle_t alarm,cyg_addrword_t data) { 
   cyg_cpuload_t * cpuload = (cyg_cpuload_t *)data;
-  cyg_uint32 idle_loops_now = idle_thread_loops;
+  cyg_uint32 idle_loops_now = idle_thread_loops[CYG_KERNEL_CPU_THIS()];
   cyg_uint32 idle_loops;
   cyg_uint32 load;
   
@@ -162,7 +163,7 @@ cyg_cpuload_create(cyg_cpuload_t *cpuload,
   cpuload->average_1s = 0;
   cpuload->average_10s = 0;
   cpuload->calibration = calibration;
-  cpuload->last_idle_loops = idle_thread_loops;
+  cpuload->last_idle_loops = idle_thread_loops[CYG_KERNEL_CPU_THIS()];
 
   cyg_clock_to_counter(cyg_real_time_clock(),&counter);
   cyg_alarm_create(counter,

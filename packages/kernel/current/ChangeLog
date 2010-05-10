@@ -1,3 +1,8 @@
+2010-03-29  Lars Povlsen  <lpovlsen@vitesse.com>
+
+	* src/common/thread.cxx: Add volatile to idle_thread_loops for use with
+	cpuload package and GCC 4.
+
 2010-02-25  John Dallaway  <john@dallaway.org.uk>
 
 	* doc/kernel.sgml: Indicate that cyg_alarm_initialize() takes an
