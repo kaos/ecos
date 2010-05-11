@@ -212,6 +212,14 @@ __strlen( const char * );
 __externC char *
 __strdup( const char * );
 
+// NB This is a GNU extension
+#ifndef __STRICT_ANSI__
+# ifdef CYGFUN_LIBC_STRING_GNU_STRNLEN
+__externC size_t
+__strnlen( const char *, size_t );
+# endif
+#endif
+
 #endif // CYGONCE_LIBC_STRING_STRINGSUPP_HXX multiple inclusion protection
 
 // EOF stringsupp.hxx

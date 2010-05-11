@@ -1,3 +1,12 @@
+2010-05-10  Ross Younger  <wry@ecoscentric.com>
+
+	* include/string.h: Declare strnlen.
+	* include/stringsupp.hxx: Declare __strnlen.
+	* src/strnlen.cxx, tests/strnlen.c: Created.
+	* cdl/string.cdl (CYGFUN_LIBC_STRING_GNU_STRNLEN): New option,
+	compiles strnlen.cxx.
+	(CYGPKG_LIBC_STRING_TESTS): Add strnlen test.
+
 2009-01-26  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/memchr.c (main): Rename to cyg_user_start if main isn't

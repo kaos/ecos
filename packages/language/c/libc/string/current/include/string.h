@@ -155,6 +155,14 @@ extern char *
 strdup( const char * );
 #endif
 
+// This is a GNU extension
+#ifndef __STRICT_ANSI__
+# ifdef CYGFUN_LIBC_STRING_GNU_STRNLEN
+extern size_t
+strnlen( const char *, size_t );
+# endif
+#endif
+
 #ifdef __cplusplus
 }   /* extern "C" */
 #endif

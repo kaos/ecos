@@ -166,6 +166,16 @@ cdl_package CYGPKG_LIBC_STRING {
                 This option indicates whether strdup() is to be supported."
     }
 
+    cdl_option CYGFUN_LIBC_STRING_GNU_STRNLEN {
+        display       "Provide strnlen() GNU extension"
+        flavor        bool
+        default_value 1
+        compile       strnlen.cxx
+        description   "
+            This option controls support for the strnlen() function.
+            (This is a GNU extension, not part of ANSI C.)"
+    }
+
     cdl_component CYGPKG_LIBC_STRING_OPTIONS {
         display "C library string functions build options"
         flavor  none
@@ -202,7 +212,7 @@ cdl_package CYGPKG_LIBC_STRING {
             display "C library string function tests"
             flavor  data
             no_define
-            calculated { "tests/memchr tests/memcmp1 tests/memcmp2 tests/memcpy1 tests/memcpy2 tests/memmove1 tests/memmove2 tests/memset tests/strcat1 tests/strcat2 tests/strchr tests/strcmp1 tests/strcmp2 tests/strcoll1 tests/strcoll2 tests/strcpy1 tests/strcpy2 tests/strcspn tests/strcspn tests/strlen tests/strncat1 tests/strncat2 tests/strncpy1 tests/strncpy2 tests/strpbrk tests/strrchr tests/strspn tests/strstr tests/strtok tests/strxfrm1 tests/strxfrm2" }
+            calculated { "tests/memchr tests/memcmp1 tests/memcmp2 tests/memcpy1 tests/memcpy2 tests/memmove1 tests/memmove2 tests/memset tests/strcat1 tests/strcat2 tests/strchr tests/strcmp1 tests/strcmp2 tests/strcoll1 tests/strcoll2 tests/strcpy1 tests/strcpy2 tests/strcspn tests/strcspn tests/strlen tests/strncat1 tests/strncat2 tests/strncpy1 tests/strncpy2 tests/strpbrk tests/strrchr tests/strspn tests/strstr tests/strtok tests/strxfrm1 tests/strxfrm2 tests/strnlen" }
             description   "
                 This option specifies the set of tests for the C library
                 string functions."
