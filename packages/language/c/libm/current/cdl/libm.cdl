@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -229,7 +229,8 @@ cdl_package CYGPKG_LIBM {
             display "Additional compiler flags"
             flavor  data
             no_define
-            default_value { ((0 == CYGPKG_HAL_I386) && (0 == CYGPKG_HAL_SYNTH_I386)) ? "" : "-ffloat-store" }
+            default_value { "-fno-strict-aliasing " . \
+                                ((0 == CYGPKG_HAL_I386) && (0 == CYGPKG_HAL_SYNTH_I386)) ? "" : "-ffloat-store" }
             description   "
                 This option modifies the set of compiler flags for
                 building the math library. These flags are used in addition
