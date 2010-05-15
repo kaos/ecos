@@ -247,7 +247,10 @@ flashiodev_lookup(struct cyg_devtab_entry **tab,
         start = flash_base;
         end = flash_base + size - 1;
         valid = true;
-    } else
+    }
+# ifdef CYGFUN_IO_FLASH_BLOCK_FROM_DEVOFFSET
+    else
+# endif
 #endif // ifdef CYGFUN_IO_FLASH_BLOCK_FROM_FIS
 #ifdef CYGFUN_IO_FLASH_BLOCK_FROM_DEVOFFSET
     // Next, support device numbers with offsets encoded in path name
