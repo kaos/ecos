@@ -298,7 +298,7 @@ __externC void hal_call_dsrs_vsr(void);
 {                                                       \
     __asm__ volatile (                                  \
         "ldr     r3,=hal_call_dsrs_vsr          \n"     \
-        "swi                                    \n"     \
+        "swi 0                                  \n"     \
         :                                               \
         :                                               \
         : "r3"                                          \

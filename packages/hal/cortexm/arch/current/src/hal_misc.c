@@ -185,7 +185,7 @@ void hal_reset_vsr( void )
 
     hal_vsr_table[CYGNUM_HAL_VECTOR_SERVICE] = (CYG_ADDRESS)hal_switch_state_vsr;    
 
-    __asm__ volatile( "swi" );
+    __asm__ volatile( "swi 0" );
 
     hal_vsr_table[CYGNUM_HAL_VECTOR_SERVICE] = (CYG_ADDRESS)hal_default_svc_vsr;
     

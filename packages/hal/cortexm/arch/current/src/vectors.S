@@ -130,7 +130,8 @@ hal_switch_state_vsr:
         msr     control,r0
         isb                             // Insert a barrier
         
-        msr     psp,sp                  // Copy SP to PSP
+        mov     r0,sp
+        msr     psp,r0                  // Copy SP to PSP
 
 #if !defined(CYGPKG_KERNEL)
         sub     sp,#(CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE/2)
@@ -274,7 +275,7 @@ hal_pendable_svc_vsr:
 hal_interrupt_end_done:
 
         ldr     r3,=hal_interrupt_end_vsr
-        swi
+        swi 0
         
 //==========================================================================        
 // Interrupt end VSR
