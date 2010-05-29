@@ -2671,10 +2671,33 @@
 //=============================================================================
 // Analog to Digital Convertor (ADC)
 
-#if defined(CYGHWR_HAL_ARM_AT91SAM7)
+#if defined(CYGHWR_HAL_ARM_AT91SAM7) || \
+	            defined (CYGHWR_HAL_ARM_AT91_M55800A)
 
-#ifndef AT91_ADC
+// AT91SAM7 specifics
+#if defined(CYGHWR_HAL_ARM_AT91SAM7)
+#if !defined(AT91_ADC)
 #define AT91_ADC 0xFFFD8000
+#endif
+
+#if !defined(AT91_MAX_ADC_CHAN)
+#define AT91_MAX_ADC_CHAN 8
+#endif
+#endif
+
+// AT91_M55800A specifics
+#if defined(CYGHWR_HAL_ARM_AT91_M55800A)
+#if !defined(AT91_ADC)
+#define AT91_ADC 0xFFFB0000
+#endif
+
+#if !defined(AT91_ADC1)
+#define AT91_ADC1 0xFFFB4000
+#endif
+
+#if !defined(AT91_MAX_ADC_CHAN)
+#define AT91_MAX_ADC_CHAN 4
+#endif
 #endif
 
 #define AT91_ADC_CR    0x00 // Control

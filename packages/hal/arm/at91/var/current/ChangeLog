@@ -1,3 +1,6 @@
+2010-05-27 ccoutand <ccoutand@stmi.com>
+	* include/var_io.h: Added ADC defines for AT91_M55800A CPU
+
 2009-06-03 Oliver Munz <oli@snr.ch>
 
  	* Fix the a problem in the kernel delay_us, if the PIT is
