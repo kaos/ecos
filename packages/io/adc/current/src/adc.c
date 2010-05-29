@@ -298,6 +298,13 @@ static Cyg_ErrNo adc_set_config(cyg_io_handle_t handle, cyg_uint32 key, const vo
         chan->device->funs->disable( chan );
         break;        
 
+    case CYG_IO_SET_CONFIG_ADC_DATA_FLUSH:
+        cyg_drv_isr_lock();
+        chan->put = 0;
+        chan->get = 0;
+        cyg_drv_isr_unlock();
+        break;      
+
     case CYG_IO_SET_CONFIG_READ_BLOCKING:
         if (*len < sizeof(cyg_uint32))
             return -EINVAL;

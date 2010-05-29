@@ -1,3 +1,8 @@
+20010-05-25 ccoutand <ccoutand@stmi.com>
+	* src/adc.c: 
+	Add new key to ADC driver to flush data buffer:
+	CYG_IO_SET_CONFIG_ADC_DATA_FLUSH
+
 2009-03-02  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* cdl/io_adc.cdl:
