@@ -1,3 +1,7 @@
+2010-05-30  Christophe Coutand  <ccoutand@stmi.com>
+
+	* ecos.db: Add AT91 ADC driver.
+
 2009-11-13  John Dallaway  <john@dallaway.org.uk>
 
 	* ecosadmin.tcl: Keep target records containing removed packages

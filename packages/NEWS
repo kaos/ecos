@@ -1,3 +1,4 @@
+* ADC device driver for AT91 by Christophe Coutand 
 * Major update of lwIP stack to v1.3.2 by Simon Kallweit
 * Port of uSTL 1.3 by Uwe Kindler
 * Port of PDCurses 3.4 by Sergei Gavrikov

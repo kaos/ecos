@@ -1,0 +1,355 @@
+# ====================================================================
+#
+#      adc_at91.cdl
+#
+#      eCos AT91 ADC configuration data
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2008 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      ccoutand@stmi.com
+# Contributors:   
+# Date:           2010-02-12
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+
+cdl_package CYGPKG_DEVS_ADC_ARM_AT91 {
+    display     "ADC hardware device driver for AT91 family of ARM controllers"
+    
+    parent      CYGPKG_IO_ADC_DEVICES
+    active_if   CYGPKG_IO_ADC_DEVICES
+    active_if   CYGPKG_HAL_ARM_AT91
+    description " 
+           This package provides a generic ADC device driver for the on-chip
+           ADC peripherals in AT91 processors."
+           
+    include_dir cyg/io
+    compile     -library=libextras.a adc_at91.c
+    
+    define_proc {
+      puts $::cdl_system_header "#define CYGDAT_DEVS_ADC_ARM_AT91_INL <cyg/io/adc_at91.inl>"
+    }
+    
+    # 
+    # Primary ADC ( ADC0 )
+    #
+    cdl_component CYGPKG_DEVS_ADC_ARM_AT91_ADC0 {
+       display       "Atmel AT91 ADC port 0 driver"
+       flavor        bool
+       default_value 1
+       description "
+           This option includes the device driver for the on-chip ADC 0 of the
+           AT91 processors"
+    
+    
+       cdl_interface CYGINT_DEVS_ADC_ARM_AT91_ADC0_CHANNELS {
+          display "Number of ADC0 channels"
+       }  
+   
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC0_SELECT_TIMER {
+          display       "Interrupt priority"
+          flavor        data
+          legal_values {0 1 2}
+          default_value 1
+          description   "
+              This option selects the timer channel to be used for 
+              generating the sampling interval. Timer channel 0 can 
+              be assigned as Real Time Kernel clock so timer channel 
+              1 is set to be the default value."
+       }
+
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC0_PRESCAL {
+           display       "ADC clock setting"
+           flavor        data
+           legal_values  0 to 255
+           default_value 128
+           description   "
+               This option sets the AT91 ADC PRESCAL value. 
+               ADCClock = MCK / ((PRESCAL + 1) * 2)"
+       }
+
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC0_STARTUP_TIME {
+           display       "ADC start-up time"
+           flavor        data
+           legal_values  0 to 255
+           default_value 128
+           description   "
+               This option sets the AT91 ADC start-up time value. 
+               ADC start-up time = (STARTUP+1) * 8 / ADCClock"
+       }
+
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC0_SHTIM {
+           display       "ADC start up time"
+           flavor        data
+           legal_values  0 to 15
+           default_value 7
+           description   "
+               This option sets the AT91 ADC Sample and Hold Time. 
+               Sample and Hold Time = SHTIM / ADCClock"
+       }
+
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC0_INTPRIO {
+           display       "Interrupt priority"
+           flavor        data
+           legal_values  0 to 15
+           default_value 15
+           description   "
+               This option selects the interrupt priority for the ADC
+               interrupts.  Timer x is used for generating the sample
+               clock. So this option configures the interrupt priority
+               for timer x. There are 16 priority levels corresponding to
+               the values 0 through 15 decimal, of which 15 is the lowest
+               priority. The reset value of these registers defaults all
+               interrupts to the lowest priority, allowing a single write
+               to elevate the priority of an individual interrupt."
+       }
+
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC0_DEFAULT_RATE {
+           display "Default sample rate"
+           flavor   data
+           legal_values 1 to 10000
+           default_value 100
+           description "
+               The driver will be initialized with the default sample rate.
+               If you raise the default sample rate you might need to increase
+               the buffer size for each channel."
+       }
+                
+       # Support up to 8 ADC channels
+       for { set ::channel 0 } { $::channel < 8 } { incr ::channel } {  
+    
+           cdl_component CYGPKG_DEVS_ADC_ARM_AT91_ADC0_CHANNEL[set ::channel] {
+               display        "Access ADC channel [set ::channel]"
+               flavor          bool
+               default_value   [set ::channel] == 0
+               implements      CYGINT_DEVS_ADC_ARM_AT91_ADC0_CHANNELS
+               description "
+                   If the application needs to access the on-chip ADC
+                   channel [set ::channel] via an eCos ADC driver then
+                   this option should be enabled."
+     
+               cdl_option CYGDAT_DEVS_ADC_ARM_AT91_ADC0_CHANNEL[set ::channel]_NAME {
+                   display "Device name"
+                   flavor      data
+                   default_value   [format {"\"/dev/adc0%d\""} $::channel]
+                   description "
+                       This option controls the name that an eCos application
+                       should use to access this device via cyg_io_lookup(),
+                       open(), or similar calls."
+               }
+        
+               cdl_option CYGDAT_DEVS_ADC_ARM_AT91_ADC0_CHANNEL[set ::channel]_BUFSIZE {
+                   display "Size of data buffer"
+                   flavor  data
+                   legal_values  0x01 to 0x2000000
+                   default_value 512
+                   description "
+                       This option controls the number of samples the
+                       buffer can store. The required RAM depends on the
+                       sample size and on the number of samples. If the
+                       sample size is <= 8 bit the the required RAM =
+                       size of data buffer. If the sample size is 9 or 10
+                       bit then required RAM = size of data buffer * 2."
+               } 
+           } 
+        }
+     }
+     
+    # 
+    # ADC1
+    #
+    cdl_component CYGPKG_DEVS_ADC_ARM_AT91_ADC1 {
+       display       "Atmel AT91 ADC port 1 driver"
+       flavor        bool
+       default_value 0
+       
+       requires      { CYGHWR_HAL_ARM_AT91 == "M55800A" }
+       
+       description "
+           This option includes the device driver for the on-chip ADC 1 of the
+           AT91 processors"
+    
+    
+       cdl_interface CYGINT_DEVS_ADC_ARM_AT91_ADC1_CHANNELS {
+          display "Number of ADC1 channels"
+       }  
+   
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC1_SELECT_TIMER {
+          display       "Interrupt priority"
+          flavor        data
+          legal_values {0 1 2}
+          default_value 2
+          description   "
+              This option selects the timer channel to be used for 
+              generating the sampling interval. Timer channel 0 can 
+              be assigned as Real Time Kernel clock so timer channel 
+              1 is set to be the default value."
+       }
+
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC1_PRESCAL {
+           display       "ADC clock setting"
+           flavor        data
+           legal_values  0 to 255
+           default_value 128
+           description   "
+               This option sets the AT91 ADC PRESCAL value. 
+               ADCClock = MCK / ((PRESCAL + 1) * 2)"
+       }
+
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC1_STARTUP_TIME {
+           display       "ADC start-up time"
+           flavor        data
+           legal_values  0 to 255
+           default_value 128
+           description   "
+               This option sets the AT91 ADC start-up time value. 
+               ADC start-up time = (STARTUP+1) * 8 / ADCClock"
+       }
+
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC1_SHTIM {
+           display       "ADC start up time"
+           flavor        data
+           legal_values  0 to 15
+           default_value 7
+           description   "
+               This option sets the AT91 ADC Sample and Hold Time. 
+               Sample and Hold Time = SHTIM / ADCClock"
+       }
+
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC1_INTPRIO {
+           display       "Interrupt priority"
+           flavor        data
+           legal_values  0 to 15
+           default_value 15
+           description   "
+               This option selects the interrupt priority for the ADC
+               interrupts.  Timer x is used for generating the sample
+               clock. So this option configures the interrupt priority
+               for timer x. There are 16 priority levels corresponding to
+               the values 0 through 15 decimal, of which 15 is the lowest
+               priority. The reset value of these registers defaults all
+               interrupts to the lowest priority, allowing a single write
+               to elevate the priority of an individual interrupt."
+       }
+
+       cdl_option CYGNUM_DEVS_ADC_ARM_AT91_ADC1_DEFAULT_RATE {
+           display "Default sample rate"
+           flavor   data
+           legal_values 1 to 10000
+           default_value 100
+           description "
+               The driver will be initialized with the default sample rate.
+               If you raise the default sample rate you might need to increase
+               the buffer size for each channel."
+       }
+                
+       # Support up to 8 ADC channels
+       for { set ::channel 0 } { $::channel < 8 } { incr ::channel } {  
+    
+           cdl_component CYGPKG_DEVS_ADC_ARM_AT91_ADC1_CHANNEL[set ::channel] {
+               display        "Access ADC channel [set ::channel]"
+               flavor          bool
+               default_value   [set ::channel] == 0
+               implements      CYGINT_DEVS_ADC_ARM_AT91_ADC1_CHANNELS
+               description "
+                   If the application needs to access the on-chip ADC
+                   channel [set ::channel] via an eCos ADC driver then
+                   this option should be enabled."
+     
+               cdl_option CYGDAT_DEVS_ADC_ARM_AT91_ADC1_CHANNEL[set ::channel]_NAME {
+                   display "Device name"
+                   flavor      data
+                   default_value   [format {"\"/dev/adc1%d\""} $::channel]
+                   description "
+                       This option controls the name that an eCos application
+                       should use to access this device via cyg_io_lookup(),
+                       open(), or similar calls."
+               }
+        
+               cdl_option CYGDAT_DEVS_ADC_ARM_AT91_ADC1_CHANNEL[set ::channel]_BUFSIZE {
+                   display "Size of data buffer"
+                   flavor  data
+                   legal_values  0x01 to 0x2000000
+                   default_value 512
+                   description "
+                       This option controls the number of samples the
+                       buffer can store. The required RAM depends on the
+                       sample size and on the number of samples. If the
+                       sample size is <= 8 bit the the required RAM =
+                       size of data buffer. If the sample size is 9 or 10
+                       bit then required RAM = size of data buffer * 2."
+               } 
+           } 
+        }
+     }     
+     
+     cdl_option CYGPKG_DEVS_ADC_ARM_AT91_DEBUG_LEVEL {
+         display "Driver debug output level"
+         flavor  data
+         legal_values {0 1}
+         default_value 0
+         description   "
+              This option specifies the level of debug data output by
+              the AT91 ADC device driver. A value of 0 signifies
+              no debug data output; 1 signifies normal debug data
+              output. If an overrun occurred then this can only be
+              detected by debug output messages."         
+     }     
+
+     cdl_component CYGSEM_DEVS_ADC_ARM_AT91_SAMPLE_SIZE_LIMIT {
+         display       "Sample size limit"
+         flavor          bool
+         calculated    1
+         requires      { ( CYGNUM_IO_ADC_SAMPLE_SIZE == 8 )
+                            || ( CYGNUM_IO_ADC_SAMPLE_SIZE == 10 ) }
+         description   "
+             This component forces a limit (or rounds) the sample
+             size for AT91 ADC channels which in the most are 10-bit."
+     }
+
+    cdl_option CYGPKG_DEVS_ADC_ARM_AT91_TESTS {
+        display "Tests for AT91 ADC driver"
+        flavor  data
+        no_define
+        calculated { "tests/at91_adc_test" }
+        description   "
+            This option specifies the set of tests for the AT91
+            ADC device driver."
+    }
+
+}

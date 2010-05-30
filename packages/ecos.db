@@ -2421,6 +2421,16 @@ package CYGPKG_DEVS_ADC_ARM_LPC24XX {
             ADC provided by the LPC24xx processor family."
 }
 
+package CYGPKG_DEVS_ADC_ARM_AT91 {
+    alias           { "AT91 ADC driver" }
+    hardware
+    directory       devs/adc/arm/at91
+    script          adc_at91.cdl
+    description "
+            This packages provides an ADC driver for the on-chip
+            ADC provided by the Atmel AT91 processor family."
+}
+
 package CYGPKG_DEVS_ADC_SYNTH {
     alias         { "Synthethic ADC driver" adc_synth }
     hardware
