@@ -1,4 +1,8 @@
-20010-05-25 ccoutand <ccoutand@stmi.com>
+2010-06-06 ccoutand <ccoutand@stmi.com>
+	*doc/io.sgml
+	Updated DEVIO_TABLE definition, missing select argument
+
+2010-05-25 ccoutand <ccoutand@stmi.com>
 	* include/config_keys.h: 
 	Add new key to ADC driver to flush data buffer:
 	CYG_IO_SET_CONFIG_ADC_DATA_FLUSH

@@ -1091,7 +1091,7 @@ routines. This table is defined by the macro:</PARA>
 
 
 <PROGRAMLISTING>
-DEVIO_TABLE(l, write, read, get_config, set_config)
+DEVIO_TABLE(l, write, read, select, get_config, set_config)
 </PROGRAMLISTING>
 
 <variablelist>
@@ -1109,6 +1109,11 @@ DEVIO_TABLE(l, write, read, get_config, set_config)
     <term>read</term>
     <listitem><para>The function called as a result of
     <function>cyg_io_read()</function>. </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>select</term>
+    <listitem><para>The function called as a result of
+    <function>cyg_io_select()</function>. </para></listitem>
   </varlistentry>
   <varlistentry>
     <term>get_config</term>
