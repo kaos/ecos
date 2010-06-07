@@ -257,7 +257,27 @@ int disable_io( cyg_io_handle_t handle )
 int enable_io( cyg_io_handle_t handle )
 {
     return cyg_io_set_config( handle,
-                              CYG_IO_SET_CONFIG_ADC_DISABLE,
+                              CYG_IO_SET_CONFIG_ADC_ENABLE,
+                              NULL,
+                              NULL);
+}
+</programlisting>
+
+</refsect2>
+
+<refsect2 id="adc-details-flush"><title>Flushing a Channel</title>
+
+<para>
+In some particular cases, user might require to flush the ADC data buffer. Flushing
+may be perfomed via a <function>set_config</function>
+function:
+</para>
+
+<programlisting width=72>
+int flush_io( cyg_io_handle_t handle )
+{
+    return cyg_io_set_config( handle,
+                              CYG_IO_SET_CONFIG_ADC_DATA_FLUSH,
                               NULL,
                               NULL);
 }
@@ -266,7 +286,6 @@ int enable_io( cyg_io_handle_t handle )
 </refsect2>
 
 </refsect1>
-
 
 <refsect1 id="adc-config"><title>Configuration</title>
 
