@@ -1,3 +1,8 @@
+2010-06-02	Jay Foster	<jay@systech.com>
+
+	* src/common/termios.c : Fix tcflush() and tcdrain().  They were
+	effectively no-op functions.
+
 2008-09-02  Steven Clugston  <steven.clugston@ncl.ac.uk>
 
 	* tests/ser_test_protocol.inl : Add mpc555 generic platform

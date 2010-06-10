@@ -263,7 +263,7 @@ tcdrain( int fildes )
 
     ret = fp->f_ops->fo_getinfo( fp,
                                  CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN,
-                                 NULL, 0 );
+                                 NULL, 1 );
     cyg_fp_free( fp );
 
     if ( ret > 0 ) {
@@ -302,17 +302,17 @@ tcflush( int fildes, int queue_sel )
     case TCIOFLUSH:
         ret = fp->f_ops->fo_getinfo( fp,
                                      CYG_IO_GET_CONFIG_SERIAL_OUTPUT_FLUSH,
-                                     NULL, 0 );
+                                     NULL, 1 );
         // fallthrough
     case TCIFLUSH:
         ret = fp->f_ops->fo_getinfo( fp,
                                      CYG_IO_GET_CONFIG_SERIAL_INPUT_FLUSH,
-                                     NULL, 0 );
+                                     NULL, 1 );
         break;
     case TCOFLUSH:
         ret = fp->f_ops->fo_getinfo( fp,
                                      CYG_IO_GET_CONFIG_SERIAL_OUTPUT_FLUSH,
-                                     NULL, 0 );
+                                     NULL, 1 );
         break;
     default:
         ret = EINVAL;
