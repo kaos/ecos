@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2003 Free Software Foundation, Inc.                        
+## Copyright (C) 2003, 2010 Free Software Foundation, Inc.                        
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -166,6 +166,33 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
         compile       -library=libextras.a KSZ8041.c
         description "
           Include support for the Micrel KSZ8041 PHY"
+    }
+
+    cdl_option CYGHWR_DEVS_ETH_PHY_IP101A {
+        display       "IC+ IP101A"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a IP101A.c
+        description "
+          Include support for IC+ IP101A"
+    }
+
+    cdl_option CYGHWR_DEVS_ETH_PHY_VSC8641 {
+        display       "Vitesse VSC8641"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a VSC8641.c
+        description "
+          Include support for Vitesse VSC8641"
+    }
+
+    cdl_option CYGHWR_DEVS_ETH_PHY_VSC8244 {
+        display       "Vitesse VSC8244"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a VSC8244.c
+        description "
+          Include support for Vitesse VSC8244"
     }
 
 }

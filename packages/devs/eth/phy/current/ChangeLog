@@ -1,3 +1,11 @@
+2010-06-10  Christophe Coutand <ccoutand@stmi.com>
+
+	* doc/eth_phy.sgml, include/eth_phy.h: Add Ethernet Gigabit Mode
+	* cdl/phy_eth_drivers.cdl: Add new PHY support
+	* src/IP101A.c, src/IP101A.h: Contributed by Edgar Grimberg
+	* src/VSC8244.c, src/VSC8244.h: Contributed by Christophe Coutand
+	* src/VSC8641.c, src/VSC8641.h: Contributed by Sachin Sushil Chaddha
+
 2008-12-30  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/phy_eth_drivers.cdl: Reference per-package documentation.
@@ -80,7 +88,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2010 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
