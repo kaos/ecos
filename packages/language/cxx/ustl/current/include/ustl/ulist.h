@@ -50,9 +50,8 @@ public:
 template <typename T>
 void list<T>::merge (list& l)
 {
-    list<T>::resize (size() + l.size());
-    iterator me = merge (begin(), end(), l.begin(), l.end(), begin());
-    list<T>::resize (distance (begin(), me));
+    insert_space (begin(), l.size());
+    ::ustl::merge (iat(l.size()), end(), l.begin(), l.end(), begin());
 }
 
 /// Moves the range [first, last) from \p l to this list at \p ip.

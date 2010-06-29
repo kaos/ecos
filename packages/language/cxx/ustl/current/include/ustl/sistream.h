@@ -8,6 +8,9 @@
 
 #include "mistream.h"
 #include "ustring.h"
+#ifndef EOF
+#define EOF (-1)
+#endif
 
 namespace ustl {
 
@@ -38,7 +41,7 @@ public:
     inline string		str (void) const	{ string s; s.link (*this); return (s); }
     inline istringstream&	str (const string& s)	{ link (s); return (*this); }
     inline istringstream&	get (char& c)	{ return (read (&c, sizeof(c))); }
-    inline int			get (void)	{ char c; get(c); return (c); }
+    inline int			get (void)	{ char c = EOF; get(c); return (c); }
     istringstream&		get (char* p, size_type n, char delim = '\n');
     istringstream&		get (string& s, char delim = '\n');
     istringstream&		getline (char* p, size_type n, char delim = '\n');
@@ -137,9 +140,6 @@ ISTRSTREAM_CAST_OPERATOR (char,		int8_t)
 ISTRSTREAM_CAST_OPERATOR (uint64_t,	int64_t)
 #endif
 #if SIZE_OF_LONG == SIZE_OF_INT
-// This works only properly if stdint.h typedefs int to int32_t. If stdint.h
-// typedefs long to int32_t then this causes compiler errors. So make shure
-// that your stdint.h file typedefs int to int32_t.
 ISTRSTREAM_CAST_OPERATOR (long,		int)
 ISTRSTREAM_CAST_OPERATOR (unsigned long,int)
 #endif

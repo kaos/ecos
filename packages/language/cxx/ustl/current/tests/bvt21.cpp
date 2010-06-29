@@ -33,6 +33,12 @@ void TestUtility (void)
     cout << "Align(17,7) = " << Align(17,7) << endl;
     cout << "Align(14,7) = " << Align(14,7) << endl;
     cout << endl;
+    cout << "NextPow2(0) = " << NextPow2(0) << endl;
+    cout << "NextPow2(1) = " << NextPow2(1) << endl;
+    cout << "NextPow2(4) = " << NextPow2(4) << endl;
+    cout << "NextPow2(3827) = " << NextPow2(3827) << endl;
+    cout << "NextPow2(0xFFFFFFF0) = " << NextPow2(0xFFFFFFF0) << endl;
+    cout << endl;
     cout << "advance(42,0) = " << advance(42,0) << endl;
     cout << "advance(42,3) = " << advance(42,3) << endl;
     const void *cvp = (const void*) 0x1234;

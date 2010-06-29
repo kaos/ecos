@@ -98,7 +98,7 @@ public:
     inline void			write (ostream& os) const		{ container_write (os, *this); }
     inline void			text_write (ostringstream& os) const	{ container_text_write (os, *this); }
     inline size_t		stream_size (void) const		{ return (container_stream_size (*this)); }
-private:
+protected:
     inline iterator		insert_space (iterator ip, size_type n);
 private:
     memblock			m_Data;	///< Raw element data, consecutively stored.

@@ -7,6 +7,12 @@ Align(5,2) = 6
 Align(17,7) = 21
 Align(14,7) = 14
 
+NextPow2(0) = 1
+NextPow2(1) = 2
+NextPow2(4) = 4
+NextPow2(3827) = 4096
+NextPow2(0xFFFFFFF0) = 1
+
 advance(42,0) = 42
 advance(42,3) = 45
 cvp = 1234

@@ -75,8 +75,10 @@ template <typename ForwardIterator>
 inline void construct (ForwardIterator first, ForwardIterator last)
 {
     typedef typename iterator_traits<ForwardIterator>::value_type value_type;
-    if (!numeric_limits<value_type>::is_integral && first)
-	for (--last; first <= last; ++first)
+    if (numeric_limits<value_type>::is_integral)
+	memset (first, 0, distance(first,last)*sizeof(value_type));
+    else
+	for (--last; intptr_t(first) <= intptr_t(last); ++first)
 	    construct (&*first);
 }
 
@@ -101,7 +103,7 @@ inline void destroy (T* p) throw()
 // Helper templates to not instantiate anything for integral types.
 template <typename T>
 void dtors (T first, T last) throw()
-    { for (--last; first <= last; ++first) destroy (&*first); }
+    { for (--last; intptr_t(first) <= intptr_t(last); ++first) destroy (&*first); }
 template <typename T, bool bIntegral>
 struct Sdtorsr {
     inline void operator()(T first, T last) throw() { dtors (first, last); }

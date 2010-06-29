@@ -145,11 +145,13 @@ UNVOID_DISTANCE(const,)
 #undef UNVOID_DISTANCE
 #endif
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 // The compiler issues a warning if an unsigned type is compared to 0.
 template <typename T, bool IsSigned> struct __is_negative { inline bool operator()(const T& v) { return (v < 0); } };
 template <typename T> struct __is_negative<T,false> { inline bool operator()(const T&) { return (false); } };
 /// Warning-free way to check if \p v is negative, even if for unsigned types.
 template <typename T> inline bool is_negative (const T& v) { return (__is_negative<T,numeric_limits<T>::is_signed>()(v)); }
+#endif
 
 /// \brief Returns the absolute value of \p v
 /// Unlike the stdlib functions, this is inline and works with all types.
@@ -336,6 +338,26 @@ inline bool TestAndSet (int* pm)
     const int oldVal (*pm);
     *pm = 1;
     return (!oldVal);
+#endif
+}
+
+inline uint32_t NextPow2 (uint32_t v)
+{
+#if __i386__ || __x86_64__
+	asm("dec\t%1\n\t"
+	"mov\t$1,%0\n\t"
+	"bsr\t%1,%1\n\t"
+	"inc\t%1\n\t"
+	"rol\t%b1,%0":"=&r"(v):"c"(v));
+    return (v);
+#else
+    // The following code is sub-optimal but mimics the x86 implementation
+    int i = 31;
+    v--;
+    while (!(v & (1 << i)) && i > 0) i--;
+    if (i == 31)
+    	return 1;
+    return (1 << (i + 1));
 #endif
 }
 

@@ -6,6 +6,8 @@
 #ifndef USTL_H_6A5A10410D2CD7FC2D78FE470F045EB7
 #define USTL_H_6A5A10410D2CD7FC2D78FE470F045EB7
 
+#include <pkgconf/ustl.h>
+
 #include "ustl/uspecial.h"
 #include "ustl/umap.h"
 #include "ustl/umultimap.h"
