@@ -1245,6 +1245,18 @@
         bufsiz     : 1
     },
 #endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV640M
+    {   // MBM29LV640xx
+        device_id  : FLASHWORD(0x227e),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 128,
+        device_size: 0x800000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x800000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 1
+    },
+#endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_TC58FVB800
     {   // Toshiba TC58FVB800 (compatible with AM29LV800-B except for IDs.)
         device_id  : FLASHWORD(0xCE),
@@ -1497,6 +1509,36 @@
         bootblock  : false,
         banked     : false,
         bufsiz     : 16,
+    },
+#endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_S29GL512P
+    {   // AMD/SPANSION S29GL512P
+        long_device_id: true,
+        device_id  : FLASHWORD(0x227e),
+        device_id2 : FLASHWORD(0x2223),
+        device_id3 : FLASHWORD(0x2201),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 512,
+        device_size: 0x4000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x4000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 32,
+    },
+#endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_S29GL01GP
+    {   // AMD/SPANSION S29GL01GP
+        long_device_id: true,
+        device_id  : FLASHWORD(0x227e),
+        device_id2 : FLASHWORD(0x2228),
+        device_id3 : FLASHWORD(0x2201),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 1024,
+        device_size: 0x8000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x8000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 32,
     },
 #endif
 

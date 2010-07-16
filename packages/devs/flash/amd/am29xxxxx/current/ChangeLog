@@ -1,3 +1,14 @@
+2010-07-14  Christophe Coutand  <ecos@hotmail.co.uk>
+
+	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_AM29LV640M]:
+	* cdl/flash_amd_am29xxxxx.cdl: Add AM29LV640M part
+
+	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_S29GL512P]:
+	* cdl/flash_amd_am29xxxxx.cdl: Add Spansion S29GL512P part
+
+	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_S29GL01GP]:
+	* cdl/flash_amd_am29xxxxx.cdl: Add Spansion S29GL01GP part
+
 2009-02-17  Lars Povlsen  <lpovlsen@vitesse.com>
 
 	* include/flash_am29xxxxx_parts.inl:

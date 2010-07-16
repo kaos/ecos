@@ -237,6 +237,16 @@ cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
             part in the family."
     }
 
+    cdl_option CYGHWR_DEVS_FLASH_AMD_AM29LV640M {
+        display       "AMD AM29LV640M flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the AM29LV640M
+            part in the family."
+    }
+
     cdl_option CYGHWR_DEVS_FLASH_AMD_AM29F800 {
         display       "AMD AM29F800 flash memory support"
         default_value 0
@@ -393,6 +403,26 @@ cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
         description   "
             When this option is enabled, the AMD/SPANSION flash driver will be
             able to recognize and handle the S29GL128M
+            part in the family."
+    }
+
+   cdl_option CYGHWR_DEVS_FLASH_AMD_S29GL512P {
+        display       "AMD/SPANSION S29GL512P flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD/SPANSION flash driver will be
+            able to recognize and handle the S29GL512P
+            part in the family."
+    }
+
+   cdl_option CYGHWR_DEVS_FLASH_AMD_S29GL01GP {
+        display       "AMD/SPANSION S29GL01GP flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD/SPANSION flash driver will be
+            able to recognize and handle the S29GL01GP
             part in the family."
     }
 
