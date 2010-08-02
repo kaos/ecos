@@ -1,3 +1,8 @@
+2010-08-02  John Dallaway  <john@dallaway.org.uk>
+
+	* src/if_at91.c: Invert test for NSR IDLE bit. Issue reported by
+	Will Wagner.
+
 2007-04-08  Uwe Kindler  <uwe_kindler@web.de>
 
 	* cdl/at91_eth.cdl: Fixed typo. (Removed AT91RM9200 from
@@ -11,19 +16,19 @@
 
 2007-01-17  John Eigelaar  <jeigelaar@mweb.co.za>
 
-	* src/if_at91.c * include/at91_eth.cdl: Working implementation
+	* src/if_at91.c, include/at91_eth.cdl: Working implementation
 	of a device driver for the AT91 EMAC device.
 
 2006-06-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
-	* src/if_at91.c * include/at91_eth.cdl: Partially implementation
+	* src/if_at91.c, include/at91_eth.cdl: Partially implementation
 	of a device driver for the AT91 EMAC device.
 
 //===========================================================================
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2006 Free Software Foundation, Inc.                        
+// Copyright (C) 2006, 2010 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006, 2010 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -224,7 +224,7 @@ at91_write_phy(int reg_addr, int phy_addr, unsigned short data)
 
    HAL_WRITE_UINT32(AT91_EMAC + AT91_EMAC_MAN, val);
 
-   /* Wait until IDLE bit in Network Status register is cleared */
+   /* Wait until IDLE bit in Network Status register is set */
    while (cnt < 1000000)
    {
       HAL_READ_UINT32((AT91_EMAC + AT91_EMAC_NSR), val);
@@ -252,11 +252,11 @@ at91_read_phy(int reg_addr, int phy_addr, unsigned short *data)
 
 
    HAL_WRITE_UINT32(AT91_EMAC + AT91_EMAC_MAN, val);
-   /* Wait until IDLE bit in Network Status register is cleared */
+   /* Wait until IDLE bit in Network Status register is set */
    do
    {
       HAL_READ_UINT32((AT91_EMAC + AT91_EMAC_NSR), val);
-   }while(val & AT91_EMAC_NSR_IDLE);
+   }while(!(val & AT91_EMAC_NSR_IDLE));
    
    HAL_DELAY_US(50);
 
