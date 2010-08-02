@@ -57,5 +57,9 @@ extern "C" {
 #endif
 
 #include <lwip.h>
+
+#ifdef __cplusplus
+}
+#endif
     
 #endif // #ifndef CYGONCE_NETWORK_H
