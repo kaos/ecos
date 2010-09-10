@@ -1,3 +1,9 @@
+2010-09-10  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/configtooldoc.cpp: Allow import/export of
+	eCos minimal configuration files with non-standard file suffixes.
+	Based on patch from Ross Younger. [ Bugzilla 85580 ]
+
 2010-02-17  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/common/ecosconfig.cxx: Fix compilation on recent

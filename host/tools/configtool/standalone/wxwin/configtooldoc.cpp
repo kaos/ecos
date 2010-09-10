@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2006, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -2144,12 +2144,17 @@ const wxString ecConfigToolDoc::CurrentMemoryLayout ()
 
 bool ecConfigToolDoc::ExportFile()
 {
-#if wxCHECK_VERSION(2, 6, 0)
     wxFileDialog dialog(wxGetApp().GetTopWindow(), _("Export eCos Minimal Configuration"),
-        wxT(""), wxT(""), wxT("eCos Minimal Configuration (*.ecm)|*.ecm"), wxSAVE|wxOVERWRITE_PROMPT);
+        wxT(""), wxT(""),
+#ifdef __WXMSW__
+	wxT("eCos Minimal Configuration Files (*.ecm)|*.ecm|All Files (*.*)|*.*"),
 #else
-    wxFileDialog dialog(wxGetApp().GetTopWindow(), _("Export eCos Minimal Configuration"),
-        wxT(""), wxT(""), wxT("eCos Minimal Configuration (*.ecm)|*.ecm"), wxSAVE|wxOVERWRITE_PROMPT|wxHIDE_READONLY);
+	wxT("eCos Minimal Configuration Files (*.ecm)|*.ecm|All Files (*)|*"),
+#endif
+#if wxCHECK_VERSION(2, 6, 0)
+	wxSAVE|wxOVERWRITE_PROMPT);
+#else
+	wxSAVE|wxOVERWRITE_PROMPT|wxHIDE_READONLY);
 #endif
 
     if (dialog.ShowModal() == wxID_OK)
@@ -2178,12 +2183,17 @@ bool ecConfigToolDoc::ExportFile()
 
 bool ecConfigToolDoc::ImportFile()
 {
-#if wxCHECK_VERSION(2, 6, 0)
     wxFileDialog dialog(wxGetApp().GetTopWindow(), _("Import eCos Minimal Configuration"),
-        wxT(""), wxT(""), wxT("eCos Minimal Configuration (*.ecm)|*.ecm"), wxOPEN|wxFILE_MUST_EXIST);
+        wxT(""), wxT(""),
+#ifdef __WXMSW__
+	wxT("eCos Minimal Configuration Files (*.ecm)|*.ecm|All Files (*.*)|*.*"),
 #else
-    wxFileDialog dialog(wxGetApp().GetTopWindow(), _("Import eCos Minimal Configuration"),
-        wxT(""), wxT(""), wxT("eCos Minimal Configuration (*.ecm)|*.ecm"), wxOPEN|wxFILE_MUST_EXIST|wxHIDE_READONLY);
+	wxT("eCos Minimal Configuration Files (*.ecm)|*.ecm|All Files (*)|*"),
+#endif
+#if wxCHECK_VERSION(2, 6, 0)
+	wxOPEN|wxFILE_MUST_EXIST);
+#else
+	wxOPEN|wxFILE_MUST_EXIST|wxHIDE_READONLY);
 #endif
 
     if (dialog.ShowModal() == wxID_OK)
