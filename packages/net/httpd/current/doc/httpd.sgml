@@ -8,7 +8,7 @@
 <!-- =============================================================== -->
 <!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
 <!-- =============================================================== -->
-<!-- Copyright (C) 2002 Free Software Foundation, Inc.               -->
+<!-- Copyright (C) 2002, 2010 Free Software Foundation, Inc.         -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -40,7 +40,7 @@ content, simple forms handling and a basic CGI interface. It is
 <emphasis>not</emphasis> intended to be a general purpose server for
 delivering arbitrary web content. For these purposes a port of the
 GoAhead web server is available from <ulink
-url="www.goahead.com">www.goahead.com</ulink>.
+url="http://www.goahead.com">www.goahead.com</ulink>.
 </para>
 <para>This server is also capable of serving content using IPv6 when
 the eCos configuration contains IPv6.
