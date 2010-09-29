@@ -1,3 +1,8 @@
+2010-09-29  Kelvin Lawson  <kelvinl@users.sf.net>
+
+	* src/dns.c: Remove spurious mutex unlock in cyg_res_getaddrinfo()
+	when name lookup string is too long.
+
 2008-08-12  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/dns.c: id global should be unsigned, in line with DNS header.

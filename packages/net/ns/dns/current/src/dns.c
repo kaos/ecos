@@ -593,7 +593,6 @@ cyg_dns_getaddrinfo(const char * hostname,
     
     if (domainname) {
         if ((strlen(hostname) + strlen(domainname)) > 254) {
-            cyg_drv_mutex_unlock(&dns_mutex);
             CYG_REPORT_RETVAL( -EAI_FAIL );
             return -EAI_FAIL;
         }
