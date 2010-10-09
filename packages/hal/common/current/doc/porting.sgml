@@ -9,7 +9,7 @@
 <!-- =============================================================== -->
 <!-- ####ECOSDOCCOPYRIGHTBEGIN####                                       -->
 <!-- ===============================================================     -->
-<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc. -->
+<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc. -->
 <!-- This material may be distributed only subject to the terms          -->
 <!-- and conditions set forth in the Open Publication License, v1.0      -->
 <!-- or later (the latest version is presently available at              -->
@@ -1797,7 +1797,7 @@ RedBoot. You are advised to read all the sources though.
 <orderedlist>
 <listitem><para>Copy an existing platform HAL from the same or another
     architecture. Rename the files as necessary to follow the
-    standard: CDL and MLT related files should contain the
+    standard: CDL and memory layout related files should contain the
     &lt;arch&gt;_&lt;variant&gt;_&lt;platform&gt; triplet.</para>
 </listitem>
 
@@ -1817,12 +1817,12 @@ RedBoot. You are advised to read all the sources though.
     packages will be added later.</para>
 </listitem>
 
-<listitem><para>Adjust the MLT files in
+<listitem><para>Adjust the memory layout files in
     <filename>include/pkgconf</filename> to match the memory layout on
-    the platform. For initial testing it should be enough to just hand
+    the platform. <!-- For initial testing it should be enough to just hand
     edit .h and .ldi files, but eventually you should generate all
     files using the memory layout editor in the configuration
-    tool. See <xref linkend="hal-porting-platform-memory-layout"> for
+    tool. --> See <xref linkend="hal-porting-platform-memory-layout"> for
     more details.</para>
 </listitem>
 
@@ -2591,9 +2591,13 @@ monitor, then different output formats would need to be generated here.
 <section id="hal-porting-platform-memory-layout">
 <TITLE>Platform Memory Layout</TITLE>
 
-<para>The platform memory layout is defined using the Memory
-Configuration Window <!-- [FIXME: ref] --> in the Configuration Tool.</para>
+<para>Historically, the platform memory layout was defined using a Memory
+Configuration window in the eCos Configuration Tool (version 1.x).
+However, the memory layout feature was not ported to the wxWidgets version
+of the tool (version 2.0 and later). Memory layouts are currently manipulated
+using a text editor.</para>
 
+<!--
 <note>
 <para>If you do not have access to a Windows machine, you can
 hand edit the <filename>.h</filename> and <filename>.ldi</filename> files to match the
@@ -2601,18 +2605,21 @@ properties of your platform. If you want to contribute your port back
 to the eCos community, ask someone on the list to make proper memory
 map files for you.</para>
 </note>
+-->
 
 <section>
 <title>Layout Files</title>
 
-<para>The memory configuration details are saved in three files:</para>
+<para>The memory configuration details are specified in two files:</para>
 
 <variablelist>
+<!--
 <varlistentry>
 <term><filename>.mlt</filename></term>
 	<listitem><para>This is the Configuration Tool save-file. It is only used
 	by the Configuration Tool.</para></listitem>
 </varlistentry>	
+-->
 <varlistentry>
 <term><filename>.ldi</filename></term>
 	<listitem><para>This is the linker script fragment. It defines the memory
@@ -2627,8 +2634,11 @@ map files for you.</para>
 </varlistentry>
 </variablelist>
 
-<para>These three files are generated for each startup-type, since the
-memory details usually differ.</para>
+<para>These files are generated for each startup-type, since the
+memory details usually differ. The layout and structure of new files
+should match those of existing memory layout files to allow for the
+introduction of a new memory layout editor in the future.
+</para>
 
 </section>
 
@@ -2640,8 +2650,8 @@ purposes, making room for exception vectors and various tables. RAM
 startup configurations also need to reserve some space at the bottom
 of the memory map for the ROM monitor.</para>
 
-<para>These reserved areas are named with the prefix "reserved_" which is
-handled specially by the Configuration Tool: instead of referring to a
+<para>These reserved areas are named with the prefix "reserved_" <!-- which is
+handled specially by the Configuration Tool: --> instead of referring to a
 linker macro, the start of the area is labeled and a gap left in the
 memory map.</para>
 
