@@ -1,0 +1,325 @@
+##=============================================================================
+##
+##      usb_stm32.cdl
+##
+##      STM32 USB driver configuration options.
+##
+##=============================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##=============================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):   Chris Holgate
+## Date:        2009-05-19
+## Purpose:     Configure STM32 USB driver.
+##
+######DESCRIPTIONEND####
+##
+##=============================================================================
+
+#
+# TODO: Needs to check that the PLL is running off the HSE clock source and
+# is set up to run at 48MHz or 72MHz.
+#
+
+cdl_package CYGPKG_DEVS_USB_CORTEXM_STM32 {
+    display       "ST STM32 USB driver"
+    description   "
+        This package provides USB device side driver support for the ST 
+        STM32 series of microcontrollers.
+    "
+    parent        CYGPKG_IO_USB
+    active_if     CYGPKG_IO_USB
+    hardware
+    include_dir   "cyg/io/usb"
+
+    # Make sure that we are running on the right hardware.
+    requires CYGPKG_HAL_CORTEXM_STM32
+
+    cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_EP0 {
+        display       "Enable the control endpoint 0"
+        default_value CYGINT_IO_USB_SLAVE_CLIENTS
+        requires      CYGPKG_IO_USB_SLAVE
+        requires      !CYGGLO_IO_USB_SLAVE_PROVIDE_DEVTAB_ENTRIES
+        compile       usb_stm32.c
+        description "
+            Enable support for endpoint 0. If this support is disabled
+            then the entire USB port is unusable.  Note that this driver does
+            not support slave side devtab entries."
+        }
+    
+    cdl_option CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM {
+        display       "Max IN endpoints"
+        description   "
+            Specify the maximum number of IN (transmit) endpoints supported by the device.
+            The total number of standard IN and OUT endpoints should not exceed 7.
+        "
+        flavor        data
+        default_value { 2 }
+        legal_values  { 0 to (7 - CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+    }
+
+    cdl_option CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM {
+        display       "Max OUT endpoints"
+        description   "
+            Specify the maximum number of OUT (receive) endpoints supported by the device.
+            The total number of standard IN and OUT endpoints should not exceed 7.
+        "
+        flavor        data
+        default_value { 2 }
+        legal_values  { 0 to (7 - CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+    }
+
+    cdl_option CYGNUM_DEVS_USB_CORTEXM_STM32_EPO_MAX_MSG_SIZE {
+        display       "Control endpoint buffer size"
+        description   "
+            Selects the size of the control endpoint data buffer, which sets the maximum size 
+            of the control endpoint data phase transactions.
+        "
+        flavor        data
+        default_value { 128 }    
+        legal_values  { 8 to 256 }
+    }
+
+    cdl_option CYGHWR_DEVS_USB_CORTEXM_STM32_SELF_POWERED {
+        display       "Self powered"
+        description   "
+            If set, the USB device will report itself to the host as being self-powered.
+            There is no support for dynamically detecting the power state for dual powered
+            devices.
+        "
+        flavor        bool
+        default_value false
+    }
+    
+    cdl_option CYGHWR_DEVS_USB_CORTEXM_STM32_BULK_TERM_ZLP {
+        display       "Variable length bulk transfers"
+        description   "
+            Some USB device classes (eg. CDC ATM) require support for variable length bulk 
+            messages.  This is implemented by terminating bulk transfers using a short or 
+            zero length packet.  Selecting this option enables this form of variable length 
+            bulk message transfer for all bulk endpoints.  Note that this option is incompatible 
+            with the standard eCos USB test framework.  
+        "
+        flavor        bool
+        default_value false
+    }
+    
+    cdl_option CYGHWR_DEVS_USB_CORTEXM_STM32_DISC_PIN {
+        display       "USB disconnect pin"
+        description   "
+            This is the GPIO which is used to control the USB bus D+ pullup resistor, which
+            allows the USB bus connection status to be changed under software control.
+            For the purposes of specifying which GPIO to use, pins are numbered consecutively 
+            from 0 (A0) through 16 (B0) to 111 (G15).
+        "
+        flavor        data
+        default_value { 30 }
+    }
+    
+    cdl_option CYGHWR_DEVS_USB_CORTEXM_STM32_DISC_PIN_ACT_LOW {
+        display       "Active low USB disconnect"
+        description   "
+            The USB disconnect pin is normally treated as active high - so that when set high 
+            the device will be disconnected from the bus.  Select this option for boards where
+            the USB disconnect pin is wired as active low.
+        "
+        flavor        bool
+        default_value false
+    }
+
+    cdl_option CYGNUM_DEVS_USB_CORTEXM_STM32_ISR_PRIORITY {
+        display       "ISR priority"
+        description   "
+            Sets the ISR priority level used by the USB driver.
+        "
+        flavor        data
+        default_value { 4 }
+    }
+    
+    cdl_option CYGBLD_DEVS_USB_CORTEXM_STM32_DEBUG_TRACE {
+        display       "Debug trace enable"
+        description   "
+            Enables debug tracing for the USB driver.
+        "
+        flavor        bool
+        default_value false
+    }
+    
+    cdl_component CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_CONFIG {
+        display       "Physical endpoint configuration."
+        description   "
+            This is the automatically generated physical endpoint configuration for the 
+            STM32 USB device.  Note that the physical endpoint numbering is only used 
+            internally to the driver and has no bearing on the logical endpoint numbers
+            which may be specified in a given device configuration.
+        "
+        flavor none
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_CTRLEP0 {
+            display "Physical endpoint 0 CTRL"
+            flavor bool
+            active_if { (CYGFUN_DEVS_USB_CORTEXM_STM32_EP0) }
+            calculated { (CYGFUN_DEVS_USB_CORTEXM_STM32_EP0) }
+            implements CYGHWR_IO_USB_SLAVE
+        }
+
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_TXEP1 {
+            display "Physical endpoint 1 IN"
+            flavor bool
+            active_if { (1 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            calculated { (1 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_TXEP2 {
+            display "Physical endpoint 2 IN"
+            flavor bool
+            active_if { (2 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            calculated { (2 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_TXEP3 {
+            display "Physical endpoint 3 IN"
+            flavor bool
+            active_if { (3 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            calculated { (3 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_TXEP4 {
+            display "Physical endpoint 4 IN"
+            flavor bool
+            active_if { (4 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            calculated { (4 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_TXEP5 {
+            display "Physical endpoint 5 IN"
+            flavor bool
+            active_if { (5 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            calculated { (5 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_TXEP6 {
+            display "Physical endpoint 6 IN"
+            flavor bool
+            active_if { (6 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            calculated { (6 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_TXEP7 {
+            display "Physical endpoint 7 IN"
+            flavor bool
+            active_if { (7 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            calculated { (7 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_RXEP1 {
+            display "Physical endpoint 1 OUT"
+            flavor bool
+            active_if { (1 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (1 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            calculated { (1 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (1 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_RXEP2 {
+            display "Physical endpoint 2 OUT"
+            flavor bool
+            active_if { (2 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (2 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            calculated { (2 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (2 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_RXEP3 {
+            display "Physical endpoint 3 OUT"
+            flavor bool
+            active_if { (3 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (3 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            calculated { (3 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (3 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_RXEP4 {
+            display "Physical endpoint 4 OUT"
+            flavor bool
+            active_if { (4 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (4 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            calculated { (4 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (4 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_RXEP5 {
+            display "Physical endpoint 5 OUT"
+            flavor bool
+            active_if { (5 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (5 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            calculated { (5 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (5 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_RXEP6 {
+            display "Physical endpoint 6 OUT"
+            flavor bool
+            active_if { (6 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (6 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            calculated { (6 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (6 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS
+        }
+    
+        cdl_option CYGFUN_DEVS_USB_CORTEXM_STM32_PHY_RXEP7 {
+            display "Physical endpoint 7 OUT"
+            flavor bool
+            active_if { (7 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (7 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            calculated { (7 > CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM) && 
+                (7 <= CYGNUM_DEVS_USB_CORTEXM_STM32_TXEP_NUM + CYGNUM_DEVS_USB_CORTEXM_STM32_RXEP_NUM) }
+            implements CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS
+        }
+    }
+}
+
+# EOF usb_stm32.cdl

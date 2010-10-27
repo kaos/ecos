@@ -10,7 +10,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2008, 2009 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2008, 2009, 2010 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -4751,6 +4751,7 @@ target at91sam7xek {
                    CYGPKG_DEVS_USB_AT91
                    CYGPKG_DEVS_ETH_PHY
                    CYGPKG_DEVS_ETH_ARM_AT91
+                   CYGPKG_DEVS_CAN_AT91SAM7
         }
         description "
         The at91sam7xek target provides the packages needed to run eCos on an 
@@ -6806,7 +6807,7 @@ package CYGPKG_DEVS_FRAMEBUF_SYNTH {
 # --------------------------------------------------------------------------
 
 package CYGPKG_NET_LWIP {
-	alias		{"lwIP" lwip}
+	alias		{"lwIP networking stack" lwip}
 	directory	net/lwip_tcpip
 	script		cdl/lwip_net.cdl
 	description	"Lightweight TCP/IP stack: lwIP"
@@ -6903,6 +6904,14 @@ package CYGPKG_DEVS_ADC_CORTEXM_STM32 {
     ST STM32 microcontroller family."
 }
 
+package CYGPKG_DEVS_USB_CORTEXM_STM32 {
+        alias           { "ST STM32 USB slave support" usb_stm32 }
+        directory       devs/usb/cortexm/stm32
+        script          usb_stm32.cdl
+        hardware
+        description     "USB slave support for STM32 devices."
+}
+
 target stm3210e_eval {
         alias { "ST STM3210E EVAL board" stm3210e }
         packages { CYGPKG_HAL_CORTEXM
@@ -6916,6 +6925,9 @@ target stm3210e_eval {
                    CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_CORTEXM_STM32
                    CYGPKG_DEVS_ADC_CORTEXM_STM32
+                   CYGPKG_IO_USB
+                   CYGPKG_IO_USB_SLAVE
+                   CYGPKG_DEVS_USB_CORTEXM_STM32
                  }
         description "The stm3210e_eval target provides the packages needed
         to run eCos on the STM3210E EVAL board."

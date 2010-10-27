@@ -1,3 +1,4 @@
+* USB slave device driver for STM32 by Chris Holgate
 * Support for dynamic data endpoint configuration in USB serial function
   device package by John Dallaway
 * Support for dynamic data endpoint configuration in USB slave API by
