@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2008, 2009 Free Software Foundation, Inc.                        
+## Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.                        
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -40,7 +40,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      Frank M. Pagliughi (fmp), SoRo Systems, Inc.
-# Contributors:
+# Contributors:   jld
 # Date:           2008-06-04
 #
 #####DESCRIPTIONEND####
@@ -105,17 +105,6 @@ cdl_package CYGPKG_IO_USB_SLAVE_SERIAL {
             The endpoint that should be used for the device-side
             transmitter, which is the USB IN direction."
     }
-    cdl_option CYGDAT_IO_USB_SLAVE_SERIAL_TX_EP {
-        display         "The Tx (USB IN) endpoint structure"
-         flavor         data               
-         default_value  { "usbs_at91_ep1" }
-         description    "
-             The endpoint structure that corresponds to the selected
-             Tx endpoint number. This is dependent on the USBS device
-             driver selected, and could be usbs_at91_ep1,
-             usbs_sa11x0_ep1, etc"
-
-    }
     cdl_option CYGNUM_IO_USB_SLAVE_SERIAL_RX_EP_NUM {
         display         "Rx (USB OUT) endpoint number"
         flavor          data
@@ -124,16 +113,39 @@ cdl_package CYGPKG_IO_USB_SLAVE_SERIAL {
             The endpoint that should be used for the device-side
             receiver, which is the USB OUT direction."
     } 
-    cdl_option CYGDAT_IO_USB_SLAVE_SERIAL_RX_EP {
-        display         "The Rx (USB OUT) endpoint structure"
-         flavor         data               
-         default_value  { "usbs_at91_ep2" }
-         description    "
-             The endpoint structure that corresponds to the selected
-             Rx endpoint number. This is dependent on the USBS device
-             driver selected, and could be usbs_at91_ep2,
-             usbs_sa11x0_ep2, etc"
+
+    cdl_component CYGPKG_IO_USB_SLAVE_SERIAL_STATIC_EP {
+        display         "Use static I/O endpoint structures"
+        flavor          bool
+        default_value   1
+        description     "
+            Enables the use of static I/O endpoint structures. Some
+            USB slave device drivers implement dynamic endpoint
+            configuration and therefore require this component to be
+            disabled."
+
+        cdl_option CYGDAT_IO_USB_SLAVE_SERIAL_TX_EP {
+            display         "The Tx (USB IN) endpoint structure"
+            flavor         data               
+            default_value  { "usbs_at91_ep1" }
+            description    "
+                The endpoint structure that corresponds to the selected
+                Tx endpoint number. This is dependent on the USBS device
+                driver selected, and could be usbs_at91_ep1,
+                usbs_sa11x0_ep1, etc"
+        }
+        cdl_option CYGDAT_IO_USB_SLAVE_SERIAL_RX_EP {
+            display         "The Rx (USB OUT) endpoint structure"
+            flavor         data               
+            default_value  { "usbs_at91_ep2" }
+            description    "
+                The endpoint structure that corresponds to the selected
+                Rx endpoint number. This is dependent on the USBS device
+                driver selected, and could be usbs_at91_ep2,
+                usbs_sa11x0_ep2, etc"
+        }
     }
+    
     cdl_option CYGNUM_IO_USB_SLAVE_SERIAL_INTR_EP_NUM {
         display         "Interrupt IN endpoint number"
         flavor          data

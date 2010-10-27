@@ -1,3 +1,14 @@
+2010-10-27  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/usb_serial.cdl: Place static endpoint struct options in a CDL
+	component.
+	* src/usbs_serial.c: Use usbs_get_[tr]x_endpoint() when static
+	endpoint structs are disabled. [ Bugzilla 1001024 ]
+	* tests/usbserial_echo.c, tests/usb2serial.c: Eliminate inclusion of
+	the AT91 USB slave driver header file.
+	* doc/usbs_serial.sgml: Mention the new static endpoint struct CDL
+	component.
+
 2009-11-13  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/usb_serial.cdl: Specify test executable names for compatibility
@@ -38,7 +49,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

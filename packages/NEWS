@@ -1,3 +1,5 @@
+* Support for dynamic data endpoint configuration in USB serial function
+  device package by John Dallaway
 * Support for dynamic data endpoint configuration in USB slave API by
   Chris Holgate
 * Update to uSTL 1.4 by Simon Kallweit

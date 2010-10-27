@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2010 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -40,6 +40,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    Frank M. Pagliughi (fmp), SoRo Systems, Inc.
+// Contributors: jld
 // Date:         2008-06-02
 //
 //####DESCRIPTIONEND####
@@ -67,16 +68,19 @@
 #define EP0_MAX_PACKET_SIZE     CYGNUM_IO_USB_SLAVE_SERIAL_EP0_MAX_PACKET_SIZE
 
 extern usbs_control_endpoint    CYGDAT_IO_USB_SLAVE_SERIAL_EP0;
+
+#if defined(CYGPKG_IO_USB_SLAVE_SERIAL_STATIC_EP)
 extern usbs_tx_endpoint         CYGDAT_IO_USB_SLAVE_SERIAL_TX_EP;
 extern usbs_rx_endpoint         CYGDAT_IO_USB_SLAVE_SERIAL_RX_EP;
+#define TX_EP                   (&CYGDAT_IO_USB_SLAVE_SERIAL_TX_EP)
+#define RX_EP                   (&CYGDAT_IO_USB_SLAVE_SERIAL_RX_EP)
+#define INTR_EP                 (&CYGDAT_IO_USB_SLAVE_SERIAL_INTR_EP)
+#endif
 
 #define TX_EP_NUM               CYGNUM_IO_USB_SLAVE_SERIAL_TX_EP_NUM
 #define RX_EP_NUM               CYGNUM_IO_USB_SLAVE_SERIAL_RX_EP_NUM
 #define INTR_EP_NUM             CYGNUM_IO_USB_SLAVE_SERIAL_INTR_EP_NUM
 #define EP0                     (&CYGDAT_IO_USB_SLAVE_SERIAL_EP0)
-#define TX_EP                   (&CYGDAT_IO_USB_SLAVE_SERIAL_TX_EP)
-#define RX_EP                   (&CYGDAT_IO_USB_SLAVE_SERIAL_RX_EP)
-#define INTR_EP                 (&CYGDAT_IO_USB_SLAVE_SERIAL_INTR_EP)
 
 
 #define VENDOR_ID               CYGNUM_IO_USB_SLAVE_SERIAL_VENDOR_ID
@@ -279,8 +283,6 @@ cyg_cond_t  usbs_serial_state_cond;
 int usbs_serial_state;
 
 usbs_serial usbs_ser0 = {
-    tx_ep:      TX_EP,
-    rx_ep:      RX_EP,
     tx_result:  0,    
     rx_result:  0,    
 };
@@ -402,6 +404,12 @@ usbs_serial_wait_until_configured(void)
   cyg_mutex_lock(&usbs_serial_lock);
   while (usbs_serial_state != USBS_STATE_CONFIGURED)
     cyg_cond_wait(&usbs_serial_state_cond);
+
+#if !defined(CYGPKG_IO_USB_SLAVE_SERIAL_STATIC_EP)
+  usbs_ser0.tx_ep = usbs_get_tx_endpoint(usbs_serial_ep0, TX_EP_NUM);
+  usbs_ser0.rx_ep = usbs_get_rx_endpoint(usbs_serial_ep0, RX_EP_NUM);
+#endif
+
   cyg_mutex_unlock(&usbs_serial_lock);
 }
 
@@ -517,7 +525,11 @@ usbs_serial_init(usbs_serial* ser, usbs_tx_endpoint* tx_ep,
 void
 usbs_serial_start(void)
 {
+#if defined(CYGPKG_IO_USB_SLAVE_SERIAL_STATIC_EP)
   usbs_serial_init(&usbs_ser0, TX_EP, RX_EP);
+#else  
+  usbs_serial_init(&usbs_ser0, NULL, NULL);
+#endif
   
   cyg_mutex_init(&usbs_serial_lock);
   cyg_cond_init(&usbs_serial_state_cond, &usbs_serial_lock);

@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2010 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -53,8 +53,6 @@
 #include <pkgconf/kernel.h>
 #include <cyg/io/serialio.h>
 
-// Replace this with any other USB driver desired.
-#include <cyg/io/usb/usbs_at91.h>
 #include <cyg/io/usb/usbs_serial.h>
 #include <pkgconf/io_usb_slave_serial.h>
 
