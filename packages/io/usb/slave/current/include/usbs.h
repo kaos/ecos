@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -171,6 +171,10 @@ typedef enum {
     USBS_CONTROL_RETURN_STALL   = 2
 } usbs_control_return;
 
+// Forward type definitions - see below for structure detail.
+struct usbs_rx_endpoint;
+struct usbs_tx_endpoint;
+
 typedef struct usbs_control_endpoint {
     // The state is maintained by the USB code and should not be
     // modified by anything higher up.
@@ -274,6 +278,27 @@ typedef struct usbs_control_endpoint {
     void*               fill_data;
     int                 fill_index;
     usbs_control_return (*complete_fn)(struct usbs_control_endpoint*, int);
+
+    // The following two functions provide a common API for accessing
+    // USB data endpoints.  This avoids class drivers needing to know 
+    // about the physical configuration of endpoints for each underlying
+    // USB slave device driver.  The functions are used to map the 
+    // logical endpoint ID (as specified in the USB class descriptors) to 
+    // the appropriate endpoint data structure (as used by the eCos USB 
+    // slave API calls).  Individual USB slave drivers are free to implement
+    // this mapping in the most appropriate manner for the underlying
+    // hardware.  This may be via CDL compile time options or preferably 
+    // by scanning the supplied class driver descriptors at runtime.
+    // The latter method allows eCos to support multiple USB configurations
+    // in a single USB device.  For this reason, these functions will only
+    // yield a valid endpoint mapping while the USB device is in its
+    // configured state.  In all other states they will return a null
+    // pointer.  These functions should also return a null pointer if the 
+    // requested endpoint ID is not valid for the currently selected 
+    // configuration.
+    struct usbs_rx_endpoint* (*get_rxep_fn)(struct usbs_control_endpoint*, cyg_uint8);
+    struct usbs_tx_endpoint* (*get_txep_fn)(struct usbs_control_endpoint*, cyg_uint8);
+    
 } usbs_control_endpoint;
 
 // Data endpoints are a little bit simpler, but not much. From the
@@ -341,6 +366,10 @@ extern void     usbs_set_rx_endpoint_halted(usbs_rx_endpoint*, cyg_bool);
 extern void     usbs_set_tx_endpoint_halted(usbs_tx_endpoint*, cyg_bool);
 extern void     usbs_start_rx_endpoint_wait(usbs_rx_endpoint*, void (*)(void*, int), void*);
 extern void     usbs_start_tx_endpoint_wait(usbs_tx_endpoint*, void (*)(void*, int), void*);
+
+// Utility function to access USB data endpoints by logical endpoint ID.
+extern usbs_rx_endpoint* usbs_get_rx_endpoint(usbs_control_endpoint*, cyg_uint8);
+extern usbs_tx_endpoint* usbs_get_tx_endpoint(usbs_control_endpoint*, cyg_uint8);
     
 // Functions that can go into devtab entries. These should not be
 // called directly, they are intended only for use by USB device

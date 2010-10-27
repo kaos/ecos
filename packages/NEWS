@@ -1,3 +1,5 @@
+* Support for dynamic data endpoint configuration in USB slave API by
+  Chris Holgate
 * Update to uSTL 1.4 by Simon Kallweit
 * ADC device driver for AT91 by Christophe Coutand 
 * Major update of lwIP stack to v1.3.2 by Simon Kallweit

@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -195,6 +195,28 @@ usbs_devtab_set_config(cyg_io_handle_t handle, cyg_uint32 code, const void* buf,
 // USB-specific functions that are useful for applications/packages which
 // do not want to use the devtab interface. These may get called in DSR
 // context.
+ 
+usbs_rx_endpoint* 
+usbs_get_rx_endpoint(usbs_control_endpoint* control_endpoint, 
+                                       cyg_uint8 endpoint_id)
+{
+    CYG_CHECK_DATA_PTR(control_endpoint, "A valid control endpoint must be supplied");
+    CYG_CHECK_FUNC_PTR(control_endpoint->get_rxep_fn, "Dynamic endpoint access not supported");
+    if (control_endpoint->state != USBS_STATE_CONFIGURED) 
+        return NULL;
+    return (*control_endpoint->get_rxep_fn)(control_endpoint, endpoint_id);
+}
+
+usbs_tx_endpoint* 
+usbs_get_tx_endpoint(usbs_control_endpoint* control_endpoint, 
+                                       cyg_uint8 endpoint_id)
+{
+    CYG_CHECK_DATA_PTR(control_endpoint, "A valid control endpoint must be supplied");
+    CYG_CHECK_FUNC_PTR(control_endpoint->get_txep_fn, "Dynamic endpoint access not supported");
+    if (control_endpoint->state != USBS_STATE_CONFIGURED) 
+        return NULL;
+    return (*control_endpoint->get_txep_fn)(control_endpoint, endpoint_id);
+}
 
 void
 usbs_start_rx(usbs_rx_endpoint* endpoint)

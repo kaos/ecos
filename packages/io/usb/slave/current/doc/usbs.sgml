@@ -11,7 +11,7 @@
 <!-- =============================================================== -->
 <!-- ####ECOSDOCCOPYRIGHTBEGIN####                                       -->
 <!-- ===============================================================     -->
-<!-- Copyright (C) 2001, 2002 Free Software Foundation, Inc.             -->
+<!-- Copyright (C) 2001, 2002, 2010 Free Software Foundation, Inc.       -->
 <!-- This material may be distributed only subject to the terms          -->
 <!-- and conditions set forth in the Open Publication License, v1.0      -->
 <!-- or later (the latest version is presently available at              -->
@@ -26,6 +26,7 @@
 <!--                                                                 -->
 <!-- Author(s):   bartv                                              -->
 <!-- Contact(s):  bartv                                              -->
+<!-- Contributor: jld                                                -->
 <!-- Date:        2001/01/03                                         -->
 <!-- Version:     0.01                                               -->
 <!--                                                                 -->
@@ -1949,6 +1950,28 @@ invoke this regularly. This polling function will take care of all
 endpoints associated with the device, not just the control endpoint.
 If the USB hardware involves a single interrupt vector then this will
 be identified in the data structure as well.
+</para>
+</refsect2>
+
+<refsect2><title>Dynamic Data Endpoint Support</title>
+<programlisting width=72>
+typedef struct usbs_control_endpoint {
+    struct usbs_rx_endpoint* (*get_rxep_fn)(struct usbs_control_endpoint*, cyg_uint8);
+    struct usbs_tx_endpoint* (*get_txep_fn)(struct usbs_control_endpoint*, cyg_uint8);
+    &hellip;
+} usbs_control_endpoint;
+</programlisting>
+<para>
+USB slave hardware may support multiple USB configurations via
+configurable data endpoints. If the device driver can support such
+operation, it will provide a pair of functions via the
+<structfield>get_rxep_fn</structfield> and
+<structfield>get_txep_fn</structfield> fields which enable retrieval
+of the receive and transmit data endpoint structures using the logical
+endpoint IDs specified in a USB class descriptor. Access to these
+functions from higher-level code is provided by the
+<function>usbs_get_rx_endpoint</function> and
+<function>usbs_get_tx_endpoint</function> functions.
 </para>
 </refsect2>
 
