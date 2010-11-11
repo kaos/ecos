@@ -1,3 +1,8 @@
+2010-11-11  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/libm.cdl (CYGPKG_LIBM_CFLAGS_ADD): Add a set of parentheses
+	around 'if-then-else' expression, simplified evaluated expression.
+
 2010-05-15  Jonathan Larmour  <jifl@jifvik.org>
 
 	* cdl/libm.cdl (CYGPKG_LIBM_CFLAGS_ADD): Compile with

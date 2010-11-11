@@ -229,8 +229,8 @@ cdl_package CYGPKG_LIBM {
             display "Additional compiler flags"
             flavor  data
             no_define
-            default_value { "-fno-strict-aliasing " . \
-                                ((0 == CYGPKG_HAL_I386) && (0 == CYGPKG_HAL_SYNTH_I386)) ? "" : "-ffloat-store" }
+            default_value { "-fno-strict-aliasing" . \
+                                ((!CYGPKG_HAL_I386 && !CYGPKG_HAL_SYNTH_I386) ? "" : " -ffloat-store") }
             description   "
                 This option modifies the set of compiler flags for
                 building the math library. These flags are used in addition
