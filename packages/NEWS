@@ -1,3 +1,5 @@
+* USB mass storage function driver by Christophe Coutand
+* AT91 USB slave driver halting endpoint support by Christophe Coutand
 * USB slave device driver for STM32 by Chris Holgate
 * Support for dynamic data endpoint configuration in USB serial function
   device package by John Dallaway

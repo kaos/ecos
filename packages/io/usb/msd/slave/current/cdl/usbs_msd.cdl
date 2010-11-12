@@ -1,0 +1,363 @@
+# ====================================================================
+#
+#      usbs_msd.cdl
+#
+#      USB slave-side mass storage package.
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      USB Slave Mass Storage, ccoutand <ccoutand@stmi.com>
+#    
+# Contributors:   jld
+# Date:           2010-06-04
+#
+#####DESCRIPTIONEND####
+# ====================================================================
+
+cdl_package CYGPKG_IO_USB_SLAVE_MSD {
+
+    display     "USB slave mass storage support"
+    include_dir "cyg/io/usb"
+    parent      CYGPKG_IO_USB_SLAVE
+
+    requires    { CYGPKG_KERNEL }
+    requires    { CYGPKG_IO_DISK }
+    requires    { CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS >= 1 }
+    requires    { CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS >= 1 }
+
+    compile     usbs_msd.c usbs_msd_handler.c usbs_msd_scsi.c
+
+    implements  CYGINT_IO_USB_SLAVE_CLIENTS
+
+    define_proc {
+      puts $::cdl_system_header "#define CYGDAT_IO_USB_SLAVE_MSD_INL <cyg/io/usb/usbs_msd.inl>"
+    }    
+
+    description "
+        The USB slave mass storage device (MSD) package supports 
+        the development of USB peripherals which act has mass storage
+        device to the host machine. The actual storage must be implemented
+        on top of the disk package."
+
+    # 
+    # Mass Storage Device 0
+    #
+    cdl_component CYGPKG_IO_USB_SLAVE_MSD0 {
+       display        "USB slave mass storage support for device 0"
+       flavor         bool
+       default_value  1
+       description "
+           This option implement the USB MSD device 0."
+
+       cdl_option CYGDAT_IO_USB_SLAVE_MSD0_SUB_CLASS_TYPE {
+           display         "Mass-storage Device USB Sub Class"
+           flavor          data
+           default_value   { "SCSI" }
+           legal_values    { "SCSI" "RBC" }
+           description     "
+               Specify the transport protocols and command code systems
+               transported by the interface. Currently only the SCSI
+               transparent command set is implemented."
+       }
+
+       cdl_option CYGDAT_IO_USB_SLAVE_MSD0_EP0 {
+           display       "Name of EP0 structure"
+           flavor        data               
+           default_value { "usbs_at91_ep0" }
+           description   "
+               The name of the variable that contains the endpoint 0
+               structure.  This should be set to the EP0 structure for
+               the desired USB device driver such as usbs_at91_ep0,
+               usbs_sa11x0_ep0, etc"
+       }
+
+       cdl_option CYGNUM_IO_USB_SLAVE_MSD0_EP0_MAX_PACKET_SIZE {
+           display       "The size of EP0"
+           flavor        data
+           default_value 8
+           legal_values  { 8 16 64 } 
+           description   "
+               The size of the EP0 hardware buffer on the specific USB
+               chip used."
+       } 
+
+
+       cdl_component CYGPKG_IO_USB_SLAVE_MSD0_STATIC_EP {
+           display         "Use static I/O endpoint structures"
+           flavor          bool
+           default_value   1
+           description     "
+               Enables the use of static I/O endpoint structures. Some
+               USB slave device drivers implement dynamic endpoint
+               configuration and therefore require this component to be
+               disabled."
+
+           cdl_option  CYGDAT_IO_USB_SLAVE_MSD0_TX_EP {
+               display         "The Tx (USB IN) endpoint structure"
+               flavor         data               
+               default_value  { "usbs_at91_ep1" }
+               description    "
+                   The endpoint structure that corresponds to the selected
+                   Tx endpoint number. This is dependent on the USBS device
+                   driver selected, and could be usbs_at91_ep1,
+                   usbs_sa11x0_ep1, etc"
+           }
+       
+           cdl_option CYGDAT_IO_USB_SLAVE_MSD0_RX_EP {
+               display         "The Rx (USB OUT) endpoint structure"
+               flavor         data               
+               default_value  { "usbs_at91_ep2" }
+               description    "
+                   The endpoint structure that corresponds to the selected
+                   Rx endpoint number. This is dependent on the USBS device
+                   driver selected, and could be usbs_at91_ep2,
+                   usbs_sa11x0_ep2, etc"
+          }
+       }
+
+       cdl_option CYGNUM_IO_USB_SLAVE_MSD0_TX_EP_NUM {
+           display       "Tx (USB IN) endpoint number"
+           flavor        data
+           default_value 1
+           description   "
+               The endpoint that should be used for the device-side
+               transmitter, which is the USB IN direction."
+       }
+       
+       cdl_option CYGNUM_IO_USB_SLAVE_MSD0_TX_EP_MAX_PACKET_SIZE {
+           display       "Tx (USB IN) endpoint sze"
+           flavor        data
+           default_value 64
+           legal_values  { 32 64 128 256 512 } 
+           description   "
+               The size of the Tx EP hardware buffer on the specific USB
+               chip used."
+       }        
+
+       cdl_option CYGNUM_IO_USB_SLAVE_MSD0_RX_EP_NUM {
+           display         "Rx (USB OUT) endpoint number"
+           flavor          data
+           default_value   2
+           description     "
+               The endpoint that should be used for the device-side
+               receiver, which is the USB OUT direction."
+       } 
+
+       cdl_option CYGNUM_IO_USB_SLAVE_MSD0_RX_EP_MAX_PACKET_SIZE {
+           display       "Rx (USB OUT) endpoint size"
+           flavor        data
+           default_value 64
+           legal_values  { 32 64 128 256 512} 
+           description   "
+               The size of the Rx EP hardware buffer on the specific USB
+               chip used."
+       }  
+       
+       cdl_option CYGNUM_IO_USB_SLAVE_MSD0_VENDOR_ID {
+           display       "USB Forum Vendor ID"
+           flavor        data
+           default_value 0xFFFF
+           legal_values  1 to 0xFFFF
+           description   "
+               Each USB vendor has an Vendor ID allocated to it by the
+               USB-IF organization.  Any arbitrary value can be selected
+               for testing provided that it doesn't conflict with devices
+               on the development host, but a device should NEVER be
+               released publicly without a valid Vendor ID"
+       }
+
+       cdl_option CYGNUM_IO_USB_SLAVE_MSD0_PRODUCT_ID {
+           display       "USB product ID"
+           flavor        data
+           default_value 1
+           legal_values  1 to 0xFFFF
+           description   "
+               You are free to select an arbitrary 16-bit Product ID for
+               a device. The combination of Vendor ID and Product ID
+               uniquely identified a USB device."
+       }
+
+       cdl_option CYGDAT_IO_USB_SLAVE_MSD0_MFG_STR {
+          display       "The Device Vendor's Name (Manufacturer String)"
+           flavor        data
+           default_value { "\"eCos\"" }
+           description "
+                   The standard USB enumeration allows for a
+                   manufacturer's name which is normally reported to the
+                   user when the device is first plugged into the host."
+       }
+
+       cdl_option CYGDAT_IO_USB_SLAVE_MSD0_PRODUCT_STR {
+           display       "The Device Product Name"
+           flavor        data
+           default_value { "\"eCos USB Mass Storage Device\"" }
+           description "
+                   The standard USB enumeration allows for a product name
+                   which is normally reported to the user when the device
+                   is first plugged into the host."
+       }
+
+       cdl_option CYGDAT_IO_USB_SLAVE_MSD0_SERIAL_STR {
+           display       "The Device Product Serial Number"
+           flavor        data
+           default_value { "\"123456789AB\"" }
+           description "
+                   The standard USB enumeration allows for a serial number."
+       }
+       
+        cdl_option CYGDAT_IO_USB_SLAVE_MSD0_LUN0_NAME {
+           display       "LUN0 entry name"
+           flavor        data
+           default_value { "\"/dev/ramdisk0/1\"" }
+           description "
+               Specify the logical unit 0 devtab entry name. The default value
+               correspond to the partition 1 of the RAM disk created in the
+               USBS mass storage example application."
+       }               
+       
+       cdl_option CYGOPT_IO_USB_SLAVE_MSD0_BUSPOWERED {
+           display       "The Device is bus powered"
+           default_value 0
+           flavor        bool
+           description   "
+               Tells the host whether the Device is a bus powered
+               device or a self powered device."
+       }
+
+       cdl_option CYGNUM_IO_USB_SLAVE_MSD0_CURRENTDRAW {
+           display       "Maximum current (in mA) drawn from USB bus"
+           flavor        data
+           default_value 100
+           legal_values  1 to 500
+           requires      { (CYGNUM_IO_USB_SLAVE_MSD_CURRENTDRAW > 100) 
+                         implies CYGOPT_IO_USB_SLAVE_MSD_BUSPOWERED }
+           description   "
+               The maximum current drawn by the Device from the USB bus.
+               It should report the peak value. A self powered device
+               can draw up to 100mA, a bus powered device can draw up to
+               500mA. (If it is sometimes below 100mA and sometimes over,
+               then a transition could be done at runtime between self and
+               bus powered modes, but that would be complicated and the
+               device would have to return from configured to addressed
+               state. For details, see the USB specification.)"
+       }
+
+    }
+
+    cdl_option  CYGBLD_IO_USB_SLAVE_MSD_DEBUG {
+        display       "Enable debug output from the driver"
+        default_value 0
+        flavor        bool
+        description   "
+            The driver may produce debug output which can be
+            useful to work out why it is not working as expected."
+    }
+    
+    cdl_option  CYGBLD_IO_USB_SLAVE_MSD_TRACE {
+        display       "Enable trace output from the driver"
+        default_value 0
+        flavor        bool
+        description   "
+            Allow tracing of every USB transaction for debugging 
+            purpose."
+    }    
+
+    cdl_option CYGSEM_IO_USB_SLAVE_MSD_STALL_ENABLE {
+        display       "Enable application to stall endpoints"
+        default_value 0
+        flavor        bool
+        description   "
+            A mass storage device must stall one or both bulk endpoints in 
+            several situations. However, not all USB device drivers seems
+            to implement this functionality correctly. Hence this option is
+            disable be default. Testing shows that both Linux and Windows can
+            handle mass storage with stall disable."
+    }   
+
+    cdl_component CYGPKG_IO_USB_SLAVE_MSD_OPTIONS {
+    display     "Build options"
+    flavor      none
+
+    description "
+        Package-specific build options including control over compiler
+        flags used only in building this package."
+
+        cdl_option CYGPKG_IO_USB_SLAVE_MSD_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are used in addition
+                to the set of global flags."
+        }
+ 
+        cdl_option CYGPKG_IO_USB_SLAVE_MSD_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are removed from
+                the set of global flags if present."
+        }
+        
+        cdl_component CYGBLD_IO_USB_SLAVE_MSD_EXAMPLES {
+            display "Build example programs"
+            no_define     
+            description "
+                Enabling this option will cause the example program
+                to be built using the normal test case infrastructure."
+            
+             cdl_option CYGPKG_IO_USB_SLAVE_MSD_TESTS {
+                 display "USBS MSD example/test program"
+                 no_define
+                 flavor data
+                 calculated { "tests/usbs_test_ramdisk" }
+                 description "
+                     usbs_test_ramdisk creates a tiny FAT12 file-system
+                     on top of a 'ram disk' device. The USB MSD service is
+                     started and the disk should appear at the host side as
+                     a regular mass storage device. If the FAT file-system 
+                     package is included, some files will be created prior to
+                     the USB MSD device to be started."
+             }
+        }
+
+    }
+}

@@ -1533,6 +1533,14 @@ package CYGPKG_IO_USB_SLAVE_SERIAL {
                          as serial devices to the host."
 }
 
+package CYGPKG_IO_USB_SLAVE_MSD {
+       alias           { "USB slave-side mass-storage drivers" usbs_msd }
+       directory       io/usb/msd/slave
+       script          usbs_msd.cdl
+       description     "Support for USB peripherals that present themselves 
+                        as mass storage devices to the host."
+}
+
 package CYGPKG_DEVS_USB_SA11X0 {
         alias           { "Device-driver for the SA11X0 on-chip USB support" usb_sa11x0 }
         hardware
