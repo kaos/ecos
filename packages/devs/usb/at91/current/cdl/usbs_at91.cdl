@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2006 Free Software Foundation, Inc.                        
+## Copyright (C) 2006, 2010 Free Software Foundation, Inc.                        
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -41,7 +41,7 @@
 #
 # Author(s):      Oliver Munz, Andrew Lunn
 # Original data:  bartv
-# Contributors:
+# Contributors:   ccoutand
 # Date:           2006-02-25
 #
 #####DESCRIPTIONEND####
@@ -143,6 +143,17 @@ cdl_package CYGPKG_DEVS_USB_AT91 {
                    This option indicates that the power detect pin should
                    be inverted. ie VDD is active, VCC is inactive."
         }
+
+        cdl_option CYGSEM_DEVS_USB_AT91_ZERO_LENGTH_PACKET_TERMINATION {
+            display       "Allow USB driver to end data transfer with an empty data packet."
+            flavor        bool
+            default_value 1
+            description "
+                   This option allows the USB driver to automatically signal the
+                   end of a data transmission with an empty packet, if the last packet
+                   fragment is equal to the endpoint buffer size."
+        }
+
     }    
     
     cdl_component CYGPKG_DEVS_USB_AT91_DEVTAB_ENTRIES {
@@ -203,21 +214,73 @@ cdl_package CYGPKG_DEVS_USB_AT91 {
                 application intends to access the endpoint by means
                 of open and read calls then a devtab entry is needed."
         }
-
-            cdl_option CYGDAT_DEVS_USB_AT91_DEVTAB_BASENAME {
-                display       "Base name for devtab entries"
-                flavor        data
-                default_value { "\"/dev/usbs\"" }
-                description "
-                    If the uAT91 USB device driver package provides devtab
-                    entries for any of the endpoints then this option gives
-                    control over the names of these entries. By default the
-                    endpoints will be called \"/dev/usbs0c\", \"/dev/usbs3w\"
-                    and \"/dev/usbs4r\" (assuming all three endpoints are
-                    enabled. The common part \"/dev/usbs\" is determined
-                    by this configuration option. It may be necessary to
-                    change this if there are multiple USB slave-side
-                    devices on the target hardware to prevent a name clash."
-            }
+        
+        cdl_option CYGVAR_DEVS_USB_AT91_EP4_DEVTAB_ENTRY {
+            display       "Provide a devtab entry for endpoint 4"
+            flavor        bool
+            default_value 0
+            requires      CYGPKG_IO 
+            description "
+                If this endpoint will only be accessed via the low-level
+                USB-specific calls then there is no need for an entry
+                in the device table, saving some memory. If the
+                application intends to access the endpoint by means
+                of open and read calls then a devtab entry is needed."
+        }
+                
+        cdl_option CYGVAR_DEVS_USB_AT91_EP5_DEVTAB_ENTRY {
+            display       "Provide a devtab entry for endpoint 5"
+            flavor        bool
+            default_value 0
+            requires      CYGPKG_IO 
+            description "
+                If this endpoint will only be accessed via the low-level
+                USB-specific calls then there is no need for an entry
+                in the device table, saving some memory. If the
+                application intends to access the endpoint by means
+                of open and read calls then a devtab entry is needed."
+        }
+           
+        cdl_option CYGVAR_DEVS_USB_AT91_EP6_DEVTAB_ENTRY {
+            display       "Provide a devtab entry for endpoint 6"
+            flavor        bool
+            default_value 0
+            requires      CYGPKG_IO 
+            description "
+                If this endpoint will only be accessed via the low-level
+                USB-specific calls then there is no need for an entry
+                in the device table, saving some memory. If the
+                application intends to access the endpoint by means
+                of open and read calls then a devtab entry is needed."
+        }
+           
+        cdl_option CYGVAR_DEVS_USB_AT91_EP7_DEVTAB_ENTRY {
+            display       "Provide a devtab entry for endpoint 7"
+            flavor        bool
+            default_value 0
+            requires      CYGPKG_IO 
+            description "
+                If this endpoint will only be accessed via the low-level
+                USB-specific calls then there is no need for an entry
+                in the device table, saving some memory. If the
+                application intends to access the endpoint by means
+                of open and read calls then a devtab entry is needed."
+        }
+                                 
+        cdl_option CYGDAT_DEVS_USB_AT91_DEVTAB_BASENAME {
+            display       "Base name for devtab entries"
+            flavor        data
+            default_value { "\"/dev/usbs\"" }
+            description "
+                If the uAT91 USB device driver package provides devtab
+                entries for any of the endpoints then this option gives
+                control over the names of these entries. By default the
+                endpoints will be called \"/dev/usbs0c\", \"/dev/usbs3w\"
+                and \"/dev/usbs4r\" (assuming all three endpoints are
+                enabled. The common part \"/dev/usbs\" is determined
+                by this configuration option. It may be necessary to
+                change this if there are multiple USB slave-side
+                devices on the target hardware to prevent a name clash."
+        }
     }
 }

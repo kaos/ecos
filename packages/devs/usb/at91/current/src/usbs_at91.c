@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2006 Free Software Foundation, Inc.                        
+// Copyright (C) 2006, 2010 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -40,7 +40,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    Oliver Munz,
-// Contributors: Andrew Lunn, bartv
+// Contributors: Andrew Lunn, bartv, ccoutand
 // Date:         2006-02-22
 //
 // This code implements support for the on-chip USB port on the AT91
@@ -524,7 +524,7 @@ usbs_state_notify (usbs_control_endpoint * pcep)
     }
     
     if (pcep->state_change_fn) {
-      (*pcep->state_change_fn) (pcep, 0, pcep->state, old_state);
+      (*pcep->state_change_fn) (pcep, pcep->state_change_data, pcep->state, old_state);
     }
     
     old_state = pcep->state;
@@ -579,22 +579,35 @@ usbs_at91_endpoint_set_halted (usbs_rx_endpoint * pep, cyg_bool new_value)
 {
   int epn = usbs_at91_pep_to_number(pep);
   cyg_addrword_t pCSR = pCSRn(epn);
-  
+  cyg_uint32 reg;  
+
   cyg_drv_dsr_lock ();
   
-  if (pep->halted != new_value) {       
+  if (pep->halted != new_value) {
     /* There is something is to do */
     pep->halted = new_value;
+
+    if ( new_value ) {
     
-    if (new_value && BITS_ARE_SET (pIMR, 1 << epn)) {   
-      /* Ready to transmit */
-      if (pep->complete_fn) {
-        (*pep->complete_fn) (pep->complete_data, -EAGAIN);
-      }
-      usbs_at91_endpoint_interrupt_enable (epn, false);
+      /* Halt endpoint */
       SET_BITS (pCSR, AT91_UDP_CSR_FORCESTALL);
+
     } else {
+      /* Restart endpoint */
       CLEAR_BITS (pCSR, AT91_UDP_CSR_FORCESTALL);
+
+      // Reset Fifo
+      HAL_READ_UINT32 (AT91_UDP + AT91_UDP_RST_EP, reg);
+      reg |= (1 << epn);
+      HAL_WRITE_UINT32 (AT91_UDP + AT91_UDP_RST_EP, reg);
+      reg &= ~(1 << epn);
+      HAL_WRITE_UINT32 (AT91_UDP + AT91_UDP_RST_EP, reg);
+
+      // Ready to use
+      if (pep->complete_fn) {
+        (*pep->complete_fn) (pep->complete_data, ENOERR);
+      }
+
     }
   }
   cyg_drv_dsr_unlock ();
@@ -726,11 +739,14 @@ usbs_at91_endpoint_start (usbs_rx_endpoint * pep)
     return;
   }
   
+  // Is this endpoint currently stalled? If so then a size of 0 can
+  // be used to block until the stall condition is clear, anything
+  // else should result in an immediate callback.
   if (pep->halted) {            
     /* Halted means nothing to do */
     cyg_drv_dsr_unlock ();
 
-    if (pep->complete_fn) {
+    if (pep->complete_fn && pep->buffer_size != 0) {
       (*pep->complete_fn) (pep->complete_data, -EAGAIN);
     }
     return;
@@ -753,9 +769,12 @@ usbs_at91_endpoint_start (usbs_rx_endpoint * pep)
   
   if (BITS_ARE_SET (pCSR, 0x400)) {     /* IN: tx_endpoint */
     space = (cyg_uint32) * ppend - (cyg_uint32) * ppbegin;
+
+#ifdef CYGSEM_DEVS_USB_AT91_ZERO_LENGTH_PACKET_TERMINATION
     if (space == endpoint_size) {
       *ppend = *ppbegin;        /* Send zero-packet */
     }
+#endif
     
     *ppbegin =
       write_fifo_uint8 (pFDR, *ppbegin,
@@ -786,26 +805,32 @@ usbs_at91_endpoint_isr_tx(cyg_uint8 epn)
 
   CLEAR_BITS (pCSR, AT91_UDP_CSR_TXCOMP);
 
-  if (BITS_ARE_CLEARED (pCSR, AT91_UDP_CSR_TXPKTRDY)) {       
+  if (BITS_ARE_CLEARED (pCSR, AT91_UDP_CSR_TXPKTRDY)) {
     /* Ready to transmit ? */
     if (*ppend > *ppbegin) {  
       /* Something to send */
       
       space = (cyg_uint32) * ppend - (cyg_uint32) * ppbegin;
+
+#ifdef CYGSEM_DEVS_USB_AT91_ZERO_LENGTH_PACKET_TERMINATION
       if (space == endpoint_size) {
         *ppend = *ppbegin;            /* Send zero-packet */
       }
+#endif
       
       *ppbegin =
         write_fifo_uint8 (pFDR, *ppbegin,
                           (cyg_uint8 *) ((cyg_uint32) * ppbegin +
                                          MIN (space, endpoint_size)));
       SET_BITS (pCSR, AT91_UDP_CSR_TXPKTRDY);
-      
+
       if (*ppend == *ppbegin) {       /* Last packet ? */
         *ppend = *ppbegin - 1;        /* The packet isn't sent yet */
       }
+
     } else {
+
+#ifdef CYGSEM_DEVS_USB_AT91_ZERO_LENGTH_PACKET_TERMINATION
       if (*ppend + 1 == *ppbegin) {
         *ppend = *ppbegin;    /* Flag for DSR */
         return true;
@@ -813,6 +838,11 @@ usbs_at91_endpoint_isr_tx(cyg_uint8 epn)
         *ppend = *ppbegin - 1;        /* Flag for zero-packet */
         SET_BITS (pCSR, AT91_UDP_CSR_TXPKTRDY);       /* Send no data */
       }
+#else
+      *ppend = *ppbegin;    /* Flag for DSR */
+      return true;
+#endif
+
     }
   }
   
@@ -887,6 +917,11 @@ usbs_at91_endpoint_isr (cyg_uint8 epn)
   
   CYG_ASSERT (AT91_USB_ENDPOINTS > epn && epn, "Invalid end point");
   
+  // Host has acknowledged the endpoint being stall 
+  if (BITS_ARE_SET (pCSR, AT91_UDP_CSR_ISOERROR)) {
+     CLEAR_BITS (pCSR, AT91_UDP_CSR_ISOERROR);
+  }
+    
   if (BITS_ARE_SET (pCSR, 0x400)) {      /* IN: tx_endpoint */
     if (usbs_at91_endpoint_isr_tx(epn))
       return true;  // Call the DSR
@@ -920,12 +955,15 @@ usbs_at91_endpoint_dsr (cyg_uint8 epn)
   if (*ppend == *ppbegin) {     /* Transmitted/Received ? */
     
     pep->buffer_size = (cyg_uint32) * ppbegin - (cyg_uint32) pep->buffer;
-    if (pep->buffer_size && pep->complete_fn) {
-      if (!pep->halted) {
-        (*pep->complete_fn) (pep->complete_data, pep->buffer_size);
-      } else {
-        (*pep->complete_fn) (pep->complete_data, -EAGAIN);
-      }
+    if (pep->complete_fn)
+    {
+       /* Do not check on pep->buffer_size != 0, user should
+        * be allowed to send empty packet */
+       if (!pep->halted) {
+          (*pep->complete_fn) (pep->complete_data, pep->buffer_size);
+       } else {
+          (*pep->complete_fn) (pep->complete_data, -EAGAIN);
+       }
     }
     usbs_at91_endpoint_interrupt_enable (epn, false);
   }
@@ -1018,6 +1056,8 @@ usbs_at91_control_setup_set_feature(void)
   ep0_low_level_status_t status;
   usb_devreq *req = (usb_devreq *)usbs_at91_ep0.control_buffer;
   cyg_uint8 recipient = req->type & USB_DEVREQ_RECIPIENT_MASK;
+  usbs_rx_endpoint * pep;
+  cyg_uint8 ep_num = req->index_lo & 0x0F;
   
   usbs_at91_control_setup_send_ack();
   status = EP0_LL_SEND_READY;
@@ -1030,18 +1070,24 @@ usbs_at91_control_setup_set_feature(void)
       // Nothing to do
       break;
     case USB_DEVREQ_RECIPIENT_ENDPOINT: 
-      if ((usbs_at91_ep0.state == USBS_STATE_CONFIGURED) && 
-          (req->index_lo > 0) && 
-          (req->index_lo < AT91_USB_ENDPOINTS)) {
+      if ((usbs_at91_ep0.state == USBS_STATE_CONFIGURED) &&
+            (ep_num > 0) &&
+            (ep_num < AT91_USB_ENDPOINTS)) {
         cyg_uint32 CSR;
-        
-        HAL_READ_UINT32(pCSRn(req->index_lo), CSR);
-        if (CSR & AT91_UDP_CSR_EPEDS) {
-          /* TODO */
+
+        HAL_READ_UINT32(pCSRn(ep_num), CSR);
+        pep = (usbs_rx_endpoint *) usbs_at91_endpoints[ep_num];
+        if ( (CSR & AT91_UDP_CSR_EPEDS) ) {
+          usbs_at91_endpoint_set_halted ( pep , true );
         }
-      } else {
+        else
+          status = EP0_LL_STALL;
+
+      }
+      else {
         status = EP0_LL_STALL;
       }
+      break;
     default:
       status = EP0_LL_STALL;
   }
@@ -1055,6 +1101,8 @@ usbs_at91_control_setup_clear_feature(void)
   ep0_low_level_status_t status;
   usb_devreq *req = (usb_devreq *)usbs_at91_ep0.control_buffer;
   cyg_uint8 recipient = req->type & USB_DEVREQ_RECIPIENT_MASK;
+  usbs_rx_endpoint * pep;
+  cyg_uint8 ep_num = req->index_lo & 0x0F;  
   
   usbs_at91_control_setup_send_ack();
   status = EP0_LL_SEND_READY;
@@ -1067,18 +1115,24 @@ usbs_at91_control_setup_clear_feature(void)
       // Nothing to do
       break;
     case USB_DEVREQ_RECIPIENT_ENDPOINT: 
-      if ((usbs_at91_ep0.state == USBS_STATE_CONFIGURED) && 
-          (req->index_lo > 0) && 
-          (req->index_lo < AT91_USB_ENDPOINTS)) {
+      if ((usbs_at91_ep0.state == USBS_STATE_CONFIGURED) &&
+          (ep_num > 0) &&
+          (ep_num < AT91_USB_ENDPOINTS)) {
         cyg_uint32 CSR;
-        
-        HAL_READ_UINT32(pCSRn(req->index_lo), CSR);
-        if (CSR & AT91_UDP_CSR_EPEDS) {
-          /* TODO */
+
+        HAL_READ_UINT32(pCSRn(ep_num), CSR);
+        pep = (usbs_rx_endpoint *) usbs_at91_endpoints[ep_num];
+        if ( (CSR & AT91_UDP_CSR_EPEDS) && pep->halted ) {
+          usbs_at91_endpoint_set_halted ( pep , false );
         }
-      } else {
+        else
+          status = EP0_LL_STALL;
+
+      }
+      else {
         status = EP0_LL_STALL;
       }
+      break;
     default:
       status = EP0_LL_STALL;
   }
