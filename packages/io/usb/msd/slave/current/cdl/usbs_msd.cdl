@@ -52,6 +52,7 @@ cdl_package CYGPKG_IO_USB_SLAVE_MSD {
     display     "USB slave mass storage support"
     include_dir "cyg/io/usb"
     parent      CYGPKG_IO_USB_SLAVE
+    doc         ref/io-usb-slave-msd.html
 
     requires    { CYGPKG_KERNEL }
     requires    { CYGPKG_IO_DISK }

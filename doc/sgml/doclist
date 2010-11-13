@@ -41,6 +41,7 @@ services/power/common/current/doc/power.sgml
 io/usb/slave/current/doc/usbs.sgml
 io/usb/eth/slave/current/doc/usbseth.sgml
 io/usb/serial/slave/current/doc/usbs_serial.sgml
+io/usb/msd/slave/current/doc/usbs_msd.sgml
 hal/synth/arch/current/doc/synth.sgml
 hal/m68k/arch/current/doc/m68k.sgml
 hal/m68k/mcf52xx/var/current/doc/mcf52xx.sgml

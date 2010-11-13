@@ -1,3 +1,7 @@
+2010-11-13  John Dallaway  <john@dallaway.org.uk>
+
+	* sgml/doclist: Add USB mass storage documentation.
+	
 2010-02-25  John Dallaway  <john@dallaway.org.uk>
 
 	* sgml/makemakefile: Update copyright dates.

@@ -1,0 +1,275 @@
+<!-- DOCTYPE reference  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     usbs_msd.sgml                                               -->
+<!--                                                                 -->
+<!--     USB slave-side Mass Storage Support package.                -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2010 Free Software Foundation, Inc.               -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTEND####                                     -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   ccoutand                                           -->
+<!-- Contact(s):                                                     -->
+<!-- Date:        2010/11/13                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="io-usb-slave-msd">
+  <!-- reference id="io-usb-slave-msd" -->
+  <title>eCos Support for USB Mass Storage Peripherals</title>
+  
+  <!-- {{{ Intro                          -->
+  
+  <refentry id="usbs-msd-intro">
+    <refmeta>
+      <refentrytitle>Introduction</refentrytitle>
+    </refmeta>
+    <refnamediv>
+      <refname>Introduction</refname>
+      <refpurpose>
+        eCos support for USB Mass Storage Peripherals
+      </refpurpose>
+    </refnamediv>
+    
+    <refsect1><title>Introduction</title>
+      <para>
+        Currently, the eCos USB-Mass Storage Device (MSD) slave package  
+        provides support only for the SCSI transparent command set. The 
+        package flexibility allows future extension for other sub-class, 
+        .i.e. RBC, UFI etc..
+        The package requires the actual storage media to use the eCos disk
+        interface. Disk sector size is assumed 512 bytes.
+      </para>
+      <para>
+        The USB-MSD package is not tied to any specific
+        hardware. It requires the presence of USB hardware on the
+        target and a suitable device driver to make endpoints
+        available for this code to use. The configuration system
+        cannot load the eCos package automatically for specific
+        targets, in the way that a USB device driver or an ethernet
+        driver can be loaded automatically. Instead, the package has
+        to be added explicitly. When using the command line tools this
+        will involve an operation like the following:
+      </para>
+      <screen width=72 format=linespecific>
+        $ ecosconfig add usbs_msd
+      </screen>
+      <para>
+        Typically, this will automatically cause the USB device driver
+        to become active. The USB-Mass Storage Device driver runs as a 
+        thread, therefore requires the kernel package to be active. To
+        start the MSD interface, user must call the <literal>usbs_msd_start()</literal> 
+        function. No other user intervention is required. 
+        The MSD driver will interact directly with the storage media. 
+        Care should be taken not to mount/use the filesystem present on 
+        the media while used as a mass storage. This could potentially 
+        damage the filesystem.
+      </para>
+    </refsect1>
+  </refentry>
+  
+  <!-- }}} -->
+  <!-- {{{ Config                          -->
+  
+  <refentry id="usbs-msd-config">
+    <refmeta>
+      <refentrytitle>Configuration</refentrytitle>
+    </refmeta>
+    <refnamediv>
+      <refname>Configuration</refname>
+      <refpurpose>Configuration USB Mass Storage Peripherals</refpurpose>
+    </refnamediv>
+    
+    <refsect1><title>Configuration</title>
+      <para>
+        The USB Mass Storage Device interface uses the bulk transfer mode. It needs 
+        three endpoints for the communication with the host to be complete. 
+        The control endpoint (commonly EP0), the transmission and reception 
+        endpoints. The default CDL file contains configuration for 
+        the USB-Mass Storage Device 0. While it is uncommon to have several USB 
+        ports on a device, it is not impossible, hence user can update the package and 
+        create a second device .e.g. MSD1.
+      </para>
+
+      <refsect2><title>Endpoints</title>     
+      <para>
+        Each endpoint shall be configured according to the underlying hardware.
+        The endpoints configuration includes, the structure name, endpoint number 
+        and buffer size according to the USB chip specification.
+
+        The control endpoint is selected with
+        <literal>CYGDAT_IO_USB_SLAVE_MSD0_EP0</literal>. 
+        The default values is set to <literal>"usbs_at91_ep0"</literal>. This is the control
+        endpoint for the Atmel AT91 USB device driver. 
+
+         The TX and RX endpoints can be assigned statically or dynamically (assuming the USB
+         device driver supports it). In case of static configuration, the bulk IN and bulk OUT
+         endpoints are configured with <literal>CYGDAT_IO_USB_SLAVE_MSD0_TX_EP</literal> 
+         and <literal>CYGDAT_IO_USB_SLAVE_MSD0_RX_EP</literal> respectively.
+
+        In addition, the  TX and RX enpoints number must be provided by the user. 
+        They are configured with  <literal>CYGNUM_IO_USB_SLAVE_MSD0_TX_EP_NUM</literal> 
+        and <literal>CYGNUM_IO_USB_SLAVE_MSD0_RX_EP_NUM</literal>
+
+        In case of dynamic endpoints configuration, only the endpoint number is mandatory.
+      </para>
+
+      <para>
+        The last endpoints configuration parameters are the entpoints buffer size. They are set with:
+      <programlisting>
+      CYGNUM_IO_USB_SLAVE_MSD0_EP0_MAX_PACKET_SIZE
+      CYGNUM_IO_USB_SLAVE_MSD0_TX_EP_MAX_PACKET_SIZE
+      CYGNUM_IO_USB_SLAVE_MSD0_RX_EP_MAX_PACKET_SIZE
+      </programlisting>
+        A mass storage device must stall one or both bulk endpoints in 
+        several situations. However, not all eCos USB device drivers seems
+        to implement this functionality correctly. Hence, this option is
+        disable by default. Testing shows that both Linux and Windows can
+        handle mass storage device with stall disable as long as all data transfer phase
+        are handled correctly. Enpoint stall can be enable with
+        <literal>CYGSEM_IO_USB_SLAVE_MSD_STALL_ENABLE</literal>.
+      </para>
+      </refsect2>
+      <refsect2><title>Enumeration</title>  
+      <para>
+        The USB MSD device will make its vendor:product ID known to
+        the host. This should be configured
+        with <literal>CYGNUM_IO_USB_SLAVE_MSD0_VENDOR_ID</literal> and
+        <literal>CYGNUM_IO_USB_SLAVE_MSD0_PRODUCT_ID</literal> NOTE:
+        The default configurations are not valid for commercial products, but
+        should work for testing.
+      </para>
+       <para>
+        The USB enumeration also contains text strings to describe the
+        device. The manufacturer string can be set with
+        <literal>CYGDAT_IO_USB_SLAVE_MSD0_MFG_STR</literal>. The product name
+        can be set with <literal>CYGDAT_IO_USB_SLAVE_MSD0_MFG_STR</literal>,
+        finally, the serial number can be set
+        with <literal>CYGDAT_IO_USB_SLAVE_MSD0_SERIAL_STR</literal>.
+      </para>
+      </refsect2>
+      <refsect2><title>Storage</title>  
+      <para>
+        To access the storage media, the USB MSD package requires the storage
+        media to use the eCos disk interface. The disk sector size is assumed 
+        to be 512 bytes. Multiple logical units are supported by the package 
+        (2 by default).
+        More logical units can be supported by changing the
+        <literal>USBS_MSD_CBW_MAX_LUN</literal> definition according 
+        to the user needs. Two logical units can be either 2 partitions on the same
+        disk or 2 partitions on 2 different physical disks. 
+        The first logical unit can be set with 
+        <literal>CYGDAT_IO_USB_SLAVE_MSD0_LUN0_NAME</literal>. The default value 
+        is assigned to <literal>"/dev/ramdisk0/1"</literal>, the first partition of the ramdisk
+         used by the test application.
+      </para>
+      </refsect2>      
+    </refsect1>
+  </refentry>
+  
+  <!-- }}} -->
+  <!-- {{{ Host Config                          -->
+  
+  <refentry id="usbs-msd-host-config">
+    <refmeta>
+      <refentrytitle>Host Configuration</refentrytitle>
+    </refmeta>
+    <refnamediv>
+      <refname>Host Configuration</refname>
+      <refpurpose>Host Configuration for USB Mass Storage like Peripherals
+      </refpurpose>
+    </refnamediv>
+    
+    <refsect1>
+      <title>Host Configuration</title>
+      <para>
+        With modern host operating system, no specific configuration of the 
+        host shall be required to bring up the eCos USB-Mass Storage Device.
+      </para>
+      <refsect2><title>SCSI command set</title>  
+      <para>
+       The USB-Mass Storage device will respond to a set of SCSI commands:
+      <programlisting>
+      INQUIRY
+      READ_CAPACITY
+      READ_10
+      WRITE_10
+      REQUEST_SENSE
+      TEST_UNIT_READY
+      </programlisting>
+      and partially to the commands:
+      <programlisting>
+      SENSE_6
+      VERIFY_10
+      REVENT_ALLOW_MEDIUM_REMOVAL
+      </programlisting>
+      </para>   
+      </refsect2>       
+    </refsect1>
+  </refentry>
+  
+  <!-- }}} -->
+  <!-- {{{ Using                         -->
+  
+  <refentry id="usbs-msd-using">
+   <refmeta>
+      <refentrytitle>Example</refentrytitle>
+    </refmeta>
+    <refnamediv>
+      <refname>Example</refname>
+      <refpurpose>Example for USB Mass Storage like Peripherals
+      </refpurpose>
+    </refnamediv>  
+    <refsect1>
+      <title>RAM disk</title>
+      <para>
+        The "ram disk" is a test application supplied to verify / debug the USB-Mass Storage
+        package. The minimal functionality of this test case is to create a tiny "ram disk"
+        device large of around 32 sectors of 512 bytes each. The disk devtab entry
+        is <literal>"/dev/ramdisk0"</literal>. A FAT12 filesystem is created on top of it 
+        as the first partition of the disk. The partition is therefore accessible from 
+        <literal>"/dev/ramdisk0/1"</literal>. The default behavior of the application is to 
+        start the USB MSD thread. Once plugged into the host machine, an empty drive 
+        called eCos-3.0 shall appear in the host explorer.
+        To test further, the FAT filesystem package can be included while compiling the test
+        application. If included, before the MSD driver is started, the application will 
+        create 2 files (fee and foo) and 1 directory (bar) in the filesystem. Both files and
+        directory shall appear in the host explorer.
+      </para>   
+      <refsect2><title>Configuration</title>  
+      <para>
+        The test application was primarly tested with the AT91 architecture. The control 
+        endpoint is set to <literal>"usbs_at91_ep0"</literal> and the buffer size
+        to 8 bytes.
+        The TX endpoint is set to <literal>"usbs_at91_ep1"</literal> and the buffer size
+        to 64 bytes (with Tx (USB IN) endpoint number set to 1).
+        The RX endpoint is set to <literal>"usbs_at91_ep2"</literal> and the buffer size
+        to 64 bytes (with Rx (USB OUT) endpoint number set to 2).                 
+      </para>   
+      </refsect2>  
+   </refsect1>         
+  </refentry> 
+       
+  <!-- }}} -->
+</part>
+<!-- /reference -->
