@@ -1,3 +1,8 @@
+2010-11-20  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/hal.cdl: Suppress -fprofile-arcs (which implies -lgcov) when
+	generating extras.o.
+
 2010-10-09  John Dallaway  <john@dallaway.org.uk>
 
 	* doc/porting.sgml: Delete references to the memory layout editor.
