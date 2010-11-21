@@ -564,6 +564,19 @@ diag_vsprintf(char *buf, const char *fmt, va_list ap)
     return (info.len);
 }
 
+int 
+diag_vsnprintf(char *buf, size_t len, const char *fmt, va_list ap)
+{
+    int ret;
+    struct _sputc_info info;
+
+    info.ptr = buf;
+    info.max = len-1;  
+    info.len = 0;
+    ret = _vprintf(_sputc, (void **)&info, fmt, ap);
+    return (info.len);
+}
+
 int
 diag_printf(const char *fmt, ...)
 {

@@ -1,3 +1,8 @@
+2010-09-13  Chris Holgate  <chris@zynaptic.com>
+
+	* include/diag.h:
+	* src/diag.cxx: Add diag_vsnprintf().
+
 2009-10-06  Uwe Kindler  <uwe_kindler@web.de>
 
 	* include/cyg_type.h: Changed definition of macro

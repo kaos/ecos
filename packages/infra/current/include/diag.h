@@ -100,6 +100,8 @@ externC int  diag_snprintf(char *buf, size_t len, const char *fmt, ...)
      CYGBLD_ATTRIB_PRINTF_FORMAT(3,4);
 externC int  diag_vsprintf(char *buf, const char *fmt, va_list ap)
      CYGBLD_ATTRIB_PRINTF_FORMAT(2,0);
+externC int  diag_vsnprintf(char *buf, size_t len, const char *fmt, va_list ap)
+     CYGBLD_ATTRIB_PRINTF_FORMAT(3,0);
 externC int  diag_vprintf(const char *fmt, va_list ap)
      CYGBLD_ATTRIB_PRINTF_FORMAT(1,0);
 
