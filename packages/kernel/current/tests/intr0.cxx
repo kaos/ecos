@@ -197,8 +197,8 @@ void intr0_main( void )
     new_vsr = NULL;
     Cyg_Interrupt::get_vsr( v, &new_vsr );
     CHECK( old_vsr == new_vsr );
-        
-    CHECK( NULL != vsr0 );
+
+    CHECK( NULL != new_vsr);
 
     cyg_vector v1;
 #ifdef CYGPKG_HAL_MIPS_TX39    

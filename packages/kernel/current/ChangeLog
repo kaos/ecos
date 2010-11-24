@@ -1,3 +1,8 @@
+2010-11-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/intr0.cxx (intr0_main): Fix a compiler warning by changing
+	a CHECK() statement.
+
 2010-03-29  Lars Povlsen  <lpovlsen@vitesse.com>
 
 	* src/common/thread.cxx: Add volatile to idle_thread_loops for use with
