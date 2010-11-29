@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2009 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2009, 2010 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -41,7 +41,7 @@
 #
 # Author(s):      nickg
 # Original data:  nickg
-# Contributors:   richard.panton@3glab.com
+# Contributors:   richard.panton@3glab.com, jld
 # Date:           2000-08-01
 #
 #####DESCRIPTIONEND####
@@ -99,6 +99,17 @@ cdl_package CYGPKG_FS_ROM {
             If this option is enabled, d_type will be set. Otherwise,
             nothing will be done, d_type's value will be zero because
             fileio already sets it."
+    }
+
+    cdl_option CYGFUN_FS_ROM_FLASH_BLOCK_DEVICE_LOOKUP {
+        display "Lookup flash block device names"
+        flavor bool
+        requires CYGPKG_IO_FLASH
+        requires CYGPKG_IO_FLASH_BLOCK_DEVICE
+        default_value 0
+        description "Enables the location of a ROM filesystem to
+            be specified using a flash block device name such as
+            \"/dev/flash/fis/romfs\" in the call to mount()."
     }
 
     # ----------------------------------------------------------------

@@ -1,3 +1,12 @@
+2010-11-29  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/romfs.cdl: Add CYGFUN_FS_ROM_FLASH_BLOCK_DEVICE_LOOKUP option.
+	* support/mk_romfs.c: Fix Win32 build.
+
+2010-11-13  Alexander Aganichev  <aaganichev@gmail.com>
+
+	* src/romfs.c: Added ability to mount a flash block device by name.
+
 2010-02-28  Øyvind Harboe  <oyvind.harboe@zylin.com>
 
 	* src/romfs.c: file name comparison was broken for two files
@@ -185,7 +194,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2009, 2010 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

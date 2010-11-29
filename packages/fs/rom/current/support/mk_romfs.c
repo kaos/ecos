@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -87,6 +87,14 @@
 
 // Undefine this if the host filesystem does not support lstat()
 #define HAS_LSTAT
+
+// Win32 definitions
+#ifdef _WIN32
+#undef HAS_LSTAT
+#define S_ISLNK(m) (0)
+typedef unsigned int uid_t;
+typedef unsigned int gid_t;
+#endif
 
 //==========================================================================
 
@@ -270,6 +278,7 @@ static unsigned long ConvertMode( unsigned long posix_mode ) {
     if ( posix_mode & S_IRUSR )  result |= 1<<16;
     if ( posix_mode & S_IWUSR )  result |= 1<<17;
     if ( posix_mode & S_IXUSR )  result |= 1<<18;
+#ifndef _WIN32
     if ( posix_mode & S_IRGRP )  result |= 1<<19;
     if ( posix_mode & S_IWGRP )  result |= 1<<20;
     if ( posix_mode & S_IXGRP )  result |= 1<<21;
@@ -278,6 +287,7 @@ static unsigned long ConvertMode( unsigned long posix_mode ) {
     if ( posix_mode & S_IXOTH )  result |= 1<<24;
     if ( posix_mode & S_ISUID )  result |= 1<<25;
     if ( posix_mode & S_ISGID )  result |= 1<<26;
+#endif
     return result;
 }
 

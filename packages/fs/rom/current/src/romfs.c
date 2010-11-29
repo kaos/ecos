@@ -136,6 +136,12 @@
 #include <cyg/kernel/kapi.h>
 #include <cyg/infra/diag.h>
 
+#if defined(CYGFUN_FS_ROM_FLASH_BLOCK_DEVICE_LOOKUP)
+#include <cyg/io/io.h>
+#include <cyg/io/config_keys.h>
+#include <cyg/io/flash.h>
+#endif
+
 //==========================================================================
 // Eventually we want to eXecute In Place from the ROM in a protected
 // environment, so we'll need executables to be aligned to a boundary
@@ -593,11 +599,32 @@ static int romfs_mount    ( cyg_fstab_entry *fste, cyg_mtab_entry *mte )
     if ( !mte->data ) {
 	// If the image address was not in the MTE data word,
 	if ( mte->devname && mte->devname[0] ) {
-            char *addr;
-            // And there's something in the 'hardware device' field,
-	    // then read the address from there.
-	    sscanf( mte->devname, "%p", &addr );
-            disk = (romfs_disk *) addr;
+	    // If a device name specified, lookup flash block device.
+#if defined(CYGFUN_FS_ROM_FLASH_BLOCK_DEVICE_LOOKUP)
+	    if ( mte->devname[0] == '/' ) {
+		Cyg_ErrNo err;
+		cyg_io_handle_t t;
+		cyg_io_flash_getconfig_devaddr_t d;
+		int len;
+		err = cyg_io_lookup(mte->devname, &t);
+		if (err != ENOERR) {
+		    return -err;
+		}
+		len = sizeof(d);
+		err = cyg_io_get_config(t, CYG_IO_GET_CONFIG_FLASH_DEVADDR, &d, &len);
+		if (err != ENOERR) {
+		    return -err;
+		}
+		disk = (romfs_disk *) d.dev_addr;
+	    } else
+#endif
+	    {
+		char *addr;
+		// And there's something in the 'hardware device' field,
+		// then read the address from there.
+		sscanf( mte->devname, "%p", &addr );
+		disk = (romfs_disk *) addr;
+	    }
         }
     } else {
         disk = (romfs_disk *)mte->data;
