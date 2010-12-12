@@ -339,6 +339,11 @@ quicc_smc_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config
     volatile struct smc_regs *ctl = (volatile struct smc_regs *)smc_chan->ctl;
 
     if (baud_divisor == 0) return false;
+    // Stop transmitter while changing baud rate
+    eppc->cp_cr = smc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_StopTx;
+    while (eppc->cp_cr & QUICC_SMC_CMD_Go )
+        continue;
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     // Disable channel during setup
     ctl->smc_smcmr = QUICC_SMCMR_UART;  // Disabled, UART mode
     HAL_IO_BARRIER();  // Inforce I/O ordering
@@ -346,8 +351,6 @@ quicc_smc_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config
     _lcr = QUICC_SMCMR_CLEN(new_config->word_length + ((new_config->parity == CYGNUM_SERIAL_PARITY_NONE)? 0: 1) + ((new_config->stop == CYGNUM_SERIAL_STOP_2)? 2: 1)) |
         smc_select_stop_bits[new_config->stop] |
         smc_select_parity[new_config->parity];
-    // Stop transmitter while changing baud rate
-    eppc->cp_cr = smc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_StopTx;
     HAL_IO_BARRIER();  // Inforce I/O ordering
     // Set baud rate generator
     *smc_chan->brg = 0x10000 | (UART_BITRATE(baud_divisor)<<1);
@@ -356,6 +359,8 @@ quicc_smc_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config
     ctl->smc_smcmr = QUICC_SMCMR_UART|QUICC_SMCMR_TEN|QUICC_SMCMR_REN|_lcr;
     HAL_IO_BARRIER();  // Inforce I/O ordering
     eppc->cp_cr = smc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_RestartTx;
+    while (eppc->cp_cr & QUICC_SMC_CMD_Go )
+        continue;
     if (new_config != &chan->config) {
         chan->config = *new_config;
     }
@@ -453,6 +458,8 @@ quicc_smc_serial_init_info(quicc_sxx_serial_info *smc_chan,
      */
     HAL_IO_BARRIER();  // Inforce I/O ordering
     eppc->cp_cr = smc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_InitTxRx;
+    while (eppc->cp_cr & QUICC_SMC_CMD_Go )
+        continue;
     HAL_IO_BARRIER();  // Inforce I/O ordering
     /*
      *  Clear any previous events. Enable interrupts.
@@ -491,7 +498,8 @@ quicc_scc_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config
      */
     HAL_IO_BARRIER();  // Inforce I/O ordering
     eppc->cp_cr = QUICC_CPM_CR_INIT_TXRX | scc_chan->channel | QUICC_CPM_CR_BUSY;
-
+    while (eppc->cp_cr & QUICC_CPM_CR_BUSY )
+        continue;
     HAL_IO_BARRIER();  // Inforce I/O ordering
     regs->scc_gsmr_l |= (QUICC_SCC_GSMR_L_Tx | QUICC_SCC_GSMR_L_Rx);  // Enable Rx, Tx
     if (new_config != &chan->config) {
@@ -603,6 +611,8 @@ quicc_scc_serial_init_info(quicc_sxx_serial_info *scc_chan,
      */
     HAL_IO_BARRIER();  // Inforce I/O ordering
     eppc->cp_cr = scc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_InitTxRx;
+    while (eppc->cp_cr & QUICC_SMC_CMD_Go )
+        continue;
     /*
      *  Clear any previous events. Enable interrupts.
      *  (Section 16.15.7.14 and 16.15.7.15)

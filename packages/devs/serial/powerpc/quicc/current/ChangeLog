@@ -1,3 +1,8 @@
+2010-12-06 Mark Retallack <mark.retallack@siemens.com>
+
+	* src/quicc_smc_serial.c: Wait for CPM Busy Flag to clear on write to
+	CP Command Register
+
 2006-01-27 Will Wagner <willw@carallon.com>
 
         * src/quicc_smc_serial.h: Removed unused structure
