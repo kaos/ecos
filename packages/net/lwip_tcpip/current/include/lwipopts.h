@@ -4,7 +4,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2008, 2009 Free Software Foundation
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -99,7 +99,9 @@
 // IP options
 //------------------------------------------------------------------------------
 
-#define IP_FORWARD                  defined(CYGFUN_LWIP_IP_FORWARD)
+#ifdef CYGFUN_LWIP_IP_FORWARD
+# define IP_FORWARD                 1
+#endif
 #define IP_OPTIONS_ALLOWED          defined(CYGFUN_LWIP_IP_OPTIONS_ALLOWED)
 #define IP_REASSEMBLY               defined(CYGFUN_LWIP_IP_REASSEMBLY)
 #define IP_FRAG                     defined(CYGFUN_LWIP_IP_FRAG)
