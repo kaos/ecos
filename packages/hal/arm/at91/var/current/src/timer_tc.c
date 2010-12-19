@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2010 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -40,7 +40,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, jskov, nickg, tkoeller
+// Contributors: gthomas, jskov, nickg, tkoeller, jld
 // Date:         2001-07-12
 // Purpose:      HAL board support
 // Description:  Implementations of HAL board interfaces
@@ -57,6 +57,11 @@
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_arch.h>           // Register state info
 #include <cyg/hal/hal_intr.h>           // necessary?
+
+#ifdef CYGFUN_HAL_ARM_AT91_PROFILE_TIMER
+#include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
+#include <cyg/profile/profile.h>        // __profile_hit()
+#endif
 
 // -------------------------------------------------------------------------
 // Clock support
@@ -157,5 +162,58 @@ void hal_delay_us(cyg_int32 usecs)
       HAL_READ_UINT32(timer+AT91_TC_SR, stat);
     } while ((stat & AT91_TC_SR_CPC) == 0);
 }
+
+#ifdef CYGFUN_HAL_ARM_AT91_PROFILE_TIMER
+
+// Use TC1 for profiling
+#define AT91_TC_PROFILE AT91_TC_TC1
+#define HAL_INTERRUPT_PROFILE CYGNUM_HAL_INTERRUPT_TIMER1
+
+// Profiling timer ISR
+static cyg_uint32 profile_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data, HAL_SavedRegisters *regs)
+{
+    cyg_uint32 status;
+
+    HAL_READ_UINT32(AT91_TC+AT91_TC_PROFILE+AT91_TC_SR, status); // Clear interrupt
+    HAL_INTERRUPT_ACKNOWLEDGE(HAL_INTERRUPT_PROFILE);
+    __profile_hit(regs->pc);
+    return CYG_ISR_HANDLED;
+}
+
+// Profiling timer setup
+int hal_enable_profile_timer(int resolution)
+{
+    cyg_uint32 period;
+
+    // Calculate how many timer ticks the requested resolution in
+    // microseconds equates to. We do this calculation in 64 bit
+    // arithmetic to avoid overflow.
+    period = (cyg_uint32)((((cyg_uint64)resolution) *
+        ((cyg_uint64)CYGNUM_HAL_ARM_AT91_CLOCK_SPEED))/32000000LL);
+
+    CYG_ASSERT(period < 0x10000, "Invalid profile timer resolution"); // 16 bits only
+
+    // Attach ISR
+    HAL_INTERRUPT_ATTACH(HAL_INTERRUPT_PROFILE, &profile_isr, 0x1111, 0);
+    HAL_INTERRUPT_UNMASK(HAL_INTERRUPT_PROFILE);
+
+    // Disable counter
+    HAL_WRITE_UINT32(AT91_TC+AT91_TC_PROFILE+AT91_TC_CCR, AT91_TC_CCR_CLKDIS);
+
+    // Set registers
+    HAL_WRITE_UINT32(AT91_TC+AT91_TC_PROFILE+AT91_TC_CMR, AT91_TC_CMR_CPCTRG | // Reset counter on CPC
+                                                          AT91_TC_CMR_CLKS_MCK32); // Use MCLK/32
+    HAL_WRITE_UINT32(AT91_TC+AT91_TC_PROFILE+AT91_TC_RC, period);
+
+    // Start timer
+    HAL_WRITE_UINT32(AT91_TC+AT91_TC_PROFILE+AT91_TC_CCR, AT91_TC_CCR_TRIG | AT91_TC_CCR_CLKEN);
+
+    // Enable timer interrupt
+    HAL_WRITE_UINT32(AT91_TC+AT91_TC_PROFILE+AT91_TC_IER, AT91_TC_IER_CPC);
+
+    return resolution;
+}
+
+#endif // CYGFUN_HAL_ARM_AT91_PROFILE_TIMER
 
 // timer_tc.c

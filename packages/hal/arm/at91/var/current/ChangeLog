@@ -1,3 +1,8 @@
+2010-12-17  John Dallaway  <john@dallaway.org.uk>
+
+	* src/timer_tc.c: Implement a profiling timer on TC1.
+	* cdl/hal_arm_at91.cdl: Add CDL option to enable the profiling timer.
+
 2010-05-27 ccoutand <ccoutand@stmi.com>
 	* include/var_io.h: Added ADC defines for AT91_M55800A CPU
 
@@ -477,7 +482,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009, 2010 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

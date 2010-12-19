@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2010 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -40,7 +40,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      gthomas
-# Contributors:   gthomas, tkoeller, tdrury, nickg
+# Contributors:   gthomas, tkoeller, tdrury, nickg, jld
 # Date:           2001-07-12
 #
 #####DESCRIPTIONEND####
@@ -135,8 +135,8 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
     cdl_interface CYGINT_HAL_ARM_AT91_SERIAL_DBG_HW {
         display     "Platform has the DBG serial port"
         description "
-            Some varients of the AT91 have a dedicated debug serial
-            port. The HALs of such a varient should implement this interface
+            Some variants of the AT91 have a dedicated debug serial
+            port. The HALs of such a variant should implement this interface
             so allowing the serial driver to the compiled"
     }
 
@@ -154,7 +154,7 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
 
         description   "
             The driver for the dedicated DBG UART will be compiled in the
-            varient HAL when this option is enabled."
+            variant HAL when this option is enabled."
     }
 
     cdl_option CYGBLD_HAL_ARM_AT91_SERIAL_UART {
@@ -165,7 +165,7 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
         requires      !CYGBLD_HAL_ARM_AT91_SERIAL_DBG
         description   "        
             The driver for using the UARTS will be compiled in the
-            varient HAL when this option is enabled."
+            variant HAL when this option is enabled."
     }
 
     cdl_component CYGBLD_HAL_ARM_AT91_DCC {
@@ -189,5 +189,21 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
                 table it will take. The default value will overwride
                 the first serial port. "
         }
+    }
+
+    cdl_option CYGFUN_HAL_ARM_AT91_PROFILE_TIMER {
+        display       "Use TC1 for gprof profiling"
+        active_if     CYGPKG_PROFILE_GPROF
+        flavor        bool
+        default_value 1
+        requires      !CYGPKG_HAL_ARM_AT91_JTST
+        implements    CYGINT_PROFILE_HAL_TIMER
+        description   "
+            The AT91 variant HAL can provide support for gprof-based
+            profiling. This uses timer TC1 to generate regular interrupts,
+            and the interrupt handler records the PC at the time of the
+            interrupt. However, TC1 is unavailable for this purpose on
+            the JTST platform. Disable this option if you wish to provide
+            an alternative profiling timer implementation."
     }
 }
