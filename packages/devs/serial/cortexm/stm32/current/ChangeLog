@@ -1,3 +1,8 @@
+2010-12-31  John Dallaway  <john@dallaway.org.uk>
+
+	* src/stm32_serial.c, src/stm32_serial.h: Set the M bit when
+	configuring for 8 data bits + parity bit. [ Bugzilla 1001068 ]
+
 2008-10-07  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/ser_cortexm_stm32.cdl: 
@@ -10,7 +15,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2010 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
