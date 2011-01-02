@@ -187,8 +187,8 @@ simple_input(struct pbuf *p, struct netif *netif)
     return ERR_OK;
 }
 
-#endif // (LWIP_HAVE_LOOPIF && defined(CYGIMP_LWIP_LOOPIF_INSTANCE)) || \
-          (LWIP_HAVE_SLIPIF && defined(CYGIMP_LWIP_SLIPIF_INSTANCE))
+#endif // (LWIP_HAVE_LOOPIF && defined(CYGIMP_LWIP_LOOPIF_INSTANCE)) ||
+       // (LWIP_HAVE_SLIPIF && defined(CYGIMP_LWIP_SLIPIF_INSTANCE))
 
 #ifdef CYGFUN_LWIP_SHOW_NETIF_CONFIG
 

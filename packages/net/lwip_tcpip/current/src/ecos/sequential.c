@@ -115,8 +115,8 @@ set_ip_addr(struct ip_addr *addr, u8_t a, u8_t b, u8_t c, u8_t d)
     IP4_ADDR(addr, a, b, c, d);
 }
 
-#endif // (LWIP_HAVE_LOOPIF && defined(CYGIMP_LWIP_LOOPIF_INSTANCE)) || \
-          (LWIP_HAVE_SLIPIF && defined(CYGIMP_LWIP_SLIPIF_INSTANCE))
+#endif // (LWIP_HAVE_LOOPIF && defined(CYGIMP_LWIP_LOOPIF_INSTANCE)) ||
+       // (LWIP_HAVE_SLIPIF && defined(CYGIMP_LWIP_SLIPIF_INSTANCE))
 
 #ifdef CYGFUN_LWIP_SHOW_NETIF_CONFIG
 
