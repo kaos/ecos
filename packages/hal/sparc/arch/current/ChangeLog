@@ -1,3 +1,7 @@
+2011-01-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/hal_sparc.cdl: Eliminate some warnings. [ Bugzilla 1001083 ]
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_sparc.cdl :
