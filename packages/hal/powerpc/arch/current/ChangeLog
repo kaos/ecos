@@ -1,3 +1,8 @@
+2011-01-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/hal_powerpc.cdl: Eliminate some warnings. [ Bugzilla
+	1001083 ]
+
 2009-08-07  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/hal_powerpc.cdl: Add CYGHWR_HAL_POWERPC_BOOK_E_FIXED_VECTORS

@@ -73,7 +73,7 @@ cdl_package CYGPKG_HAL_POWERPC {
     # n.b. grep does not behave itself under win32
     make -priority 1 {
         <PREFIX>/include/cyg/hal/ppc_offsets.inc : <PACKAGE>/src/hal_mk_defs.c
-        $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,ppc_offsets.tmp -o hal_mk_defs.tmp -S $<
+        $(CC) $(ACTUAL_CFLAGS) $(INCLUDE_PATH) -Wp,-MD,ppc_offsets.tmp -o hal_mk_defs.tmp -S $<
         fgrep .equ hal_mk_defs.tmp | sed s/#// > $@
         @echo $@ ": \\" > $(notdir $@).deps
         @tail -n +2 ppc_offsets.tmp >> $(notdir $@).deps
@@ -92,7 +92,7 @@ cdl_package CYGPKG_HAL_POWERPC {
 
     make {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/powerpc.ld
-        $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
+        $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(ACTUAL_CFLAGS) -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
         @tail -n +2 target.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
