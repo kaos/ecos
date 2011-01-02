@@ -76,7 +76,7 @@ cdl_package CYGPKG_HAL_CORTEXM {
 
     make {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/cortexm.ld
-        $(CC) -E -P -Wp,-MD,target.tmp -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
+        $(CC) -E -P -Wp,-MD,target.tmp -xc $(INCLUDE_PATH) $(ACTUAL_CFLAGS) -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
         @tail -n +2 target.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
