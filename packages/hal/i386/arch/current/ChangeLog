@@ -1,3 +1,7 @@
+2011-01-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/hal_i386.cdl: Eliminate some warnings. [ Bugzilla 1001083 ]
+
 2005-09-19  David Vrabel  <dvrabel@arcom.com>
 
 	* src/redboot_linux_exec.c: No need to include pcmb_serial.h.
