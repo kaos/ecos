@@ -1,3 +1,8 @@
+2011-01-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/hal_sh_sh4.cdl: Eliminate some warnings. [ Bugzilla
+	1001083 ]
+
 2005-05-13  Hajime Ishitani <pigmon@mail.snd.co.jp>
 
 	* include/mod_regs_cpg.h :

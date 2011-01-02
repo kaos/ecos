@@ -1,3 +1,7 @@
+2011-01-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/hal_sh.cdl: Eliminate some warnings. [ Bugzilla 1001083 ]
+
 2009-02-04  John Dallaway  <john@dallaway.org.uk>
 
 	* src/sh.ld: Process *(.gcc_except_table.*) as for i386

@@ -72,7 +72,7 @@ cdl_package CYGPKG_HAL_SH_SH3 {
     # n.b. grep does not behave itself under win32
     make -priority 1 {
         <PREFIX>/include/cyg/hal/sh3_offsets.inc : <PACKAGE>/src/var_mk_defs.c
-        $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,sh3_offsets.tmp -o var_mk_defs.tmp -S $<
+        $(CC) $(ACTUAL_CFLAGS) $(INCLUDE_PATH) -Wp,-MD,sh3_offsets.tmp -o var_mk_defs.tmp -S $<
         fgrep .equ var_mk_defs.tmp | sed s/#// > $@
         @echo $@ ": \\" > $(notdir $@).deps
         @tail -n +2 sh3_offsets.tmp >> $(notdir $@).deps
