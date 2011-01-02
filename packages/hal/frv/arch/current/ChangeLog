@@ -1,3 +1,7 @@
+2011-01-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/hal_frv.cdl: Eliminate some warnings. [ Bugzilla 1001083 ]
+
 2004-09-03  Mark Salter  <msalter@redhat.com>
 2004-09-03  David Woodhouse  <dwmw2@redhat.com>
 
