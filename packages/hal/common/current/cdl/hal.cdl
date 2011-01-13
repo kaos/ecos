@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010, 2011 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -41,7 +41,7 @@
 #
 # Author(s):      bartv
 # Original data:  nickg,jskov,jlarmour
-# Contributors:   dmoseley
+# Contributors:   dmoseley, jld
 # Date:           1999-06-13
 #
 #####DESCRIPTIONEND####
@@ -397,7 +397,7 @@ cdl_package CYGPKG_HAL {
 
     # Does platform need special I/O initializations?
     cdl_interface     CYGINT_HAL_PLF_IF_INIT {
-        display       "Platform defined I/O channels."
+        display       "Platform defined I/O channels"
         description   "
           Platforms which provide additional I/O channels can implement
           this interface, indicating that the function plf_if_init()
@@ -406,12 +406,22 @@ cdl_package CYGPKG_HAL {
 
     # Does platform provide IDE I/O macros?
     cdl_interface     CYGINT_HAL_PLF_IF_IDE {
-        display       "Platform IDE I/O support."
+        display       "Platform IDE I/O support"
         description   "
           Platforms which provide IDE controllers can implement
           this interface, indicating that IDE I/O macros are
           available."
     }
+
+    # Does anything require access to saved interrupt state?
+    cdl_interface     CYGINT_HAL_COMMON_SAVED_INTERRUPT_STATE_REQUIRED {
+        display       "Saved interrupt state required"
+        description   "
+          Components requiring access to saved interrupt state via the
+          hal_saved_interrupt_state symbol should implement this
+          interface."
+    }
+
     cdl_option CYGPKG_HAL_GDB_FILEIO {
         display       "File I/O operations via GDB"
         default_value 0

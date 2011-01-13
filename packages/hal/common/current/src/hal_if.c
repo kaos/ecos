@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2008, 2011 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -40,7 +40,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov, woehler
+// Contributors:jskov, woehler, jld
 // Date:        2000-06-07
 //
 //####DESCRIPTIONEND####
@@ -887,10 +887,12 @@ hal_if_diag_read_char(char *c)
 // CtrlC support
 //=============================================================================
 
+#if CYGINT_HAL_COMMON_SAVED_INTERRUPT_STATE_REQUIRED > 0
+struct Hal_SavedRegisters *hal_saved_interrupt_state;
+#endif
+
 #if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
-
-struct Hal_SavedRegisters *hal_saved_interrupt_state;
 
 void
 hal_ctrlc_isr_init(void)

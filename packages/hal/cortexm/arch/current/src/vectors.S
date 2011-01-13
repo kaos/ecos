@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2011 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -201,12 +201,10 @@ hal_default_interrupt_vsr:
         push    {lr}                    // Save return link
         sub     sp,#4                   // Realign SP to 8 bytes
         
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || \
-    defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+#if CYGINT_HAL_COMMON_SAVED_INTERRUPT_STATE_REQUIRED > 0
         // If we are supporting Ctrl-C interrupts from GDB, we must squirrel
         // away a pointer to the saved interrupt state here so that we can
-        // plant a breakpoint at some later time. We only need to make a
-        // full interrupt saved state in that case.
+        // plant a breakpoint at some later time.
 
        .extern  hal_saved_interrupt_state
         mrs     r1,psp                  // Get PSP

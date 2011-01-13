@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2011 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -41,7 +41,7 @@
 #
 # Author(s):      jskov
 # Original data:  nickg,jskov,jlarmour
-# Contributors:
+# Contributors:   jld
 # Date:           1999-07-02
 #
 #####DESCRIPTIONEND####
@@ -89,6 +89,7 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT {
     active_if     CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     requires      CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
     default_value CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+    implements    CYGINT_HAL_COMMON_SAVED_INTERRUPT_STATE_REQUIRED
     description   "
         This option causes the GDB stub to add a serial interrupt handler
         which will listen for GDB break packets. This lets you stop the
@@ -109,6 +110,7 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT {
     active_if     { CYGSEM_HAL_USE_ROM_MONITOR || CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS }
     active_if     { CYGINT_HAL_DEBUG_GDB_CTRLC_UNSUPPORTED == 0 }
     default_value { !CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS }
+    implements    CYGINT_HAL_COMMON_SAVED_INTERRUPT_STATE_REQUIRED
     description   "
         This option adds an interrupt handler for the GDB serial line
         which will listen for GDB break packets. This lets you stop the

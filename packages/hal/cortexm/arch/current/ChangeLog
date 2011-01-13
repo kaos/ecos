@@ -1,3 +1,9 @@
+2011-01-13  John Dallaway  <john@dallaway.org.uk>
+
+	* src/vectors.S (hal_default_interrupt_vsr): Save interrupt state
+	if CYGINT_HAL_COMMON_SAVED_INTERRUPT_STATE_REQUIRED is implemented.
+	[ Bugzilla 1001111 ]
+
 2011-01-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* cdl/hal_cortexm.cdl: Eliminate some warnings. [ Bugzilla
@@ -82,7 +88,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2011 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

@@ -1,3 +1,12 @@
+2011-01-13  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/hal.cdl: Add a CDL interface to control whether interrupt
+	state must be saved. [ Bugzilla 1001111 ]
+	* cdl/debugging.cdl: Implement the new interface within GDB Ctrl-C
+	break options.
+	* src/hal_if.c: Make declaration of the hal_saved_interrupt_state
+	variable conditional on an implementation of the new CDL interface.
+
 2010-11-20  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/hal.cdl: Suppress -fprofile-arcs (which implies -lgcov) when
@@ -2351,7 +2360,7 @@ Mon Aug 31 09:16:08 1998  Jesper Skov  <jskov@cygnus.co.uk>
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2010 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2010, 2011 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
