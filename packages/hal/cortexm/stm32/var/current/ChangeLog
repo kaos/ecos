@@ -1,3 +1,8 @@
+2011-01-13  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/stm32_misc.c (hal_start_clocks): Correct bit clear operation
+	when disabling external clock.
+
 2009-10-26  Ross Younger  <wry@ecoscentric.com>
 
 	* include/var_io.h: Minor corrections to the FSMC register defs.
