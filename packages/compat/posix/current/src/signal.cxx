@@ -554,14 +554,14 @@ externC int pthread_kill (pthread_t threadid, int sig)
     SIGNAL_ENTRY();
 
     if( !SIGNAL_VALID(sig) )
-        SIGNAL_RETURN(EINVAL);
+        SIGNAL_RETURN_VALUE(EINVAL);
     
     struct sigevent sev;
 
     pthread_info *thread = pthread_info_id(threadid);
 
     if( thread == NULL )
-        SIGNAL_RETURN(ESRCH);
+        SIGNAL_RETURN_VALUE(ESRCH);
     
     sev.sigev_notify           = SIGEV_SIGNAL;
     sev.sigev_signo            = sig;
@@ -571,7 +571,7 @@ externC int pthread_kill (pthread_t threadid, int sig)
 
     cyg_deliver_signals();
     
-    SIGNAL_RETURN(0);
+    SIGNAL_RETURN_VALUE(0);
 }
 
 //==========================================================================

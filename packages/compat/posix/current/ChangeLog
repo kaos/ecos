@@ -1,3 +1,8 @@
+2010-02-08  Jay Foster  <jay@systech.com>
+
+	* src/signal.cxx (pthread_kill): Corrected return value for
+	pthread_kill() to match POSIX standard.
+
 2009-03-25  John Dallaway  <john@dallaway.org.uk>
 
 	* src/signal.cxx (pause): Revert change of 2006-07-18 pending
