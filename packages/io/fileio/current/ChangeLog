@@ -1,3 +1,8 @@
+2010-02-08  Jay Foster <jay@systech.com>
+
+	* tests/pselect.c: Corrected return value of pthread_kill()
+	to match POSIX standard.
+
 2008-11-18  Rutger Hofman <rutger@cs.vu.nl>
 
 	* src/file.cxx: add a chmod() call, implemented by calling

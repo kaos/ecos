@@ -273,7 +273,8 @@ void *pthread_entry2( void *arg)
         nanosleep( &zzz, NULL );
 
         err = pthread_kill( thread1, SIGUSR1 );
-        if( err < 0 ) SHOW_RESULT( pthread_kill, err );
+        if( err != 0 )
+            diag_printf("INFO: pthread_kill() returned %d %s\n", err, strerror(err));
 
         sigusr1_sent++;
 
