@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2008 Free Software Foundation, Inc.                        
+## Copyright (C) 2008, 2011 Free Software Foundation, Inc.                        
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -40,6 +40,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s):    nickg
+## Contributors: jld
 ## Date:         2008-07-30
 ##
 ######DESCRIPTIONEND####
@@ -190,6 +191,21 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
         description "The platform has a socket on UART4."
     }
     
+    cdl_option CYGFUN_HAL_CORTEXM_STM32_PROFILE_TIMER {
+        display       "Use TIM2 for gprof profiling"
+        active_if     CYGPKG_PROFILE_GPROF
+        flavor        bool
+        default_value 1
+        implements    CYGINT_PROFILE_HAL_TIMER
+        implements    CYGINT_HAL_COMMON_SAVED_INTERRUPT_STATE_REQUIRED
+        description   "
+            The STM32 variant HAL can provide support for gprof-based
+            profiling. This uses timer TIM2 to generate regular interrupts,
+            and the interrupt handler records the PC at the time of the
+            interrupt. Disable this option if you wish to provide
+            an alternative profiling timer implementation."
+    }
+
     cdl_component CYGPKG_HAL_CORTEXM_STM32_OPTIONS {
         display "Build options"
         flavor  none

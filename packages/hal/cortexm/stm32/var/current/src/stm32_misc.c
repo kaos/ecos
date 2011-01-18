@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -40,6 +40,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
+// Contributors: jld
 // Date:         2008-07-30
 // Description:  
 //
@@ -62,6 +63,11 @@
 #include <cyg/hal/hal_arch.h>           // HAL header
 #include <cyg/hal/hal_intr.h>           // HAL header
 #include <cyg/hal/hal_if.h>             // HAL header
+
+#ifdef CYGFUN_HAL_CORTEXM_STM32_PROFILE_TIMER
+#include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
+#include <cyg/profile/profile.h>        // __profile_hit()
+#endif
 
 //==========================================================================
 // Clock Initialization values
@@ -385,6 +391,49 @@ cyg_uint32 hal_stm32_timer_clock( CYG_ADDRESS base )
 #endif
     }
 }
+
+//==========================================================================
+// Profiling timer
+//
+// Implementation of profiling support using general-purpose timer TIM2.
+
+#ifdef CYGFUN_HAL_CORTEXM_STM32_PROFILE_TIMER
+// Use TIM2 for profiling
+#define STM32_TIMER_PROFILE CYGHWR_HAL_STM32_TIM2
+#define HAL_INTERRUPT_PROFILE CYGNUM_HAL_INTERRUPT_TIM2
+
+// Profiling timer ISR
+static cyg_uint32 profile_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+    extern HAL_SavedRegisters *hal_saved_interrupt_state;
+
+    HAL_WRITE_UINT32(STM32_TIMER_PROFILE+CYGHWR_HAL_STM32_TIM_SR, 0); // clear interrupt pending flag
+    HAL_INTERRUPT_ACKNOWLEDGE(HAL_INTERRUPT_PROFILE);
+    __profile_hit(hal_saved_interrupt_state->u.interrupt.pc);
+    return CYG_ISR_HANDLED;
+}
+
+// Profiling timer setup
+int hal_enable_profile_timer(int resolution)
+{
+    CYG_ASSERT(resolution < 0x10000, "Invalid profile timer resolution"); // 16 bits only
+
+    // Attach ISR
+    HAL_INTERRUPT_ATTACH(HAL_INTERRUPT_PROFILE, &profile_isr, 0x1111, 0);
+    HAL_INTERRUPT_UNMASK(HAL_INTERRUPT_PROFILE);
+
+    // Setup timer
+    HAL_WRITE_UINT32(STM32_TIMER_PROFILE+CYGHWR_HAL_STM32_TIM_PSC,
+        (hal_stm32_timer_clock(STM32_TIMER_PROFILE) / 1000000) - 1); // prescale to microseconds
+    HAL_WRITE_UINT32(STM32_TIMER_PROFILE+CYGHWR_HAL_STM32_TIM_CR2, 0);
+    HAL_WRITE_UINT32(STM32_TIMER_PROFILE+CYGHWR_HAL_STM32_TIM_DIER, CYGHWR_HAL_STM32_TIM_DIER_UIE);
+    HAL_WRITE_UINT32(STM32_TIMER_PROFILE+CYGHWR_HAL_STM32_TIM_ARR, resolution);
+    HAL_WRITE_UINT32(STM32_TIMER_PROFILE+CYGHWR_HAL_STM32_TIM_CR1, CYGHWR_HAL_STM32_TIM_CR1_CEN);
+
+    return resolution;
+}
+
+#endif // CYGFUN_HAL_CORTEXM_STM32_PROFILE_TIMER
 
 //==========================================================================
 // EOF stm32_misc.c
