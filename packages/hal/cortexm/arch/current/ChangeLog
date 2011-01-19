@@ -1,3 +1,7 @@
+2010-12-28  Ilija Kocho <ilijak@siva.com.mk>
+
+	* include/hal_io.h: conditional VTOR setting.
+
 2011-01-13  John Dallaway  <john@dallaway.org.uk>
 
 	* src/vectors.S (hal_default_interrupt_vsr): Save interrupt state
