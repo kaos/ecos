@@ -1,3 +1,8 @@
+2011-01-21  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* src/stm32_misc.c (hal_start_clocks): Added optional calculation of
+	hal_cortexm_systick_clock when 'internal' clock source is selected.
+
 2011-01-13  John Dallaway  <john@dallaway.org.uk>
 
 	* src/stm32_misc.c: Implement a profiling timer on TIM2.

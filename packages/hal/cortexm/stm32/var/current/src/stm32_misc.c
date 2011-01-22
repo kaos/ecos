@@ -236,7 +236,11 @@ void hal_start_clocks( void )
     hal_stm32_hclk = hal_stm32_sysclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV;
     hal_stm32_pclk1 = hal_stm32_hclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK1_DIV;
     hal_stm32_pclk2 = hal_stm32_hclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV;
+#ifdef CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE_INTERNAL
+    hal_cortexm_systick_clock = hal_stm32_hclk;
+#else
     hal_cortexm_systick_clock = hal_stm32_hclk / 8;
+#endif
 }
 
 //==========================================================================
