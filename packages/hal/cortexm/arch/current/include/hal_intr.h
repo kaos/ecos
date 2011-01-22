@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2011 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -56,6 +56,8 @@
 
 #include <cyg/hal/hal_io.h>
 
+#include <cyg/hal/var_intr.h>           // variant extensions
+
 //==========================================================================
 // Exception vectors
 //
@@ -92,7 +94,12 @@
 #define CYGNUM_HAL_INTERRUPT_SYS_TICK    0
 #define CYGNUM_HAL_INTERRUPT_EXTERNAL    1
 
+
+// Variant or platform allowed to override these definitions to use
+// a different RTC
+#ifndef CYGNUM_HAL_INTERRUPT_RTC
 #define CYGNUM_HAL_INTERRUPT_RTC        CYGNUM_HAL_INTERRUPT_SYS_TICK
+#endif
 
 //==========================================================================
 // Include variant definitions here.
@@ -321,9 +328,19 @@ __externC void hal_call_dsrs_vsr(void);
 //==========================================================================
 // Clock control
 //
-// This uses the CPU SysTick timer.
+// This uses the CPU SysTick timer. Variant or platform allowed to override
+// these definitions
+
+#ifndef CYGHWR_HAL_CLOCK_DEFINED
 
 __externC cyg_uint32 hal_cortexm_systick_clock;
+
+// Select the clock source of the system tick timer
+#ifdef CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE_EXTERNAL
+ #define CYGARC_REG_SYSTICK_CSR_CLK_SRC CYGARC_REG_SYSTICK_CSR_CLK_EXT
+#elif defined(CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE_INTERNAL)
+ #define CYGARC_REG_SYSTICK_CSR_CLK_SRC CYGARC_REG_SYSTICK_CSR_CLK_INT
+#endif
 
 #define HAL_CLOCK_INITIALIZE( __period )                                \
 {                                                                       \
@@ -333,7 +350,7 @@ __externC cyg_uint32 hal_cortexm_systick_clock;
                      __p );                                             \
     HAL_WRITE_UINT32(CYGARC_REG_SYSTICK_BASE+CYGARC_REG_SYSTICK_CSR,    \
                      CYGARC_REG_SYSTICK_CSR_ENABLE      |               \
-                     CYGARC_REG_SYSTICK_CSR_CLK_EXT     );              \
+                     CYGARC_REG_SYSTICK_CSR_CLK_SRC     );              \
 }
 
 #define HAL_CLOCK_RESET( __vector, __period )                           \
@@ -353,6 +370,8 @@ __externC cyg_uint32 hal_cortexm_systick_clock;
 }
 
 #define HAL_CLOCK_LATENCY( __pvalue ) HAL_CLOCK_READ( __pvalue )
+
+#endif // CYGHWR_HAL_CLOCK_DEFINED
 
 //==========================================================================
 // HAL_DELAY_US().

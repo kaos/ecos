@@ -1,3 +1,10 @@
+2011-01-20  Christophe Coutand  <ccoutand@stmi.com>
+
+	* include/hal_intr.h:
+	* cdl/hal_cortexm.cdl:
+	Allow variant or platform to define their own RTC clock. Add
+	CDL entry to select SysTick clock source. [ Bugzilla 1001090 ]
+
 2010-12-28  Ilija Kocho <ilijak@siva.com.mk>
 
 	* include/hal_io.h: conditional VTOR setting.
