@@ -1422,6 +1422,33 @@ cdl_package CYGPKG_NET_LWIP {
                 to accomodate single full size TCP frame in one pbuf, including
                 TCP_MSS, IP header, and link header."
         }       
+
+        cdl_component CYGOPT_LWIP_MEM_PLF_SPEC {
+            display         "Platform/application specific memory settings"
+            flavor          none
+            no_define
+            description     "
+                Platform or application specific settings such as special
+                memory section and memory constrains."
+
+            cdl_option CYGSEM_LWIP_MEM_SECTION {
+                display         "Place lwIP buffers and heap in special\
+                                        memory section."
+                flavor          bool
+                default_value   is_active(CYGDAT_LWIP_MEM_SECTION_NAME)
+                active_if       CYGDAT_LWIP_MEM_SECTION_NAME
+
+                description     "
+                    If you need lwIP buffers to appear in some special
+                    memory section (it is useful for devices with low
+                    memory footprint that is in addition fragmented
+                    in several non-contiguous blocks) the platform
+                    config file should provide the name of this section
+                    through CYGDAT_LWIP_MEM_SECTION_NAME option, if so,
+                    you can let to use the GCC section attribute for
+                    needed variables by this option."
+            }
+        }
     }
     
     cdl_component CYGPKG_LWIP_THREADS {

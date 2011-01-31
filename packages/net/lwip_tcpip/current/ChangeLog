@@ -1,3 +1,10 @@
+2011-01-30  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/lwip_net.cdl: New CDL option CYGSEM_LWIP_MEM_SECTION.
+	* include/lwipopts.h: Enter MEM_SECTION entity.
+	* src/mem.c, src/memp.c: Add an ability to use GCC section
+	attribute for statically allocated buffers, pbufs, and heap.
+
 2011-01-02  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* src/ecos/sequential.c, src/ecos/simple.c: Fixed miltiple-line

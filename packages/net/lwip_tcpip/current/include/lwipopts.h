@@ -51,6 +51,14 @@
 #define MEMP_MEM_MALLOC             defined(CYGIMP_LWIP_MEMP_MEM_MALLOC)
 #define MEM_ALIGNMENT               CYGNUM_LWIP_MEM_ALIGNMENT
 #define MEM_SIZE                    CYGNUM_LWIP_MEM_SIZE
+
+#if defined(CYGSEM_LWIP_MEM_SECTION) && CYGSEM_LWIP_MEM_SECTION
+# include <cyg/infra/cyg_type.h>
+# define MEM_SECTION CYGBLD_ATTRIB_SECTION(CYGDAT_LWIP_MEM_SECTION_NAME)
+#else
+# define MEM_SECTION
+#endif
+
 #define MEMP_OVERFLOW_CHECK         defined(CYGDBG_LWIP_MEMP_OVERFLOW_CHECK)
 #define MEMP_SANITY_CHECK           defined(CYGDBG_LWIP_MEMP_SANITY_CHECK)
 

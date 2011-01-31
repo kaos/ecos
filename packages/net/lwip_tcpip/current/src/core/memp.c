@@ -146,7 +146,7 @@ static const char *memp_desc[MEMP_MAX] = {
 static u8_t memp_memory[MEM_ALIGNMENT - 1 
 #define LWIP_MEMPOOL(name,num,size,desc) + ( (num) * (MEMP_SIZE + MEMP_ALIGN_SIZE(size) ) )
 #include "lwip/memp_std.h"
-];
+] MEM_SECTION;
 
 #if MEMP_SANITY_CHECK
 /**
