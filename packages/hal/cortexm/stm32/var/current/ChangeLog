@@ -1,3 +1,8 @@
+2011-02-03  Alan Bowman  <alan.bowman@datong.co.uk>
+
+	* include/var_io.h: Fix CYGHWR_HAL_STM32_RCC_CFGR_PPRE2_*
+	definitions. [ Bugzilla 1001137 ]
+
 2011-01-21  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* src/stm32_misc.c (hal_start_clocks): Added optional calculation of
