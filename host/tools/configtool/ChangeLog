@@ -1,3 +1,10 @@
+2011-02-07  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/configitem.cpp: Escape newline chars in CDL
+	values for display and in-cell editing. [ Bugzilla 1001144 ]
+	* standalone/wxwin/mainwin.cpp, standalone/wxwin/configtool.cpp:
+	Update copyright strings.
+
 2010-09-10  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/configtooldoc.cpp: Allow import/export of

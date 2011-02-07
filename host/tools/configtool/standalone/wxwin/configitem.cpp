@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2006, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2006, 2008, 2009, 2011 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -434,6 +434,7 @@ wxString ecConfigItem::GetDisplayValue() const
         {
             if (GetCdlValuable())
                 str = StringValue();
+                str.Replace("\n", "\\n"); // escape any newline chars (eg CYGDAT_UITRON_TASK_INITIALIZERS)
         }
         break;
     default:
@@ -610,7 +611,9 @@ bool ecConfigItem::TransferDataFromWindow(wxWindow* window)
         wxASSERT ( GetOptionType() == ecString );
 
         // TODO: do checking
-        doc->SetValue(*this, win->GetValue());
+        wxString str(win->GetValue());
+        str.Replace("\\n", "\n"); // remove escaping of newline chars
+        doc->SetValue(*this, str);
     }
     else if (window->IsKindOf(CLASSINFO(ecDoubleEditorCtrl)))
     {
@@ -1380,6 +1383,7 @@ void ecTextEditorCtrl::OnLeftDClick(wxMouseEvent& event)
     ecConfigToolDoc* doc = wxGetApp().GetConfigToolDoc();
     
     wxString initialValue(GetValue());
+    initialValue.Replace("\\n", "\n"); // remove escaping of newline chars
     
     ecEditStringDialog dialog(initialValue, wxGetApp().GetTopWindow(), ecID_EDIT_STRING_DIALOG);
     if (dialog.ShowModal() == wxID_OK)
