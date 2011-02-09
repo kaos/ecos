@@ -1,0 +1,390 @@
+##==========================================================================
+##
+##    hal_cortexm_lm8xx.cdl
+##
+##    Stellaris Cortex-M3 800 Series variant HAL configuration data
+##
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2011 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    ccoutand
+## Date:         2011-01-18
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+cdl_package CYGPKG_HAL_CORTEXM_LM3S8XX {
+    display       "Stellaris Cortex-M3 800 Series"
+    parent        CYGPKG_HAL_CORTEXM
+    include_dir   cyg/hal
+    define_header hal_cortexm_lm3s8xx.h
+    hardware
+    description   "
+        This package provides generic support for the Cortex-M3 based
+        Stellaris LM 800 Series microcontroller family.  It is also
+        necessary to select a variant and platform HAL package."
+
+    compile       lm3s8xx_misc.c
+
+    implements    CYGINT_DEVS_I2C_LM3S8XX_BUS_DEVICES
+
+    requires      { CYGHWR_HAL_CORTEXM_LM3S == "LM3S8XX" }
+
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_cortexm.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_cortexm_lm3s.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_CORTEXM_VAR_IO_H"
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_LM3S8XX {
+        display       "Stellaris LM 800 Series variant in use"
+        flavor        data
+        default_value { "LM3S811" }
+        legal_values  { "LM3S828" "LM3S818" "LM3S817"
+                        "LM3S815" "LM3S812" "LM3S811"
+                        "LM3S808" "LM3S801" "LM3S800" }
+        description   "
+               The Stellaris 800 Series has several variants, the main
+               difference being the numbers of some peripherals"
+    }
+
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants"
+        flavor        none
+        no_define
+
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            default_value 1000000000
+        }
+
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            default_value 100
+        }
+
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+            default_value 1000000 / CYGNUM_HAL_RTC_DENOMINATOR
+        }
+    }
+
+    cdl_component CYG_HAL_STARTUP {
+        display       "Startup type"
+        flavor        data
+        default_value { "ROM" }
+        legal_values  { "ROM" }
+        no_define
+        define -file system.h CYG_HAL_STARTUP
+        description   "
+            With its 8KB of SRAM, the 800 Series devices only allows
+            ROM startup."
+    }
+
+    cdl_component CYGHWR_MEMORY_LAYOUT {
+        display          "Memory layout"
+        flavor data
+        no_define
+        calculated       { (CYG_HAL_STARTUP == "ROM") ? \
+                           "cortexm_lm3s8xx_rom" : "undefined" }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
+            display       "Memory layout linker script fragment"
+            flavor        data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
+            calculated    { "<pkgconf/mlt_" . CYGHWR_MEMORY_LAYOUT . ".ldi>" }
+        }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_H {
+            display       "Memory layout header file"
+            flavor        data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_H
+            calculated    { "<pkgconf/mlt_" . CYGHWR_MEMORY_LAYOUT . ".h>" }
+        }
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_LM3S8XX_CLOCK {
+        display       "Clocking"
+        flavor        none
+        requires      { CYGHWR_HAL_CORTEXM_LM3S8XX_CLOCK_EXT || \
+                        CYGHWR_HAL_CORTEXM_LM3S8XX_CLOCK_INT }
+
+        cdl_component CYGHWR_HAL_CORTEXM_LM3S8XX_CLOCK_EXT {
+            display      "External clock source"
+            active_if     ! CYGHWR_HAL_CORTEXM_LM3S8XX_CLOCK_INT
+            flavor        bool
+            default_value 1
+
+            cdl_option CYGNUM_HAL_CORTEXM_LM3S8XX_XTAL_FREQ {
+                display       "Crystal frequency in Hz"
+                flavor        data
+                default_value 8000000
+                legal_values  { 1000000 to 8192000 }
+                description   "
+                    Select the external crystal frequency from 1 to
+                    8.192 MHz.  Selecting the internal PLL adds additional
+                    constraints to the external crystal frequency setting.
+                    Check-out CYGHWR_HAL_CORTEXM_LM3S8XX_PLL"
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_LM3S8XX_CLOCK_INT {
+            display       "Internal clock source"
+            active_if     ! CYGHWR_HAL_CORTEXM_LM3S8XX_CLOCK_EXT
+            flavor        bool
+            default_value 0
+
+            cdl_option CYGNUM_HAL_CORTEXM_LM3S8XX_CLOCK_INT_FREQ {
+                display       "Internal clock source frequency in Hz"
+                flavor        data
+                default_value 12000000
+                legal_values  { 12000000 3000000 }
+                description   "
+                    Select the internal clock source. The frequency of the
+                    internal clock source can either be 12MHz or 3MHz."
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_LM3S8XX_PLL {
+            display       "Enable PLL"
+            flavor         bool
+            default_value  1
+            active_if      CYGHWR_HAL_CORTEXM_LM3S8XX_CLOCK_EXT
+
+            cdl_option CYGHWR_HAL_CORTEXM_LM3S8XX_PLL_INPUT {
+                display       "PLL input clock frequency"
+                flavor        data
+                calculated    { CYGNUM_HAL_CORTEXM_LM3S8XX_XTAL_FREQ }
+                legal_values  { 3579545 3686400 4000000 4096000 4915200 5000000 \
+                                5120000 6000000 6144000 7372800 8000000 8192000 }
+                description   "
+                    PLL output frequency is fixed to 200 MHz.  Using the
+                    PLL puts more constraints to the external reference
+                    clock. The PLL input clock frequency is not defined
+                    if internal chip reference clock is used."
+            }
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_LM3S8XX_SYSCLK {
+            display       "System Clock frequency"
+            flavor        data
+            calculated    { CYGHWR_HAL_CORTEXM_LM3S8XX_PLL ? ( 200000000 / CYGHWR_HAL_CORTEXM_LM3S8XX_SYSCLK_DIV ) : CYGHWR_HAL_CORTEXM_LM3S8XX_CLOCK_EXT ? ( CYGHWR_HAL_CORTEXM_LM3S8XX_XTAL_FREQ / CYGHWR_HAL_CORTEXM_LM3S8XX_SYSCLK_DIV ) : ( CYGNUM_HAL_CORTEXM_LM3S8XX_CLOCK_INT_FREQ / CYGHWR_HAL_CORTEXM_LM3S8XX_SYSCLK_DIV ) }
+            legal_values  { 1000000 to 50000000 }
+            description   "
+                The chip system clock frequency is 200 MHz divided
+                by the system clock divider when the PLL is in used,
+                otherwise the frequency value is the chip source clock
+                frequency divided by the system clock divider."
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_LM3S8XX_SYSCLK_DIV {
+            display       "System Clock divider"
+            flavor        data
+            default_value 4
+            legal_values  { 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 }
+            description   "
+                Select the system clock divider."
+        }
+    }
+
+    # UART0 is available for diagnostic/debug use.
+    implements   CYGINT_HAL_CORTEXM_LM3S_UART0
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+        display      "Number of communication channels on the board"
+        flavor        data
+        calculated    1
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+        display       "Debug serial port"
+        active_if      CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE
+        flavor data
+        calculated    0
+        description   "
+            This option selects which port will be used to connect to
+            a host running GDB."
+     }
+
+     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+         display       "Diagnostic serial port"
+         active_if     CYGPRI_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_CONFIGURABLE
+         flavor data
+         calculated    0
+         description   "
+             This option selects which port will be used for diagnostic
+             output."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
+        display       "Console serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 38400
+        description   "
+            This option controls the default baud rate used for the
+            console connection.  Note: this should match the value chosen
+            for the GDB port if the diagnostic and GDB port are the same."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
+        display       "GDB serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 38400
+        description   "
+            This option controls the default baud rate used for the GDB
+            connection.  Note: this should match the value chosen for
+            the console port if the console and GDB port are the same."
+    }
+
+    cdl_component CYGBLD_GLOBAL_OPTIONS {
+        display       "Global build options"
+        flavor        none
+        parent        CYGPKG_NONE
+        description   "
+            Global build options including control over compiler flags,
+            linker flags and choice of toolchain."
+
+        cdl_option CYGBLD_GLOBAL_COMMAND_PREFIX {
+            display       "Global command prefix"
+            flavor        data
+            no_define
+            default_value { "arm-eabi" }
+            description   "
+                This option specifies the command prefix used when
+                invoking the build tools."
+        }
+
+        cdl_option CYGBLD_GLOBAL_CFLAGS {
+            display       "Global compiler flags"
+            flavor        data
+            no_define
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . "-mcpu=cortex-m3 -mthumb -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions" }
+            description   "
+                This option controls the global compiler flags which
+                are used to compile all packages by default. Individual
+                packages may define options which override these global
+                flags."
+        }
+
+        cdl_option CYGBLD_GLOBAL_LDFLAGS {
+            display       "Global linker flags"
+            flavor        data
+            no_define
+            default_value { "-mcpu=cortex-m3 -mthumb -Wl,--gc-sections -Wl,-static -Wl,-n -g -nostdlib" }
+            description   "
+                This option controls the global linker flags. Individual
+                packages may define options which override these global
+                flags."
+        }
+    }
+
+    cdl_option CYGSEM_HAL_ROM_MONITOR {
+        display       "Behave as a ROM monitor"
+        flavor        bool
+        default_value 0
+        parent        CYGPKG_HAL_ROM_MONITOR
+        requires      { CYG_HAL_STARTUP == "ROM" }
+        requires      { CYGDBG_HAL_CRCTABLE_LOCATION == "ROM" }
+        description   "
+            Enable this option if this program is to be used as a
+            ROM monitor, i.e. applications will be loaded into RAM on
+            the board, and this ROM monitor may process exceptions or
+            interrupts generated from the application. This enables
+            features such as utilizing a separate interrupt stack when
+            exceptions are generated."
+    }
+
+    cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
+         display       "Work with a ROM monitor"
+         flavor        booldata
+         legal_values  { "Generic" "GDB_stubs" }
+         default_value { CYG_HAL_STARTUP == "RAM" ? "GDB_stubs" : 0 }
+         parent          CYGPKG_HAL_ROM_MONITOR
+         requires      { CYG_HAL_STARTUP == "RAM" }
+         description   "
+             Support can be enabled for different varieties of ROM
+             monitor.  This support changes various eCos semantics such
+             as the encoding of diagnostic output, or the overriding of
+             hardware interrupt vectors.
+             Firstly there is \"Generic\" support which prevents the
+             HAL from overriding the hardware vectors that it does not
+             use, to instead allow an installed ROM monitor to handle
+             them. This is the most basic support which is likely to be
+             common to most implementations of ROM monitor.
+             \"GDB_stubs\" provides support when GDB stubs are included
+             in the ROM monitor or boot ROM."
+    }
+
+    cdl_component CYGBLD_HAL_CORTEXM_LM3S8XX_GDB_STUBS {
+        display       "Create StubROM SREC and binary files"
+        active_if     CYGBLD_BUILD_COMMON_GDB_STUBS
+        no_define
+        calculated    1
+        requires      { CYG_HAL_STARTUP == "ROM" }
+        description   "
+            This component causes the ELF image generated by the build
+            process to be converted to S-Record and binary files."
+
+        make -priority 325 {
+            <PREFIX>/bin/stubrom.srec : <PREFIX>/bin/gdb_module.img
+            $(OBJCOPY) -O srec $< $@
+        }
+        make -priority 325 {
+            <PREFIX>/bin/stubrom.bin : <PREFIX>/bin/gdb_module.img
+            $(OBJCOPY) -O binary $< $@
+        }
+    }
+
+    cdl_option CYGPKG_HAL_CORTEXM_LM3S8XX_TESTS {
+        display       "Stellaris Cortex-M3 800 Series tests"
+        active_if     CYGPKG_KERNEL
+        flavor        data
+        no_define
+        calculated    { "tests/timers" }
+        description   "
+            This option specifies the set of tests for the Stellaris
+            Cortex-M3 800 Series HAL."
+    }
+}
+
+# EOF hal_cortex_lm3s8xx.cdl

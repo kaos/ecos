@@ -1,0 +1,217 @@
+# ====================================================================
+#
+#      adc_lm3s.cdl
+#
+#      eCos Stellaris Cortex M3 ADC configuration data
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2011 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      ccoutand
+# Contributors:   
+# Date:           2011-01-12
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_ADC_CORTEXM_LM3S {
+    display       "ADC driver for Stellaris Cortex M3 microcontroller family"
+
+    parent        CYGPKG_IO_ADC_DEVICES
+    active_if     CYGPKG_IO_ADC_DEVICES
+    active_if     CYGPKG_HAL_CORTEXM_LM3S
+    include_dir   cyg/io
+    description   "
+        This package provides a generic ADC device driver for the on-chip
+        ADC peripherals in Stellaris microcontroller."
+
+    compile       -library=libextras.a adc_lm3s.c
+
+    define_proc {
+        puts $::cdl_system_header "#define CYGDAT_DEVS_ADC_CORTEXM_LM3S_INL <cyg/io/adc_lm3s.inl>"
+    }
+
+    # ---------------------------------------------------------------------
+    # Primary ADC ( ADC0 ) port
+
+    cdl_component CYGPKG_DEVS_ADC_CORTEXM_LM3S_ADC0 {
+        display       "ADC port 0"
+        flavor        bool
+        default_value 1
+        description   "
+            This option includes the device driver for the on-chip ADC0
+            of the Stellaris device."
+
+        cdl_interface CYGINT_DEVS_ADC_CORTEXM_LM3S_ADC0_CHANNELS {
+            display "Number of ADC0 channels"
+        }
+
+        cdl_option CYGNUM_DEVS_ADC_CORTEXM_LM3S_ADC0_SELECT_TIMER {
+            display       "ADC sampling timer"
+            flavor        data
+            legal_values  { 0 1 2 }
+            default_value 0
+            description   "
+                This option selects the timer channel generating the
+                ADC sampling interval."
+        }
+
+        cdl_option CYGNUM_DEVS_ADC_CORTEXM_LM3S_ADC0_INTPRIO {
+            display       "ADC Interrupt priority"
+            flavor        data
+            default_value 0x60
+            description   "
+               This option selects the interrupt priority for the ADC
+               interrupts."
+        }
+
+        cdl_option CYGNUM_DEVS_ADC_CORTEXM_LM3S_ADC0_DEFAULT_RATE {
+            display       "Default sample rate"
+            flavor        data
+            legal_values  1 to 10000
+            default_value 100
+            description   "
+                The driver will be initialized with the default sample
+                rate.  If you raise the default sample rate you might
+                need to increase the buffer size for each channel."
+        }
+
+        cdl_option CYGNUM_DEVS_ADC_CORTEXM_LM3S_ADC0_AVERAGING {
+            display       "Sample averaging"
+            flavor        data
+            legal_values  { 0 2 4 8 16 32 64 }
+            default_value 0
+            description   "
+                Select the ADC sample averaging."
+        }
+
+        cdl_component CYGPKG_DEVS_ADC_CORTEXM_LM3S_ADC0_TEMP_SENSOR {
+            display       "Internal Temperature Sensor"
+            flavor        bool
+            default_value 0
+            description   "
+                Enable one ADC channel for internal temperature sensor
+                reading."
+
+            cdl_option CYGNUM_DEVS_ADC_CORTEXM_LM3S_ADC0_TEMP_SENSOR_CHANNEL {
+                display       "Select sensor channel"
+                flavor        data
+                legal_values  { 0 to (CYGINT_DEVS_ADC_CORTEXM_LM3S_ADC0_CHANNELS-1) }
+                default_value 1
+                description   "
+                    This option select ADC channel reserved for
+                    temperature sensor reading."
+            }
+        }
+
+        # -----------------------------------------------------------------
+        # Support up to 8 ADC channels
+
+        for { set ::channel 0 } { $::channel < 8 } { incr ::channel } {
+            cdl_component CYGPKG_DEVS_ADC_CORTEXM_LM3S_ADC0_CHANNEL[set ::channel] {
+                display       "Access ADC channel [set ::channel]"
+                flavor        bool
+                default_value [set ::channel] == 0
+                implements    CYGINT_DEVS_ADC_CORTEXM_LM3S_ADC0_CHANNELS
+                description   "
+                    If the application needs to access the on-chip ADC0
+                    channel [set ::channel] via an eCos ADC driver then
+                    this option should be enabled."
+
+                cdl_option CYGDAT_DEVS_ADC_CORTEXM_LM3S_ADC0_CHANNEL[set ::channel]_NAME {
+                    display       "Device name"
+                    flavor        data
+                    default_value [format {"\"/dev/adc0%d\""} $::channel]
+                    description   "
+                        This option controls the name that an eCos
+                        application should use to access this device
+                        via cyg_io_lookup(), open(), or similar calls."
+                }
+
+                cdl_option CYGDAT_DEVS_ADC_CORTEXM_LM3S_ADC0_CHANNEL[set ::channel]_BUFSIZE {
+                    display       "Size of data buffer"
+                    flavor        data
+                    legal_values  0x01 to 0x16
+                    default_value 0x4
+                    description   "
+                        This option controls the number of samples the
+                        buffer can store. The required RAM depends on the
+                        sample size and on the number of samples. If the
+                        sample size is <= 8 bit the the required RAM =
+                        size of data buffer. If the sample size is 9 or 10
+                        bit then required RAM = size of data buffer * 2."
+                }
+            }
+        }
+    }
+
+    cdl_option CYGPKG_DEVS_ADC_CORTEXM_LM3S_DEBUG_LEVEL {
+        display       "Driver debug output level"
+        flavor        data
+        legal_values  { 0 1 }
+        default_value 0
+        description   "
+            This option specifies the level of debug data output by
+            the Stellaris ADC device driver. A value of 0 signifies no
+            debug data output; 1 signifies normal debug data output. If
+            an overrun occurred then this can only be detected by debug
+            output messages."
+    }
+
+    cdl_component CYGSEM_DEVS_ADC_CORTEXM_LM3S_SAMPLE_SIZE_LIMIT {
+        display       "Sample size limit"
+        flavor        bool
+        calculated    1
+        requires      { ( CYGNUM_IO_ADC_SAMPLE_SIZE == 10 ) }
+        description   "
+            This component forces a limit (or rounds) the sample size
+            for Stellaris ADC channels which in the most are 10-bit."
+    }
+
+    cdl_option CYGPKG_DEVS_ADC_CORTEXM_LM3S_TESTS {
+        display       "Tests for Stellaris 800 Series ADC driver"
+        flavor        data
+        no_define
+        active_if     CYGPKG_KERNEL
+        active_if     CYGPKG_IO_ADC
+        calculated    { "tests/lm3s_adc_test" }
+        description   "
+            This option specifies the set of tests for the Stellaris
+            ADC device driver."
+    }
+}
+
+# EOF adc_lm3s.cdl

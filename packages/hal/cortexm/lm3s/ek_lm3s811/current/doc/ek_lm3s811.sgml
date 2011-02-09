@@ -1,0 +1,140 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                                                     -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     ek_lm3s811.sgml                                             -->
+<!--                                                                 -->
+<!--     ek_lm3s811 board documentation.                             -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2011 Free Software Foundation, Inc. -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTEND####                                     -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   ccoutand                                           -->
+<!-- Contact(s):  ccoutand                                           -->
+<!-- Date:        2011/01/18                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="hal-cortexm-lm3s-ek_lm3s811"><title>Stellaris EKK-LM3S811 Board Support</title>
+
+<refentry id="lm3s-ek_lm3s811">
+  <refmeta>
+    <refentrytitle>Overview</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>eCos Support for the Stellaris EKK-LM3S811 Board</refname>
+    <refpurpose>Overview</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="lm3s-ek_lm3s811-description"><title>Description</title>
+    <para>
+The Stellaris EKK-LM3S811 evaluation kit uses the Stellaris LM3S811 microcontroller from the 
+800 Series. The LM3S811 is an ARM cortex-M3 based microcontroller with 64KB of FLASH 
+and 8KB of SRAM. The device has various peripherals such as UART, I2C, ADC or Analog
+Comparator. The kit features an OLED graphical display and UART0 is accessible via the 
+on-board USB to UART converter.
+    </para>
+    <para>
+Due to extreme limited RAM ressources (8KB SRAM only), the eCos port targets standalone ROM  
+application using the eCos kernel in single user thread environment. The cortex-M architecture HAL 
+requires a seperate stack to handle interrupts, thus the minimum kernel enable application requires 3 
+stacks. The interrupt stack, the Idle thread stack and the user stack. All stacks are set to the architecture 
+minimum allowed size of CYGNUM_HAL_STACK_SIZE_MINIMUM ( 1360 bytes ). 
+    </para>
+  </refsect1>
+
+  <refsect1 id="lm3s-ek_lm3s811-config"><title>Configuration</title>
+    <para>
+The minimum board configuration includes the Microcontroller HAL alongs with the ADC and I2C device 
+drivers.
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><varname>LM3S811 Microcontroller</varname></term>
+        <listitem>
+        <para>
+CYGPKG_HAL_CORTEXM_LM3S8XX - The microcontroller configuration 
+requirements are minimal. With the default setup, the microcontroller runs from the 
+external clock source, a crystal of 6MHz. The chip internal PLL generates a fix 
+200MHz clock that is divided down to the default system clock frequency of 50MHz. 
+In this scenario, the device uses full processing power. The system clock divider 
+allows down scaling of the system clock frequency to reduce the overall power 
+consumption of the device. The microcontroller also offers the option to run from an
+internal oscillator. This option has 2 modes, 3MHz or 12MHz. When selecting the
+internal oscillator, the PLL is bypassed. The system clock frequency becomes at
+best 12MHz if no further clock division is applied.
+        </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><varname>I2C Interface</varname></term>
+        <listitem><para>
+CYGPKG_DEVS_I2C_CORTEXM_LM3S - The microcontroller uses the I2C bus 
+to communicate with the SD1300 controller of the OLED 96 x 16 display. The SD1300 
+controller eCos driver is not currently available.
+The I2C is default set to use the low frequency mode ( 100KHz bus clock ). The high 
+frequency mode ( 400 KHz ) is available by changing CYGNUM_HAL_CORTEXM_LM3S_I2C_CLK_SPEED.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><varname>ADC Interface</varname></term>
+        <listitem><para>
+CYGPKG_DEVS_ADC_CORTEXM_LM3S - The LM3S811 includes 4 ADC channels including an
+optional internal temperature probe. There are many ways to use the on-chip ADC.
+The current eCos driver uses a single sequencer (sequencer 0) to schedule sampling of all 
+channels. This practically means that all channels are sampled from the same trigger, a periodic timer
+interrupt in the current driver. The timer to use
+is selected from CYGNUM_DEVS_ADC_CORTEXM_LM3S_ADC0_SELECT_TIMER, with timer 0 as
+default value. The timer is used in 32 bits periodic mode, therefore cannot be re-used
+for any other user purpose. While the ADC has the possibility to trigger sampling on external 
+IO events, the driver does not offer that flexibility. Finally, the driver only allows measurement of
+single-ended IOs.
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1 id="lm3s-ek_lm3s811-rebuild"><title>Build ROM type applications</title>
+    <para>
+The steps needed to build the HAL library for the EKK-LM3S811 board are:
+    </para>
+    <screen>
+$ mkdir ek_lm3s811
+$ cd ek_lm3s811
+$ ecosconfig new ek-lm3s811 minimal
+$ ecosconfig import $ECOS_REPOSITORY/hal/cortexm/lm3s/ek_lm3s811/current/misc/default_ROM.ecm
+$ ecosconfig resolve
+$ ecosconfig tree
+$ make
+    </screen>
+    <para>
+At the end of the build the <filename
+class="directory">install/lib</filename> subdirectory should contain the library and linker script and the <filename
+class="directory">install/include</filename> subdirectory the necessary includes to compile the application.
+    </para>
+  </refsect1>
+
+
+</refentry>
+
+</part>

@@ -1,0 +1,123 @@
+##==========================================================================
+##
+##    hal_cortexm_lm3s.cdl
+##
+##    Stellaris Cortex-M3 variant HAL configuration data
+##
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2011 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    ccoutand
+## Date:         2011-01-18
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+cdl_package CYGPKG_HAL_CORTEXM_LM3S {
+    display       "Stellaris Cortex-M3 from Luminary Micro variant HAL"
+    parent        CYGPKG_HAL_CORTEXM
+    define_header hal_cortexm_lm3s.h
+    include_dir   cyg/hal
+    hardware
+    description   "
+        This package provides generic support for the Cortex-M3 based
+        Stellaris microcontroller family.  It is also necessary to select
+        a variant and platform HAL package."
+
+    compile       hal_diag.c lm3s_misc.c
+
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
+
+    requires      { CYGHWR_HAL_CORTEXM == "M3" }
+    requires      { CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE == "INTERNAL" }
+
+    # Let the architectural HAL see this variant's files
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_CORTEXM_VAR_IO_H"
+        puts $::cdl_system_header "#define CYGBLD_HAL_CORTEXM_VAR_ARCH_H"
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_LM3S {
+        display       "Stellaris Cortex-M3 variant in use"
+        flavor        data
+        default_value { "LM3S8XX" }
+        legal_values  { "LM3S8XX" }
+        description   "
+            Currently only supported the Stellaris Cortex-M3 800 Series."
+    }
+
+    cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS {
+        display       "CPU priority levels"
+        flavor        data
+        calculated    3
+        description   "
+            This option defines the number of bits used to encode the
+            exception priority levels that this variant of the Cortex-M3
+            CPU implements."
+    }
+
+    cdl_option CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY {
+        display       "Clock interrupt ISR priority"
+        flavor        data
+        calculated    0xC0
+        description   "
+            Set clock ISR priority to lowest priority."
+    }
+
+    cdl_interface CYGINT_HAL_CORTEXM_LM3S_UART0 {
+        display       "Platform has UART0 serial port"
+        description   "
+            The platform has a socket on UART0."
+    }
+
+    cdl_interface CYGINT_HAL_CORTEXM_LM3S_UART1 {
+        display       "Platform has UART1 serial port"
+        description   "
+            The platform has a socket on UART1."
+    }
+
+    cdl_interface CYGINT_HAL_CORTEXM_LM3S_UART2 {
+        display       "Platform has UART2 serial port"
+        description   "
+            The platform has a socket on UART2."
+    }
+
+}
+
+# EOF hal_cortex_lm3s.cdl

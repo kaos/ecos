@@ -2419,6 +2419,16 @@ package CYGPKG_DEVS_I2C_ARM_LPC2XXX {
                  controller family."
 }
 
+package CYGPKG_DEVS_I2C_CORTEXM_LM3S {
+    alias        { "Stellaris Cortex-M3 I2C driver" lm3s_i2c lm3s_i2c_driver i2c_lm3s}
+    hardware
+    directory    devs/i2c/cortexm/lm3s
+    script       i2c_lm3s.cdl
+    description  "
+        This package provides a driver for the I2C unit of the Stellaris
+        Cortex-M3 controller family."
+}
+
 package CYGPKG_DEVS_ADC_ARM_LPC24XX {
     alias           { "LPC24xx ADC driver" }
     hardware
@@ -2437,6 +2447,16 @@ package CYGPKG_DEVS_ADC_ARM_AT91 {
     description "
             This packages provides an ADC driver for the on-chip
             ADC provided by the Atmel AT91 processor family."
+}
+
+package CYGPKG_DEVS_ADC_CORTEXM_LM3S {
+    alias         { "Stellaris Cortex M3 ADC driver" lm3s_adc }
+    hardware
+    directory     devs/adc/cortexm/lm3s
+    script        adc_lm3s.cdl
+    description   "
+        This packages provides an ADC driver for the on-chip ADC provided
+        by the Stellaris Cortex M3 controller family."
 }
 
 package CYGPKG_DEVS_ADC_SYNTH {
@@ -6843,6 +6863,38 @@ package CYGPKG_HAL_CORTEXM {
         variant and platform HAL packages."
 }
 
+package CYGPKG_HAL_CORTEXM_LM3S {
+    alias       { "Stellaris Cortex M3 variant HAL" hal_cortexm_lm3s }
+    directory   hal/cortexm/lm3s/var
+    script      hal_cortexm_lm3s.cdl
+    hardware
+    description "
+        The Stellaris Cortex M3 HAL package provides the support needed
+        to run eCos on targets based on the Stellaris Cortex M3 family
+        of microcontrollers."
+}
+
+package CYGPKG_HAL_CORTEXM_LM3S8XX {
+    alias       { "Stellaris 800 Series variant HAL" hal_cortexm_lm3s8xx }
+    directory   hal/cortexm/lm3s/lm3s8xx/
+    script      hal_cortexm_lm3s8xx.cdl
+    hardware
+    description "
+        The Stellaris Cortex M3 800 Series HAL package provides the
+        support needed to run eCos on targets based on the Stellaris
+        Luminary Micro 800 Series family of microcontrollers."
+}
+
+package CYGPKG_HAL_CORTEXM_EK_LM3S811 {
+    alias       { "Stellaris EK-LM3S811 HAL" hal_cortexm_ek_lm3s811 }
+    directory   hal/cortexm/lm3s/ek_lm3s811
+    script      hal_cortexm_ek_lm3s811.cdl
+    hardware
+    description "
+        The ek-lm3s811 HAL package provides the support needed to run
+        eCos on the Stellaris EK-LM3S811 board from Luminary Micro."
+}
+
 package CYGPKG_HAL_CORTEXM_STM32 {
 	alias		{ "ST STM32 variant HAL" hal_cortexm_stm32 }
 	directory	hal/cortexm/stm32/var
@@ -6939,6 +6991,22 @@ target stm3210e_eval {
                  }
         description "The stm3210e_eval target provides the packages needed
         to run eCos on the STM3210E EVAL board."
+}
+
+target ek-lm3s811 {
+        alias      { " Stellaris EK-LM3S811 board"  ek-lm3s811 }
+        packages   { CYGPKG_HAL_CORTEXM
+                     CYGPKG_HAL_CORTEXM_LM3S
+                     CYGPKG_HAL_CORTEXM_LM3S8XX
+                     CYGPKG_HAL_CORTEXM_EK_LM3S811
+                     CYGPKG_DEVS_I2C_CORTEXM_LM3S
+                     CYGPKG_DEVS_ADC_CORTEXM_LM3S
+                     CYGPKG_IO_I2C
+                     CYGPKG_IO_ADC
+                    }
+        description "
+            EK-LM3S811 target provides the packages needed to run eCos
+            on the Stellaris EK-LM3S811 board from Luminary Micro."
 }
 
 # ==========================================================================
