@@ -34,9 +34,9 @@
 
 <!-- }}} -->
 
-<part id="hal-cortexm-lm3s-ek_lm3s811"><title>Stellaris EKK-LM3S811 Board Support</title>
+<part id="hal-cortexm-lm3s-ek-lm3s811"><title>Stellaris EKK-LM3S811 Board Support</title>
 
-<refentry id="lm3s-ek_lm3s811">
+<refentry id="lm3s-ek-lm3s811">
   <refmeta>
     <refentrytitle>Overview</refentrytitle>
   </refmeta>
@@ -45,7 +45,7 @@
     <refpurpose>Overview</refpurpose>
   </refnamediv>
 
-  <refsect1 id="lm3s-ek_lm3s811-description"><title>Description</title>
+  <refsect1 id="lm3s-ek-lm3s811-description"><title>Description</title>
     <para>
 The Stellaris EKK-LM3S811 evaluation kit uses the Stellaris LM3S811 microcontroller from the 
 800 Series. The LM3S811 is an ARM cortex-M3 based microcontroller with 64KB of FLASH 
@@ -62,7 +62,7 @@ minimum allowed size of CYGNUM_HAL_STACK_SIZE_MINIMUM ( 1360 bytes ).
     </para>
   </refsect1>
 
-  <refsect1 id="lm3s-ek_lm3s811-config"><title>Configuration</title>
+  <refsect1 id="lm3s-ek-lm3s811-config"><title>Configuration</title>
     <para>
 The minimum board configuration includes the Microcontroller HAL alongs with the ADC and I2C device 
 drivers.
@@ -114,7 +114,7 @@ single-ended IOs.
     </variablelist>
   </refsect1>
 
-  <refsect1 id="lm3s-ek_lm3s811-rebuild"><title>Build ROM type applications</title>
+  <refsect1 id="lm3s-ek-lm3s811-rebuild"><title>Build ROM type applications</title>
     <para>
 The steps needed to build the HAL library for the EKK-LM3S811 board are:
     </para>

@@ -49,7 +49,7 @@
 
 cdl_package CYGPKG_HAL_CORTEXM_EK_LM3S811 {
     display       "Stellaris EK-LM3S811 Development Board HAL"
-    doc           ref/hal-cortexm-lm3s-ek_lm3s811.html
+    doc           ref/hal-cortexm-lm3s-ek-lm3s811.html
     parent        CYGPKG_HAL_CORTEXM_LM3S8XX
     define_header hal_cortexm_ek_lm3s811.h
     include_dir   cyg/hal
