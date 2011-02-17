@@ -5,6 +5,10 @@
 	reported by both Ulrich Holeschak and Stanislav Meduna.
 	[ Bugzilla 1001154 ]
 
+2011-02-16  Ilija Kocho <ilijak@siva.com.mk>
+
+	* src/cortexm.ld: Added USER_SECTION() macro. [Bugzilla 1001142 ]
+
 2011-01-20  Christophe Coutand  <ccoutand@stmi.com>
 
 	* include/hal_intr.h:

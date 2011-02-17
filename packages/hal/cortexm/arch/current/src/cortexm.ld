@@ -6,7 +6,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2011 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -264,6 +264,13 @@ OUTPUT_FORMAT(elf32-bigarm)
     *(.scommon) *(.dynsbss) *(.sbss*) *(.gnu.linkonce.sb.*) \
     *(.dynbss) *(.bss*) *(.gnu.linkonce.b.*) *(COMMON) \
     __bss_end = ABSOLUTE (.); } \
+    > _region_
+
+#define USER_SECTION(_name_, _region_,  _vma_, _lma_) \
+    ._name_ _vma_ : _lma_ \
+    { __ ## _name_ ## _start = ABSOLUTE (.); \
+     *(._name_*) \
+    __ ## _name_ ## _end = ABSOLUTE (.); } \
     > _region_
 
 #define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .);
