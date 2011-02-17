@@ -1,3 +1,10 @@
+2011-02-17  John Dallaway  <john@dallaway.org.uk>
+
+	* include/hal_intr.h (HAL_DISABLE_INTERRUPTS): Mark operand as
+	an earlyclobber operand to ensure correct register usage. Issue
+	reported by both Ulrich Holeschak and Stanislav Meduna.
+	[ Bugzilla 1001154 ]
+
 2011-01-20  Christophe Coutand  <ccoutand@stmi.com>
 
 	* include/hal_intr.h:

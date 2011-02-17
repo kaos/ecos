@@ -242,7 +242,7 @@ typedef cyg_uint32  CYG_INTERRUPT_STATE;
         "mrs    %0, basepri             \n"     \
         "mov    r1,%1                   \n"     \
         "msr    basepri,r1              \n"     \
-        : "=r" (__old)                          \
+        : "=&r" (__old)                         \
         :  "r" (CYGNUM_HAL_CORTEXM_PRIORITY_MAX)\
         : "r1"                                  \
         );
