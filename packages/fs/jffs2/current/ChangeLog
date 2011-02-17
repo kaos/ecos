@@ -1,6 +1,12 @@
+2011-02-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/jffs2.cdl: Add CYGNUM_FS_JFFS2_TEST_OFFSET and
+	CYGNUM_FS_JFFS2_TEST_LENGTH, which should have been included in change
+	of 2008-11-18.
+
 2009-04-28  John Dallaway  <john@dallaway.org.uk>
 
-	cdl/jffs2.cdl: Use CYGPKG_IO_FILEIO as the parent.
+	* cdl/jffs2.cdl: Use CYGPKG_IO_FILEIO as the parent.
 
 2009-02-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 

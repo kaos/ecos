@@ -269,21 +269,50 @@ cdl_package CYGPKG_FS_JFFS2 {
     # ----------------------------------------------------------------
     # Tests
 
-    cdl_option CYGPKG_FS_JFFS2_TESTS {
+    cdl_component CYGPKG_FS_JFFS2_TESTS {
 	display "JFFS2 FS tests"
 	flavor  data
 	no_define
 	calculated { "tests/jffs2_1 tests/jffs2_2 tests/jffs2_3" }
             description   "
                 This option specifies the set of tests for the JFFS2    
-                FS package."
+                FS package.
+                If supported by the configuration, these tests will preferentially
+                use a FIS partition (which may be defined using RedBoot) named
+                \"jffs2test\". If that FIS partition does not exist, then no testing
+                will be performed to avoid any risk of corruption of live data.
+                Alternatively if the configuration does not support that activity,
+                a hard coded specification may be set."
+
+        cdl_component CYGPKG_FS_JFFS2_TEST_DEVICE {
+            display         "Fixed Flash test area specs"
+            no_define
+            default_value   !CYGFUN_IO_FLASH_BLOCK_FROM_FIS
+            description     "
+                This component gives specifications of the flash region to use
+                for testing. It usually only applies when specification via FIS is not
+                possible."
+            
+            cdl_option CYGNUM_FS_JFFS2_TEST_OFFSET {
+                display         "Start offset from flash base"
+                flavor          data
+                default_value   CYGNUM_IO_FLASH_TEST_OFFSET
+                description     "
+                    This gives the offset from the base of the first flash device
+                    of where tests may operate.  It is important to set this correctly,
+                    as an incorrect value could allow the tests to write over critical
+                    portions of the FLASH device and possibly render the target
+                    board totally non-functional."
+            }
+            cdl_option CYGNUM_FS_JFFS2_TEST_LENGTH {
+                display         "Test area length"
+                flavor          data
+                default_value   CYGNUM_IO_FLASH_TEST_LENGTH
+                description     "
+                    This gives the length of the region of flash used for testing."
+            }
         }
-    
+    }
 }
 
 # End of jffs2.cdl
-
-
-
-
-
