@@ -1,3 +1,9 @@
+2011-02-18  John Dallaway  <john@dallaway.org.uk>
+
+	* ecos.db: Remove non-hardware package CYGPKG_IO_ADC from the
+	ek-lm3s811 target definition and eliminate leading space in alias
+	string for correct sorting of targets by name.
+
 2011-02-09  Christophe Coutand  <ccoutand@stmi.com>
 
 	* NEWS, ecos.db: Add Stellaris Cortex M3 variant HAL, support for
@@ -2794,7 +2800,7 @@ Mon Jul 27 19:36:53 BST 1998  Chris Provenzano  <proven@cygnus.com>
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

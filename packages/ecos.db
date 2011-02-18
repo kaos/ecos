@@ -10,7 +10,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2008, 2009, 2010 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -6994,7 +6994,7 @@ target stm3210e_eval {
 }
 
 target ek-lm3s811 {
-        alias      { " Stellaris EK-LM3S811 board"  ek-lm3s811 }
+        alias      { "Stellaris EK-LM3S811 board" }
         packages   { CYGPKG_HAL_CORTEXM
                      CYGPKG_HAL_CORTEXM_LM3S
                      CYGPKG_HAL_CORTEXM_LM3S8XX
@@ -7002,10 +7002,9 @@ target ek-lm3s811 {
                      CYGPKG_DEVS_I2C_CORTEXM_LM3S
                      CYGPKG_DEVS_ADC_CORTEXM_LM3S
                      CYGPKG_IO_I2C
-                     CYGPKG_IO_ADC
                     }
         description "
-            EK-LM3S811 target provides the packages needed to run eCos
+            The ek-lm3s811 target provides the packages needed to run eCos
             on the Stellaris EK-LM3S811 board from Luminary Micro."
 }
 
