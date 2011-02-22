@@ -213,6 +213,10 @@ tcp_init()
 					&tcbinfo.porthashmask);
 	tcbinfo.ipi_zone = zinit("tcpcb", sizeof(struct inp_tp), maxsockets,
 				 ZONE_INTERRUPT, 0);
+#ifdef CYGNUM_NET_TCP_REASS_DIVISOR
+	tcp_reass_maxseg = nmbclusters / CYGNUM_NET_TCP_REASS_DIVISOR;
+#endif
+
 #ifdef INET6
 #define TCP_MINPROTOHDR (sizeof(struct ip6_hdr) + sizeof(struct tcphdr))
 #else /* INET6 */
@@ -732,6 +736,9 @@ tcp_close(tp)
 		LIST_REMOVE(q, tqe_q);
 		m_freem(q->tqe_m);
 		FREE(q, M_TSEGQ);
+#ifdef CYGNUM_NET_TCP_REASS_DIVISOR
+		tcp_reass_qsize--;
+#endif
 	}
 	inp->inp_ppcb = NULL;
 	soisdisconnected(so);
@@ -770,6 +777,9 @@ tcp_drain()
 					LIST_REMOVE(te, tqe_q);
 					m_freem(te->tqe_m);
 					FREE(te, M_TSEGQ);
+#ifdef CYGNUM_NET_TCP_REASS_DIVISOR
+					tcp_reass_qsize--;
+#endif
 				}
 			}
 		}

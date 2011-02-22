@@ -1,3 +1,17 @@
+2011-02-22  Kelvin Lawson  <kelvinl@users.sf.net>
+
+	* src/sys/netinet/if_ether.c: Merge fix from FreeBSD CVS r1.108.
+	Prevents creation of reciprocal ARP cache entries for hosts not on
+	local subnet.
+	* cdl/freebsd_net.cdl:
+	* include/netinet/tcp_var.c:
+	* src/sys/netinet/tcp_subr.c:
+	* src/sys/netinet/tcp_input.c: Merge fix from FreeBSD CVS. Introduces
+	a maximum size for the TCP reassembly queue to limit network buffer
+	usage associated with reassembly. Enable CYGNUM_NET_TCP_REASS_DIVISOR
+	and set it to configure the maximum number of buffers usable for TCP
+	reassembly.
+
 2010-09-18  John Dallaway  <john@dallaway.org.uk>
 
 	* doc/freebsd.sgml: No longer "recent".
