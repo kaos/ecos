@@ -1,3 +1,9 @@
+2011-02-22  John Dallaway  <john@dallaway.org.uk>
+
+	* ecos.db: Add hardware package CYGPKG_DEVS_ADC_ARM_AT91 to
+	applicable target records: at91sam7sek, at91sam7xek, sam7ex256,
+	eb55, phycore
+
 2011-02-18  John Dallaway  <john@dallaway.org.uk>
 
 	* ecos.db: Remove non-hardware package CYGPKG_IO_ADC from the

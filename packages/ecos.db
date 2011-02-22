@@ -4757,6 +4757,7 @@ target at91sam7sek {
                    CYGPKG_IO_USB
                    CYGPKG_IO_USB_SLAVE
                    CYGPKG_DEVS_USB_AT91
+                   CYGPKG_DEVS_ADC_ARM_AT91
         }
         description "
         The at91sam7sek target provides the packages needed to run eCos on an 
@@ -4780,6 +4781,7 @@ target at91sam7xek {
                    CYGPKG_DEVS_ETH_PHY
                    CYGPKG_DEVS_ETH_ARM_AT91
                    CYGPKG_DEVS_CAN_AT91SAM7
+                   CYGPKG_DEVS_ADC_ARM_AT91
         }
         description "
         The at91sam7xek target provides the packages needed to run eCos on an 
@@ -4803,6 +4805,7 @@ target sam7ex256 {
                    CYGPKG_DEVS_ETH_PHY
                    CYGPKG_DEVS_ETH_ARM_AT91
                    CYGPKG_DEVS_CAN_AT91SAM7
+                   CYGPKG_DEVS_ADC_ARM_AT91
         }
         description "
         The SAM7EX256 target provides the packages needed to run eCos on an 
@@ -4851,6 +4854,7 @@ target eb55 {
                    CYGPKG_DEVS_SPI_ARM_EB55
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91
+                   CYGPKG_DEVS_ADC_ARM_AT91
         }
         description "
 	The eb55 target provides the packages needed to run eCos on an Atmel
@@ -4866,6 +4870,7 @@ target phycore {
                    CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
                    CYGPKG_IO_SERIAL_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91
+                   CYGPKG_DEVS_ADC_ARM_AT91
         }
         description "
 	The phyCORE AT91M55800A target provides the packages needed to 
