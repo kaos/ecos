@@ -1,3 +1,10 @@
+2011-03-09  Jay Foster <jay@systech.com>
+            Sergei Gavrikov <sergei.gavrikov@gmail.com>
+
+	* src/bootp_support.c (show_bootp): Fixed output for some fields.
+	* src/dhcp_prot.c (do_dhcp): Convert bp_secs field to network byte
+	order. Inspired by Kelvin Lawson. [ Bugzilla 1001170 ]
+
 2009-09-17	Jay Foster <jay@systech.com>
 
 	* src/dhcp_prot.c (do_dhcp): Fix packet parsing for DHCP servers

@@ -274,8 +274,8 @@ show_bootp(const char *intf, struct bootp *bp)
     diag_printf("        hlen: %d\n", bp->bp_hlen );
     diag_printf("        hops: %d\n", bp->bp_hops );
     diag_printf("         xid: 0x%x\n", bp->bp_xid );
-    diag_printf("        secs: %d\n", bp->bp_secs );
-    diag_printf("       flags: 0x%x\n", bp->bp_flags );
+    diag_printf("        secs: %d\n", ntohs(bp->bp_secs) );
+    diag_printf("       flags: 0x%x\n", ntohs(bp->bp_flags) );
     diag_printf("       hw_addr: ");
     for (i = 0;  i < bp->bp_hlen;  i++) {
         diag_printf("%02x", bp->bp_chaddr[i]);
