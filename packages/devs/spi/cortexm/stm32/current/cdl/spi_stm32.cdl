@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+## Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -40,6 +40,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s):   Chris Holgate
+## Contributor: jld
 ## Date:        2008-11-27
 ## Purpose:     Configure STM32 SPI driver.
 ##
@@ -219,11 +220,54 @@ cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3 {
     }
 }
 
-cdl_option CYGPKG_DEVS_SPI_CORTEXM_STM32_TESTS {
-    display         "SPI tests"
-    flavor          data
-    no_define
-    calculated      { "tests/loopback" } 
+cdl_component CYGPKG_DEVS_SPI_CORTEXM_STM32_OPTIONS {
+    display "ST STM32 SPI driver build options"
+    flavor  none
+    description   "
+	Package specific build options including control over
+	compiler flags used only in building this package,
+	and details of which tests are built."
+
+    cdl_option CYGPKG_DEVS_SPI_CORTEXM_STM32_CFLAGS_ADD {
+        display "Additional compiler flags"
+        flavor  data
+        no_define
+        default_value { "" }
+        description   "
+            This option modifies the set of compiler flags for
+            building the STM32 SPI driver. These flags are used in addition
+            to the set of global flags."
+    }
+
+    cdl_option CYGPKG_DEVS_SPI_CORTEXM_STM32_CFLAGS_REMOVE {
+        display "Suppressed compiler flags"
+        flavor  data
+        no_define
+        default_value { "" }
+        description   "
+            This option modifies the set of compiler flags for
+            building the STM32 SPI driver. These flags are removed from
+            the set of global flags if present."
+    }
+
+    cdl_option CYGBLD_DEVS_SPI_CORTEXM_STM32_LOOPBACK_TEST {
+        display       "Build STM32 SPI loopback test"
+        flavor        bool
+        no_define
+        default_value 0
+        requires      CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS1
+        description   "
+            This option enables the building of the STM32 SPI loopback test.
+            Refer to the comments in tests/loopback.c for details of how to
+            use this test."
+    }
+
+    cdl_option CYGPKG_DEVS_SPI_CORTEXM_STM32_TESTS {
+        display         "STM32 SPI tests"
+        flavor          data
+        no_define
+        calculated      { CYGBLD_DEVS_SPI_CORTEXM_STM32_LOOPBACK_TEST ? "tests/loopback" : "" } 
+    }
 }
 
 }
