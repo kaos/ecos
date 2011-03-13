@@ -1,5 +1,11 @@
 2011-03-13  Ilija Kocho  <ilijak@siva.com.mk>
 
+	* NEWS, ecos.db: Add LPC17XX variant HAL, support for
+	NXP Cortex M3 LPC17XX CPUs. BSP for Olimex LPC-1766-STK
+	board including ethernet, serial and wallclock drivers.
+
+2011-03-13  Ilija Kocho  <ilijak@siva.com.mk>
+
 	* ecos.db: Ethernet, serial, and wallclock drivers for LPC17XX.
 	(CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX): Fixed alias/description;
 	(CYGPKG_DEVS_ETH_ARM_LPC2XXX): Ditto.

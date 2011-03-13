@@ -1,3 +1,5 @@
+* LPC17XX variant HAL and BSP for Olimex LPC-1766-STK board including
+  ethernet, serial and wallclock drivers by Ilija Kocho.
 * LM3S variant HAL, generic support for the LM3S800 CPUs, and BSP for
   Stellaris EK-LM3S811 board including ADC and I2C drivers by Christophe
   Coutand

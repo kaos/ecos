@@ -6899,6 +6899,27 @@ package CYGPKG_HAL_CORTEXM_EK_LM3S811 {
         eCos on the Stellaris EK-LM3S811 board from Luminary Micro."
 }
 
+package CYGPKG_HAL_CORTEXM_LPC17XX {
+        alias           { "NXP LPC17XX variant HAL" hal_cortexm_lpc17xx }
+        directory       hal/cortexm/lpc17xx/var
+        script          hal_cortexm_lpc17xx.cdl
+        hardware
+        description "
+            The LPC 17XX HAL package provides the support needed to
+            run eCos on targets based on the NXP LPC17XX family of
+            microcontrollers."
+}
+
+package CYGPKG_HAL_CORTEXM_LPC17XX_LPC1766STK {
+        alias           { "Olimex LPC-1766-STK HAL" hal_cortexm_lpc1766stk }
+        directory       hal/cortexm/lpc17xx/lpc1766stk
+        script          hal_cortexm_lpc17xx_lpc1766stk.cdl
+        hardware
+        description "
+            The lpc1766stk HAL package provides the support needed to run
+            eCos on the Olimex LPC-1766-STK board."
+}
+
 package CYGPKG_HAL_CORTEXM_STM32 {
 	alias		{ "ST STM32 variant HAL" hal_cortexm_stm32 }
 	directory	hal/cortexm/stm32/var
@@ -7010,6 +7031,22 @@ target ek-lm3s811 {
         description "
             The ek-lm3s811 target provides the packages needed to run eCos
             on the Stellaris EK-LM3S811 board from Luminary Micro."
+}
+
+target lpc1766stk {
+        alias      { "Olimex LPC-1766-STK" lpc1766stk }
+        packages   { CYGPKG_HAL_CORTEXM
+                     CYGPKG_HAL_CORTEXM_LPC17XX
+                     CYGPKG_HAL_CORTEXM_LPC17XX_LPC1766STK
+                     CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX
+                     CYGPKG_IO_SERIAL_GENERIC_16X5X
+                     CYGPKG_IO_SERIAL_ARM_LPC24XX
+                     CYGPKG_DEVS_ETH_PHY
+                     CYGPKG_DEVS_ETH_ARM_LPC2XXX
+                    }
+        description "
+            The lpc1766stk target provides the packages needed
+            to run eCos on the Olimex LPC-1766-STK board."
 }
 
 # ==========================================================================
