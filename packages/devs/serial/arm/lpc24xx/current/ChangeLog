@@ -1,3 +1,9 @@
+2010-12-29  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/ser_arm_lpc24xx.cdl:
+	* include/arm_lpc24xx_ser.inl:
+	Added support for LPC17XX CPUs.
+
 2008-07-07 Uwe Kindler <uwe_kindler@web.de>
 
 	* include/arm_lpc24xx_ser.inl: 

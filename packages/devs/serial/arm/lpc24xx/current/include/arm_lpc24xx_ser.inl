@@ -2,7 +2,7 @@
 //
 //      io/serial/arm/arm_lpc24xx_ser.inl
 //
-//      ARM LPC24XX Serial I/O definitions
+//      ARM LPC24XX / Cortex-M LPC17XX Serial I/O definitions
 //
 //==========================================================================
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
@@ -40,10 +40,10 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    Uwe Kindler
-// Contributors: gthomas, jlarmour
+// Contributors: gthomas, jlarmour, ilijak
 // Date:         2008-06-07
-// Purpose:      LPC24XX Serial I/O module (interrupt driven version)
-// Description: 
+// Purpose:      LPC24XX and LPC17XX Serial I/O module (interrupt driven version)
+// Description:
 //
 //####DESCRIPTIONEND####
 //
@@ -54,8 +54,12 @@
 //                               INCLUDES
 //==========================================================================
 #include <cyg/hal/hal_intr.h>
-#include <cyg/hal/lpc24xx_misc.h>
 
+#ifdef CYGPKG_HAL_CORTEXM_LPC17XX
+# include <cyg/hal/lpc17xx_misc.h>
+#else
+# include <cyg/hal/lpc24xx_misc.h>
+#endif
 
 //==========================================================================
 //                              STATIC DATA

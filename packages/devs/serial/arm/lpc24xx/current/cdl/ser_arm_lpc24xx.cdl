@@ -2,13 +2,13 @@
 #
 #      ser_arm_lpc24xx.cdl
 #
-#      eCos serial ARM/LPC24XX configuration data
+#      eCos serial ARM LPC24XX / Cortex-M LPC17XX configuration data
 #
 # ====================================================================
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2011 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -39,9 +39,9 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      Uwe Kindler  
+# Author(s):      Uwe Kindler
 # Original data:  gthomas, jskov
-# Contributors:
+# Contributors:   ilijak
 # Date:           2008-07-06
 #
 #####DESCRIPTIONEND####
@@ -49,18 +49,18 @@
 # ====================================================================
 
 cdl_package CYGPKG_IO_SERIAL_ARM_LPC24XX {
-    display       "ARM LPC24xx serial device drivers"
+    display       "ARM LPC24XX / Cortex-M LPC17XX serial device drivers"
 
     parent        CYGPKG_IO_SERIAL_DEVICES
     active_if     CYGPKG_IO_SERIAL
-    active_if     CYGPKG_HAL_ARM_LPC24XX
+    active_if     ( CYGPKG_HAL_ARM_LPC24XX || CYGPKG_HAL_CORTEXM_LPC17XX )
     implements    CYGINT_IO_SERIAL_GENERIC_16X5X_CHAN_INTPRIO
     requires      CYGPKG_ERROR
     include_dir   cyg/io
 
     description   "
-           This option enables the serial device drivers for the
-           ARM LPC24xx."
+           This option enables the serial device drivers for the ARM
+           LPC24XX and Cortex-M LPC17XX."
 
     # FIXME: This really belongs in the GENERIC_16X5X package
     cdl_interface CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED {
@@ -70,6 +70,10 @@ cdl_package CYGPKG_IO_SERIAL_ARM_LPC24XX {
         puts $::cdl_header "#define CYGPRI_IO_SERIAL_GENERIC_16X5X_STEP 4"
     }
 
+    requires {
+        is_active(CYGPKG_HAL_CORTEXM_LPC17XX)
+        implies CYGPKG_IO_SERIAL_GENERIC_16X5X_XMIT_REQUIRE_PRIME == "1"
+    }
 
     define_proc {
         puts $::cdl_system_header "/***** serial driver proc output start *****/"
@@ -77,53 +81,64 @@ cdl_package CYGPKG_IO_SERIAL_ARM_LPC24XX {
         puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_GENERIC_16X5X_CFG <pkgconf/io_serial_arm_lpc24xx.h>"
         puts $::cdl_system_header "/*****  serial driver proc output end  *****/"
     }
-    
+
+    # For backward compatibility with LPC24XX platforms
+    cdl_option CYGNUM_IO_SERIAL_IRQ_PRIORITY_LEVELS {
+        display       "Interrupt priority levels"
+        flavor        data
+        calculated    { CYGNUM_HAL_IRQ_PRIORITY_LEVELS ? CYGNUM_HAL_IRQ_PRIORITY_LEVELS : 15 }
+        description   "
+            For backward compatibility with LPC 24XX plarforms that
+            do not have CYGNUM_HAL_IRQ_PRIORITY_LEVELS defined."
+    }
+
     # Support up to 4 on-chip UART modules. The number may vary between
     # processor variants so it is easy to update this here
     for { set ::channel 0 } { $::channel < 4 } { incr ::channel } {
-    
+
         cdl_interface CYGINT_IO_SERIAL_LPC24XX_UART[set ::channel] {
-            display     "Platform provides UART [set ::channel]"
-            flavor      bool
-            description "
-                This interface will be implemented if the specific LPC24xx
-                processor being used has on-chip UART [set ::channel], and if
-                that UART is accessible on the target hardware."
+            display       "Platform provides UART [set ::channel]"
+            flavor        bool
+            description   "
+                This interface will be implemented if the specific
+                LPC24XX / LPC17XX processor being used has on-chip UART
+                [set ::channel], and if that UART is accessible on the
+                target hardware."
         }
 
         cdl_component CYGPKG_IO_SERIAL_ARM_LPC24XX_SERIAL[set ::channel] {
-            display       "ARM LPC24cxx UART [set ::channel] driver"
+            display       "ARM LPC24XX / Cortex LPC17XX UART [set ::channel] driver"
             flavor        bool
             active_if     CYGINT_IO_SERIAL_LPC24XX_UART[set ::channel]
             default_value 1
 
-           implements CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED
-           implements CYGINT_IO_SERIAL_FLOW_CONTROL_HW
-           implements CYGINT_IO_SERIAL_LINE_STATUS_HW
+            implements CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED
+            implements CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+            implements CYGINT_IO_SERIAL_LINE_STATUS_HW
 
-           description   "
-                This option includes the serial device driver for the ARM
-                LPC24xx UART [set ::channel]."
+            description   "
+                This option includes the serial device driver for the
+                ARM LPC24XX / LPC17XX UART [set ::channel]."
 
             cdl_option CYGDAT_IO_SERIAL_ARM_LPC24XX_SERIAL[set ::channel]_NAME {
                 display       "Device name for UART [set ::channel]"
                 flavor        data
-                default_value   [format {"\"/dev/ser%d\""} $::channel]
+                default_value [format {"\"/dev/ser%d\""} $::channel]
                 description   "
                     This option specifies the name of the serial device
-                    for the ARM LPC24xx UART [set ::channel]."
+                    for the ARM LPC24XX / LPC17XX UART [set ::channel]."
             }
 
             cdl_option CYGNUM_IO_SERIAL_ARM_LPC24XX_SERIAL[set ::channel]_BAUD {
                 display       "Baud rate for UART [set ::channel]"
                 flavor        data
-                legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 
+                legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800
                                 2400 3600 4800 7200 9600 14400 19200 38400
                                 57600 115200 230400 }
                 default_value 38400
                 description   "
                     This option specifies the default baud rate (speed)
-                    for the ARM LPC24xx UART [set ::channel]."
+                    for the ARM LPC24XX / LPC17XX UART [set ::channel]."
             }
 
             cdl_option CYGNUM_IO_SERIAL_ARM_LPC24XX_SERIAL[set ::channel]_BUFSIZE {
@@ -133,28 +148,29 @@ cdl_package CYGPKG_IO_SERIAL_ARM_LPC24XX {
                 default_value 128
                 description   "
                     This option specifies the size of the internal buffers
-                    used for the ARM LPC24xx UART [set ::channel]."
+                    used for the ARM LPC24XX / LPC17XX UART [set ::channel]."
             }
-            
+
             cdl_option CYGNUM_IO_SERIAL_ARM_LPC24XX_SERIAL[set ::channel]_INTPRIO {
                 display       "Interrupt priority of UART [set ::channel]"
                 flavor        data
-                legal_values  0 to 15
-                default_value 15
+                legal_values  0 to CYGNUM_IO_SERIAL_IRQ_PRIORITY_LEVELS-1
+                default_value CYGNUM_IO_SERIAL_IRQ_PRIORITY_LEVELS-1
                 description   "
-                    This option selects the interupt priority for the
-                    UART [set ::channel] interrupts. There are 16
-                    priority levels corresponding to the values 0
-                    through 15 decimal, of which 15 is the lowest
-                    priority. The reset value of these registers
-                    defaults all interrupt to the lowest priority,
-                    allowing a single write to elevate the priority of
-                    an individual interrupt."
+                    This option selects the interupt priority for
+                    the UART [set ::channel] interrupts. There are
+                    CYGNUM_IO_SERIAL_IRQ_PRIORITY_LEVELS priority
+                    levels corresponding to the values 0 through
+                    CYGNUM_IO_SERIAL_IRQ_PRIORITY_LEVELS-1 decimal, of
+                    which the highest value is the lowest priority. The
+                    reset value of these registers defaults all interrupt
+                    to the lowest priority, allowing a single write to
+                    elevate the priority of an individual interrupt."
             }
         }
     }
 
-     cdl_component CYGPKG_IO_SERIAL_ARM_LPC24XX_TESTING {
+    cdl_component CYGPKG_IO_SERIAL_ARM_LPC24XX_TESTING {
         display    "Testing parameters"
         flavor     bool
         calculated 1
@@ -163,7 +179,7 @@ cdl_package CYGPKG_IO_SERIAL_ARM_LPC24XX {
         implements CYGINT_IO_SERIAL_TEST_SKIP_9600
         implements CYGINT_IO_SERIAL_TEST_SKIP_115200
         implements CYGINT_IO_SERIAL_TEST_SKIP_PARITY_EVEN
-        
+
         cdl_option CYGPRI_SER_TEST_SER_DEV {
             display       "Serial device used for testing"
             flavor        data
