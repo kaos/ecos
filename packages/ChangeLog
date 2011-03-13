@@ -1,3 +1,10 @@
+2011-03-13  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* ecos.db: Ethernet, serial, and wallclock drivers for LPC17XX.
+	(CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX): Fixed alias/description;
+	(CYGPKG_DEVS_ETH_ARM_LPC2XXX): Ditto.
+	(CYGPKG_IO_SERIAL_ARM_LPC24XX): Ditto.
+
 2011-02-22  John Dallaway  <john@dallaway.org.uk>
 
 	* ecos.db: Add hardware package CYGPKG_DEVS_ADC_ARM_AT91 to

@@ -1121,12 +1121,11 @@ package CYGPKG_IO_SERIAL_ARM_LPC2XXX {
 }
 
 package CYGPKG_IO_SERIAL_ARM_LPC24XX {
-    alias             { "ARM LPC24XX serial device drivers"
-                        devs_serial_arm_lpc24xx lpc24xx_serial_driver }
+    alias             { "ARM LPC24XX/LPC17XX serial device drivers" }
     hardware
     directory         devs/serial/arm/lpc24xx
     script            ser_arm_lpc24xx.cdl
-    description       "ARM LPC24XX serial device drivers"
+    description       "ARM LPC24XX/LPC17XX serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_POWERPC_COGENT {
@@ -2225,13 +2224,13 @@ c }
 }
 
 package CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX {
-        alias           { "Wallclock driver for LPC2xxx RTC module" }
+        alias           { "Wallclock driver for LPC2xxx/LPC17xx RTC module" }
         directory       devs/wallclock/arm/lpc2xxx
         script          lpc2xxx_wallclock.cdl
         hardware
         description "
            This package provides a wallclock driver implementation for the
-           LPC2xxx RTC module."
+           LPC2xxx/LPC17xx RTC module."
 }
 
 package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
@@ -4557,11 +4556,11 @@ package CYGPKG_DEVS_ETH_ARM_AT91 {
 }
 
 package CYGPKG_DEVS_ETH_ARM_LPC2XXX {
-        alias           { "LPC2xxx Ethernet driver" lpc2xxx_eth_driver }
+        alias           { "LPC2xxx/LPC17xx Ethernet driver" }
         directory       devs/eth/arm/lpc2xxx
         script          lpc2xxx_eth.cdl
         hardware
-        description     "Ethernet driver for the LPC2xxx family of chips"
+        description     "Ethernet driver for the LPC2xxx/LPC17xx family of chips"
 }
 
 
