@@ -1,0 +1,452 @@
+##==========================================================================
+##
+##      hal_cortexm_lpc17xx.cdl
+##
+##      Cortex-M LPC 1700 variant HAL configuration data
+##
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2010 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    ilijak
+## Date:         2010-12-05
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+cdl_package CYGPKG_HAL_CORTEXM_LPC17XX {
+    display       "Cortex-M3 LPC 17XX Variant"
+    parent        CYGPKG_HAL_CORTEXM
+    hardware
+    include_dir   cyg/hal
+    define_header hal_cortexm_lpc17xx.h
+    description   "
+       This package provides generic support for the NXP Cortex-M based
+       LPC17xx microcontroller family.  It is also necessary to select
+       a variant and platform HAL package."
+
+    compile       hal_diag.c lpc17xx_misc.c
+
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
+    implements    CYGINT_PROFILE_HAL_TIMER
+
+    requires      { CYGHWR_HAL_CORTEXM == "M3" }
+
+    cdl_option CYGHWR_HAL_CORTEXM_LPC17XX {
+        display       "LPC17xx member in use"
+        flavor        data
+        default_value { "1766" }
+        legal_values  {
+            "1751" "1752"  "1754" "1756" "1758" "1759" "1763" "1764"
+            "1765" "1766" "1767" "1768" "1769" }
+        description   "
+            The LPC17xx has several variants, the main differences being
+            in the size of on-chip FLASH and SRAM and numbers of some
+            peripherals. This option allows the platform HAL to select
+            the specific microcontroller fitted."
+    }
+
+    cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS {
+        display       "CPU priority levels"
+        flavor        data
+        calculated    5
+        description   "
+            This option defines the number of bits used to encode the
+            exception priority levels that this variant of the Cortex-M
+            CPU implements."
+    }
+
+    cdl_option CYGNUM_HAL_IRQ_PRIORITY_LEVELS {
+        display       "Interrupt priority levels"
+        flavor        data
+        calculated    { 1 << CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS }
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_LPC17XX_CLOCKING {
+        display       "Clocking"
+        flavor        none
+
+        cdl_component CYGHWR_HAL_CORTEXM_LPC17XX_MAIN_CLOCK {
+            display       "Main clock"
+            flavor        none
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_PLL0_MUL {
+                display       "PLL multiplier"
+                flavor        data
+                legal_values  6 to 32767
+                default_value { 12 }
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_PLL0_DIV {
+                display       "PLL divider"
+                flavor        data
+                legal_values  1 to 32
+                default_value { 1 }
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_PLL0_OUTPUT {
+                display       "PLL output (MHz)"
+                flavor        data
+                legal_values  275000000 to 550000000
+                calculated    { 2 * CYGHWR_HAL_CORTEXM_LPC17XX_PLL0_MUL *
+                    CYGHWR_HAL_CORTEXM_LPC17XX_XTAL_FREQ /
+                    CYGHWR_HAL_CORTEXM_LPC17XX_PLL0_DIV }
+                description   "
+                    Normally the PLL output must be in the range of
+                    275MHz to 550MHz."
+            }
+
+            cdl_component CYGHWR_HAL_CORTEXM_LPC17XX_CLOCK_SPEED {
+                display       "CPU clock speed"
+                flavor        data
+                calculated    { 2 * CYGHWR_HAL_CORTEXM_LPC17XX_PLL0_MUL *
+                    CYGHWR_HAL_CORTEXM_LPC17XX_XTAL_FREQ /
+                    CYGHWR_HAL_CORTEXM_LPC17XX_PLL0_DIV /
+                    CYGHWR_HAL_CORTEXM_LPC17XX_CPU_CLK_DIV }
+                description   "
+                    The core CPU clock speed is the PLL output divided
+                    by the CPU clock divider."
+
+                cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_CPU_CLK_DIV {
+                    display       "CPU clock divider"
+                    flavor        data
+                    legal_values  2 to 256
+                    default_value { 3 }
+                    description   "
+                        The CPU clock divider controls the division of
+                        the PLL output before it is used by the CPU. When
+                        the PLL is bypassed, the division may be by
+                        1. When the PLL is running, the output must be
+                        divided in order to bring the CPU clock frequency
+                        (CCLK) within operating limits. An 8 bit divider
+                        allows a range of options, including slowing
+                        CPU operation to a low rate for temporary power
+                        savings without turning off the PLL."
+                }
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_LPC17XX_USB_CLOCK {
+            display       "USB clock"
+            flavor        none
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_PLL1_MUL {
+                display       "PLL multiplier"
+                flavor        data
+                calculated    { 48000000 / CYGHWR_HAL_CORTEXM_LPC17XX_XTAL_FREQ }
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_PLL1_DIV {
+                display       "PLL divider"
+                flavor         data
+                legal_values  1 2 3 4
+                default_value { 2 }
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_PLL1_OUTPUT {
+                display       "PLL output (MHz)"
+                flavor        data
+                legal_values  156000000 to 320000000
+                calculated    { 2 * 48000000 *  CYGHWR_HAL_CORTEXM_LPC17XX_PLL1_DIV }
+                description   "
+                    Normally the PLL output must be in the range of
+                    156MHz to 320MHz."
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_USB_CLOCK_SPEED {
+                display       "USB clock speed"
+                flavor        data
+                calculated    { 2 * CYGHWR_HAL_CORTEXM_LPC17XX_PLL1_MUL *
+                    CYGHWR_HAL_CORTEXM_LPC17XX_XTAL_FREQ /
+                    CYGHWR_HAL_CORTEXM_LPC17XX_PLL1_DIV }
+                description   "
+                    The USB clock speed is the PLL1 output."
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT {
+            display       "Clock-out option"
+            flavor        bool
+            default_value 0
+
+            description   "
+                This option enables clock output and selects clock source
+                and divider."
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_SET {
+                display       "Clock out register setting"
+                flavor        data
+                calculated { (CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_SRC |
+                              ((CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_DIV
+                               - (1 && CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT)) << 4) |
+                              (CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT ? 0x100 : 0x0 ))
+                }
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_SEL {
+                display       "Clock-out source selector"
+                flavor        data
+                legal_values  { "CPU clock" "Main osc." "RC osc." "USB clock" "RTC osc." }
+                default_value { "CPU clock" }
+                description   "
+                    Select clock out source."
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_SRC {
+                display       "Clock-out source"
+                flavor        data
+                legal_values  0 1 2 3 4
+                calculated    { CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_SEL == "CPU clock" ? 0 :
+                    CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_SEL == "Main osc." ? 1 :
+                    CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_SEL == "RC osc."   ? 2 :
+                    CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_SEL == "USB clock" ? 3 :
+                    CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_SEL == "RTC osc."  ? 4 :
+                    0
+                }
+                description   "
+                    Clock-out source index."
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT_DIV {
+                display       "Clock-out divider"
+                flavor        data
+                legal_values  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+                default_value { 10 }
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_LPC17XX_PER_CLK {
+            display       "Peripherial clocking"
+            flavor        none
+
+            cdl_option CYGHWR_HAL_LPC_RTC_32768HZ {
+                display      "RTC uses 32768 Hz clock"
+                flavor       bool
+                calculated   1
+                description  "
+                    This option has to be defined for LPC microcontrollers
+                    which RTC clock has no other clocking option than
+                    RTC 32768 Hz oscilator."
+            }
+
+            cdl_component CYGHWR_HAL_CORTEXM_LPC17XX_CAN_CLK {
+                display       "CAN clock speed"
+                flavor        data
+                calculated    { CYGHWR_HAL_CORTEXM_LPC17XX_CLOCK_SPEED /
+                    CYGHWR_HAL_CORTEXM_LPC17XX_CAN_CLK_DIV }
+                description   "
+                    The CAN clock speed is the CPU clock output divided
+                    by the CAN clock divider."
+
+                cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_CAN_CLK_DIV {
+                    display       "CAN clock divider"
+                    flavor        data
+                    legal_values  { 1 2 4 6 }
+                    default_value { 2 }
+                    description   "
+                        This divider selects the peripheral clock for
+                        both CAN channels. The divider divides the CPU
+                        clock to get the clock for the CAN peripherals."
+                }
+            }
+
+            cdl_component CYGHWR_HAL_CORTEXM_LPC17XX_ADC_CLK {
+                display       "ADC clock speed"
+                flavor        data
+                calculated    { CYGHWR_HAL_CORTEXM_LPC17XX_CLOCK_SPEED /
+                    CYGHWR_HAL_CORTEXM_LPC17XX_ADC_CLK_DIV }
+                description   "
+                    The ADC clock speed is the CPU clock output divided
+                    by the ADC clock divider."
+
+                cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_ADC_CLK_DIV {
+                    display       "ADC clock divider"
+                    flavor        data
+                    legal_values  { 1 2 4 8 }
+                    default_value { 2 }
+                    description   "
+                        This divider selects the peripheral clock for
+                        on-chip ADC. The ADC clock is the input clock
+                        of the ADC peripheral."
+                }
+            }
+
+            for { set ::channel 0 } { $::channel < 3 } { incr ::channel } {
+                cdl_component CYGHWR_HAL_CORTEXM_LPC17XX_I2C[set ::channel]_CLK {
+                    display       "I2C channel [set ::channel] clock speed"
+                    flavor        data
+                    calculated    CYGHWR_HAL_CORTEXM_LPC17XX_CLOCK_SPEED / \
+                          CYGHWR_HAL_CORTEXM_LPC17XX_I2C[set ::channel]_CLK_DIV
+                    description   "
+                        The I2C clock speed is the CPU clock output
+                        divided by the I2C clock divider."
+
+                    cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_I2C[set ::channel]_CLK_DIV {
+                        display       "I2C channel [set ::channel] clock divider"
+                        flavor        data
+                        legal_values  { 1 2 4 8 }
+                        default_value { 2 }
+                        description   "
+                            This divider selects the peripheral clock
+                            for I2C channel [set ::channel]. The divider
+                            divides the CPU clock to get the clock for
+                            the I2C peripheral."
+                    }
+                }
+            }
+        }
+    }
+
+    cdl_option CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY {
+        display       "Clock interrupt ISR priority"
+        flavor        data
+        calculated    0xE0
+        description   "
+            Set clock ISR priority to lowest priority."
+    }
+
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants"
+        flavor        none
+        no_define
+
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            default_value 1000000000
+        }
+
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            default_value 100
+        }
+
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+            default_value 1000000 / CYGNUM_HAL_RTC_DENOMINATOR
+            description   "
+                The period defined here is something of a fake, it is
+                expressed in terms of a notional 1MHz clock. The value
+                actually installed in the hardware is calculated from
+                the current settings of the clock generation hardware."
+        }
+    }
+
+    cdl_interface CYGINT_HAL_LPC17XX_UART0 {
+        display      "Platform has UART0 serial port"
+        description  "
+            The platform has a socket on UART0."
+    }
+
+    cdl_interface CYGINT_HAL_LPC17XX_UART1 {
+        display       "Platform has UART1 serial port"
+        description   "
+            The platform has a socket on UART1."
+    }
+
+    cdl_interface CYGINT_HAL_LPC17XX_UART2 {
+        display       "Platform has UART2 serial port"
+        description   "
+            The platform has a socket on UART2."
+    }
+
+    cdl_interface CYGINT_HAL_LPC17XX_UART3 {
+        display       "Platform has UART3 serial port"
+        description   "
+            The platform has a socket on UART3."
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_ENET {
+        display       "LPC 17xx Ethernet check"
+        flavor        bool
+        no_define
+        parent        CYGPKG_DEVS_ETH_ARM_LPC2XXX
+        calculated    {
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1766") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1758") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1764") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1767") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1768") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1769")
+        }
+        requires {
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1766") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1758") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1764") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1767") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1768") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1769")
+        }
+        description   "
+            Check whether the chip has Ethernet controler."
+    }
+
+    cdl_component CYGPKG_HAL_CORTEXM_LPC17XX_OPTIONS {
+        display       "Build options"
+        flavor        none
+        description   "
+              Package specific build options including control over
+              compiler flags used only in building this package."
+
+        cdl_option CYGPKG_HAL_CORTEXM_LPC17XX_CFLAGS_ADD {
+            display       "Additional compiler flags"
+            flavor        data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the LPC17xx variant HAL package. These flags
+                are used in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_HAL_CORTEXM_LPC17XX_CFLAGS_REMOVE {
+            display       "Suppressed compiler flags"
+            flavor        data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the LPC17xx variant HAL package. These flags
+                are removed from the set of global flags if present."
+        }
+    }
+}
+
+# EOF hal_cortexm_lpc17xx.cdl
