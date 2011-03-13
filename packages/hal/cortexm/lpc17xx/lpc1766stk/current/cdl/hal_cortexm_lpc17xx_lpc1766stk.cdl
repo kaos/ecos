@@ -1,0 +1,409 @@
+##==========================================================================
+##
+##      hal_cortexm_lpc17xx_lpc1766stk.cdl
+##
+##      Cortex-M Olimex LPC-1766STK platform HAL configuration data
+##
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2010 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    ilijak
+## Date:         2010-12-05
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+cdl_package CYGPKG_HAL_CORTEXM_LPC17XX_LPC1766STK {
+    display       "Olimex LPC-1700STK Board HAL"
+    parent        CYGPKG_HAL_CORTEXM_LPC17XX
+    define_header hal_cortexm_lpc17xx_lpc1766stk.h
+    include_dir   cyg/hal
+    hardware
+    requires      { CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE == "INTERNAL" }
+    implements    CYGINT_IO_SERIAL_LPC24XX_UART0
+    implements    CYGINT_IO_SERIAL_LPC24XX_UART1
+
+    description   "
+        The Olimex LPC-1766STK HAL package provides the support needed
+        to run eCos on the LPC-1766STK board. Also this package can be
+        used for other boards that employ a controller from LPC 176x
+        or LPC 175x families. Use 'LPC17xx member in use' to pick up
+        your device."
+
+    compile       lpc1766stk_misc.c
+
+    requires      { is_active(CYGPKG_DEVS_ETH_PHY) implies
+                   (1 == CYGHWR_DEVS_ETH_PHY_KS8721) }
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_cortexm.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_cortexm_lpc17xx.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_cortexm_lpc17xx_lpc1766stk.h>"
+        puts $::cdl_header "#define HAL_PLATFORM_CPU    \"Cortex-M3\""
+        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Olimex LPC-1766STK\""
+        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+    }
+
+    cdl_component CYG_HAL_STARTUP {
+        display       "Startup type"
+        flavor        data
+        default_value { "ROM" }
+        legal_values  { "ROM" }
+        no_define
+        define -file system.h CYG_HAL_STARTUP
+        description   "
+            'ROM' startup builds a stand-alone application which will
+            be put into internal flash."
+    }
+
+    cdl_component CYGHWR_MEMORY_LAYOUT {
+        display       "Memory layout"
+        flavor        data
+        no_define
+        calculated    { (CYG_HAL_STARTUP == "ROM" ) ? "cortexm_lpc" . CYGHWR_HAL_CORTEXM_LPC17XX  . "_rom" :
+                        "undefined" }
+        description   "
+            Combination of 'Startup type' and 'LPC17xx member in use'
+            produces the memory layout."
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
+            display       "Memory layout linker script fragment"
+            flavor        data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
+            calculated   { "<pkgconf/mlt_" . CYGHWR_MEMORY_LAYOUT . ".ldi>" }
+        }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_H {
+            display       "Memory layout header file"
+            flavor        data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_H
+            calculated    { "<pkgconf/mlt_" . CYGHWR_MEMORY_LAYOUT . ".h>" }
+        }
+
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_XTAL_FREQ {
+        display       "CPU xtal frequency"
+        parent        CYGHWR_HAL_CORTEXM_LPC17XX_CLOCKING
+        flavor        data
+        default_value { 12000000 }
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_MAX_CLOCK_SPEED {
+        display       "Max. CPU clock speed"
+        parent        CYGHWR_HAL_CORTEXM_LPC17XX_CLOCKING
+        flavor        data
+        calculated    { (CYGHWR_HAL_CORTEXM_LPC17XX == "1759") ||
+            (CYGHWR_HAL_CORTEXM_LPC17XX == "1769") ?  120000000 :
+            100000000 }
+        requires      { CYGHWR_HAL_CORTEXM_LPC17XX_CLOCK_SPEED <=
+            ((CYGHWR_HAL_CORTEXM_LPC17XX == "1759") ||
+             (CYGHWR_HAL_CORTEXM_LPC17XX == "1769") ?  120000000 :
+             100000000) }
+        description   "
+            Highest internal core frequency is dependent on selected
+            chip. "
+    }
+
+    # Both UARTs 0 and 1 are available for diagnostic/debug use.
+    implements CYGINT_HAL_LPC17XX_UART0
+    implements CYGINT_HAL_LPC17XX_UART1
+
+    implements      CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+    implements      CYGINT_IO_SERIAL_LINE_STATUS_HW
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+        display       "Number of communication channels on the board"
+        flavor        data
+        calculated    2
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+        display       "Debug serial port"
+        active_if     CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE
+        flavor        data
+        legal_values  0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value 0
+        description   "
+            The Olimex LPC1766STK board has two serial ports. This
+            option chooses which port will be used to connect to a host
+            running GDB."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+        display       "Diagnostic serial port"
+        active_if     CYGPRI_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_CONFIGURABLE
+        flavor        data
+        legal_values  0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value 0
+        description   "
+            The Olimex LPC1766STK has two serial ports. This option
+            chooses which port will be used for diagnostic output."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
+        display       "Console serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 38400
+        description   "
+            This option controls the default baud rate used for the
+            console connection.
+            Note: this should match the value chosen for the GDB port
+            if the diagnostic and GDB port are the same."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
+        display       "GDB serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 38400
+        description   "
+            This option controls the default baud rate used for the
+            GDB connection.
+            Note: this should match the value chosen for the console
+            port if the console and GDB port are the same."
+    }
+
+    cdl_component CYGHWR_HAL_LPC_EMAC_RAM_AHB {
+        display       "Ethernet controller AHB SRAM"
+        flavor        none
+        active_if     CYGPKG_DEVS_ETH_ARM_LPC2XXX
+        parent        CYGPKG_DEVS_ETH_ARM_LPC2XXX
+        description   "
+            AHB SRAM allocated for Ethernet controller."
+
+        cdl_option CYGHWR_HAL_LPC_EMAC_MEM_SECTION {
+            display       "Memory section for lwIP buffers."
+            flavor        data
+            default_value { "\".ahb_sram0\"" }
+            legal_values  { "\".ahb_sram0\"" "\".ahb_sram1\"" }
+            description   "
+                Select special section for lwIP p-buffers and heap and
+                provide section name."
+        }
+
+        cdl_option CYGHWR_HAL_LPC_EMAC_BLOCK_SIZE {
+            display       "Block size"
+            flavor        data
+            default_value 0x600
+        }
+    }
+
+    cdl_option CYGDAT_LWIP_MEM_SECTION_NAME {
+        display       "Memory section for lwIP buffers."
+        flavor        data
+        default_value { "\".ahb_sram0\"" }
+        legal_values  { "\".ahb_sram0\"" "\".ahb_sram1\"" }
+        active_if     CYGPKG_NET_LWIP
+        parent        CYGOPT_LWIP_MEM_PLF_SPEC
+        description   "
+            Select special section for lwIP p-buffers and heap and
+            provide section name."
+    }
+
+    cdl_component CYGOPT_LWIP_PLF_MEM_OPT {
+        display       "Platform related lwIP memory constrains"
+        flavor        none
+        no_define
+        active_if     CYGPKG_NET_LWIP
+        parent        CYGOPT_LWIP_MEM_PLF_SPEC
+        description   "
+            Some platform constrains, features and restrictions applied
+            to lwIP network stack."
+
+        cdl_option CYGOPT_LWIP_PLF_MEM_LIMIT_SS0 {
+            display       "lwIP uses the same section as the ethernet controller"
+            no_define
+            flavor        bool
+            default_value is_active(CYGOPT_LWIP_PLF_MEM_LIMIT_SS0)
+
+            active_if     CYGSEM_LWIP_MEM_SECTION
+            active_if     { CYGDAT_LWIP_MEM_SECTION_NAME == CYGHWR_HAL_LPC_EMAC_MEM_SECTION }
+
+            requires      { CYGNUM_LWIP_MEM_SIZE == 1544 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_PBUF ==  4 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_TCP_PCB == 6 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_TCP_PCB_LISTEN == 2 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_ARP_QUEUE == 5 }
+            requires      { CYGNUM_LWIP_PBUF_POOL_SIZE == 8 }
+
+            requires      { CYGNUM_DEVS_ETH_ARM_LPC2XXX_RX_BUFS == 3 }
+        }
+
+        cdl_option CYGOPT_LWIP_PLF_MEM_LIMIT_SS1 {
+            display       "lwIP uses different section than the ethernet controller"
+            no_define
+            flavor        bool
+            default_value is_active(CYGOPT_LWIP_PLF_MEM_LIMIT_SS1)
+
+            active_if     CYGSEM_LWIP_MEM_SECTION
+            active_if     { CYGDAT_LWIP_MEM_SECTION_NAME != CYGHWR_HAL_LPC_EMAC_MEM_SECTION }
+
+            requires      { CYGNUM_LWIP_MEM_SIZE == 1600 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_PBUF ==  9 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_TCP_PCB == 8 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_TCP_PCB_LISTEN == 4 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_ARP_QUEUE == 10 }
+            requires      { CYGNUM_LWIP_PBUF_POOL_SIZE == 13 }
+
+            requires      { CYGNUM_DEVS_ETH_ARM_LPC2XXX_RX_BUFS == 4 }
+        }
+
+        cdl_option CYGOPT_LWIP_PLF_MEM_LIMIT_NSS {
+            display       "lwIP does not use a special section"
+            no_define
+            flavor        bool
+            default_value is_active(CYGOPT_LWIP_PLF_MEM_LIMIT_NSS)
+
+            active_if     !CYGSEM_LWIP_MEM_SECTION
+
+            requires      { CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE == 1024 }
+
+            requires      { CYGNUM_LWIP_MEM_SIZE == 884 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_PBUF ==  4 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_TCP_PCB == 5 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_TCP_PCB_LISTEN == 2 }
+            requires      { CYGNUM_LWIP_MEMP_NUM_ARP_QUEUE == 5 }
+            requires      { CYGNUM_LWIP_PBUF_POOL_SIZE == 7 }
+
+            requires { CYGNUM_DEVS_ETH_ARM_LPC2XXX_RX_BUFS == 4 }
+        }
+    }
+
+    cdl_component CYGBLD_GLOBAL_OPTIONS {
+        display       "Global build options"
+        flavor        none
+        parent        CYGPKG_NONE
+        description   "
+            Global build options including control over compiler flags,
+            linker flags and choice of toolchain."
+
+        cdl_option CYGBLD_GLOBAL_COMMAND_PREFIX {
+            display       "Global command prefix"
+            flavor        data
+            no_define
+            default_value { "arm-eabi" }
+            description   "
+                This option specifies the command prefix used when
+                invoking the build tools."
+        }
+
+        cdl_option CYGBLD_GLOBAL_CFLAGS {
+            display       "Global compiler flags"
+            flavor        data
+            no_define
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . "-mcpu=cortex-m3 -mthumb -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions" }
+            description   "
+                This option controls the global compiler flags which
+                are used to compile all packages by default. Individual
+                packages may define options which override these global
+                flags."
+        }
+
+        cdl_option CYGBLD_GLOBAL_LDFLAGS {
+            display       "Global linker flags"
+            flavor        data
+            no_define
+            default_value { "-mcpu=cortex-m3 -mthumb -Wl,--gc-sections -Wl,-static -Wl,-n -g -nostdlib" }
+            description   "
+                This option controls the global linker flags. Individual
+                packages may define options which override these global
+                flags."
+        }
+    }
+
+    cdl_option CYGSEM_HAL_ROM_MONITOR {
+        display       "Behave as a ROM monitor"
+        flavor        bool
+        default_value 0
+        parent        CYGPKG_HAL_ROM_MONITOR
+        requires      { CYG_HAL_STARTUP == "ROM" || CYG_HAL_STARTUP == "JTAG" }
+        requires      { CYGDBG_HAL_CRCTABLE_LOCATION == "ROM" }
+        description   "
+            Enable this option if this program is to be used as a
+            ROM monitor, i.e. applications will be loaded into RAM on
+            the board, and this ROM monitor may process exceptions or
+            interrupts generated from the application. This enables
+            features such as utilizing a separate interrupt stack when
+            exceptions are generated."
+    }
+
+    cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
+        display       "Work with a ROM monitor"
+        flavor        booldata
+        legal_values  { "Generic" "GDB_stubs" }
+        default_value { CYG_HAL_STARTUP == "RAM" ? "GDB_stubs" : 0 }
+        parent        CYGPKG_HAL_ROM_MONITOR
+        requires      { CYG_HAL_STARTUP == "RAM" }
+        description   "
+            Support can be enabled for different varieties of ROM monitor.
+            This support changes various eCos semantics such as the
+            encoding of diagnostic output, or the overriding of hardware
+            interrupt vectors.
+            Firstly there is \"Generic\" support which prevents the HAL
+            from overriding the hardware vectors that it does not use, to
+            instead allow an installed ROM monitor to handle them. This
+            is the most basic support which is likely to be common to
+            most implementations of ROM monitor.
+            \"GDB_stubs\" provides support when GDB stubs are included
+            in the ROM monitor or boot ROM."
+    }
+
+    cdl_component CYGBLD_HAL_CORTEXM_LPC1766STK_GDB_STUBS {
+        display "Create StubROM SREC and binary files"
+        no_define
+        calculated    1
+        active_if     CYGBLD_BUILD_COMMON_GDB_STUBS
+        requires      { CYG_HAL_STARTUP == "ROM" }
+
+        make -priority 325 {
+            <PREFIX>/bin/stubrom.srec : <PREFIX>/bin/gdb_module.img
+            $(OBJCOPY) -O srec $< $@
+        }
+        make -priority 325 {
+            <PREFIX>/bin/stubrom.bin : <PREFIX>/bin/gdb_module.img
+            $(OBJCOPY) -O binary $< $@
+        }
+
+        description   "
+            This component causes the ELF image generated by the build
+            process to be converted to S-Record and binary files."
+    }
+}
+
+# EOF hal_cortexm_lpc17xx_lpc1766stk.cdl

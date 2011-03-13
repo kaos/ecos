@@ -1,0 +1,40 @@
+// eCos memory layout
+
+#include <pkgconf/hal.h>
+#include <cyg/infra/cyg_type.inc>
+
+MEMORY
+{
+    ram  : ORIGIN = 0x10000000, LENGTH = 0x00008000-CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+    ahb_sram_bank0  : ORIGIN = 0x2007C000, LENGTH = 0x00004000
+    ahb_sram_bank1  : ORIGIN = 0x20080000, LENGTH = 0x00004000
+    flash : ORIGIN = 0x00000000, LENGTH = 0x00040000
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    SECTION_rom_vectors (flash, 0x00000000, LMA_EQ_VMA)
+    SECTION_RELOCS (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_text (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_fini (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_rodata (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_rodata1 (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_fixup (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_gcc_except_table (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_eh_frame (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_got (flash, ALIGN (0x8), LMA_EQ_VMA)
+    USER_SECTION (ahb_sram0, ahb_sram_bank0, 0x2007C000 (NOLOAD), LMA_EQ_VMA)
+    USER_SECTION (ahb_sram1, ahb_sram_bank1, 0x20080000 (NOLOAD), LMA_EQ_VMA)
+    SECTION_data (ram, 0x10000400, FOLLOWING (.got))
+    SECTION_sram (ram, ALIGN (0x8), FOLLOWING (.data))
+    SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+    SECTIONS_END
+}
+
+hal_vsr_table = 0x10000000;
+hal_virtual_vector_table = hal_vsr_table + 128*4;
+hal_startup_stack = 0x10000000 + 1024*32;
+
+
