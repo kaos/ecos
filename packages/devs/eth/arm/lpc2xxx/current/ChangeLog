@@ -1,3 +1,8 @@
+2011-02-01  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/lpc2xxx_eth.cdl, src/if_lpc2xxx.c: Added support for
+	LPC17xx CPUs.
+
 2008-09-09  Uwe Kindler  <uwe_kindler@web.de>
 
 	* LPC2xxx ethernet driver package created
@@ -8,7 +13,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2011 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

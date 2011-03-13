@@ -38,7 +38,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    Uwe Kindler
-// Contributors:
+// Contributors: ilijak
 // Date:         2008-08-10
 // Description:  Hardware driver for LPC2xxx on-chip EMAC peripheral
 //
@@ -254,9 +254,17 @@
 //===========================================================================
 //                ETHERNET RAM AND DMA CONFIGURATION
 //===========================================================================
-#define EMAC_RAM_BASE          0x7FE00000
-#define EMAC_RAM_SIZE          0x00004000
-#define EMAC_BLOCK_SIZE        0x600
+#ifdef CYGHWR_HAL_LPC_EMAC_RAM_AHB
+# include <cyg/infra/cyg_type.h>
+# define EMAC_RAM_MEM_SECTION   CYGBLD_ATTRIB_SECTION(CYGHWR_HAL_LPC_EMAC_MEM_SECTION)
+# define EMAC_RAM_BASE          (&emac_ahb_ram)
+# define EMAC_RAM_SIZE          sizeof(emac_ahb_ram)
+# define EMAC_BLOCK_SIZE        CYGHWR_HAL_LPC_EMAC_BLOCK_SIZE
+#else // Backward compatibility
+# define EMAC_RAM_BASE          0x7FE00000
+# define EMAC_RAM_SIZE          0x00004000
+# define EMAC_BLOCK_SIZE        0x600
+#endif // CYGHWR_HAL_LPC_EMAC_RAM_AHB
 
 //
 // EMAC Descriptor TX and RX Control fields
@@ -345,6 +353,9 @@ typedef struct eth_ram_cfg_st
     volatile eth_buf_t    rx_buf[CYGNUM_DEVS_ETH_ARM_LPC2XXX_RX_BUFS];
 } eth_ram_cfg_t;
 
+#ifdef CYGHWR_HAL_LPC_EMAC_RAM_AHB
+volatile static eth_ram_cfg_t emac_ahb_ram EMAC_RAM_MEM_SECTION;
+#endif
 
 #if CYGPKG_DEVS_ETH_ARM_LPC2XXX_DEBUG_LEVEL < 3
 #if CYGPKG_DEVS_ETH_ARM_LPC2XXX_DEBUG_LEVEL > 0

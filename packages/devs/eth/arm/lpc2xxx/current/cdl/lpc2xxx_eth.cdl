@@ -40,6 +40,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):    Uwe Kindler
+# Contributors: ilijak
 # Date:         2008-08-05
 #
 #####DESCRIPTIONEND####
@@ -80,19 +81,32 @@ cdl_package CYGPKG_DEVS_ETH_ARM_LPC2XXX {
              debug messages while an application is loaded and run via GDB
              TCP/IP connection"
     }
-    
+
+    # For backward compatibility with LPC24xx platforms
+    # that do not have CYGNUM_HAL_IRQ_PRIORITY_LEVELS defined.
+    cdl_option CYGNUM_DEVS_ETH_IRQ_PRIORITY_LEVELS {
+        display       "Interrupt priority levels"
+        flavor        data
+        calculated    { CYGNUM_HAL_IRQ_PRIORITY_LEVELS ? CYGNUM_HAL_IRQ_PRIORITY_LEVELS : 15 }
+        description   "
+            For backward compatibility with LPC 24XX plarforms that do
+            not have CYGNUM_HAL_IRQ_PRIORITY_LEVELS defined."
+    }
+
     cdl_option CYGPKG_DEVS_ETH_ARM_LPC2XXX_INTPRIO {
         display       "Interrupt priority"
         flavor        data
-        legal_values  0 to 15
-        default_value 15
+        legal_values  0 to CYGNUM_DEVS_ETH_IRQ_PRIORITY_LEVELS-1
+        default_value CYGNUM_DEVS_ETH_IRQ_PRIORITY_LEVELS-1
         description   "
-            This option selects the interrupt priority for the EMAC interrupts. 
-            There are 16 priority levels corresponding to the values 0 through 
-            15 decimal, of which 15 is the lowest priority. The reset value of 
-            these registers defaults all interrupts to the lowest priority, 
-            allowing a single write to elevate the priority of an 
-            individual interrupt."
+            This option selects the interrupt priority for the EMAC
+            interrupts.  There are CYGNUM_DEVS_ETH_IRQ_PRIORITY_LEVELS
+            priority levels corresponding to the values 0 through
+            CYGNUM_DEVS_ETH_IRQ_PRIORITY_LEVELS-1 decimal, of which
+            the highest value is the lowest priority. The reset value
+            of these registers defaults all interrupts to the lowest
+            priority, allowing a single write to elevate the priority
+            of an individual interrupt."
     }
 
     cdl_option CYGNUM_DEVS_ETH_ARM_LPC2XXX_RX_BUFS {
