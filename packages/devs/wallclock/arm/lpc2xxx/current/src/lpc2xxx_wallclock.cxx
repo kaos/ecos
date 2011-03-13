@@ -2,7 +2,7 @@
 //
 //      lpc2xxx_wallclock.cxx
 //
-//      Wallclock implementation for LPC2xxx and LPC24xxx
+//      Wallclock implementation for LPC2xxx and LPC17xx CPUs
 //
 //==========================================================================
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
@@ -40,9 +40,9 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
-// Contributors:  Uwe Kindler <uwe_kindler@web.de 
+// Contributors:  Uwe Kindler <uwe_kindler@web.de, ilijak
 // Date:          2007-06-19
-// Purpose:       Wallclock driver for LPC2xxx and LPC24xx
+// Purpose:       Wallclock driver for LPC2xxx and LPC17xx CPUs
 //
 //####DESCRIPTIONEND####
 //
@@ -62,7 +62,7 @@
 //
 // The LPC2xxx variant HAL provides the CPU clock and the peripheral divider
 // VPBDIV. The LPC24xx variant HAL provides the RTC clock directly be means
-// of CYGNUM_HAL_ARM_LPC24XX_RTC_CLK. 
+// of CYGNUM_HAL_ARM_LPC24XX_RTC_CLK.
 //
 #ifdef CYGNUM_HAL_ARM_LPC2XXX_VPBDIV
 #define LPC2XXX_RTC_CLK (CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED / \
@@ -110,11 +110,13 @@ struct rtcdev {
   struct time time;
   cyg_uint32 dummy[8];
   struct time alarm;
+#ifndef CYGHWR_HAL_LPC_RTC_32768HZ
   volatile cyg_uint32 preint;
   volatile cyg_uint32 prefrac;
+#endif
 };
 
-static struct rtcdev * const rtc = 
+static struct rtcdev * const rtc =
   (struct rtcdev *) CYGARC_HAL_LPC2XXX_REG_RTC_BASE;
 
 void
@@ -124,13 +126,15 @@ Cyg_WallClock::init_hw_seconds(void)
   rtc->ccr  = 0x2;
   rtc->ciir = 0x0;
   rtc->amr  = 0xf;
-  
+
   // initialize prescaler - if the RTC id driven by an external 32.768 crystal
   // clock then initializing the prescaler is not required but writing the
   // registers here should not cause any trouble
+#ifndef CYGHWR_HAL_LPC_RTC_32768HZ
   rtc->preint  = CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREINT;
   rtc->prefrac = CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREFRAC;
-  
+#endif
+
 #ifndef CYGSEM_WALLCLOCK_SET_GET_MODE
   /* reset time to the Unix Epoch */
   rtc->time.year  = 1970;
@@ -142,12 +146,12 @@ Cyg_WallClock::init_hw_seconds(void)
   rtc->time.min   = 0;
   rtc->time.sec   = 0;
 #endif
-  
+
   /* reset alarm */
   rtc->alarm.year = rtc->alarm.month = rtc->alarm.dom = rtc->alarm.doy =
-    rtc->alarm.dow = rtc->alarm.hour = rtc->alarm.min = 
+    rtc->alarm.dow = rtc->alarm.hour = rtc->alarm.min =
     rtc->alarm.sec = 0;
-  
+
   /* start clock */
   rtc->ccr = 0x1;
 }
@@ -168,10 +172,10 @@ void
 Cyg_WallClock::set_hw_seconds(cyg_uint32 secs)
 {
   cyg_uint32 year, month, dom, hour, min, sec;
-  
+
   /* halt clock, reset counter */
   rtc->ccr = 0x2;
-  
+
   /* set time */
   _simple_mkdate(secs, &year, &month, &dom, &hour, &min, &sec);
   rtc->time.year  = year;
@@ -180,8 +184,11 @@ Cyg_WallClock::set_hw_seconds(cyg_uint32 secs)
   rtc->time.hour  = hour;
   rtc->time.min   = min;
   rtc->time.sec   = sec;
-  
+
   /* restart clock */
   rtc->ccr = 0x1;
 }
-#endif
+#endif // CYGSEM_WALLCLOCK_SET_GET_MODE
+
+//==========================================================================
+// EOF lpc2xxx_wallclock.cxx

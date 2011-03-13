@@ -2,7 +2,7 @@
 #
 #      lpc2xxx_wallclock.cdl
 #
-#      eCos configuration data for LPC2xxx internal RTC
+#      eCos configuration data for LPC2xxx, LPC17xx internal RTC
 #
 # ====================================================================
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
@@ -40,7 +40,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
-# Contributors:   jskov
+# Contributors:   jskov, ilijak
 # Date:           2007-06-19
 #
 #####DESCRIPTIONEND####
@@ -48,12 +48,13 @@
 # ====================================================================
 
 cdl_package CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX {
-    display       "LPC2xxx Real-time clock"
-    description   "RTC driver for the LPC2xxx controller"
+    display       "Real-time clock"
+    description   "RTC driver for the LPC2XXX, LPC17XX CPUs"
 
     parent        CYGPKG_IO_WALLCLOCK
     active_if     CYGPKG_IO_WALLCLOCK
-    active_if     CYGPKG_HAL_ARM_LPC2XXX || CYGPKG_HAL_ARM_LPC24XX
+    active_if     { CYGPKG_HAL_ARM_LPC2XXX || CYGPKG_HAL_ARM_LPC24XX ||
+                    CYGPKG_HAL_CORTEXM_LPC17XX }
 
     requires      { CYGHWR_HAL_ARM_LPC2XXX_IDLE_PWRSAVE == 0 }
     compile       lpc2xxx_wallclock.cxx

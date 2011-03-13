@@ -1,3 +1,8 @@
+2011-01-15  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/lpc2xxx_wallclock.cdl:
+	* src/lpc2xxx_wallclock.cxx: Added support for LPC17XX CPUs.
+
 2008-11-01  Uwe Kindler <uwe_kindler@web.de>
 
 	* cdl/lpc2xxx_wallclock.cdl: Moved CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREINT
