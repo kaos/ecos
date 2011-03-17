@@ -2,7 +2,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2008 Free Software Foundation
+// Copyright (C) 2008, 2011 Free Software Foundation
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -34,7 +34,7 @@
 #define __LWIP_ARCH_CC_H__
 
 #include <string.h>
-#include <cyg/error/codes.h>
+#include <errno.h>
 #include <cyg/infra/cyg_type.h>
 
 typedef int sys_prot_t;
@@ -46,6 +46,11 @@ typedef int sys_prot_t;
 #define ELOOP           40
 #define ETIME           62
 #define ENSRNOTFOUND    163
+
+// If errno support, define ERRNO used in api/sockets.c
+#if CYGINT_ISO_ERRNO > 0
+#define ERRNO
+#endif
 
 // Platform byteorder
 #if (CYG_BYTEORDER == CYG_LSBFIRST)

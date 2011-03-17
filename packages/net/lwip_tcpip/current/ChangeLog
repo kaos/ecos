@@ -1,3 +1,9 @@
+2011-03-08  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/lwip_net.cdl: Require CYGPKG_ISOINFRA.
+	* include/arch/cc.h: Define ERRNO if CYGINT_ISO_ERRNO is
+	implemented. Based on patch from Will Wagner. [ Bugzilla 1001169 ]
+
 2011-01-30  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/lwip_net.cdl: New CDL option CYGSEM_LWIP_MEM_SECTION.
@@ -239,7 +245,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2004, 2010 Free Software Foundation 
+// Copyright (C) 2004, 2010, 2011 Free Software Foundation 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
