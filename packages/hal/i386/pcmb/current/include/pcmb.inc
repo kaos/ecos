@@ -214,9 +214,12 @@ _error:		/* halt on error */
 _endload:
 1:
 
-	/* Lets be nice and wait for the diskette drive motor to go off
-         * before continuing. */
+	/* Let's be nice and wait for the diskette drive motor to go off
+	 * before continuing.  To allow the BIOS timer interrupt handler
+	 * to switch off the drive, we need to make sure interrupts are
+	 * enabled. */
 	
+	sti
 	movw	$0x40, %ax
 	movw	%ax, %es
 	movl	$0x40, %ebx
