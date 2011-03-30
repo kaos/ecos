@@ -166,6 +166,11 @@ DEVTAB_ENTRY(termios_io3,
              &termios_private_info3);
 #endif
 
+// More DEVTAB entries can be added using an inclusion
+#ifdef CYGDAT_IO_SERIAL_TERMIOS_ADD_INL
+# include CYGDAT_IO_SERIAL_TERMIOS_ADD_INL
+#endif
+
 static const cc_t c_cc_init[ NCCS ] = { 
     0x04,     /* EOF == ^D */
     0,        /* EOL */

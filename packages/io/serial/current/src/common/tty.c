@@ -137,6 +137,11 @@ DEVTAB_ENTRY(tty_io3,
              &tty_private_info3);
 #endif
 
+// More DEVTAB entries can be added using an inclusion
+#ifdef CYGDAT_IO_SERIAL_TTY_ADD_INL
+# include CYGDAT_IO_SERIAL_TTY_ADD_INL
+#endif
+
 static bool 
 tty_init(struct cyg_devtab_entry *tab)
 {

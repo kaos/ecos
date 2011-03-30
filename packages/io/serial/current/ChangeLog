@@ -1,3 +1,10 @@
+2011-03-28  Ilija Kocho  <ilijak@siva.com.mk>
+	    Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* src/common/termiostty.c: Add a possibility to define a few
+	additional DEVTAB entries.
+	* src/common/tty.c: Same.
+
 2010-06-02	Jay Foster	<jay@systech.com>
 
 	* src/common/termios.c : Fix tcflush() and tcdrain().  They were
