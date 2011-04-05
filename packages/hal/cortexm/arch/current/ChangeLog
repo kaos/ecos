@@ -1,3 +1,8 @@
+2011-04-01  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* include/hal_intr.h: Remove double inclusion of var_intr.h
+	header and include it at proper place. [ Bugzilla 1001184 ]
+
 2011-02-17  John Dallaway  <john@dallaway.org.uk>
 
 	* include/hal_intr.h (HAL_DISABLE_INTERRUPTS): Mark operand as

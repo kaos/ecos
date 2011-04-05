@@ -56,8 +56,6 @@
 
 #include <cyg/hal/hal_io.h>
 
-#include <cyg/hal/var_intr.h>           // variant extensions
-
 //==========================================================================
 // Exception vectors
 //
@@ -95,16 +93,16 @@
 #define CYGNUM_HAL_INTERRUPT_EXTERNAL    1
 
 
+//==========================================================================
+// Include variant definitions here.
+
+#include <cyg/hal/var_intr.h>
+
 // Variant or platform allowed to override these definitions to use
 // a different RTC
 #ifndef CYGNUM_HAL_INTERRUPT_RTC
 #define CYGNUM_HAL_INTERRUPT_RTC        CYGNUM_HAL_INTERRUPT_SYS_TICK
 #endif
-
-//==========================================================================
-// Include variant definitions here.
-
-#include <cyg/hal/var_intr.h>
 
 //==========================================================================
 // Exception vectors.
