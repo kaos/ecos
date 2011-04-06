@@ -92,7 +92,7 @@
 
 #define CYGARC_REG_NVIC_BASE                    0xE000E000
 
-#if defined(CYGHWR_HAL_CORTEXM_M3)
+#if defined(CYGHWR_HAL_CORTEXM_M3) || defined(CYGHWR_HAL_CORTEXM_M4)
 #define CYGARC_REG_NVIC_TYPE                    0x004
 #endif
 
@@ -117,7 +117,7 @@
 #define CYGARC_REG_NVIC_PR(__intr)              (CYGARC_REG_NVIC_PR0+(__intr))
 
 
-#if defined(CYGHWR_HAL_CORTEXM_M3)
+#if defined(CYGHWR_HAL_CORTEXM_M3) || defined(CYGHWR_HAL_CORTEXM_M4)
 
 #define CYGARC_REG_NVIC_CPUID                   0xD00
 #define CYGARC_REG_NVIC_ICSR                    0xD04
@@ -220,7 +220,7 @@
 //==========================================================================
 // Debug registers
 
-#if defined(CYGHWR_HAL_CORTEXM_M3)
+#if defined(CYGHWR_HAL_CORTEXM_M3) || defined(CYGHWR_HAL_CORTEXM_M4)
 
 #define CYGARC_REG_DEBUG_BASE                   0xE000EDF0
 

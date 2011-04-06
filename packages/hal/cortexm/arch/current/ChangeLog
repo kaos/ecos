@@ -1,3 +1,14 @@
+2011-04-06  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/cortexm.cdl: Remove M1 CPU family from architecture config
+	file (as not supported for now). [Bugzilla 1001186]
+
+2011-04-02  Ilija Kocho  <ilijak@siva.com.mk>
+	* cdl/cortexm.cdl: Add M4 CPU family to CYGHWR_HAL_CORTEXM. Add
+	FPU (Floating Point Unit) interface.
+	* include/hal_io.h: Add CYGHWR_HAL_CORTEXM_M4 to some preprocessor
+	conditions. [Bugzilla 1001186]
+
 2011-04-01  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* include/hal_intr.h: Remove double inclusion of var_intr.h

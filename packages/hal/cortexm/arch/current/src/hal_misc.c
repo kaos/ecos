@@ -163,11 +163,10 @@ void hal_reset_vsr( void )
     // Ensure that the CPU will use the vector table we have just set
     // up.
 
-# if defined(CYGHWR_HAL_CORTEXM_M3)
+# if defined(CYGHWR_HAL_CORTEXM_M3) || defined(CYGHWR_HAL_CORTEXM_M4)
 
-    // On M3 parts, the NVIC contains a vector table base register. We
-    // program this to relocate the vector table base to the base of
-    // SRAM.
+    // On M3 and M4 parts, the NVIC contains a vector table base register.
+    // We program this to relocate the vector table base to the base of SRAM.
     
     HAL_WRITE_UINT32( CYGARC_REG_NVIC_BASE+CYGARC_REG_NVIC_VTOR,
                       CYGARC_REG_NVIC_VTOR_TBLOFF(0)|

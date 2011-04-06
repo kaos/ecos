@@ -98,14 +98,14 @@ cdl_package CYGPKG_HAL_CORTEXM {
     cdl_option CYGHWR_HAL_CORTEXM {
         display          "Cortex-M CPU family"
         flavor           data
-        legal_values     { "M1" "M3" }
+        legal_values     { "M3" "M4" }
         default_value    { "M3" }
         description      "
-            The Cortex-M architecture has two variants at present. The M1 is
-            base on the ARMV6 architecture specification and executes an extended
-            variant of the Thumb instruction set and has some differences in
-            the interrupt controller. The M3 is based on the ARMV7 architecture
-            specification and executes the Thumb2 instruction set."
+            The Cortex-M architecture has two variants at present. The
+            M3 and M4 are based on the ARMV7 architecture specification
+            and execute the Thumb2 instruction set. The M4 in addition
+            to M3 instruction set has SIMD and optional single precision
+            floating point instructions."
     }
 
     cdl_option CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE {
@@ -115,6 +115,18 @@ cdl_package CYGPKG_HAL_CORTEXM {
         default_value    { "EXTERNAL" }
         description      "
              Select the Cortex-M system tick timer clock source."
+    }
+
+    cdl_interface CYGINT_HAL_CORTEXM_FPU {
+        display "The platform and architecture contains floating point unit."
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_FPU {
+        display          "Floating Point Unit"
+        active_if        { CYGINT_HAL_CORTEXM_FPU != 0 }
+        default_value    CYGINT_HAL_CORTEXM_FPU
+        description      "
+            Use the Floating Point Unit."
     }
 
     cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_MAX {
