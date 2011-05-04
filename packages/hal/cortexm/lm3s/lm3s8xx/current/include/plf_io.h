@@ -94,8 +94,8 @@
 #elif defined(CYGHWR_HAL_CORTEXM_LM3S8XX_LM3S817) || \
         defined(CYGHWR_HAL_CORTEXM_LM3S8XX_LM3S818)
 #define CYGHWR_HAL_LM3S_ADC0_CHAN                 6
-#elif defined(CYGHWR_HAL_CORTEXM_CORTEXM_LM3S828) || \
-        defined(CYGHWR_HAL_CORTEXM_CORTEXM_LM3S808)
+#elif defined(CYGHWR_HAL_CORTEXM_LM3S8XX_LM3S828) || \
+        defined(CYGHWR_HAL_CORTEXM_LM3S8XX_LM3S808)
 #define CYGHWR_HAL_LM3S_ADC0_CHAN                 8
 #endif
 

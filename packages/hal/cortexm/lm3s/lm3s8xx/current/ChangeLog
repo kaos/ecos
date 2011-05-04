@@ -1,3 +1,8 @@
+2011-05-04  John Dallaway  <john@dallaway.org.uk>
+
+	* include/plf_io.h: Fix determination when CYGHWR_HAL_LM3S_ADC0_CHAN
+	should be 8. Patch from Anatoly Sokolov. [ Bugzilla 1001222 ]
+
 2011-01-18  Christophe Coutand  <ccoutand@stmi.com>
 
 	* cdl/hal_cortexm_lm3s8xx.cdl:
