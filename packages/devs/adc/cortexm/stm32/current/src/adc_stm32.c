@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2009 Free Software Foundation, Inc.                        
+// Copyright (C) 2009, 2011 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -64,11 +64,11 @@
 // Diagnostic support
 // Switch the #if to 1 to generate some diagnostic messages.
 
-#if 0
-#include <cyg/infra/diag.h>
-#define adc_diag( __fmt, ... ) diag_printf("ADC: %30s[%4d]: " __fmt, __FUNCTION__, __LINE__, ## __VA_ARGS__ );
+#ifdef CYGPKG_DEVS_ADC_CORTEXM_STM32_TRACE
+# include <cyg/infra/diag.h>
+# define adc_diag( __fmt, ... ) diag_printf("ADC: %30s[%4d]: " __fmt, __FUNCTION__, __LINE__, ## __VA_ARGS__ );
 #else
-#define adc_diag( __fmt, ... ) 
+# define adc_diag( __fmt, ... ) 
 #endif
 
 
@@ -432,7 +432,7 @@ stm32_adc_init_clock(void)
     adc_clock = hal_stm32_pclk2 / 8;
 #endif
 
-    HAL_READ_UINT32(rcc + CYGHWR_HAL_STM32_RCC_CFGR, cfgr);
+    HAL_WRITE_UINT32(rcc + CYGHWR_HAL_STM32_RCC_CFGR, cfgr);
 }
 
 //-----------------------------------------------------------------------------
@@ -446,6 +446,8 @@ stm32_adc_init_device(cyg_adc_device *device)
     cyg_uint64 tmp;
     cyg_uint32 cycles;
     cyg_uint32 smpr;
+    cyg_uint32 rcc_base = CYGHWR_HAL_STM32_RCC;
+    cyg_uint32 reg_data;
     int i;
     
     static const cyg_uint32 cycles_table[] = 
@@ -470,7 +472,7 @@ stm32_adc_init_device(cyg_adc_device *device)
     } while (cr & CYGHWR_HAL_STM32_ADC_CR2_CAL);
     
     // Power off ADC 
-    cr &= CYGHWR_HAL_STM32_ADC_CR2_ADON;
+    cr &= ~CYGHWR_HAL_STM32_ADC_CR2_ADON;
     HAL_WRITE_UINT32(info->setup->adc_base + CYGHWR_HAL_STM32_ADC_CR2, cr);
     
     // Enable external triggering and DMA
@@ -494,6 +496,14 @@ stm32_adc_init_device(cyg_adc_device *device)
     
 
     // Setup DMA channel
+    // Ensure that the DMA clocks are enabled.
+    HAL_READ_UINT32 (rcc_base + CYGHWR_HAL_STM32_RCC_AHBENR, reg_data);
+    if (info->setup->dma_base == CYGHWR_HAL_STM32_DMA1)
+      reg_data |= CYGHWR_HAL_STM32_RCC_AHBENR_DMA1;
+    else
+      reg_data |= CYGHWR_HAL_STM32_RCC_AHBENR_DMA2;
+    HAL_WRITE_UINT32 (rcc_base + CYGHWR_HAL_STM32_RCC_AHBENR, reg_data);
+
     HAL_WRITE_UINT32(info->setup->dma_base + 
                      CYGHWR_HAL_STM32_DMA_CPAR(info->setup->dma_channel),
                      info->setup->adc_base + CYGHWR_HAL_STM32_ADC_DR);
@@ -557,7 +567,7 @@ stm32_adc_update_sequence(cyg_adc_device *device)
     cyg_uint32 sqr2 = 0;
     cyg_uint32 sqr3 = 0;
     
-    adc_diag("Updateing regular group\n");
+    adc_diag("Updating regular group\n");
     
     // Disable ADC
     HAL_READ_UINT32(info->setup->adc_base + CYGHWR_HAL_STM32_ADC_CR2, cr);

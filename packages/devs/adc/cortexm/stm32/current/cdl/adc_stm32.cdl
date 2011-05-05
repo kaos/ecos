@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2009 Free Software Foundation, Inc.                        
+## Copyright (C) 2009, 2011 Free Software Foundation, Inc                   
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -63,18 +63,23 @@ cdl_package CYGPKG_DEVS_ADC_CORTEXM_STM32 {
            
     include_dir cyg/io
     compile     -library=libextras.a adc_stm32.c
-    
+
+    cdl_option CYGPKG_DEVS_ADC_CORTEXM_STM32_TRACE {
+        display       "ADC driver tracing"
+        flavor        bool
+        default_value 0
+        description   "
+            Enable tracing of the ADC driver. Select to debug the driver."
+    }
+
     cdl_option CYGNUM_DEVS_ADC_CORTEXM_STM32_CLOCK_DIV {
          display        "ADC clock divider"
          flavor         data
          legal_values   { 2 4 6 8 }
          default_value  8
          description    "
-             This option specifies the level of debug data output by
-             the STM32 ADC device driver. A value of 0 signifies
-             no debug data output; 1 signifies normal debug data
-             output. If an overrun occurred then this can only be
-             detected by debug output messages."         
+             This option specifies the ADC clock divider value. The 
+             ADC clock frequency is defined as PCLK2 / ADC divider. "
     }
     
     cdl_component CYGHWR_DEVS_ADC_CORTEXM_STM32_ADC1 {
