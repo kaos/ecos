@@ -1,3 +1,8 @@
+2011-05-12  John Dallaway  <john@dallaway.org.uk>
+
+	* include/sys/param.h: Fix cyg_arc4random() extern. Issue reported by
+	Marwijn Hessel. [ Bugzilla 1001227 ]
+
 2011-02-22  Kelvin Lawson  <kelvinl@users.sf.net>
 
 	* src/sys/netinet/if_ether.c: Merge fix from FreeBSD CVS r1.108.
@@ -647,7 +652,7 @@
 # ####GPLCOPYRIGHTBEGIN####                                       
 # -------------------------------------------                     
 # This file is part of eCos, the Embedded Configurable Operating System.
-# Copyright (C) 2000, 2001, 2002, 2010 Free Software Foundation, Inc.   
+# Copyright (C) 2000, 2001, 2002, 2010, 2011 Free Software Foundation, Inc.   
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

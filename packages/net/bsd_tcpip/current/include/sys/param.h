@@ -12,7 +12,7 @@
 // and license included herein.                                 
 //
 // Portions created by the Free Software Foundation are         
-// Copyright (C) 2002 Free Software Foundation, Inc.            
+// Copyright (C) 2002, 2011 Free Software Foundation, Inc.            
 // -------------------------------------------                  
 // ####BSDCOPYRIGHTEND####                                      
 //==========================================================================
@@ -1042,5 +1042,5 @@ if (cyg_net_log_mask & lvl)
 #endif
 
 #endif // _KERNEL
-int extern cyg_arc4random(void);
+extern int cyg_arc4random(void);
 #endif //_SYS_PARAM_H_
