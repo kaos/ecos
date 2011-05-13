@@ -1,3 +1,8 @@
+2011-05-13  John Dallaway  <john@dallaway.org.uk>
+
+	* doc/flash.sgml: Fix cyg_flash_get_into_addr() function name. Issue
+	reported by Christophe Coutand. [ Bugzilla 1001233 ]
+
 2010-05-15  Christophe Coutand <ccoutand@stmi.com>
 
 	* src/flashiodev.c (flashiodev_lookup): Fix wrong code execution if
@@ -712,7 +717,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005, 2006, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005, 2006, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
