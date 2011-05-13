@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2010 Free Software Foundation, Inc.                        
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -69,9 +69,9 @@
 #define CYGNUM_HAL_INTERRUPT_UART2   (7+CYGNUM_HAL_INTERRUPT_EXTERNAL)
 #define CYGNUM_HAL_INTERRUPT_UART3   (8+CYGNUM_HAL_INTERRUPT_EXTERNAL)
 #define CYGNUM_HAL_INTERRUPT_PWM1    (9+CYGNUM_HAL_INTERRUPT_EXTERNAL)
-#define CYGNUM_HAL_INTERRUPT_I2C0    (9+CYGNUM_HAL_INTERRUPT_EXTERNAL)
-#define CYGNUM_HAL_INTERRUPT_I2C1    (10+CYGNUM_HAL_INTERRUPT_EXTERNAL)
-#define CYGNUM_HAL_INTERRUPT_I2C2    (11+CYGNUM_HAL_INTERRUPT_EXTERNAL)
+#define CYGNUM_HAL_INTERRUPT_I2C0    (10+CYGNUM_HAL_INTERRUPT_EXTERNAL)
+#define CYGNUM_HAL_INTERRUPT_I2C1    (11+CYGNUM_HAL_INTERRUPT_EXTERNAL)
+#define CYGNUM_HAL_INTERRUPT_I2C2    (12+CYGNUM_HAL_INTERRUPT_EXTERNAL)
 
 #define CYGNUM_HAL_INTERRUPT_SPI     (13+CYGNUM_HAL_INTERRUPT_EXTERNAL)
 #define CYGNUM_HAL_INTERRUPT_SSP0    (14+CYGNUM_HAL_INTERRUPT_EXTERNAL)
@@ -98,7 +98,7 @@
 #define CYGNUM_HAL_INTERRUPT_USBAI   (33+CYGNUM_HAL_INTERRUPT_EXTERNAL)
 #define CYGNUM_HAL_INTERRUPT_CANWAKE (34+CYGNUM_HAL_INTERRUPT_EXTERNAL)
 
-#define CYGNUM_HAL_INTERRUPT_NVIC_MAX (CYGNUM_HAL_INTERRUPT_CANWAKE+CYGNUM_HAL_INTERRUPT_EXTERNAL)
+#define CYGNUM_HAL_INTERRUPT_NVIC_MAX (CYGNUM_HAL_INTERRUPT_CANWAKE)
 
 #define CYGNUM_HAL_ISR_MIN            0
 #define CYGNUM_HAL_ISR_MAX            CYGNUM_HAL_INTERRUPT_CANWAKE

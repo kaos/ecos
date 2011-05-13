@@ -1,3 +1,9 @@
+2011-05-13  John Dallaway  <john@dallaway.org.uk>
+
+	* include/var_intr.h: Fix I2C interrupt definitions issue reported
+	by Pavel Glinskii. Also fix CYGNUM_HAL_INTERRUPT_NVIC_MAX from Ilija
+	Kocho.
+
 2011-03-14  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/hal_cortexm_lpc17xx.cdl: Do not implement the
