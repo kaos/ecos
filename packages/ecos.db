@@ -274,6 +274,16 @@ package CYGPKG_DEVS_FLASH_SPI_M25PXX {
         Support for M25Pxx SPI flash devices."
 }
 
+package CYGPKG_DEVS_FLASH_SPI_SST25XX {
+        alias           { "SST25xx SPI Flash" flash_spi_sst25xx }
+        directory       devs/flash/spi/sst25xx
+        script          flash_sst25xx.cdl
+        hardware
+        description "
+        Support for SST25xx SPI flash devices from Silicon Storage
+        Technology."
+}
+
 package CYGPKG_DEVS_FLASH_ARM_PID {
 	alias 		{ "Support for flash memory on ARM/PID board" flash_arm_pid }
 	directory	devs/flash/arm/pid

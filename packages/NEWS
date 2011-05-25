@@ -1,3 +1,5 @@
+* SPI flash driver for Silicon Storage Technology (SST25xx devices)
+  by Christophe Coutand.
 * SPI flash driver for Atmel AT25DFxxx devices by Christophe Coutand.
 * LPC17XX variant HAL and BSP for Olimex LPC-1766-STK board including
   ethernet, serial and wallclock drivers by Ilija Kocho.
