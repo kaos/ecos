@@ -256,6 +256,15 @@ package CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH {
     description "This package contains hardware support for Atmel DataFlash."
 }
 
+package CYGPKG_DEVS_FLASH_SPI_AT25DFXXX {
+        alias           { "AT25DFxxx SPI Flash" flash_spi_at25dfxxx }
+        directory       devs/flash/spi/at25dfxxx
+        script          flash_at25dfxxx.cdl
+        hardware
+        description "
+        Support for AT25DFxxx SPI flash devices from Atmel."
+}
+
 package CYGPKG_DEVS_FLASH_SPI_M25PXX {
         alias           { "M25Pxx SPI Flash" flash_spi_m25pxx }
         directory       devs/flash/spi/m25pxx

@@ -1,3 +1,7 @@
+2011-05-25  Christophe Coutand  <ecos@hotmail.co.uk>
+
+	* NEWS, ecos.db: Add SPI flash driver for Atmel AT25DFxxx.
+
 2011-03-13  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* NEWS, ecos.db: Add LPC17XX variant HAL, support for
