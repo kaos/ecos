@@ -1,0 +1,126 @@
+##=============================================================================
+##
+##      flash_sst25xx.cdl
+##
+##      SST25xx SPI flash driver configuration options.
+##
+##=============================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2011 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##=============================================================================
+#######DESCRIPTIONBEGIN####
+##
+##
+## Author(s):   ccoutand, updated for Silicon Storage Technology
+##              SST25xx flash
+## Original(s): Chris Holgate
+## Date:        2011-04-25
+## Purpose:     Configure SST25xx SPI flash driver.
+##
+######DESCRIPTIONEND####
+##
+##=============================================================================
+
+cdl_package CYGPKG_DEVS_FLASH_SPI_SST25XX {
+    display      "Silicon Storage Technology SST25xx flash memory support"
+    parent        CYGPKG_IO_FLASH
+    active_if     { CYGPKG_IO_FLASH && CYGPKG_IO_SPI }
+    implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
+    implements    CYGHWR_IO_FLASH_INDIRECT_READS
+
+    include_dir   cyg/io
+    compile       sst25xx.c
+
+    description   "
+        Flash memory support for the Silicon Storage Technology SST25xx
+        SPI flash devices and compatibles.  This driver implements the
+        V2 flash driver API"
+
+    cdl_option CYGPKG_DEVS_FLASH_SPI_SST25XX_SUPPORT_JEDECID {
+        display       "Device supports JEDEC ID"
+        flavor        bool
+        default_value 0
+
+        description   "
+            Allow probing of the SPI flash(s) on the bus using the
+            JededID Opcode. Some device do not support this command
+            (SST25VF010A, SST25VF512A etc.)."
+    }
+
+    cdl_option CYGPKG_DEVS_FLASH_SPI_SST25XX_BLOCK_SIZE {
+        display       "Flash block size in bytes"
+        flavor        data
+        legal_values  { 4096 32768 65536 }
+        default_value { 4096 }
+
+        description   "
+            Most SST25xx SPI flash devices can use block size of 4KB,
+            32K or 64KB. This option allow users to select which flash
+            geometry to use. For device such as AT25F512 not supporting
+            64K, selecting a wrong geometry will force the driver to
+            abort the initialization process."
+    }
+
+    cdl_option CYGPKG_DEVS_FLASH_SPI_SST25XX_READ_MODE {
+        display       "Flash read transaction"
+        flavor        data
+        legal_values  { "FAST" "SLOW" }
+        default_value { "FAST" }
+
+        description   "
+            The SST25xx SPI flash devices differentiate read access
+            according to the throughput required for this operation. The
+            driver allows both fast and slow reading operation. The
+            option requires the physical layer to use the appropriate
+            SPI bus clock frequency."
+    }
+
+    cdl_option CYGNUM_DEVS_FLASH_SPI_SST25XX_READ_BLOCK_SIZE {
+        display       "Maximum read block size"
+        flavor        data
+        default_value 0
+
+        description   "
+            In theory it is possible to read back the entire flash
+            contents using a single SPI transaction.  However, some SPI
+            bus drivers have a maximum transaction size - for example
+            transactions may be limited to the length of a DMA bounce
+            buffer.  Setting this option to a non-zero value specifies
+            the maximum SPI bus transfer size which will be used when
+            reading back data.  Read requests for areas larger than
+            this block size will automatically be split into a series
+            of smaller SPI bus transactions."
+    }
+}
+
+# EOF flash_sst25xx.cdl
