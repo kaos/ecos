@@ -1,3 +1,7 @@
+2011-05-25  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/flash_m25pxx.cdl: fix active_if goal expression.
+
 2009-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* test/m25pxx_test.c (cyg_user_start): Call cyg_flash_init() with

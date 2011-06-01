@@ -50,7 +50,7 @@
 cdl_package CYGPKG_DEVS_FLASH_SPI_M25PXX {
     display	"M25PXX flash memory support"
     parent	CYGPKG_IO_FLASH
-    active_if	CYGPKG_IO_FLASH CYGPKG_IO_SPI
+    active_if	{ CYGPKG_IO_FLASH && CYGPKG_IO_SPI }
     implements	CYGHWR_IO_FLASH_DEVICE
     implements  CYGHWR_IO_FLASH_INDIRECT_READS 
     include_dir	cyg/io
