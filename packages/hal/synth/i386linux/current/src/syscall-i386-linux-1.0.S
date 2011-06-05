@@ -444,8 +444,8 @@ cyg_hal_sys_restore_rt:
         movl    $SYS_rt_sigreturn, %eax
         int     $0x80
 1:              
-        .type __restore_rt,@function
-        .size __restore_rt,1b - __restore_rt
+        .type cyg_hal_sys_restore_rt,@function
+        .size cyg_hal_sys_restore_rt,1b - cyg_hal_sys_restore_rt
                 
         .align 8
         .global cyg_hal_sys_restore
@@ -454,5 +454,5 @@ cyg_hal_sys_restore:
         movl    $SYS_sigreturn, %eax
         int     $0x80
 1:              
-        .type __restore,@function
-        .size __restore,1b - __restore
+        .type cyg_hal_sys_restore,@function
+        .size cyg_hal_sys_restore,1b - cyg_hal_sys_restore
