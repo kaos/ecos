@@ -369,8 +369,8 @@ cyg_ldr_relocate_section(PELF_OBJECT p, cyg_uint32 r_shndx)
 #if CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL > 1
             diag_printf("Error while relocating symbol: %s\n",
                         p_strtab + p_symtab[sym_index].st_name);
-            return -1;
 #endif
+            return -1;
         }    
     }
 

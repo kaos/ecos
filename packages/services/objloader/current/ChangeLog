@@ -1,3 +1,8 @@
+2011-06-14  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* src/objelf.c:cyg_ldr_relocate_section(): Conditional block did
+	shadow the return of error code. Fixed.
+
 2010-03-03  Stanislav Karpenko  <s.o.karpenko@gmail.com>
 
 	* include/objelf.h: Add missed entry to CYG_LDR_TABLE_KAPI_MUTEX
