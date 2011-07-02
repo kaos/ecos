@@ -185,3 +185,4 @@ ksz8041_stat (eth_phy_access_t * f, int *state)
 }
 
 _eth_phy_dev ("Micrel KSZ8041", 0x00221512, ksz8041_stat)
+_eth_phy_dev ("Micrel KSZ8041", 0x00221513, ksz8041_stat)
