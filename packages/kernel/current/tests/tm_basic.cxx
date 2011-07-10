@@ -88,7 +88,8 @@ typedef struct fun_times {
 
 #ifdef CYGMEM_REGION_ram_SIZE
 #define CYG_THREAD_OVERHEAD  (STACK_SIZE+sizeof(cyg_thread)+(sizeof(fun_times)*2))
-#define NTEST_THREADS        ((CYGMEM_REGION_ram_SIZE/16)/CYG_THREAD_OVERHEAD)
+#define NTEST_THREADS_AVAIL  ((CYGMEM_REGION_ram_SIZE/16)/CYG_THREAD_OVERHEAD)
+#define NTEST_THREADS        (2>(NTEST_THREADS_AVAIL)?2:(NTEST_THREADS_AVAIL))
 #define CYG_MUTEX_OVERHEAD   (sizeof(cyg_mutex_t)+sizeof(fun_times))
 #define NMUTEXES             ((CYGMEM_REGION_ram_SIZE/16)/CYG_MUTEX_OVERHEAD)
 #define CYG_MBOX_OVERHEAD    (sizeof(cyg_mbox)+sizeof(fun_times))

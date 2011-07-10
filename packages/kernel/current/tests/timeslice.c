@@ -58,6 +58,7 @@
 
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>
+#include CYGHWR_MEMORY_LAYOUT_H
 
 //==========================================================================
 
@@ -72,7 +73,11 @@
 
 #define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
+#if (CYGMEM_REGION_ram_SIZE <= 32768)
+#define NTHREADS_MAX (CYGNUM_KERNEL_CPU_MAX*4)
+#else
 #define NTHREADS_MAX (CYGNUM_KERNEL_CPU_MAX*6)
+#endif
 
 static int ncpus = CYGNUM_KERNEL_CPU_MAX;
 

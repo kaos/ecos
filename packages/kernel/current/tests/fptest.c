@@ -68,7 +68,8 @@
 
 #if defined(CYGFUN_KERNEL_API_C) &&             \
     defined(CYGSEM_KERNEL_SCHED_MLQUEUE) &&     \
-    (CYGNUM_KERNEL_SCHED_PRIORITIES > 12)
+    (CYGNUM_KERNEL_SCHED_PRIORITIES > 12) &&    \
+    (CYGMEM_REGION_ram_SIZE >= (49152-4096))
 
 //==========================================================================
 // Base priority for all threads.
@@ -358,7 +359,8 @@ cyg_start( void )
     CYG_TEST_INFO("FP test requires:\n"
                 "CYGFUN_KERNEL_API_C && \n"
                 "CYGSEM_KERNEL_SCHED_MLQUEUE && \n"
-                "(CYGNUM_KERNEL_SCHED_PRIORITIES > 12)\n");
+                "(CYGNUM_KERNEL_SCHED_PRIORITIES > 12) &&\n"
+                "(CYGMEM_REGION_ram_SIZE >= (49152-4096))\n");
     CYG_TEST_NA("FP test requirements");
 }
 

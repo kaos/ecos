@@ -56,10 +56,17 @@
     (CYGNUM_KERNEL_SCHED_PRIORITIES > 26)
 
 #include <cyg/hal/hal_arch.h>           // for CYGNUM_HAL_STACK_SIZE_TYPICAL
+#include CYGHWR_MEMORY_LAYOUT_H
 
 // -------------------------------------------------------------------------
 
-#define THREADS                 10
+#if (CYGMEM_REGION_ram_SIZE <= 32768)
+# define THREADS 5
+#elif (CYGMEM_REGION_ram_SIZE <= 49152)
+# define THREADS 8
+#else
+# define THREADS 10
+#endif
 
 #ifdef CYGNUM_HAL_STACK_SIZE_TYPICAL
 #define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL

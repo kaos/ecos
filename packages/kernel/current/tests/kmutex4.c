@@ -78,6 +78,7 @@ cyg_hal_invoke_constructors();
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/infra/cyg_trac.h>
 #include <cyg/infra/diag.h>             // diag_printf
+#include CYGHWR_MEMORY_LAYOUT_H
 
 // ------------------------------------------------------------------------
 
@@ -116,7 +117,11 @@ static char * protnames[] = {
 //
 // Translated into KAPI also.
 
-#define NTHREADS 7
+#if (CYGMEM_REGION_ram_SIZE <= 32768)
+# define NTHREADS 5
+#else
+# define NTHREADS 7
+#endif
 
 #define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 

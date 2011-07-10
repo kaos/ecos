@@ -59,6 +59,7 @@
 #include <cyg/kernel/thread.inl>
 
 #include <cyg/infra/diag.h>             // diag_printf
+#include CYGHWR_MEMORY_LAYOUT_H
 
 #ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
 externC void
@@ -128,7 +129,11 @@ cyg_hal_invoke_constructors();
 // Stolen from testaux.hxx and copied in here because I want to be able to
 // reset the world also.
 
-#define NTHREADS 7
+#if (CYGMEM_REGION_ram_SIZE <= 32768)
+# define NTHREADS 5
+#else
+# define NTHREADS 7
+#endif
 
 inline void *operator new(size_t size, void *ptr) { return ptr; };
 

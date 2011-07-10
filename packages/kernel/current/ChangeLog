@@ -1,3 +1,16 @@
+2011-07-09  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* tests/bin_sem2.cxx (PHILOSOPHERS):
+	* tests/fptest.cx (TEST_NA):
+	* tests/kmutex3.c (NTHREADS):
+	* tests/kmutex4.c (NTHREADS):
+	* tests/mutex3.cxx (NTHREADS):
+	* tests/thread_gdb.c (NTHREADS):
+	* tests/timeslice.c (NTHREADS_MAX):
+	* tests/timeslice2.c (NTHREADS_MAX):
+	* tests/tm_basic.cxx (NTEST_THREADS): Given a chance to compile and
+	run more tests for low memory footprint targets. [ Bugzilla 1001253 ]
+
 2010-11-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/intr0.cxx (intr0_main): Fix a compiler warning by changing

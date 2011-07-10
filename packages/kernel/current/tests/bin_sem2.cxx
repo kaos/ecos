@@ -58,10 +58,19 @@
 #include <cyg/infra/testcase.h>
 
 #include <cyg/kernel/sched.inl>
+#include CYGHWR_MEMORY_LAYOUT_H
 
 static cyg_ucount16 PHILO_LOOPS = 1000;
 
-#define PHILOSOPHERS 15
+#if (CYGMEM_REGION_ram_SIZE <= 32768)
+# define PHILOSOPHERS 5
+#elif (CYGMEM_REGION_ram_SIZE <= 49152)
+# define PHILOSOPHERS 9
+#elif (CYGMEM_REGION_ram_SIZE <= 65536)
+# define PHILOSOPHERS 11
+#else
+# define PHILOSOPHERS 15
+#endif
 #define NTHREADS PHILOSOPHERS
 #include "testaux.hxx"
 
