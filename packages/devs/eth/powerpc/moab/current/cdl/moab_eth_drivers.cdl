@@ -58,7 +58,7 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_MOAB {
     active_if	  CYGPKG_HAL_POWERPC_PPC40x
 
     requires      CYGPKG_DEVS_ETH_POWERPC_PPC405
-    requires      CYGHWR_DEVS_ETH_PHY_DP83847
+    requires      CYGHWR_DEVS_ETH_PHY_DP8384X
     requires      CYGPKG_HAL_POWERPC_MOAB
 
     # FIXME: This really belongs in the NS DP83816 package

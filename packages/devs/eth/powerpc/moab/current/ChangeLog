@@ -1,3 +1,9 @@
+2011-07-22  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/moab_eth_drivers.cdl:
+	Update due renaming CYGHWR_DEVS_ETH_PHY_DP83847 to
+	CYGHWR_DEVS_ETH_PHY_DP8384X. [ Bugzilla 1001235 ]
+
 2005-07-18  David Vrabel  <dvrabel@arcom.com>
 
 	* include/moab_eth_dp83816.inl: Remove unneeded _h2le and _le2h
