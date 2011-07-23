@@ -1,3 +1,15 @@
+2011-07-22  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* misc/moab1.1_redboot_BOOT.ecm:
+	* misc/moab1.1_redboot_RAMF.ecm:
+	* misc/moab1.1_redboot_ROMRAM.ecm:
+	* misc/redboot_BOOT.ecm:
+	* misc/redboot_RAM.ecm:
+	* misc/redboot_RAM+FLASH.ecm:
+	* misc/redboot_ROMRAM.ecm:
+	Update due renaming CYGHWR_DEVS_ETH_PHY_DP83847 to
+	CYGHWR_DEVS_ETH_PHY_DP8384X. [ Bugzilla 1001235 ]
+
 2009-01-31  Bart Veer <bartv@ecoscentric.com>
 
 	* cdl/hal_powerpc_moab.cdl: update compiler flags for gcc 4.x

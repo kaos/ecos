@@ -50,7 +50,7 @@ cdl_option CYGSEM_IO_ETH_DRIVERS_WARN {
     user_value 0
 };
 
-cdl_option CYGHWR_DEVS_ETH_PHY_DP83847 {
+cdl_option CYGHWR_DEVS_ETH_PHY_DP8384X {
     inferred_value 1
 };
 
