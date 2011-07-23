@@ -1,3 +1,11 @@
+2011-07-22  Christophe Coutand  <ecos@hotmail.co.uk>  and sergeig
+
+	* cdl/phy_eth_drivers.cdl: Use CYGHWR_DEVS_ETH_PHY_DP8384X name
+	instead CYGHWR_DEVS_ETH_PHY_DP83847
+	* src/DP83847.c: Renamed stat() function, add new PHY DP83848C
+	Update due renaming CYGHWR_DEVS_ETH_PHY_DP83847 to
+	CYGHWR_DEVS_ETH_PHY_DP8384X. [ Bugzilla 1001235 ]
+
 2011-07-02  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* src/KSZ8041.c: More silicon revisions.  [Bugzilla 1001274]

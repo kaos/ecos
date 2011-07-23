@@ -40,10 +40,10 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: 
+// Contributors: ccoutand
 // Date:         2003-08-01
 // Purpose:      
-// Description:  Support for ethernet NS DP83847 PHY
+// Description:  Support for ethernet NS DP8384X PHY
 //              
 //
 //####DESCRIPTIONEND####
@@ -63,7 +63,7 @@
 #include <cyg/io/eth_phy.h>
 #include <cyg/io/eth_phy_dev.h>
 
-static bool dp83847_stat(eth_phy_access_t *f, int *state)
+static bool dp8384x_stat(eth_phy_access_t *f, int *state)
 {
     unsigned short phy_state;
     int tries;
@@ -94,4 +94,5 @@ static bool dp83847_stat(eth_phy_access_t *f, int *state)
     return false;
 }
 
-_eth_phy_dev("National Semiconductor DP83847", 0x20005c30, dp83847_stat)
+_eth_phy_dev("National Semiconductor DP83847", 0x20005c30, dp8384x_stat)
+_eth_phy_dev("National Semiconductor DP83848C", 0x20005c90, dp8384x_stat)
