@@ -1,3 +1,9 @@
+2011-05-23  Manuel Borchers  <manuel@matronix.de>
+
+	* src/dir.cxx (rewinddir): Fix tracing of rewinddir().
+	* src/fio.h: Add new function entry macro (FILEIO_ENTRY_VOID).
+	[ Bugzilla 1001243 ]
+
 2010-02-08  Jay Foster <jay@systech.com>
 
 	* tests/pselect.c: Corrected return value of pthread_kill()

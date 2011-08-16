@@ -139,6 +139,11 @@ typedef int sigset_t;
     CYG_REPORT_FUNCTYPE( "returning %d" );      \
     CYG_FILEIO_FUNCTION_START();                \
 
+#define FILEIO_ENTRY_VOID()                     \
+    CYG_REPORT_FUNCTION();                      \
+    CYG_FILEIO_FUNCTION_START();                \
+
+
 // Do a fileio package defined return. This requires the error code
 // to be placed in errno, and if it is non-zero, -1 returned as the
 // result of the function. This also gives us a place to put any

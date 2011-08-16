@@ -214,7 +214,7 @@ extern int readdir_r( DIR *dirp, struct dirent *entry, struct dirent **result )
 
 extern void rewinddir( DIR *dirp )
 {
-    FILEIO_ENTRY();
+    FILEIO_ENTRY_VOID();
 
     int fd = (int)dirp;
 
