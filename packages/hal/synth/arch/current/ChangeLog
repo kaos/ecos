@@ -1,3 +1,7 @@
+2011-08-13  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/hal_synth.cdl (CYGPKG_HAL_SYNTH_TESTS): Fix a typo in make rule.
+
 2009-08-13  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/synth.ld (SECTION_eh_frame): allow for a .eh_frame_hdr

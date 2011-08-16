@@ -155,7 +155,7 @@ cdl_package CYGPKG_HAL_SYNTH {
         make {
             <PREFIX>/tests/ftok: <PACKAGE>/tests/ftok.c
             @mkdir -p "$(dir $@)"
-            @$(HOST_CC) -DHOST -g -O2 -o $@ $< || cc -DHOST -g -O2 -o $@ $< || -DHOST gcc -g -O2 -o $@ $<
+            @$(HOST_CC) -DHOST -g -O2 -o $@ $< || cc -DHOST -g -O2 -o $@ $< || gcc -DHOST -g -O2 -o $@ $<
         }
     }
 }
