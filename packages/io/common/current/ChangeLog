@@ -1,3 +1,8 @@
+2011-08-16  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* doc/io.sgml (Callbacks): Fixed prototypes of several functions,
+	reported by Stano Menuna. [ Bugzilla 1001293 ]
+
 2010-06-06 ccoutand <ccoutand@stmi.com>
 	*doc/io.sgml
 	Updated DEVIO_TABLE definition, missing select argument
