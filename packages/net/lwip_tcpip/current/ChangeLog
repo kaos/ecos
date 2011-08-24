@@ -1,3 +1,9 @@
+2011-08-23  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/lwip_net.cdl: New CDL option CYGIMP_LWIP_ENDIAN_BY_HAL.
+	* include/lwipopts.h: Add HAL override of htonl() and htons().
+	[ Bugzilla 1001275 ]
+
 2011-03-08  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/lwip_net.cdl: Require CYGPKG_ISOINFRA.

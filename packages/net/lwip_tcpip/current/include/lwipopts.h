@@ -36,12 +36,26 @@
 
 #include <cyg/hal/hal_arch.h>
 
+#if defined(CYGIMP_LWIP_ENDIAN_BY_HAL) && CYGIMP_LWIP_ENDIAN_BY_HAL
+# include <cyg/hal/hal_endian.h>
+#endif
+
 //------------------------------------------------------------------------------
 // Platform specific locking
 //------------------------------------------------------------------------------
 
 #define SYS_LIGHTWEIGHT_PROT        1
 #define NO_SYS                      defined(CYGFUN_LWIP_MODE_SIMPLE)
+
+//------------------------------------------------------------------------------
+// Architecture specific options
+//------------------------------------------------------------------------------
+
+#if defined(CYGIMP_LWIP_ENDIAN_BY_HAL) && CYGIMP_LWIP_ENDIAN_BY_HAL
+# define LWIP_PLATFORM_BYTESWAP     1
+# define LWIP_PLATFORM_HTONS(__val) CYG_CPU_TO_BE16(__val)
+# define LWIP_PLATFORM_HTONL(__val) CYG_CPU_TO_BE32(__val)
+#endif
 
 //------------------------------------------------------------------------------
 // Memory options

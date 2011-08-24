@@ -127,6 +127,17 @@ cdl_package CYGPKG_NET_LWIP {
         compile         ecos/sio.c
     }
     
+    cdl_option CYGIMP_LWIP_ENDIAN_BY_HAL {
+        display       "HAL optimized endian functions"
+        flavor        bool
+        active_if     CYGIMP_HAL_ARCH_ENDIAN
+        default_value CYGIMP_HAL_ARCH_ENDIAN
+        description   "
+            Some architectures provide optimized functions for endian
+            manipulation (byte swapping). If utilized, they can give
+            shorter and faster code for that."
+    }
+
     cdl_component CYGPKG_LWIP_APIS {
         display         "APIs"
         flavor          none
