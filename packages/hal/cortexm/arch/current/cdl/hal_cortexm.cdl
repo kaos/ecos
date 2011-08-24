@@ -129,6 +129,20 @@ cdl_package CYGPKG_HAL_CORTEXM {
             Use the Floating Point Unit."
     }
 
+    cdl_option CYGIMP_HAL_ARCH_ENDIAN {
+        display       "Architecture optimized endian functions"
+        flavor        bool
+        default_value 1
+        description   "
+            Cortex-M architecture implements instructions for endian
+            manipulation (byte swapping).  If enabled, this feature
+            can produce shorter and faster code for that."
+
+        define_proc {
+            puts $::cdl_system_header "#define CYGBLD_HAL_ENDIAN_H <cyg/hal/cortexm_endian.h>"
+        }
+    }
+
     cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_MAX {
          display         "Maximum usable priority"
          flavor          data

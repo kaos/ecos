@@ -1,3 +1,10 @@
+2011-08-23  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm.cdl: New CDL option CYGIMP_HAL_ARCH_ENDIAN
+	* include/cortexm_endian.h: New file
+	* include/cortexm_regs.h: New file
+	[ Bugzilla 1001275 ]
+
 2011-04-06  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/cortexm.cdl: Remove M1 CPU family from architecture config
