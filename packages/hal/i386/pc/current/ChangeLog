@@ -1,3 +1,8 @@
+2011-08-25  John Dallaway  <john@dallaway.org.uk>
+
+	* misc/grub.cfg: Add example GRUB2 configuration file. Patch from
+	Stephen Polkowski. [ Bugzilla 1001254 ]
+
 2009-01-31  Bart Veer <bartv@ecoscentric.com>
 
 	* cdl/hal_i386_pc.cdl: update compiler flags for gcc 4.x
@@ -505,7 +510,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2011 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

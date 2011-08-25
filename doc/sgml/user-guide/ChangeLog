@@ -1,3 +1,9 @@
+2011-08-25  John Dallaway  <john@dallaway.org.uk>
+
+	* target-setup.sgml: Add instructions for booting with GRUB2.
+	Patch from Stephen Polkowski. [ Bugzilla 1001254 ]
+	* user-guide.sgml: Update copyright dates.
+
 2010-02-17  John Dallaway  <john@dallaway.org.uk>
 
 	* introduction.sgml: Mention PPP, lwIP and uSTL. Mention
