@@ -1,3 +1,9 @@
+2011-08-25  John Dallaway  <john@dallaway.org.uk>
+
+	* include/lwipopts.h: Fix naming of
+	CYGNUM_LWIP_NETIF_LOOPBACK_MAX_PBUFS. Patch from Christophe Coutand.
+	[ Bugzilla 1001323 ]
+
 2011-08-23  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/lwip_net.cdl: New CDL option CYGIMP_LWIP_ENDIAN_BY_HAL.

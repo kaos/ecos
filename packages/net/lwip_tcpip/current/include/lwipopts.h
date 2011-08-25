@@ -4,7 +4,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -275,7 +275,7 @@
 #define LWIP_NETIF_LINK_CALLBACK    defined(CYGFUN_LWIP_NETIF_LINK_CALLBACK)
 #define LWIP_NETIF_HWADDRHINT       defined(CYGIMP_LWIP_NETIF_HWADDRHINT)
 #define LWIP_NETIF_LOOPBACK         defined(CYGIMP_LWIP_NETIF_LOOPBACK)
-#define LWIP_LOOPBACK_MAX_PBUFS     CYGIMP_LWIP_NETIF_LOOPBACK_MAX_PBUFS
+#define LWIP_LOOPBACK_MAX_PBUFS     CYGNUM_LWIP_NETIF_LOOPBACK_MAX_PBUFS
 //#define LWIP_NETIF_LOOPBACK_MULTITHREADING // not configurable
 //#define LWIP_NETIF_TX_SINGLE_PBUF // not configurable
 
