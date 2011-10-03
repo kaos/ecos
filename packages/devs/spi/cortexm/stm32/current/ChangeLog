@@ -1,3 +1,9 @@
+2011-09-27  Ilija Stanislevik  <ilijas@siva.mk>
+
+	* src/spi_stm32.c: Add support for CYG_IO_GET_CONFIG_SPI_CLOCKRATE and
+	CYG_IO_SET_CONFIG_SPI_CLOCKRATE (possibility to retrieve and to set
+	the SPI clockrate).
+
 2011-03-10  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/spi_stm32.cdl: Add build options for CFLAGS and loopback test.

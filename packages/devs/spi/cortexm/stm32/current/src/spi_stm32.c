@@ -609,6 +609,24 @@ static void spi_transaction_dma
 }
 
 //-----------------------------------------------------------------------------
+// Calculate BR bits for SPI_CR1.
+static int calculate_br_bits
+  (cyg_spi_cortexm_stm32_bus_t* bus, cyg_uint32 *target_clockrate, cyg_uint32 *br)
+{
+  cyg_uint32 divided_clk;
+
+  // Calculate the maximum viable bus speed.
+  divided_clk = bus->setup->apb_freq / 2;
+  for (*br = 0; (*br < 7) && (divided_clk > *target_clockrate); (*br)++)
+    divided_clk >>= 1;
+
+  if ( divided_clk <= *target_clockrate )
+    return 0;
+
+  return -1;
+}
+
+//-----------------------------------------------------------------------------
 // Initialise SPI interfaces on startup.
 
 static void CYGBLD_ATTRIB_C_INIT_PRI(CYG_INIT_BUS_SPI)
@@ -647,7 +665,7 @@ static void stm32_transaction_begin
   cyg_spi_cortexm_stm32_device_t* stm32_device = (cyg_spi_cortexm_stm32_device_t*) device;
 
   cyg_haladdress reg_addr;
-  cyg_uint32 reg_data, divided_clk, br;
+  cyg_uint32 reg_data, br;
 
   // On the first transaction, generate the values to be programmed into the
   // SPI configuration registers for this device and cache them.  This avoids
@@ -662,12 +680,10 @@ static void stm32_transaction_begin
     if (stm32_device->bus_16bit)
       reg_data |= CYGHWR_HAL_STM32_SPI_CR1_DFF;
 
-    // Calculate the maximum viable bus speed.
-    divided_clk = stm32_bus->setup->apb_freq / 2;
-    for (br = 0; (br < 7) && (divided_clk > stm32_device->cl_brate); br++)
-      divided_clk >>= 1;
-    CYG_ASSERT (divided_clk <= stm32_device->cl_brate, 
-      "STM32 SPI : Cannot run bus slowly enough for peripheral.");
+    // Get divider bits
+    if ( 0 != calculate_br_bits(stm32_bus, (cyg_uint32 *)&(stm32_device->cl_brate), &br) )
+      CYG_ASSERT (false, "STM32 SPI : Cannot run bus slowly enough for peripheral.");
+
     reg_data |= CYGHWR_HAL_STM32_SPI_CR1_BR (br);
 
     // Cache the configuration register settings.
@@ -775,18 +791,83 @@ static void stm32_transaction_end
 }
 
 //-----------------------------------------------------------------------------
-// Note that no dynamic configuration options are currently defined.
-
 static int stm32_get_config 
-  (cyg_spi_device* dev, cyg_uint32 key, void* buf, cyg_uint32* len)
+  (cyg_spi_device* device, cyg_uint32 key, void* buf, cyg_uint32* len)
 {
-    return -1;
+  cyg_spi_cortexm_stm32_bus_t* stm32_bus = (cyg_spi_cortexm_stm32_bus_t*) device->spi_bus;
+  cyg_spi_cortexm_stm32_device_t* stm32_device = (cyg_spi_cortexm_stm32_device_t*) device;
+  cyg_uint32* data_p = buf;
+
+  switch (key)
+  {
+  case CYG_IO_GET_CONFIG_SPI_CLOCKRATE :
+    // Sanity check
+    if (NULL == len) {
+        CYG_ASSERT (false, "STM32 SPI : Null pointer as len argument for stm32_get_config().");
+        return -1;
+    }
+    if (sizeof(cyg_uint32) != *len) {
+        CYG_ASSERT (false, "STM32 SPI : Invalid length with stm32_get_config().");
+        return -1;
+    }
+    if (NULL == buf) {
+        CYG_ASSERT (false, "STM32 SPI : Null poiter as buf argument for stm32_get_config().");
+        return -1;
+    }
+
+    *data_p = stm32_bus->setup->apb_freq >> ((( stm32_device->spi_cr1_val >> 3 ) & 7) + 1 ) ;
+    return 0;
+
+  default :
+    break;
+  }
+
+  return -1;
 }
 
-static int stm32_set_config 
-  (cyg_spi_device* dev, cyg_uint32 key, const void* buf, cyg_uint32* len)
+//-----------------------------------------------------------------------------
+static int stm32_set_config
+  (cyg_spi_device* device, cyg_uint32 key, const void* buf, cyg_uint32* len)
 {
-    return -1;
+  cyg_spi_cortexm_stm32_bus_t* stm32_bus = (cyg_spi_cortexm_stm32_bus_t*) device->spi_bus;
+  cyg_spi_cortexm_stm32_device_t* stm32_device = (cyg_spi_cortexm_stm32_device_t*) device;
+
+  cyg_uint32 br;
+
+  switch (key)
+  {
+  case CYG_IO_SET_CONFIG_SPI_CLOCKRATE :
+    // Sanity check
+    if (NULL == len) {
+      CYG_ASSERT (false, "STM32 SPI : Null pointer as len argument for stm32_set_config().");
+      return -1;
+    }
+    if (sizeof(cyg_uint32) != *len) {
+      CYG_ASSERT (false, "STM32 SPI : Invalid length with stm32_set_config().");
+      return -1;
+    }
+    if (NULL == buf) {
+      CYG_ASSERT (false, "STM32 SPI : Null pointer as buf argument for stm32_set_config().");
+      return -1;
+    }
+
+    // Get divider bits
+    if ( 0 != calculate_br_bits(stm32_bus, (cyg_uint32 *)buf, &br) ) {
+      CYG_ASSERT (false, "STM32 SPI : Cannot run bus as slowly as requested.");
+      return -1;
+    }
+
+    // Update the cache of the configuration register settings.
+    stm32_device->spi_cr1_val &= ~CYGHWR_HAL_STM32_SPI_CR1_BR(7);
+    stm32_device->spi_cr1_val |= CYGHWR_HAL_STM32_SPI_CR1_BR(br);
+
+    return 0;
+
+  default :
+    break;
+  }
+
+  return -1;
 }
 
 //=============================================================================
