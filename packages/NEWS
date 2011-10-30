@@ -1,3 +1,5 @@
+* Freescale Kinetis variant HAL and BSP for TWR-K60N512 and TWR-K40X256
+  including Freescale UART and Ethernet drivers by Ilija Kocho.
 * SPI flash driver for Silicon Storage Technology (SST25xx devices)
   by Christophe Coutand.
 * SPI flash driver for Atmel AT25DFxxx devices by Christophe Coutand.

@@ -1184,6 +1184,25 @@ package CYGPKG_IO_SERIAL_FREESCALE_ESCI {
     description       "Freescale eSCI - Enhanced Serial Communications Interface serial device driver"
 }
 
+package CYGPKG_IO_SERIAL_FREESCALE_UART_HDR {
+    alias             { "Freescale UART serial device header"
+                        devs_serial_freescale_uart_hdr freescale_uart_serial_header }
+    hardware
+    directory	      devs/serial/freescale/uart/hdr
+    script	      ser_freescale_uart_hdr.cdl
+    description       "Freescale UART header.
+                       Needed by hal_diag and ser_freescale_uart drivers."
+}
+
+package CYGPKG_IO_SERIAL_FREESCALE_UART {
+    alias             { "Freescale UART serial device driver"
+                        devs_serial_freescale_uart freescale_uart_serial_driver }
+    hardware
+    directory	      devs/serial/freescale/uart/drv
+    script	      ser_freescale_uart.cdl
+    description       "Freescale UART driver."
+}
+
 package CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC {
     alias             { "PowerPC QUICC/SMC serial device drivers"
                         devs_serial_quicc_smc quicc_smc_serial_driver
@@ -1373,6 +1392,14 @@ package CYGPKG_DEVS_ETH_ARM_OLPCL2294 {
         script          olpcl2294_eth_drivers.cdl
         description     "
             Ethernet device driver for Olimex LPC-L2294-1MB board."
+}
+
+package CYGPKG_DEVS_ETH_FREESCALE_ENET {
+        alias           { "Freescale ENET Ethernet driver" }
+        directory       devs/eth/freescale/enet
+        script          eth_freescale_enet.cdl
+        hardware
+        description     "Ethernet driver for the Freescale ENET ethernet controller."
 }
 
 package CYGPKG_IO_SERIAL_SH_EDK7708 {
@@ -2250,6 +2277,16 @@ package CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX {
         description "
            This package provides a wallclock driver implementation for the
            LPC2xxx/LPC17xx RTC module."
+}
+
+package CYGPKG_DEVICES_WALLCLOCK_KINETIS_RTC {
+        alias           { "Wallclock driver for Kinetis RTC module" }
+        directory       devs/wallclock/freescale/kinetis
+        script          wallclock_kinetis_rtc.cdl
+        hardware
+        description "
+           This package provides a wallclock driver implementation for the
+           Kinetis RTC module."
 }
 
 package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
@@ -7066,6 +7103,65 @@ target lpc1766stk {
         description "
             The lpc1766stk target provides the packages needed
             to run eCos on the Olimex LPC-1766-STK board."
+}
+
+package CYGPKG_HAL_CORTEXM_KINETIS {
+	alias		{ "Freescale Kinetis variant HAL" hal_cortexm_kinetis }
+	directory	hal/cortexm/kinetis/var
+	script		hal_cortexm_kinetis.cdl
+	hardware
+        description "
+        The Kinetis HAL package provides the support needed to run
+        eCos on targets based on the Freescale Kinetis
+        family of microcontrollers."
+}
+
+package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512 {
+	alias		{ "Freescale TWR-K60N512 HAL" hal_cortexm_twr_k60n512 }
+	directory	hal/cortexm/kinetis/twr_k60n512
+	script		hal_cortexm_kinetis_twr_k60n512.cdl
+	hardware
+        description "
+        The TWR-K60N512 HAL package provides the support needed to run
+        eCos on the Freescale Tower development system."
+}
+
+package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K40X256 {
+	alias		{ "Freescale TWR-K40X256 HAL" hal_cortexm_twr_k40x256 }
+	directory	hal/cortexm/kinetis/twr_k40x256
+	script		hal_cortexm_kinetis_twr_k40x256.cdl
+	hardware
+        description "
+        The TWR-K40X256 HAL package provides the support needed to run
+        eCos on the Freescale Tower development system."
+}
+
+target freescale_twr_k60n512 {
+        alias { "Freescale Kinetis TWR-K60N512" twr_k60n512 }
+        packages { CYGPKG_HAL_CORTEXM
+                   CYGPKG_HAL_CORTEXM_KINETIS
+                   CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512
+                   CYGPKG_IO_SERIAL_FREESCALE_UART_HDR
+                   CYGPKG_IO_SERIAL_FREESCALE_UART
+                   CYGPKG_DEVICES_WALLCLOCK_KINETIS_RTC
+                   CYGPKG_DEVS_ETH_PHY
+                   CYGPKG_DEVS_ETH_FREESCALE_ENET
+                 }
+        description "The freescale_twr_k60n512 target provides the packages needed
+        to run eCos on the Freescale TWR-K60N512 development system."
+}
+
+target freescale_twr_k40x256 {
+        alias { "Freescale Kinetis TWR-K40X256" twr_k40x256 }
+        packages { CYGPKG_HAL_CORTEXM
+                   CYGPKG_HAL_CORTEXM_KINETIS
+                   CYGPKG_HAL_CORTEXM_KINETIS_TWR_K40X256
+                   CYGPKG_IO_SERIAL_FREESCALE_UART_HDR
+                   CYGPKG_IO_SERIAL_FREESCALE_UART
+                   CYGPKG_DEVICES_WALLCLOCK_KINETIS_RTC
+                 }
+        description "The freescale_twr_k40x256 target provides the packages needed
+        to run eCos on the Freescale TWR-K40X256 development system."
 }
 
 # ==========================================================================
