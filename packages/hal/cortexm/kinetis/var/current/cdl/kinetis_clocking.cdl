@@ -1,0 +1,635 @@
+##==========================================================================
+##
+##      kinetis_clocking.cdl
+##
+##      Cortex-M Freescale Kinetis Clocking
+##
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2011 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    Ilija Kocho <ilijak@siva.com.mk>
+## Date:         2011-10-19
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+
+#    cdl_component CYGHWR_HAL_CORTEXM_KINETIS_CLOCKING
+#    display       "Clocking"
+
+    cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ {
+        display "System frequency actual value"
+        flavor data
+        calculated {
+            CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_INT_RC   ?
+            CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_INT_RC   :
+            CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_EXT_RC   ?
+            CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_EXT_RC   :
+            CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL      ?
+            CYGNUM_HAL_CORTEXM_KINETIS_MCG_PLL_FREQ_AV :
+            CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_FLL      ?
+            CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_FREQ_AV :
+            0
+        }
+        description "Operating system clock frequency."
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_KINETIS_MCG {
+        display "MCG"
+        flavor data
+        no_define
+        calculated { CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK . " " .
+            ((CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ+500000)/1000000) . "MHz, " . (
+                  (CYGOPT_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REFSRC == "EXT_REFCLK") ?
+                  CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS :
+                  CYGOPT_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REFSRC)
+
+        }
+        description "Multipurpose Clock Generator"
+
+        cdl_option CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK {
+            display "System clock source"
+            flavor data
+            default_value { "PLL" }
+            legal_values {
+                "PLL" "FLL" "EXT_REFCLK"
+            }
+            description "
+                Select one of 3 options for MCG output clock:
+                PLL or FLL oscillator or External reference clock."
+        }
+
+        cdl_component CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT {
+            display "EXT_REFCLK source clock settings"
+            flavor none
+            no_define
+            active_if {
+                (CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "EXT_REFCLK") ||
+                (CYGOPT_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REFSRC == "EXT_REFCLK")
+            }
+            description "Set External Reference Clock frequency and type."
+
+            cdl_option CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS {
+                display "Clock type"
+                flavor data
+                default_value { "OSC" }
+                legal_values { "OSC" "XTAL" "RTC"}
+
+                requires {
+                    (CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS == "OSC") implies
+                    (CYGHWR_HAL_CORTEXM_KINETIS_MCG_REF_EXT_FREQ <= 50000000)
+                }
+
+                requires {
+                    (CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS == "XTAL") implies
+                    (((CYGHWR_HAL_CORTEXM_KINETIS_MCG_REF_EXT_FREQ >= 3000000) &&
+                      (CYGHWR_HAL_CORTEXM_KINETIS_MCG_REF_EXT_FREQ <= 32000000)) ||
+                      ((CYGHWR_HAL_CORTEXM_KINETIS_MCG_REF_EXT_FREQ >= 32000) &&
+                       (CYGHWR_HAL_CORTEXM_KINETIS_MCG_REF_EXT_FREQ <= 40000)))
+                }
+
+                requires { (CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS == "RTC")
+                    implies (CYGHWR_HAL_CORTEXM_KINETIS_RTC == 1)
+                }
+                requires { (CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS == "RTC")
+                    implies (CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "FLL")
+                }
+                requires { (CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS == "RTC")
+                    implies (CYGHWR_HAL_CORTEXM_KINETIS_MCG_REF_EXT_FREQ == 32768)
+                }
+
+                description "
+                    Ext reference can be External oscillator or a crystal
+                    for the on-chip oscillator or Real Time Clock."
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_MCG_REF_EXT_FREQ {
+                display "Clock frequency"
+                flavor data
+                legal_values  0 to 50000000
+                default_value {
+                    is_active(CYGHWR_HAL_CORTEXM_KINETIS_PLF_XTAL_OR_OSC_FREQ) ?
+                    CYGHWR_HAL_CORTEXM_KINETIS_PLF_XTAL_OR_OSC_FREQ :
+                    4000000
+                }
+                description "External oscillator or crystal reference in Hz."
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_OSC_CAP {
+                display "XTAL parallel C \[pF\]"
+                flavor data
+                active_if { CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS == "XTAL" }
+                legal_values { 0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32 }
+                default_value 0
+                description "
+                    The oscillator has 4 on-chip capacitors that combined
+                    produce capacitance in parallel to the crystal."
+            }
+        }
+
+        cdl_component CYGOPT_HAL_CORTEXM_KINETIS_MCG_FLL_PLL {
+            display "FLL / PLL configuration"
+            flavor none
+            no_define
+            description "
+                PLL / FLL parameters are being calculated on a
+                base of required system frequrncy and output as well as
+                reference oscillator/frequency settings."
+
+            cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP {
+                display "PLL/FLL output frequency set point"
+                flavor data
+                legal_values  32768 to 220000000
+                calculated CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ_SP
+                description "Desired PLL output frequency."
+            }
+
+            cdl_option CYGOPT_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REFSRC {
+                display "Reference clock source for FLL or PLL"
+                flavor data
+                default_value { "EXT_REFCLK" }
+
+                requires { (CYGOPT_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REFSRC == "INT_RC_32KHZ")
+                    implies (CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "FLL")
+                }
+
+                legal_values { "INT_RC_32KHZ" "EXT_REFCLK" }
+                description "
+                    PLL/FLL oscillators can use one of 3 clock
+                    references: External Reference Clock or Low (32768 Hz)
+                    or High (2MHz) Frequency Internal oscillator"
+            }
+
+            cdl_component CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ {
+                display "Reference frequency."
+                flavor data
+                calculated { is_active (CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT) ?
+                    CYGHWR_HAL_CORTEXM_KINETIS_MCG_REF_EXT_FREQ :
+                    (CYGOPT_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REFSRC
+                     == "INT_RC_32KHZ" ? 32768 : 2000000 )
+                }
+            }
+
+            cdl_component CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_FLL {
+                display "FLL oscillator"
+                flavor none
+                no_define
+                active_if { CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "FLL" ||
+                    CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "PLL" ||
+                    CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "EXT_REFCLK"
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FREQ_RANGE {
+                    display "Reference frequency range"
+                    flavor data
+                    legal_values 0 1 2
+                    calculated {
+                        CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ > 8000000 ? 2 :
+                        CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ >= 1000000 ? 1 :
+                        ((CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ >= 32000) &&
+                         (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ <= 40000)) ? 0 :
+                        -1
+                    }
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FRDIV {
+                    display "Calculated FLL divider"
+                    flavor data
+                    calculated {
+                        CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FREQ_RANGE >= 1 ?
+                        ((CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ+32768*16) / (32768*32)) :
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FREQ_RANGE == 0 ?
+                         ((CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ+16384) / 32768) : -1)
+                    }
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FRDIV_REG {
+                    display "FLL divider register value"
+                    flavor data
+                    legal_values 0 1 2 3 4 5 6 7
+                    default_value {
+                        CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FREQ_RANGE == 0 ?
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FRDIV/2) :
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FRDIV/2) <= 5 ?
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FRDIV/2) : 5
+                    }
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_MCG_DCO_DRST_DRS {
+                    display "DCO Range Select"
+                    flavor data
+                    legal_values 0 1 2 3
+                    default_value {
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP) >= 80000000 ? 3 :
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP) >= 60000000 ? 2 :
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP) >= 40000000 ? 1 : 0
+                    }
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_MCG_DCO_DMX32 {
+                    display "DCO max. frequency with 32768 reference"
+                    flavor data
+                    legal_values 0 0x80
+                    default_value {
+                        ((CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP == 96000000) ||
+                         (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP == 72000000) ||
+                         (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP == 48000000) ||
+                         (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP == 24000000)) ?
+                        0x80 : 0x00
+                    }
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_MCG_DCO_FLL_FACT {
+                    display "FLL factor"
+                    flavor data
+                    calculated {
+                        (CYGNUM_HAL_CORTEXM_MCG_DCO_DMX32 == 0x80) ?
+                        ((CYGNUM_HAL_CORTEXM_MCG_DCO_DRST_DRS == 0 ) ?  732 :
+                         (CYGNUM_HAL_CORTEXM_MCG_DCO_DRST_DRS == 1 ) ? 1464 :
+                         (CYGNUM_HAL_CORTEXM_MCG_DCO_DRST_DRS == 2 ) ? 2197 : 2929 ) :
+                        ((CYGNUM_HAL_CORTEXM_MCG_DCO_DRST_DRS == 0 ) ?  640 :
+                         (CYGNUM_HAL_CORTEXM_MCG_DCO_DRST_DRS == 1 ) ? 1280 :
+                         (CYGNUM_HAL_CORTEXM_MCG_DCO_DRST_DRS == 2 ) ? 1920 : 2560 )
+                    }
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCG_DCO_IN {
+                    display "DCO input frequency"
+                    flavor data
+                    calculated { CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ /
+                        ( CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FRDIV_REG == 0 ?
+                         ((CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FREQ_RANGE == 0) ? 1 : 32 ) :
+                         (CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FRDIV_REG *
+                          ((CYGNUM_HAL_CORTEXM_KINETIS_MCG_REF_FREQ_RANGE == 0) ? 2 : 64)))
+                    }
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCG_DCO_IN_CHECK {
+                    display "DCO input frequency check"
+                    flavor data
+                    no_define
+                    legal_values { "OK" "NOK" "not applicable" }
+                    calculated {
+                        CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "FLL" ?
+                        ((CYGNUM_HAL_CORTEXM_KINETIS_MCG_DCO_IN >= 31250) &&
+                         (CYGNUM_HAL_CORTEXM_KINETIS_MCG_DCO_IN <= 39063) ?
+                         "OK" : "NOK" ) :
+                        "NotApplicable"
+                    }
+                    active_if { CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "FLL" }
+                    requires {
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_DCO_IN >= 31250) &&
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_DCO_IN <= 39063)
+                    }
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_FREQ_AV {
+                    display "FLL output frequency actual value"
+                    flavor data
+                    calculated {CYGNUM_HAL_CORTEXM_KINETIS_MCG_DCO_IN *
+                        CYGNUM_HAL_CORTEXM_MCG_DCO_FLL_FACT }
+                }
+            }
+
+            cdl_component CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL {
+                display "PLL oscillator"
+                flavor none
+                no_define
+                active_if { CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "PLL" ||
+                    CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "EXT_REFCLK"
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_PLL_INFREQ_X {
+                    display "Phase detector proposed input frequency"
+                    no_define
+                    flavor data
+                    calculated {
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP > 180000000) ?
+                        3800000 :
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP > 110000000) ?
+                        3000000 :
+                        !(CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP % 3) ? 2000000 :
+                        !(CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP % 4) ? 2000000 :
+                        !(CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP % 5) ? 2500000 :
+                        300000
+                    }
+                }
+
+                cdl_option CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL_PRDIV {
+                    display "PLL External Reference Divider"
+                    flavor data
+                    legal_values 1 to 25
+                    default_value {
+                        CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_PLL_INFREQ_X ?
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ /
+                         CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_PLL_INFREQ_X ) : -1
+                    }
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_PLL_INFREQ {
+                    display "Phase detector input frequency"
+                    no_define
+                    flavor data
+                    legal_values 2000000 to 4000000
+                    calculated { CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL_PRDIV ?
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ /
+                         CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL_PRDIV) : -1
+                    }
+                }
+
+                cdl_option CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL_VDIV {
+                    display "VCO Divider"
+                    flavor data
+                    legal_values 24 to 55
+                    default_value { CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_PLL_INFREQ ?
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_FREQ_SP /
+                         CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_PLL_INFREQ) : -1
+                    }
+                }
+
+                cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCG_PLL_FREQ_AV {
+                    display "PLL output frequency actual value"
+                    flavor data
+                    calculated { CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL_PRDIV ?
+                        (CYGNUM_HAL_CORTEXM_KINETIS_MCG_FLL_PLL_REF_FREQ /
+                         CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL_PRDIV *
+                         CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL_VDIV) : -1
+                    }
+                }
+            }
+        }
+
+        cdl_component CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_INT_RC {
+            display "Internal Reference Clock"
+            flavor data
+            calculated { CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_INT_RC_HI ? 2000000 : 32768 }
+            active_if { CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK ==  "INT_REFCLK" }
+
+            cdl_option CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_INT_RC_HI {
+                display "Use highh frequency internal osc."
+                flavor bool
+                default_value 1
+            }
+        }
+
+        cdl_option CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_EXT_RC {
+            display "External Reference Clock"
+            flavor data
+            calculated CYGHWR_HAL_CORTEXM_KINETIS_MCG_REF_EXT_FREQ
+            active_if { CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK ==  "EXT_REFCLK" }
+        }
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_KINETIS_CLK_DIST {
+        display "Subsystem clocking"
+        flavor none
+        no_define
+
+        cdl_component CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_BUS {
+            display "Peripheral bus"
+            flavor data
+            calculated { CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ /
+                CYGHWR_HAL_CORTEXM_KINETIS_CLKDIV_PER_BUS
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_MAX {
+                display "Frequency limit"
+                flavor data
+                default_value 50000000
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_BUS_SP {
+                display "Calculated value"
+                flavor data
+                default_value {
+                    CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ <=
+                    CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_MAX ?
+                    CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ :
+                    CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_MAX
+                }
+                legal_values  0 to CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_MAX
+            }
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLKDIV_PER_BUS {
+                display "Divider"
+                flavor data
+                legal_values 1 to 16
+
+                default_value { !(CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ %
+                                  CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_BUS_SP)  ?
+                    (CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ /
+                     CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_BUS_SP)  :
+                    (CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ /
+                     CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_BUS_SP + 1)
+                }
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH {
+            display "Flash"
+            flavor data
+            calculated { CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ /
+                CYGHWR_HAL_CORTEXM_KINETIS_CLKDIV_FLASH
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH_MAX {
+                display "Frequency limit"
+                flavor data
+                default_value 25000000
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH_SP {
+                display "Calculated value"
+                flavor data
+                default_value {
+                    CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ <=
+                    CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH_MAX ?
+                    CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ :
+                    CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH_MAX
+                }
+                legal_values  0 to CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH_MAX
+            }
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLKDIV_FLASH {
+                display "Divider"
+                flavor data
+                legal_values 1 to 16
+
+                default_value {
+                    !(CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ %
+                    CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH_SP)  ?
+                    (CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ /
+                     CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH_SP)  :
+                    (CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ /
+                     CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH_SP + 1)
+                }
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS {
+            display "Flex bus"
+            flavor data
+            calculated { CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ /
+                CYGHWR_HAL_CORTEXM_KINETIS_CLKDIV_FLEX_BUS
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS_MAX {
+                display "Frequency limit"
+                flavor data
+                default_value 50000000
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS_SP {
+                display "Calculated value"
+                flavor data
+                default_value {
+                    CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ <=
+                    CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS_MAX ?
+                    CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ :
+                    CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS_MAX
+                }
+                legal_values  0 to CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS_MAX
+            }
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLKDIV_FLEX_BUS {
+                display "Divider"
+                flavor data
+                legal_values 1 to 16
+
+                default_value {
+                    !(CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ %
+                    CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS_SP)  ?
+                    (CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ /
+                     CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS_SP)  :
+                    (CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ /
+                     CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS_SP + 1)
+                }
+            }
+        }
+
+
+        cdl_component CYGHWR_HAL_CORTEXM_KINETIS_CLK_USB {
+            display "USB clock"
+            flavor data
+            calculated { CYGNUM_HAL_CORTEXM_KINETIS_CLK_USB_IN *
+                CYGHWR_HAL_CORTEXM_KINETIS_USBCLK_FRAC /
+                CYGHWR_HAL_CORTEXM_KINETIS_USBCLK_DIV
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLK_USB_MAX {
+                display "Frequency limit"
+                flavor data
+                default_value 48000000
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_USBCLK_FRAC {
+                display "Fractional Divider"
+                flavor data
+                legal_values 1 to 2
+                default_value {
+                    CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ <
+                    CYGHWR_HAL_CORTEXM_KINETIS_CLK_USB_MAX ? 1 :
+                    ((CYGNUM_HAL_CORTEXM_KINETIS_CLK_USB_IN) >
+                     (CYGHWR_HAL_CORTEXM_KINETIS_CLK_USB_SP * 4) ? 1 :
+                     (CYGNUM_HAL_CORTEXM_KINETIS_CLK_USB_IN %
+                      CYGHWR_HAL_CORTEXM_KINETIS_CLK_USB_SP ? 2 : 1))
+                }
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_USBCLK_DIV {
+                display "Divider"
+                flavor data
+                legal_values 1 to 8
+                default_value { !((CYGNUM_HAL_CORTEXM_KINETIS_CLK_USB_IN *
+                                   CYGHWR_HAL_CORTEXM_KINETIS_USBCLK_FRAC) %
+                                   CYGHWR_HAL_CORTEXM_KINETIS_CLK_USB_SP)  ?
+                    (CYGNUM_HAL_CORTEXM_KINETIS_CLK_USB_IN *
+                     CYGHWR_HAL_CORTEXM_KINETIS_USBCLK_FRAC /
+                     CYGHWR_HAL_CORTEXM_KINETIS_CLK_USB_SP)  :
+                    ((CYGNUM_HAL_CORTEXM_KINETIS_CLK_USB_IN *
+                      CYGHWR_HAL_CORTEXM_KINETIS_USBCLK_FRAC /
+                      CYGHWR_HAL_CORTEXM_KINETIS_CLK_USB_SP) +1)
+                }
+            }
+
+            cdl_option CYGNUM_HAL_CORTEXM_KINETIS_CLK_USB_IN {
+                display "USB divider input frequency"
+                flavor data
+                calculated {
+                    CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ
+                }
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_CLK_USB_SP {
+                display "Desired"
+                flavor data
+                calculated 48000000
+            }
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_TRACECLK {
+            display "Trace clock source"
+            flavor data
+            default_value { "CORE" }
+            legal_values { "CORE" "MCGOUT" }
+
+        }
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_TRACE_CLKOUT {
+            display "Enable Trace Clock out"
+            flavor bool
+            default_value 0
+        }
+    }
+
+    cdl_interface CYGINT_HAL_CORTEXM_KINETIS_RTC {
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_KINETIS_RTC {
+        display "Real Time Clock"
+        flavor bool
+        default_value CYGINT_HAL_CORTEXM_KINETIS_RTC
+
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_RTC_OSC_CAP {
+            display "RTC XTAL parallel C \[pF\]"
+            flavor data
+            legal_values { 0 2 4 6 8 10 12 14 16 18 20 22 24 26 28
+                30 32 }
+            default_value 0
+            description "
+                The Real Time Clock oscillator has 4 capacitors that
+                combined produce capacitance in parallel to the crystal."
+        }
+    }
+
+# EOF kinetis_clocking.cdl

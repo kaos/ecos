@@ -1,0 +1,628 @@
+##==========================================================================
+##
+##      hal_cortexm_kinetis.cdl
+##
+##      Cortex-M Freescale Kinetis variant HAL configuration data
+##
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2010, 2011 Free Software Foundation, Inc.                  
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    Ilija Kocho <ilijak@siva.com.mk>
+## Date:         2010-12-05
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
+    display       "Freescale Kinetis Cortex-M4 Variant"
+    parent        CYGPKG_HAL_CORTEXM
+    hardware
+    include_dir   cyg/hal
+    define_header hal_cortexm_kinetis.h
+    description   "
+        This package provides generic support for the Freescale Cortex-M4
+        based Kinetis microcontroller family.
+        It is also necessary to select a variant and platform HAL package."
+
+    compile       hal_diag.c kinetis_misc.c kinetis_clocking.c
+
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
+
+    requires      { CYGHWR_HAL_CORTEXM == "M4" }
+
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_cortexm.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_cortexm_kinetis.h>"
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_KINETIS {
+        display          "Kinetis part"
+        flavor           data
+        calculated { "MK" . CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM .
+            (CYGHWR_HAL_CORTEXM_KINETIS_FPU ? "F" : "D") .
+            (CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM ? "X" : "N") .
+            CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME }
+        description   "
+            Kinetis family has several sub-families, with various peripheral
+            sets and CPU options. Each sub-family consists of several
+            members differing by sizes of on-chip FLASH and SRAM. This
+            control, enables the user to build Kinetis member part and so
+            tailor HAL for a specific microcontroller by selection of
+            microcontroller's properties such as microcontroller sub-family,
+            memory options, etc."
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM {
+            display          "Sub-family"
+            flavor           data
+            default_value    { 60 }
+            legal_values     { 10 20 30 40 50 60 70 }
+            description "
+                Kinetis family consists of several sub-families differing by
+                features and CPU power."
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FPU {
+            display          "Floating Point Unit option"
+            implements    CYGINT_HAL_CORTEXM_FPU
+            flavor           bool
+            default_value    { 0 }
+            description "Select whether the chip has Floating Point Unit."
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME {
+            display "Flash name segment"
+            flavor           data
+            default_value    { 512 }
+            legal_values     { 32 64 96 128 256 512 "1M0" }
+            description   "
+                Flash size is represented in part name encoded as KiB
+                (e.g. 512) or MiB (e.g. 1M0)."
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM {
+            display          "FlexNVM option"
+            flavor           bool
+            default_value    { 0 }
+            description "Select whether the chip has FlexNVM."
+        }
+    }
+
+    cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS {
+        display      "CPU exception priority level bits"
+        flavor       data
+        default_value   4
+        description  "
+            This option defines the number of bits used to encode the
+            exception priority levels that this variant of the Cortex-M
+            CPU implements."
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_KINETIS_CLOCKING {
+        display       "Clocking"
+        flavor        data
+        no_define
+        calculated CYGHWR_HAL_CORTEXM_KINETIS_MCG
+        description "Configure system clock and subsystem clocking."
+
+        cdl_option CYGNUM_HAL_CORTEXM_KINETIS_MCGOUT_FREQ_SP {
+            display "System frequency clock setpoint"
+            flavor data
+            legal_values  32768 to 220000000
+            default_value 96000000
+            description "Desired system clock frequency"
+        }
+       script kinetis_clocking.cdl
+    }
+
+    cdl_option CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY {
+        display       "Clock interrupt ISR priority"
+        flavor        data
+        default_value 0xE0
+        description   "Set clock ISR priority. Default setting is lowest priority."
+    }
+
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants"
+        flavor        none
+        no_define
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            default_value 1000000000
+        }
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            default_value 100
+        }
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+            default_value 1000000 / CYGNUM_HAL_RTC_DENOMINATOR
+            description   "
+                The period defined here is something of a fake, it is
+                expressed in terms of a notional 1MHz clock. The value
+                actually installed in the hardware is calculated from
+                the current settings of the clock generation hardware."
+        }
+    }
+
+    cdl_component CYG_HAL_STARTUP {
+        display       "Startup type"
+        flavor        data
+        calculated  {
+            (CYG_HAL_STARTUP_PLF && (CYG_HAL_STARTUP_PLF!="ByVariant")) ?
+            CYG_HAL_STARTUP_PLF : CYG_HAL_STARTUP_VAR
+        }
+        no_define
+        define -file system.h CYG_HAL_STARTUP
+        description   "
+            Startup type defines what type of application shall be built.
+            Startup type  can be defined by variant (CYG_HAL_STARTUP_VAR)
+            or platform (CYG_HAL_STARTUP_PLF). If CYG_HAL_STARTUP_PLF
+            is defined and not equal to 'ByVariant' then it shall
+            override CYG_HAL_STARTUP_VAR."
+
+        cdl_option CYG_HAL_STARTUP_VAR {
+            display       "By variant"
+            flavor        data
+            default_value {
+                (CYG_HAL_STARTUP_PLF) && (CYG_HAL_STARTUP_PLF!="ByVariant") ?
+                "ByPlatform" : "ROM" }
+            legal_values  { "ROM" "SRAM" }
+            active_if ((!CYG_HAL_STARTUP_PLF) || (CYG_HAL_STARTUP_PLF=="ByVariant"))
+            description   "
+                'ROM' startup builds a stand-alone application which will
+                be placed into flash. SRAM startup builds application
+                intended for loading in on-chip SRAM by means of JTAG/SWD.
+                Note: Variant Startup Type can be overriden/overloaded by
+                Platform Startup Type."
+        }
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_CONF {
+        display "FlexNVM configuration"
+        flavor none
+        no_define
+        active_if CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM
+        requires {
+            CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_PART_KIB <=
+            CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_KINETIS_EEE {
+            display "Enhanced EEPROM (EEE)"
+            flavor bool;
+
+            cdl_option CYGHWR_HAL_KINETIS_EEE_SIZE {
+                display "EEE Size \[Bytes\]"
+                flavor data
+                legal_values { 32 64 128 256 512 1024 2048 4096 }
+                default_value 4096
+            }
+
+            cdl_component CYGHWR_HAL_KINETIS_EEE_SPLIT {
+                display "EEE Split ratio"
+                flavor data
+                legal_values { 0 2 4 8 }
+                default_value 0
+                description "
+                    Enhanced EEPROM is split in two partitions that are
+                    represented by separate sections in MLT files.
+                    The split, CYGHWR_HAL_KINETIS_EEE_SPLIT, represents
+                    partition size ratio where EEE0 partition size is
+                    1/CYGHWR_HAL_KINETIS_EEE_SPLIT of EEE size, and EEE1
+                    is the rest. As a special arrangement
+                    (CYGHWR_HAL_KINETIS_EEE_SPLIT == 0) is a PHONY, where
+                    split equals 2 but in MLT files whole EEE is counted
+                    as a single section."
+
+                cdl_option CYGHWR_HAL_KINETIS_EEE0_SIZE {
+                    display "e_eeprom0 section size \[Bytes\]"
+                    flavor data
+                    calculated { CYGHWR_HAL_KINETIS_EEE_SPLIT > 0 ?
+                        CYGHWR_HAL_KINETIS_EEE_SIZE /
+                        CYGHWR_HAL_KINETIS_EEE_SPLIT :
+                        CYGHWR_HAL_KINETIS_EEE_SIZE }
+                }
+
+                cdl_option CYGHWR_HAL_KINETIS_EEE1_SIZE {
+                    display "e_eeprom1 section size \[Bytes\]"
+                    flavor data
+                    active_if { CYGHWR_HAL_KINETIS_EEE_SPLIT > 0 }
+                    calculated { CYGHWR_HAL_KINETIS_EEE_SIZE -
+                        CYGHWR_HAL_KINETIS_EEE0_SIZE }
+                }
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_PART_KIB {
+                display "FlexNVM partition used for EEE \[KiB\]"
+                flavor data
+                default_value  32
+                legal_values { 32 64 128 192 224 256 }
+            }
+        }
+
+        cdl_component CYGHWR_HAL_KINETIS_FLEXNVM_DFLASH_SIZE {
+            display "FlexNVM D Flash"
+            flavor data
+            active_if { CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_PART_KIB <
+                CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_KIB}
+            calculated {
+                1024 * ( CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_KIB -
+                         CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_PART_KIB)
+            }
+        }
+
+        cdl_component CYGHWR_HAL_KINETIS_FLEXRAM_RAM {
+            display "Flexram ordinary RAM"
+            flavor data
+            active_if { !CYGHWR_HAL_CORTEXM_KINETIS_EEE }
+            calculated CYGHWR_HAL_KINETIS_FLEXRAM_SIZE
+        }
+
+        cdl_component CYGHWR_HAL_KINETIS_FLEXRAM_SIZE {
+            display "Flexram size"
+            flavor data
+            default_value 4096
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_KIB {
+            display "FlexNVM size \[KiB\]"
+            flavor data
+            calculated CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB
+        }
+    }
+
+    cdl_component CYGHWR_MEMORY_LAYOUT {
+        display "Memory layout"
+        flavor data
+        no_define
+        calculated {
+            (CYGHWR_MEMORY_LAYOUT_PLF) ? CYGHWR_MEMORY_LAYOUT_PLF :
+            (CYG_HAL_STARTUP == "ROM" ) ? "kinetis_"
+            . CYGHWR_HAL_CORTEXM_KINETIS_OC_MEM_LAYOUT  . "_rom" :
+            (CYG_HAL_STARTUP == "SRAM") ? "kinetis_"
+            . CYGHWR_HAL_CORTEXM_KINETIS_OC_MEM_LAYOUT  . "_sram" :
+            "undefined" }
+        description "
+            Combination of 'Startup type' and 'Kinetis part'
+            produces the memory layout."
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
+            display "Memory layout linker script fragment"
+            flavor data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
+            calculated { "<pkgconf/mlt_" . CYGHWR_MEMORY_LAYOUT . ".ldi>" }
+        }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_H {
+            display "Memory layout header file"
+            flavor data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_H
+            calculated { "<pkgconf/mlt_" . CYGHWR_MEMORY_LAYOUT . ".h>" }
+        }
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_KINETIS_SRAM_UNIFIED {
+        display  "Unified on chip SRAM region"
+        flavor   bool
+        default_value    { 1 }
+        description "
+            Kinetis have two equal SRAM banks SRAM_L and SRAM_U that
+            occupy consecutive memory blocks with \(possibility for
+            simultaneous\) access from on separate buses.
+            SRAM_L is placed below 0x20000000 and SRAM_U above 0x20000000.
+            This option provides for selection between memory layout with
+            single (unified) (S)RAM region and layout with two separate
+            (S)RAM regions."
+    }
+
+    cdl_option CYGOPT_HAL_KINETIS_MISC_FLASH_SECTION {
+        display "Utilize \".kinetis_misc\" section for HAL"
+        flavor bool
+        default_value { CYG_HAL_STARTUP == "ROM" }
+        active_if { CYG_HAL_STARTUP == "ROM" }
+        description "
+            Kinetis use FLASH locations between 0x400 and 0x40F for FLASH
+            security configuration. This leaves FLASH area below 0x400
+            out of standard linker sections. Special section
+            \".kinetis_misc\" provides linker access to this area.
+            Setting this option instructs linker to place some HAL
+            (variant/platform) \"misc.\" functions in this area."
+    }
+
+    cdl_option CYGOPT_HAL_KINETIS_DIAG_IN_MISC_FLASH_SECTION {
+        display "HAL diag. in \".kinetis_misc\" section"
+        flavor bool
+        active_if CYGOPT_HAL_KINETIS_MISC_FLASH_SECTION
+        default_value 0
+        description "
+        By default only misc. HAL functions are stored in
+        \".kinetis_misc\" section. In addition HAL diagnostc
+        functions may be placed as well."
+    }
+
+    cdl_component CYGHWR_HAL_KINETIS_MEMORY_RESOURCES {
+        display "On chip memory resources"
+        flavor none
+        no_define
+        description "
+        View and manage on-chip memory resources.
+        Output is used for naming of 'mlt' files."
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB {
+            display "On chip Flash option \[KiB\]"
+            flavor data
+            calculated { (CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME == "1M0")
+                ? 1024 : CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME
+            }
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_SRAM_KIB {
+            display "Kinetis on chip SRAM size \[KiB\]"
+            flavor data
+            calculated {
+                (CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB == 1024 ||
+                 CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB == 512)   ? 128 :
+                (CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB == 256)   ? 64 :
+                (CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB == 128)   ? 32 :
+                (CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB == 96 ||
+                 CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB == 64)    ? 16 :
+                (CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB == 32)    ? 8 :
+                "Unknown"
+            }
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_SRAM_LAYOUT {
+            display "SRAM layout"
+            flavor data
+            no_define
+            calculated { CYGHWR_HAL_CORTEXM_KINETIS_SRAM_UNIFIED ?
+                "unisram" :
+                "sram2s"
+            }
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_OC_MEM_LAYOUT {
+            display "On-chip memory layout"
+            flavor data
+            no_define
+            calculated {(CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM ? "flexnvm_": "flash_")
+                . CYGHWR_HAL_CORTEXM_KINETIS_SRAM_LAYOUT }
+        }
+
+        cdl_option CYGHWR_HAL_KINETIS_FLASH_SIZE {
+            display "Kinetis on chip FLASH size"
+            flavor data
+            calculated { CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB * 0x400 }
+        }
+
+        cdl_option CYGHWR_HAL_KINETIS_SRAM_SIZE {
+            display "Kinetis on chip SRAM size"
+            flavor data
+            calculated { CYGHWR_HAL_CORTEXM_KINETIS_SRAM_KIB * 0x400 }
+        }
+
+        cdl_option CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE {
+            display "Kinetis onchip RAM bank size"
+            flavor  data
+            calculated { CYGHWR_HAL_KINETIS_SRAM_SIZE/2 }
+        }
+
+        cdl_option CYGHWR_HAL_KINETIS_FLEXNVM_FLASH_SIZE {
+            display "Kinetis on chip FLASH size"
+            flavor data
+            calculated { (CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB
+                          - CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_PART_KIB)* 0x400 }
+            }
+
+            cdl_option CYGHWR_HAL_KINETIS_FLEXNVM_FLEXRAM_SIZE {
+                display "Kinetis on chip FlexRAM size"
+                flavor data
+                active_if { CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM &
+                    !CYGHWR_HAL_CORTEXM_KINETIS_EEE }
+                calculated { 4096 }
+            }
+
+        }
+
+        cdl_interface CYGINT_HAL_CORTEXM_KINETIS_FLEXBUS {
+            display "Platform uses FlexBus"
+            flavor bool
+            description "
+                This interface will be implemented if the specific
+                controller being used provides FlexBus and if FlexBus is
+                used on target hardware"
+        }
+
+        cdl_component CYGPKG_HAL_CORTEXM_KINETIS_FLEXBUS {
+            display       "FlexBus"
+            flavor bool
+            active_if     CYGINT_HAL_CORTEXM_KINETIS_FLEXBUS
+            default_value CYGINT_HAL_CORTEXM_KINETIS_FLEXBUS
+            description "FlexBus provides access for external memory."
+
+            for { set ::chipsel 0 } { $::chipsel < 6 } { incr ::chipsel } {
+
+                cdl_interface CYGINT_HAL_KINETIS_FB_CS[set ::chipsel] {
+                    display     "Platform uses Chip select [set ::chipsel]"
+                    flavor      bool
+                    description "
+                    This interface will be implemented if the specific
+                    controller being used provides chip select [set ::chipsel], and if
+                    that chip select is used on target hardware."
+                }
+
+                cdl_component CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel] {
+                    display       "Chip select [set ::chipsel]"
+                    flavor        bool
+                    active_if     CYGINT_HAL_KINETIS_FB_CS[set ::chipsel]
+                    default_value CYGINT_HAL_KINETIS_FB_CS[set ::chipsel]
+                    description   "
+                    This option includes initialization data for
+                    chip select [set ::chipsel]."
+
+                    cdl_option CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PS {
+                        display "Port size (encoded)"
+                        flavor data
+                        calculated ( \
+                            CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 32 ? 0 : \
+                            CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 8  ? 1 : \
+                            CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 16 ? 2 : 3)
+                    }
+                }
+            }
+        }
+
+        cdl_component CYGHWR_HAL_KINETIS_FLASH_CONF {
+        display "Flash configuration field"
+        flavor none
+        no_define
+
+        active_if { CYG_HAL_STARTUP == "ROM" }
+
+        description "
+            The program flash memory contains a 16-byte flash
+            configuration field that stores default protection settings
+            (loaded on reset) and security information that allows the MCU to
+            restrict access to the flash module.
+            Note: Changing some values in Flash configuration field may make
+            flash inaccessible and disable further re-programming of the flash
+            permanently. Consult respective Kinetis' documentation before dealing
+            with the Flash configuration field. Default values are equal
+            to the factory values."
+
+        cdl_option CYGHWR_HAL_KINETIS_FLASH_CONF_BACKDOOR_KEY {
+            display "Backdoor comparison key"
+            flavor data
+            default_value { "\{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff \}" }
+        }
+
+        cdl_option CYGHWR_HAL_KINETIS_FLASH_CONF_FPROT {
+            display "Program flash protection"
+            flavor data
+            default_value { "\{ 0xff, 0xff, 0xff, 0xff \}" }
+        }
+
+        cdl_option CYGHWR_HAL_KINETIS_FLASH_CONF_FSEC {
+            display "Flash security byte"
+            flavor data
+            default_value 0xfe
+
+            description "
+                Note: FSEC default value is deliberately set to
+                0xfe in order to disable chip lockout."
+        }
+
+        cdl_option CYGHWR_HAL_KINETIS_FLASH_CONF_FOPT {
+            display "Flash nonvolatile option byte"
+            flavor data
+            default_value 0xff
+        }
+
+        cdl_option CYGHWR_HAL_KINETIS_FLASH_CONF_FDPROT {
+            display "Data flash protection byte"
+            flavor data
+            default_value 0xff
+        }
+
+        cdl_option CYGHWR_HAL_KINETIS_FLASH_CONF_FEPROT {
+            display "EEPROM protection byte"
+            flavor data
+            default_value 0xff
+        }
+    }
+
+    for { set ::channel 0 } { $::channel < 6 } { incr ::channel } {
+
+        cdl_interface CYGINT_HAL_FREESCALE_UART[set ::channel] {
+            display     "Platform provides UART [set ::channel] HAL"
+            flavor      bool
+            description "
+                This interface will be implemented if the specific
+                controller being used has on-chip UART [set ::channel],
+                and if that UART is accessible on the target hardware."
+        }
+
+        cdl_interface CYGINT_HAL_FREESCALE_UART[set ::channel]_RTSCTS {
+            display     "Platform provides HAL for UART[set ::channel] hardware flow control."
+            flavor      bool
+            description "
+                This interface will be implemented if the specific
+                on-chip UART [set ::channel] has RTS/CTS flow control
+                that is accessible on the target hardware."
+        }
+    }
+
+    cdl_component CYGPKG_HAL_CORTEXM_KINETIS_OPTIONS {
+        display "Build options"
+        flavor  none
+        no_define
+        description   "
+            Package specific build options including control over
+            compiler flags used only in building this package."
+
+        cdl_option CYGPKG_HAL_CORTEXM_KINETIS_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the Kinetis variant HAL package. These flags
+                are used in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_HAL_CORTEXM_KINETIS_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the Kinetis variant HAL package. These flags
+                are removed from the set of global flags if present."
+        }
+    }
+}
+
+# EOF hal_cortexm_kinetis.cdl

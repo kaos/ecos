@@ -1,0 +1,57 @@
+2011-10-19  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_kinetis.cdl:
+	* cdl/kinetis_clocking.cdl:
+	* src/hal_diag.c:
+	* src/kinetis_misc.c:
+	* src/kinetis_clocking.c:
+	* include/hal_cache.h:
+	* include/hal_diag.h:
+	* include/plf_stub.h:
+	* include/variant.inc:
+	* include/var_arch.h:
+	* include/var_intr.h:
+	* include/var_io.h:
+	* include/var_io_devs.h:
+	* include/var_io_flexbus.h:
+	* include/pkgconf/mlt_kinetis_flash_sram2s_rom.h
+	* include/pkgconf/mlt_kinetis_flash_sram2s_rom.ldi
+	* include/pkgconf/mlt_kinetis_flash_sram2s_sram.h
+	* include/pkgconf/mlt_kinetis_flash_sram2s_sram.ldi
+	* include/pkgconf/mlt_kinetis_flash_unisram_rom.h
+	* include/pkgconf/mlt_kinetis_flash_unisram_rom.ldi
+	* include/pkgconf/mlt_kinetis_flash_unisram_sram.h
+	* include/pkgconf/mlt_kinetis_flash_unisram_sram.ldi
+	* include/pkgconf/mlt_kinetis_flexnvm_sram2s_rom.h
+	* include/pkgconf/mlt_kinetis_flexnvm_sram2s_rom.ldi
+	* include/pkgconf/mlt_kinetis_flexnvm_sram2s_sram.h
+	* include/pkgconf/mlt_kinetis_flexnvm_sram2s_sram.ldi
+	* include/pkgconf/mlt_kinetis_flexnvm_unisram_rom.h
+	* include/pkgconf/mlt_kinetis_flexnvm_unisram_rom.ldi
+	* include/pkgconf/mlt_kinetis_flexnvm_unisram_sram.h
+	* include/pkgconf/mlt_kinetis_flexnvm_unisram_sram.ldi
+	New package -- Freescale Kinetis variant HAL.
+
+//===========================================================================
+// ####GPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2011 Free Software Foundation, Inc.
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 or (at your option) any
+// later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the
+// Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA  02110-1301, USA.
+// -------------------------------------------
+// ####GPLCOPYRIGHTEND####
+//===========================================================================

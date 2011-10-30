@@ -1,0 +1,65 @@
+// eCos memory layout
+
+#include <pkgconf/hal.h>
+#include <cyg/infra/cyg_type.inc>
+
+MEMORY
+{
+    ram  : ORIGIN = 0x20000000 - CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE, LENGTH = CYGHWR_HAL_KINETIS_SRAM_SIZE-CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+    flash : ORIGIN = 0x00000000, LENGTH = CYGHWR_HAL_KINETIS_FLASH_SIZE
+#ifdef CYGHWR_HAL_KINETIS_FLEXNVM_DFLASH_SIZE
+    flexnvm : ORIGIN = 0x10000000, LENGTH = CYGHWR_HAL_KINETIS_FLEXNVM_DFLASH_SIZE
+#endif
+#ifdef CYGHWR_HAL_CORTEXM_KINETIS_EEE
+    eeeprom0 : ORIGIN = 0x14000000, LENGTH = CYGHWR_HAL_KINETIS_EEE0_SIZE
+# if CYGHWR_HAL_KINETIS_EEE_SPLIT > 1
+    eeeprom1 : ORIGIN = 0x14000000 + CYGHWR_HAL_KINETIS_EEE0_SIZE, LENGTH = CYGHWR_HAL_KINETIS_EEE1_SIZE
+# endif
+#else
+    flexram : ORIGIN = 0x14000000, LENGTH = CYGHWR_HAL_KINETIS_FLEXRAM_SIZE
+#endif
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    SECTION_rom_vectors (flash, 0x00000000, LMA_EQ_VMA)
+    USER_SECTION(kinetis_misc, flash, ALIGN (0x8), LMA_EQ_VMA)
+
+    // Kinetis FLASH configuration field. Must be present at 0x00000400
+    // Warning: Omitting FLASH configuration field or moving it to
+    //          other location may lock Kinetis controller.
+    // See src/kinetis_mis.c for definition
+
+    .flash_conf 0x00000400 : { KEEP (*(.flash_conf)) } > flash
+
+    SECTION_RELOCS (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_text (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_fini (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_rodata (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_rodata1 (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_fixup (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_gcc_except_table (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_eh_frame (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_got (flash, ALIGN (0x8), LMA_EQ_VMA)
+#ifdef CYGHWR_HAL_KINETIS_FLEXNVM_DFLASH_SIZE
+    USER_SECTION(d_flash, flexnvm, 0x10000000 (NOLOAD), LMA_EQ_VMA)
+#endif
+#ifdef CYGHWR_HAL_CORTEXM_KINETIS_EEE
+    USER_SECTION(e_eeprom0, eeeprom0, 0x14000000 (NOLOAD), LMA_EQ_VMA)
+# if CYGHWR_HAL_KINETIS_EEE_SPLIT > 1
+    USER_SECTION(e_eeprom1, eeeprom1, 0x14000000 + CYGHWR_HAL_KINETIS_EEE0_SIZE (NOLOAD), LMA_EQ_VMA)
+# endif
+#else
+    USER_SECTION(flex_ram, flexram, 0x14000000 (NOLOAD), LMA_EQ_VMA)
+#endif
+    SECTION_data (ram, 0x20000000 - CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE + 0x400, FOLLOWING (.got))
+    SECTION_sram (ram, ALIGN (0x8), FOLLOWING (.data))
+    SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+    SECTIONS_END
+}
+
+hal_vsr_table = (0x20000000 - CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE);
+hal_virtual_vector_table = hal_vsr_table + 128*4;
+hal_startup_stack = 0x20000000 + CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE;
