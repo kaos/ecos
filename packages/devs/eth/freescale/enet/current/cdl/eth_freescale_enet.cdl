@@ -1,0 +1,416 @@
+#==========================================================================
+#
+#      eth_freescale_enet.cdl
+#
+#      Ethernet driver for Freescale ENET controller
+#
+#==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                           
+## -------------------------------------------                             
+## This file is part of eCos, the Embedded Configurable Operating System.  
+## Copyright (C) 2011 Free Software Foundation, Inc.                       
+##
+## eCos is free software; you can redistribute it and/or modify it under   
+## the terms of the GNU General Public License as published by the Free    
+## Software Foundation; either version 2 or (at your option) any later     
+## version.                                                                
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT     
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or   
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License   
+## for more details.                                                       
+##
+## You should have received a copy of the GNU General Public License       
+## along with eCos; if not, write to the Free Software Foundation, Inc.,   
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           
+##
+## As a special exception, if other files instantiate templates or use     
+## macros or inline functions from this file, or you compile this file     
+## and link it with other works to produce a work based on this file,      
+## this file does not by itself cause the resulting work to be covered by  
+## the GNU General Public License. However the source code for this file   
+## must still be made available in accordance with section (3) of the GNU  
+## General Public License v2.                                              
+##
+## This exception does not invalidate any other reasons why a work based   
+## on this file might be covered by the GNU General Public License.        
+## -------------------------------------------                             
+## ####ECOSGPLCOPYRIGHTEND####                                             
+#==========================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):    Ilija Kocho <ilijak@siva.com.mk>
+# Contributors:
+# Date:         2011-06-14
+#
+#####DESCRIPTIONEND####
+#
+#========================================================================
+
+
+cdl_package CYGPKG_DEVS_ETH_FREESCALE_ENET {
+    display       "Freescale ENET ethernet driver"
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if     CYGPKG_IO_ETH_DRIVERS
+
+    implements    CYGHWR_NET_DRIVERS
+    implements    CYGHWR_NET_DRIVER_ETH0
+
+    requires      CYGHWR_FREESCALE_ENET_MII_MDC_HAL_CLOCK
+
+    include_dir   cyg/io/eth
+    description   "
+        Ethernet driver for Freescale ENET controller. Freescale ENET
+        Ethernet controller is found on some Freescale families of
+        controllers such as Kinetis and ColdFire+."
+
+    compile       -library=libextras.a if_freescale_enet.c
+
+    # ENET0 Configuration options --------------------------------------------
+    cdl_option CYGDAT_IO_ETH_IF_FREESCALE_ENET0_NAME {
+        display       "Device name for Freescale ENET0 interface"
+        flavor        data
+        default_value { "\"eth0\"" }
+        description   "
+            This option specifies the device name for Freescale ENET0
+            interface."
+    }
+
+    cdl_option CYGPKG_DEVS_ETH_FREESCALE_ENET0_MACADDR {
+        display "Ethernet station (MAC) address for eth0"
+        flavor  data
+        default_value {"0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC"}
+        description   "
+            The default ethernet station address."
+    }
+
+    cdl_option CYGPKG_DEVS_ETH_FREESCALE_ENET0_INTPRIO {
+        display       "Interrupt priority"
+        flavor        data
+        default_value 0xE0
+        description   "
+            This option selects the interrupt priority for the EMAC
+            interrupts."
+    }
+
+    cdl_component CYGHWR_DEVS_ETH_FREESCALE_ENET0_FLOW_CONTROL {
+        display "Congestion control"
+        flavor none
+        no_define
+
+        cdl_option CYGSEM_ETH_FREESCALE_ENET0_RCR_FCE {
+            display "Rx Flow control enable"
+            flavor data
+            legal_values { 0 1 }
+            default_value 0
+            description "
+                If enabled ENET shall regard pause frames requests from peer."
+        }
+
+        cdl_option CYGNUM_ETH_FREESCALE_ENET0_OPD_PAUSE_DUR {
+            display "Tx flow control pause duration"
+            flavor data
+            legal_values 0 to 255
+            default_value 0
+            description "
+                Flow control pause legth in pause quanta asked from peer.
+                1 pause quant equals to 512 bit time increments."
+        }
+    }
+
+    cdl_component CYGHWR_DEVS_ETH_FREESCALE_ENET0_BUFFS {
+        display "Buffers"
+        flavor none
+        no_define
+        description "Rx and Tx buffers"
+
+        cdl_option CYGNUM_DEVS_ETH_FREESCALE_ENET0_MAX_FRAME_LEN {
+            display "Maximal frame length"
+            flavor data
+            default_value 1518
+            legal_values 64 to 1522
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_FREESCALE_ENET0_RX_BUFS {
+            display       "Number of RX buffers"
+            flavor        data
+            default_value 8
+            legal_values  2 to 64
+            description   "
+                Number of buffers for receiving. The number of receive
+                buffers also defines the number of descriptors in the
+                descriptor array."
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_FREESCALE_ENET0_RXBUF_SIZE {
+            display "Rx buffer size"
+            flavor data
+            requires { (CYGNUM_DEVS_ETH_FREESCALE_ENET0_RXBUF_SIZE %
+                        CYGNUM_DEVS_ETH_FREESCALE_ENET_RXBUF_ALIGN) == 0
+            }
+            legal_values 16 to 1536
+            default_value {
+                ((CYGNUM_DEVS_ETH_FREESCALE_ENET0_MAX_FRAME_LEN +
+                  CYGNUM_DEVS_ETH_FREESCALE_ENET_RXBUF_ALIGN-1)/
+                  (CYGNUM_DEVS_ETH_FREESCALE_ENET_RXBUF_ALIGN ?
+                   CYGNUM_DEVS_ETH_FREESCALE_ENET_RXBUF_ALIGN : 1)) *
+                CYGNUM_DEVS_ETH_FREESCALE_ENET_RXBUF_ALIGN
+            }
+            description "Rx buffer size must be evenly divisible by 16."
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_FREESCALE_ENET0_TX_BUFS {
+            display       "Number of TX descriptors (buffers)"
+            flavor        data
+            default_value ( CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY ? 8 : \
+                            CYGPKG_IO_ETH_DRIVERS_NET ? 8 : 2 )
+            legal_values   2 to 64
+            description   "
+                Number of transmit buffers or descriptors. We need one
+                descriptor/buffer for each element in the scatter/gather list.
+                If NoCopy is selected then only buffer descriptors are allocated.
+                If Copying is selected (NoCopy == 0) then a buffer is allocated
+                for every buffer descriptor."
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_FREESCALE_ENET0_TXBUF_SIZE {
+            display "Tx buffer size"
+            flavor data
+            active_if { !CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY }
+            requires { (CYGNUM_DEVS_ETH_FREESCALE_ENET_TXBUF_SIZE %
+                        CYGNUM_DEVS_ETH_FREESCALE_ENET_TXBUF_ALIGN) == 0
+            }
+
+            legal_values { 16 to 1536 }
+            default_value {
+                ((CYGNUM_DEVS_ETH_FREESCALE_ENET0_MAX_FRAME_LEN +
+                  CYGNUM_DEVS_ETH_FREESCALE_ENET_TXBUF_ALIGN-1)/
+                  (CYGNUM_DEVS_ETH_FREESCALE_ENET_TXBUF_ALIGN ?
+                   CYGNUM_DEVS_ETH_FREESCALE_ENET_TXBUF_ALIGN : 1)) *
+                CYGNUM_DEVS_ETH_FREESCALE_ENET_TXBUF_ALIGN
+            }
+        }
+
+    }
+
+    # END of ENET0 specific configuration options. ---------------------------
+
+    # Common ENET options. ---------------------------------------------------
+    # Following configuration options are common to all ENET instances
+
+    cdl_option CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED {
+        display "Enhanced buffer descriptors"
+        flavor bool
+        default_value  0
+    }
+
+    cdl_component CYGHWR_DEVS_ETH_FREESCALE_ENET_ALIGN {
+        display "Buffer/descriptor memory alignment"
+        flavor none
+        no_define
+        description "
+            ENET conatins internal DMA controller that
+            requires certain memory alighment"
+
+        cdl_option CYGNUM_DEVS_ETH_FREESCALE_ENET_RXBD_ALIGN {
+            display "Rx buffer descriptor alignment"
+            flavor data
+            default_value 8
+            legal_values { 8 16 }
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_FREESCALE_ENET_RXBUF_ALIGN {
+            display "Rx buffer alignment"
+            flavor data
+            default_value 16
+            legal_values { 16 }
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_FREESCALE_ENET_TXBD_ALIGN {
+            display "Tx buffer descriptor alignment"
+            flavor data
+            default_value 8
+            legal_values { 8 16 }
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_FREESCALE_ENET_TXBUF_ALIGN {
+            display "Tx buffer alignment"
+            flavor data
+            default_value 8
+            legal_values { 8 16 }
+        }
+    }
+
+    cdl_component CYGSEM_DEVS_ETH_FREESCALE_ENET_PHY {
+        display "RMII or MII Phy"
+        flavor data
+        default_value { "RMII" }
+        legal_values { "RMII" "MII" }
+
+        cdl_option CYGOPT_DEVS_ETH_FREESCALE_ENET_PHY_RXER_USE {
+            display "Enable PHY Rx Error signal"
+            flavor bool
+            default_value 1
+        }
+    }
+
+    cdl_component CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL {
+        display "TCP/IP acceleration"
+        flavor bool
+        default_value { is_active (CYGPKG_LWIP_CHECKSUMS) ? 1 : 0 }
+        description "
+            Freescale ENET provides for hardware TCP/IP header checksum
+            generation and check."
+
+        active_if CYGPKG_NET_LWIP
+        requires CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
+        requires CYGPKG_LWIP_CHECKSUMS
+
+        cdl_component CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL_TX_IP {
+            display "IP Checksum generation"
+            flavor bool
+            default_value 1
+
+            requires { is_active(CYGPKG_LWIP_CHECKSUMS) implies
+                (CYGIMP_LWIP_CHECKSUM_GEN_IP == 0) }
+
+            cdl_option CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL_TX_PROT {
+                display "TCP and UDP Checksum generation"
+                flavor bool
+                default_value 1
+
+                requires { is_active(CYGPKG_LWIP_CHECKSUMS) implies
+                    (CYGIMP_LWIP_CHECKSUM_GEN_TCP == 0) }
+
+                requires { is_active(CYGPKG_LWIP_CHECKSUMS) implies
+                    (CYGIMP_LWIP_CHECKSUM_GEN_UDP == 0) }
+            }
+        }
+
+        cdl_component CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL_RX_IP {
+            display "IP Checksum check"
+            flavor bool
+            default_value 1
+
+            requires { is_active(CYGPKG_LWIP_CHECKSUMS) implies
+                (CYGIMP_LWIP_CHECKSUM_CHECK_IP == 0) }
+
+            cdl_option CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL_RX_PROT {
+                display "TCP and UDP checksum check"
+                flavor bool
+                default_value 1
+
+                requires { is_active(CYGPKG_LWIP_CHECKSUMS) implies
+                    (CYGIMP_LWIP_CHECKSUM_CHECK_TCP == 0) }
+
+                requires { is_active(CYGPKG_LWIP_CHECKSUMS) implies
+                    (CYGIMP_LWIP_CHECKSUM_CHECK_UDP == 0) }
+            }
+        }
+
+        cdl_option CYGSEM_ENET_LWIP_CHECKSUMS {
+            display "lwIP Checksum calculation"
+            flavor none
+            no_define
+            description "
+                Re-enable lwIP software checksum generation/check if
+                hardware generation/check is disabled."
+
+            requires { !CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL_TX_IP implies
+                CYGIMP_LWIP_CHECKSUM_GEN_IP == 1 }
+            requires { !CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL_TX_PROT implies
+                CYGIMP_LWIP_CHECKSUM_GEN_TCP == 1 }
+            requires { !CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL_TX_PROT implies
+                CYGIMP_LWIP_CHECKSUM_GEN_UDP == 1 }
+
+            requires { !CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL_RX_IP implies
+                CYGIMP_LWIP_CHECKSUM_CHECK_IP == 1 }
+            requires { !CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL_RX_PROT implies
+                CYGIMP_LWIP_CHECKSUM_CHECK_TCP == 1 }
+            requires { !CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL_RX_PROT implies
+                CYGIMP_LWIP_CHECKSUM_CHECK_UDP == 1 }
+        }
+    }
+
+    cdl_component CYGSEM_DEVS_ETH_FREESCALE_ENET_1588 {
+        display "IEEE 1588 timers"
+        requires CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
+        flavor bool
+        default_value 0
+    }
+
+    cdl_component CYGOPT_DEVS_ETH_FREESCALE_ENET_STATS {
+        display "ENET Error statistics"
+        flavor bool
+        default_value 0
+
+        cdl_option CYGOPT_DEVS_ETH_FREESCALE_ENET_STATS_DEBUG {
+            display "Debug print ENET error statistics"
+            flavor bool
+            default_value 0
+        }
+    }
+
+    cdl_option CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY {
+        display "NullCopy send"
+        flavor bool
+        default_value  0
+        active_if (CYGPKG_NET_LWIP)
+
+        requires { is_active(CYGPKG_NET_LWIP) implies
+                   (CYGNUM_LWIP_MEM_ALIGNMENT >=
+                    CYGNUM_DEVS_ETH_FREESCALE_ENET_TXBUF_ALIGN) }
+
+            description "
+                ENET driver can send buffers 'out of place'
+                (wihout making a private copy), offloading CPU from
+                copying data and saving space for Tx buffers . This is
+                'NullCopy' option, opposite to 'Copying' option where ENET
+                driver has private Tx buffers and requires additional copying
+                operation (by CPU).
+                On the pther hand, 'Copying' option needs no Tx IRQ which may
+                make it better choice than NullCopy if system dominantly sends
+                short messages. Also, ENET has some requiresments for buffer
+                alignment, therefore if upper layer networking stack /
+                application can not guarantee for boundary alignment then
+                'Copying' should be used."
+    }
+
+    cdl_option CYGOPT_DEVS_ETH_FREESCALE_ENET_IRQ_FASTMASK {
+        display "Fast IRQ masking"
+        flavor bool
+        default_value 1
+
+        description "
+            Fast (un)masking operates on bits in ENET's EIR
+            register instead of calling cyg_drv_interrupt_(un)mask.
+            This allows sumultaneous (un)masking of both Tx and Rx
+            interrupts and is prefered mode, but  case of compatibility
+            problems disable fast IRQ mask."
+    }
+
+    cdl_option CYGPKG_DEVS_ETH_FREESCALE_ENET_DEBUG_LEVEL {
+         display "Driver debug output level"
+         flavor  data
+         legal_values { 0 1 2 3 }
+         default_value 0
+         description   "
+             This option specifies the level of debug data output by
+             the Freescale ENET ethernet device driver. A value of 0 signifies
+             no debug data output; 1 signifies normal debug data
+             output; and 2 signifies maximum debug data output."
+    }
+
+    cdl_option  CYGPKG_DEVS_ETH_FREESCALE_ENET_CFLAGS_ADD {
+        display "Additional compiler flags"
+        flavor  data
+        no_define
+        default_value { "-D_KERNEL -D__ECOS" }
+        description   "
+            This option modifies the set of compiler flags for
+            building the Freescale ENET ethernet driver package.
+            These flags are used in addition to the set of global flags."
+    }
+}
+
+# EOF eth_freescale_enet.cdl

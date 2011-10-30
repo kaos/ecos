@@ -1,0 +1,31 @@
+2011-08-26  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/eth_freescale_enet.cdl:
+	* include/if_freescale_enet_bd.h:
+	* include/if_freescale_enet_io.h:
+	* src/if_freescale_enet.c:
+	New package -- Freescale ENET Ethernet driver.
+
+//===========================================================================
+// ####GPLCOPYRIGHTBEGIN####                                                
+// -------------------------------------------                              
+// This file is part of eCos, the Embedded Configurable Operating System.   
+// Copyright (C) 2011 Free Software Foundation, Inc.                        
+//
+// This program is free software; you can redistribute it and/or modify     
+// it under the terms of the GNU General Public License as published by     
+// the Free Software Foundation; either version 2 or (at your option) any   
+// later version.                                                           
+//
+// This program is distributed in the hope that it will be useful, but      
+// WITHOUT ANY WARRANTY; without even the implied warranty of               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        
+// General Public License for more details.                                 
+//
+// You should have received a copy of the GNU General Public License        
+// along with this program; if not, write to the                            
+// Free Software Foundation, Inc., 51 Franklin Street,                      
+// Fifth Floor, Boston, MA  02110-1301, USA.                                
+// -------------------------------------------                              
+// ####GPLCOPYRIGHTEND####                                                  
+//===========================================================================
