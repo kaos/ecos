@@ -64,7 +64,8 @@
 
 // Olimex LPC-E2294 development board and Olimex LPC-H2294 header board both
 // have 28F320C3-B flash memory part, Olimex LPC-L2294-1M development board has
-// 28F160C3-B flash memory part. All boards have 16-bit access to it's flash
+// 28F160C3-B flash memory part and Olimex LPC-L2294-8M development board has
+// 28F320C3-B flash memory part. All boards have 16-bit access to it's flash
 // devices.
 static const CYG_FLASH_FUNS(hal_olpcx2294_flash_strata_funs,
     &cyg_strata_init_check_devid_16,
@@ -77,14 +78,14 @@ static const CYG_FLASH_FUNS(hal_olpcx2294_flash_strata_funs,
 
 static const cyg_strata_dev hal_olpcx2294_flash_priv = {
     .manufacturer_code = CYG_FLASH_STRATA_MANUFACTURER_INTEL,
-#ifdef CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294 
+#if defined(CYGHWR_OLIMEX_BOARD_OLPCL2294_1M)
     .device_code = 0x88c3, /* 16-Mbit x 16-B, 28F160C3-B */
 #else
     .device_code = 0x88c5, /* 32-Mbit x 16-B, 28F320C3-B */
 #endif
     .bufsize    = 1,
     .block_info = {
-#ifdef CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294 
+#if defined(CYGHWR_OLIMEX_BOARD_OLPCL2294_1M)
         { 0x00002000,  8 },/* boot bottom 8 x 8K blocks */
         { 0x00010000, 31 } /* 31 x 64K blocks */
 #else
@@ -94,19 +95,27 @@ static const cyg_strata_dev hal_olpcx2294_flash_priv = {
     }
 };
 
+#if defined(CYGHWR_OLIMEX_BOARD_OLPCL2294_1M)
 CYG_FLASH_DRIVER(hal_olpcx2294_flash,
                  &hal_olpcx2294_flash_strata_funs,
                  0,
                  0x80000000,
-#ifdef CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294 
                  0x801fffff,
-#else
-                 0x803fffff,
-#endif
                  2,
                  hal_olpcx2294_flash_priv.block_info,
                  &hal_olpcx2294_flash_priv
 );
+#else
+CYG_FLASH_DRIVER(hal_olpcx2294_flash,
+                 &hal_olpcx2294_flash_strata_funs,
+                 0,
+                 0x80000000,
+                 0x803fffff,
+                 2,
+                 hal_olpcx2294_flash_priv.block_info,
+                 &hal_olpcx2294_flash_priv
+);
+#endif
 
 #endif//CYGPKG_DEVS_FLASH_STRATA_V2
 // ------------------------------------------------------------------------
