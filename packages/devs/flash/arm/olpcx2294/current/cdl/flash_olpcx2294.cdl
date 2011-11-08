@@ -67,16 +67,14 @@ cdl_package CYGPKG_DEVS_FLASH_ARM_OLPCX2294 {
     cdl_option CYGSEM_DEVS_FLASH_INTEL_28F320C3_PARTS {
         display       "Intel 28F320C3 parts used"
         flavor        bool
-	calculated    1
-        active_if     (CYGPKG_HAL_ARM_LPC2XXX_OLPCE2294 || \
-		       CYGPKG_HAL_ARM_LPC2XXX_OLPCH2294)
+        calculated    { CYGPKG_HAL_ARM_LPC2XXX_OLPCE2294 || CYGPKG_HAL_ARM_LPC2XXX_OLPCH2294 || (CYGHWR_HAL_ARM_LPC2XXX_OLPCL2294_VARIANT == "OLPCL2294_8M") }
         requires      CYGHWR_DEVS_FLASH_INTEL_28F320C3
     }
 
     cdl_option CYGSEM_DEVS_FLASH_INTEL_28F160C3_PARTS {
         display       "Intel 28F160C3 parts used"
         flavor        bool
-	calculated    1
+        calculated    { (CYGHWR_HAL_ARM_LPC2XXX_OLPCL2294_VARIANT == "OLPCL2294_1M") }
         active_if     CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294
         requires      CYGHWR_DEVS_FLASH_INTEL_28F160C3B
     }

@@ -1,3 +1,7 @@
+2010-11-24  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/flash_olpcx2294.cdl: Add support for Olimex LPC-L2294-8M board.
+
 2008-08-31  Sergei Gavrikov <sergei.gavrikov@gmail.com>
 
 	* Flash driver for LPC-E2294, LPC-H2294, LPC-L2294-1M boards
