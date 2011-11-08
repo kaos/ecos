@@ -1,3 +1,13 @@
+2010-11-03  JF Argentino  <jf.argentino@osean.fr>
+2010-11-24  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* cdl/hal_arm_lpc2xxx_olpcl2294.cdl: Add support for LPC-L2294-8M
+	board: new CDL component CYGHWR_HAL_ARM_LPC2XXX_OLPCL2294_VARIANT
+	with CDL option CYGHWR_HAL_ARM_LPC2XXX_OLPCL2294_RAMSIZE.
+	* include/hal_platform_setup.h: Add support for LPC-L2294-8M board.
+	* include/pkgconf/mlt_arm_lpc2xxx_olpcl2294_{rom,ram}.{h,ldi}: Define
+	RAM size with new CDL option.
+
 2009-02-02  Sergei Gavrikov <sergei.gavrikov@gmail.com>
 
 	* cdl/hal_arm_lpc2xxx_olpcl2294.cdl: Expanded a list the legal baud

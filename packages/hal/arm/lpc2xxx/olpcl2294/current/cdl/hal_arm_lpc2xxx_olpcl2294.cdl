@@ -3,7 +3,7 @@
 #      hal_arm_lpc2xxx_olpcl2294.cdl
 #
 #      ARM LPC2XXX OLPCL2294 development board package configuration
-#      data
+#      data, for both 1MB and 8MB of external RAM
 #
 # ====================================================================
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
@@ -49,14 +49,14 @@
 # ====================================================================
 
 cdl_package CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294 {
-    display       "Olimex LPC-L2294-1MB development board HAL"
+    display       "Olimex LPC-L2294 development board HAL"
     parent        CYGPKG_HAL_ARM_LPC2XXX
     define_header hal_arm_lpc2xxx_olpcl2294.h
     include_dir   cyg/hal
     hardware
     description   "
         The OLPCL2294 HAL package provides the support needed to run
-        eCos on Olimex LPC-L2294-1MB development board."
+        eCos on Olimex LPC-L2294-1MB or LPC-L2294-8MB development board."
 
     compile       olpcl2294_misc.c
 
@@ -69,6 +69,23 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX_OLPCL2294 {
         puts $::cdl_header "#define HAL_PLATFORM_CPU    \"ARM7TDMI-S\""
         puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Olimex LPC-L2294 development board\""
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+    }
+
+    cdl_component CYGHWR_HAL_ARM_LPC2XXX_OLPCL2294_VARIANT {
+        display        "OLPCL2294 variant used"
+        flavor         data
+        default_value  { "OLPCL2294_1M" }
+        legal_values   { "OLPCL2294_1M" "OLPCL2294_8M" }
+        define -file system.h CYGHWR_OLIMEX_BOARD
+        description    "Choose the OLIMEX LPC-L2294 board variant"
+
+        cdl_option CYGHWR_HAL_ARM_LPC2XXX_OLPCL2294_RAMSIZE {
+            display       "External RAM size"
+            flavor        data
+            calculated    { is_substr(CYGHWR_HAL_ARM_LPC2XXX_OLPCL2294_VARIANT, "1M") ?
+                                    0x100000 : 0x800000 }
+            description   "The installed RAM size depends on the board variant"
+        }
     }
 
     cdl_component CYG_HAL_STARTUP {

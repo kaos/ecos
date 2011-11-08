@@ -138,8 +138,9 @@
         // memories, while memory chips capable of accepting 16 or 32 bit wide
         // data will work with RBLE = 1.
         //
-        // BANK0: 2M FLASH
-        // TE28F160C3BD70 (1024Kx16 x 1, 70nS)
+        // BANK0: FLASH memory
+        //     -TE28F160C3BD70 (1024Kx16 x 1 = 2MB, 70nS) for 1MB RAM version
+        //     -TE28F320C3BD70 (2048Kx16 x 1 = 4MB, 70ns) for 8MB RAM version
         ldr r0,=CYGARC_HAL_LPC2XXX_REG_BCFG0
         ldr r1,=  (0x3 << 0)    /* IDCY=3, idle timing  */\
                 | (0x4 << 5)    /* WST1=4, read timing  */\
@@ -148,16 +149,28 @@
                 | (0x1 << 28)   /* MW=1,   16-bits      */
         str r1,[r0]
 
-        // BANK1: 1M RAM
-        // K6R4016V1D (512Kx16 x 2, 10nS)
-        ldr r0,=CYGARC_HAL_LPC2XXX_REG_BCFG1
+        // BANK1: external RAM
         // Warning: changed these timings, you can fall dramatically the eCos
         // kernel performance. Check it then using the eCos 'tm_basic' test.
+        // TODO A way to make the timing value dependent of CCLK
+        ldr r0,=CYGARC_HAL_LPC2XXX_REG_BCFG1
+#if defined (CYGHWR_OLIMEX_BOARD_OLPCL2294_1M)
+        // 1MB version uses K6R4016V1D (512Kx16 x 2, 10nS)
         ldr r1,=  (0x0 << 0)    /* IDCY=0, idle cycles  */\
                 | (0x0 << 5)    /* WST1=0, read timing  */\
                 | (0x1 << 10)   /* RBLE=1               */\
                 | (0x0 << 11)   /* WST2=0, write timing */\
                 | (0x2 << 28)   /* MW=2,   32-bits      */
+#elif defined (CYGHWR_OLIMEX_BOARD_OLPCL2294_8M)
+        // 8MB version uses a K1S321611C (2048Kx16 x 2, 70ns)
+        ldr r1,=  (0x3 << 0)    /* IDCY=3, idle cycles TODO */\
+                | (0x4 << 5)    /* WST1=4, read timing  */\
+                | (0x1 << 10)   /* RBLE=1               */\
+                | (0x4 << 11)   /* WST2=4, write timing */\
+                | (0x2 << 28)   /* MW=2,   32-bits      */
+#else
+#error Board not supported, OLIMEX LPC-L2294 1M or 8M only for now.
+#endif
         str r1,[r0]
 
         // BANK2: Ethernet
