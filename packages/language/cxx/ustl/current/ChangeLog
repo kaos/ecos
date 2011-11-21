@@ -1,3 +1,9 @@
+2011-11-21  John Dallaway  <john@dallaway.org.uk>
+
+	* include/ustl/ustring.h: Fix incorrect behaviour of iat when passed
+	offset+npos. Reported by Frank Pagliughi. Patch from uSTL HEAD.
+	[ Bugzilla 1001390 ]
+
 2010-06-25  Simon Kallweit <simon.kallweit@intefo.ch>
 
 	* include/*:
@@ -42,7 +48,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.                        
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
