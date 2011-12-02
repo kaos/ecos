@@ -396,7 +396,7 @@ cdl_package CYGPKG_REDBOOT {
                      description      "
                          By default Redboot tries to use BOOTP to get an IP
                          address. If there's no BOOTP server on your network
-                         use this option to avoid to wait until the
+                         use this option to avoid the wait until the
                          timeout. This option is overriden by the
                          configuration stored in flash."
                 }
