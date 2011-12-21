@@ -1,3 +1,8 @@
+2011-12-21  John Dallaway  <john@dallaway.org.uk>
+
+	* doc/flash.sgml: Fix block_info field name. Issue reported by Keith
+	Smith. [ Bugzilla 1001431 ]
+
 2011-05-13  John Dallaway  <john@dallaway.org.uk>
 
 	* doc/flash.sgml: Fix cyg_flash_get_into_addr() function name. Issue

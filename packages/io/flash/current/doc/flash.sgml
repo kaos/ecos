@@ -154,7 +154,7 @@ typedef struct {
     cyg_flashaddr_t              start;          // First address
     cyg_flashaddr_t              end;            // Last address
     cyg_uint32                   num_block_infos;// Number of entries
-    const cyg_flash_block_info_t *blocks_info;   // Info about one block size
+    const cyg_flash_block_info_t *block_info;    // Info about one block size
 } cyg_flash_info_t;
 </PROGRAMLISTING>
 
