@@ -1,3 +1,8 @@
+2011-11-15  Tomas Frydrych <tomas@sleepfive.com>
+
+	* include/var_io_gpio.h:
+	Convenience macros for manipulating GPIO pins.
+
 2011-10-19  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/hal_cortexm_kinetis.cdl:

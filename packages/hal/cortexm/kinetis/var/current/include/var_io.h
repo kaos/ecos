@@ -1029,6 +1029,10 @@ typedef volatile struct cyghwr_hal_kinetis_mpu_s {
 # include <cyg/hal/var_io_flexbus.h>
 #endif
 
+//---------------------------------------------------------------------------
+// GPIO
+#include <cyg/hal/var_io_gpio.h>
+
 //=============================================================================
 // DEVS:
 // Following macros may also be, and usually are borrwed by some device drivers.
