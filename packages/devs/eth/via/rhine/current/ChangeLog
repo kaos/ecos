@@ -1,3 +1,10 @@
+2011-08-28  Stephen Polkowski  <stephen@centtech.com>
+            Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* src/via_rhine.h: Fix some compiler warning.
+	* src/if_rhine.c (via_rhine_init): Manage ESA with HAL_PCI_IO* macros.
+	[ Bugzilla 1001269 ]
+
 2004-08-12  Jani Monoses <jani@iv.ro>
 
 	* src/if_rhine.c: Fix builing with lwip.

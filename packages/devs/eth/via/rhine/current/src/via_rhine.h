@@ -464,5 +464,5 @@ typedef struct rhine_priv_data {
 } rhine_priv_data;
 
 // ------------------------------------------------------------------------
-#endif CYGONCE_DEVS_ETH_VIA_RHINE_H
+#endif // CYGONCE_DEVS_ETH_VIA_RHINE_H
 // EOF via_rhine.h

@@ -538,14 +538,12 @@ via_rhine_init(struct cyg_netdevtab_entry *tab)
     // Prepare ESA
     if (cpd->hardwired_esa) {
         // Force the NIC to use the specified ESA
-        p = cpd->base + RHINE_PAR0;
         for (i = 0; i < 6; i++)
-            *p++ = cpd->esa[i];
+            HAL_PCI_IO_WRITE_UINT8(cpd->base + RHINE_PAR0 + i, cpd->esa[i]);
     } else {
         // Use the address from the serial EEPROM
-        p = cpd->base + RHINE_PAR0;
         for (i = 0; i < 6; i++)
-            cpd->esa[i] = *p++;
+            HAL_PCI_IO_READ_UINT8(cpd->base + RHINE_PAR0 + i, cpd->esa[i]);
     }
 #if DEBUG & 8
     diag_printf("RHINE - %s ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
