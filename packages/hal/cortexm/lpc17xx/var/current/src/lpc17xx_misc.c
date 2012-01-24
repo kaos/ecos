@@ -85,6 +85,26 @@ void            hal_lpc_clock_out(void);
 #endif
 //==========================================================================
 
+#ifdef CYG_HAL_STARTUP_ROM
+
+//===========================================================================
+// LPC17xx Code Read Protection field field
+//===========================================================================
+
+// Note: LPC17xx Code Read Protection field field must be present in
+//       LPC17xx flash image and ocupy a word at 0x000002FC
+
+// For ".lpc17xx_crp" section definition see MLT files.
+
+const cyg_uint32 LPC17XX_CRP __attribute__((section(".lpc17xxcrp"), used)) = 0xFFFFFFFF;
+
+#endif // CYG_HAL_STARTUP_ROM
+
+const cyg_uint32* hal_lpc17xx_crp_p(void)
+{
+    return &LPC17XX_CRP;
+}
+
 void
 hal_variant_init(void)
 {
@@ -104,7 +124,7 @@ hal_variant_init(void)
 // that clock rates can be changed at runtime.
 
 
-void
+void CYGOPT_HAL_LPC17XX_MISC_FLASH_SECTION_ATTR
 hal_start_clocks(void)
 {
     // Main clock - for everything except USB
@@ -119,7 +139,7 @@ hal_start_clocks(void)
 }
 
 
-void
+void CYGOPT_HAL_LPC17XX_MISC_FLASH_SECTION_ATTR
 hal_lpc_start_main_clock(void)
 {
     CYG_ADDRESS     scb_base_p;
@@ -193,7 +213,7 @@ hal_lpc_start_main_clock(void)
     hal_cortexm_systick_clock = hal_lpc17xx_sysclk;
 }
 
-void
+void CYGOPT_HAL_LPC17XX_MISC_FLASH_SECTION_ATTR
 hal_lpc_start_usb_clock(void)
 {
     CYG_ADDRESS     scb_base_p;
@@ -233,7 +253,7 @@ hal_lpc_start_usb_clock(void)
 }
 
 #ifdef CYGHWR_HAL_CORTEXM_LPC17XX_CLKOUT
-void
+void CYGOPT_HAL_LPC17XX_MISC_FLASH_SECTION_ATTR
 hal_lpc_clock_out(void)
 {
     cyg_uint32      regval;

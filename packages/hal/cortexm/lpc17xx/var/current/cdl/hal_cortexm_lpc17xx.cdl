@@ -368,6 +368,20 @@ cdl_package CYGPKG_HAL_CORTEXM_LPC17XX {
         }
     }
 
+    cdl_option CYGOPT_HAL_LPC17XX_MISC_FLASH_SECTION {
+        display "Utilize \".lpc17xx_misc\" section for HAL"
+        flavor bool
+        default_value { CYG_HAL_STARTUP == "ROM" }
+        active_if { CYG_HAL_STARTUP == "ROM" }
+        description "
+        Kinetis use FLASH location  0x2fc for FLASH Code Read Protection.
+        This leaves FLASH area below 0x2fc
+            out of standard linker sections. Special section
+            \".lpc17xx_misc\" provides linker access to this area.
+            Setting this option instructs linker to place some HAL
+            (variant/platform) \"misc.\" functions in this area."
+    }
+
     cdl_interface CYGINT_HAL_LPC17XX_UART0 {
         display      "Platform has UART0 serial port"
         description  "

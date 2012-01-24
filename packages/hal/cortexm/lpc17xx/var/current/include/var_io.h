@@ -67,6 +67,18 @@
 #define CYGARC_REG_NVIC_VTOR_TBLBASE_SRAM               BIT_(28)
 #endif
 
+//---------------------------------------------------------------------------
+// Utilize LPC17xx flash between startup vectors and 0x2fc
+// for misc funtions.
+#ifdef CYGOPT_HAL_LPC17XX_MISC_FLASH_SECTION
+# define CYGOPT_HAL_LPC17XX_MISC_FLASH_SECTION_ATTR \
+         CYGBLD_ATTRIB_SECTION(".lpc17xx_misc")
+#else
+# define CYGOPT_HAL_LPC17XX_MISC_FLASH_SECTION_ATTR
+#endif
+
+__externC const cyg_uint32* hal_lpc17xx_crp_p(void);
+
 // LPC System Control Block
 #define CYGHWR_HAL_LPC17XX_REG_SCB_BASE                 0x400FC000
 

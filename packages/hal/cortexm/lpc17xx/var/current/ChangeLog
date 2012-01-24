@@ -1,3 +1,11 @@
+2012-01-16  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_lpc17xx.cdl:
+	* include/var_io.h:
+	* src/lpc17xx_misc.c:
+	Recognize Code Read Protection FLASH field
+	Reported by Bernard Fouché [Bugzilla 1001443 ]
+
 2011-05-13  John Dallaway  <john@dallaway.org.uk>
 
 	* include/var_intr.h: Fix I2C interrupt definitions issue reported
