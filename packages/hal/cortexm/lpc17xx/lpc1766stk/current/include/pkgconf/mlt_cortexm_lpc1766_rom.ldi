@@ -5,7 +5,7 @@
 
 MEMORY
 {
-    ram  : ORIGIN = 0x10000000, LENGTH = 0x00008000-CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+    ram  : ORIGIN = 0x10000000, LENGTH = 0x00008000-CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE-CYGHWR_HAL_CORTEXM_LPC17XX_IAP
     ahb_sram_bank0  : ORIGIN = 0x2007C000, LENGTH = 0x00004000
     ahb_sram_bank1  : ORIGIN = 0x20080000, LENGTH = 0x00004000
     flash : ORIGIN = 0x00000000, LENGTH = 0x00040000
@@ -15,6 +15,15 @@ SECTIONS
 {
     SECTIONS_BEGIN
     SECTION_rom_vectors (flash, 0x00000000, LMA_EQ_VMA)
+    USER_SECTION(lpc17xx_misc, flash, 0x00000020, LMA_EQ_VMA)
+    
+    // LPC17xx Code Read Protection field. Must be present at 0x000002FC
+    // Warning: Code Read Protection field or moving it to
+    //          other location may lock LPC17xx controller.
+    // See src/lpc17xx_mis.c for definition
+
+    .lpc17xxcrp 0x2FC : { KEEP (*(.lpc17xxcrp)) } > flash
+    
     SECTION_RELOCS (flash, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_text (flash, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_fini (flash, ALIGN (0x8), LMA_EQ_VMA)
@@ -35,6 +44,6 @@ SECTIONS
 
 hal_vsr_table = 0x10000000;
 hal_virtual_vector_table = hal_vsr_table + 128*4;
-hal_startup_stack = 0x10000000 + 1024*32;
+hal_startup_stack = 0x10000000 + 1024*32-CYGHWR_HAL_CORTEXM_LPC17XX_IAP;
 
 

@@ -1,3 +1,12 @@
+2012-01-16  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_lpc17xx_lpc1766stk.cdl:
+	* include/pkgconf/mlt_cortexm_lpc1766_rom.h:
+	* include/pkgconf/mlt_cortexm_lpc1766_rom.ldi:
+	Recognize In Application Programming (IAP) SRAM field
+	and Valid User Code and Code Read Protection FLASH fields
+	Reported by Bernard Fouché [ Bugzilla 1001395 ] [Bugzilla 1001443 ]
+
 2010-12-12  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/hal_cortexm_lpc17xx_lpc1766stk.cdl:

@@ -88,6 +88,13 @@ cdl_package CYGPKG_HAL_CORTEXM_LPC17XX_LPC1766STK {
             be put into internal flash."
     }
 
+    cdl_option CYGHWR_HAL_CORTEXM_LPC17XX_IAP {
+        display "Reserve RAM for IAP (Bytes)"
+        flavor data
+        legal_values { 0 32 }
+        default_value 32
+    }
+
     cdl_component CYGHWR_MEMORY_LAYOUT {
         display       "Memory layout"
         flavor        data
