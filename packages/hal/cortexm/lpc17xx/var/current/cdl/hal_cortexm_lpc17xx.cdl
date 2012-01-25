@@ -90,10 +90,13 @@ cdl_package CYGPKG_HAL_CORTEXM_LPC17XX {
             CPU implements."
     }
 
-    cdl_option CYGNUM_HAL_IRQ_PRIORITY_LEVELS {
-        display       "Interrupt priority levels"
+    cdl_option CYGNUM_HAL_IRQ_PRIORITY_MIN {
+        display       "minimal interrupt priority"
         flavor        data
-        calculated    { 1 << CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS }
+        no_define
+        calculated      0xFFFF&\
+              ((((1<<CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS)-1)-1)\
+               <<8-CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS)
     }
 
     cdl_component CYGHWR_HAL_CORTEXM_LPC17XX_CLOCKING {
@@ -334,7 +337,7 @@ cdl_package CYGPKG_HAL_CORTEXM_LPC17XX {
     cdl_option CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY {
         display       "Clock interrupt ISR priority"
         flavor        data
-        calculated    0xE0
+        calculated    CYGNUM_HAL_IRQ_PRIORITY_MIN
         description   "
             Set clock ISR priority to lowest priority."
     }
