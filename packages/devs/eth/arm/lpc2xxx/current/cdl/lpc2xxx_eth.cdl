@@ -83,27 +83,24 @@ cdl_package CYGPKG_DEVS_ETH_ARM_LPC2XXX {
     }
 
     # For backward compatibility with LPC24xx platforms
-    # that do not have CYGNUM_HAL_IRQ_PRIORITY_LEVELS defined.
-    cdl_option CYGNUM_DEVS_ETH_IRQ_PRIORITY_LEVELS {
+    # that do not have CYGNUM_HAL_IRQ_PRIORITY_MIN defined.
+    cdl_option CYGNUM_DEVS_ETH_IRQ_PRIORITY_MIN {
         display       "Interrupt priority levels"
         flavor        data
-        calculated    { CYGNUM_HAL_IRQ_PRIORITY_LEVELS ? CYGNUM_HAL_IRQ_PRIORITY_LEVELS : 15 }
+        calculated    { CYGNUM_HAL_IRQ_PRIORITY_MIN ? CYGNUM_HAL_IRQ_PRIORITY_MIN : 15 }
         description   "
             For backward compatibility with LPC 24XX plarforms that do
-            not have CYGNUM_HAL_IRQ_PRIORITY_LEVELS defined."
+            not have CYGNUM_HAL_IRQ_PRIORITY_MIN defined."
     }
 
     cdl_option CYGPKG_DEVS_ETH_ARM_LPC2XXX_INTPRIO {
         display       "Interrupt priority"
         flavor        data
-        legal_values  0 to CYGNUM_DEVS_ETH_IRQ_PRIORITY_LEVELS-1
-        default_value CYGNUM_DEVS_ETH_IRQ_PRIORITY_LEVELS-1
+        legal_values  0 to CYGNUM_DEVS_ETH_IRQ_PRIORITY_MIN
+        default_value CYGNUM_DEVS_ETH_IRQ_PRIORITY_MIN
         description   "
             This option selects the interrupt priority for the EMAC
-            interrupts.  There are CYGNUM_DEVS_ETH_IRQ_PRIORITY_LEVELS
-            priority levels corresponding to the values 0 through
-            CYGNUM_DEVS_ETH_IRQ_PRIORITY_LEVELS-1 decimal, of which
-            the highest value is the lowest priority. The reset value
+            interrupts.  The reset value
             of these registers defaults all interrupts to the lowest
             priority, allowing a single write to elevate the priority
             of an individual interrupt."
