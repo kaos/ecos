@@ -1,3 +1,8 @@
+2011-12-21  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/ser_arm_lpc24xx.cdl:
+	Fixed interrupt priority. [ Bugzilla 1001432 ]
+	
 2010-12-29  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/ser_arm_lpc24xx.cdl:

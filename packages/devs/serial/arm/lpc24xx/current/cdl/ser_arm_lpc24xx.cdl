@@ -83,13 +83,13 @@ cdl_package CYGPKG_IO_SERIAL_ARM_LPC24XX {
     }
 
     # For backward compatibility with LPC24XX platforms
-    cdl_option CYGNUM_IO_SERIAL_IRQ_PRIORITY_LEVELS {
+    cdl_option CYGNUM_IO_SERIAL_IRQ_PRIORITY_MIN {
         display       "Interrupt priority levels"
         flavor        data
-        calculated    { CYGNUM_HAL_IRQ_PRIORITY_LEVELS ? CYGNUM_HAL_IRQ_PRIORITY_LEVELS : 15 }
+        calculated    { CYGNUM_HAL_IRQ_PRIORITY_MIN ? CYGNUM_HAL_IRQ_PRIORITY_MIN : 15 }
         description   "
             For backward compatibility with LPC 24XX plarforms that
-            do not have CYGNUM_HAL_IRQ_PRIORITY_LEVELS defined."
+            do not have CYGNUM_HAL_IRQ_PRIORITY_MIN defined."
     }
 
     # Support up to 4 on-chip UART modules. The number may vary between
@@ -154,15 +154,11 @@ cdl_package CYGPKG_IO_SERIAL_ARM_LPC24XX {
             cdl_option CYGNUM_IO_SERIAL_ARM_LPC24XX_SERIAL[set ::channel]_INTPRIO {
                 display       "Interrupt priority of UART [set ::channel]"
                 flavor        data
-                legal_values  0 to CYGNUM_IO_SERIAL_IRQ_PRIORITY_LEVELS-1
-                default_value CYGNUM_IO_SERIAL_IRQ_PRIORITY_LEVELS-1
+                legal_values  0 to CYGNUM_IO_SERIAL_IRQ_PRIORITY_MIN
+                default_value CYGNUM_IO_SERIAL_IRQ_PRIORITY_MIN
                 description   "
                     This option selects the interupt priority for
-                    the UART [set ::channel] interrupts. There are
-                    CYGNUM_IO_SERIAL_IRQ_PRIORITY_LEVELS priority
-                    levels corresponding to the values 0 through
-                    CYGNUM_IO_SERIAL_IRQ_PRIORITY_LEVELS-1 decimal, of
-                    which the highest value is the lowest priority. The
+                    the UART [set ::channel] interrupts. The
                     reset value of these registers defaults all interrupt
                     to the lowest priority, allowing a single write to
                     elevate the priority of an individual interrupt."
