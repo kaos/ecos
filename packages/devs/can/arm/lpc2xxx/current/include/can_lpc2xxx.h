@@ -64,13 +64,14 @@
 //--------------------------------------------------------------------------
 // Message filter configuration
 //
-#define CYG_IO_SET_CONFIG_LPC2XXX_ACCFILT_GROUP  CYG_IO_SET_CONFIG_CAN_ABORT + 0x10 // add message filter group
+//#define CYG_IO_SET_CONFIG_LPC2XXX_ACCFILT_GROUP  CYG_IO_SET_CONFIG_CAN_ABORT + 0x10 // add message filter group
 
 
 //--------------------------------------------------------------------------
 // Mode setup of LPC2XXX
 //
-#define CYGNUM_CAN_MODE_LPC2XXX_LISTEN_ONLY       0x80 // set controller in listen only mode
+// NOT IMPLEMENTED!
+//#define CYGNUM_CAN_MODE_LPC2XXX_LISTEN_ONLY       0x80 // set controller in listen only mode
 
 
 //==========================================================================
@@ -79,12 +80,12 @@
 //
 // structure for configuration of message filter groups
 //
-typedef struct cyg_can_filtergroup_cfg_st
-{
-    cyg_can_id_type        ext;   
-    cyg_uint32             lower_id_bound;
-    cyg_uint32             upper_id_bound;
-} cyg_can_filtergroup_cfg;
+//typedef struct cyg_can_filtergroup_cfg_st
+//{
+//    cyg_can_id_type        ext;
+//    cyg_uint32             lower_id_bound;
+//    cyg_uint32             upper_id_bound;
+//} cyg_can_filtergroup_cfg;
 
 
 //---------------------------------------------------------------------------

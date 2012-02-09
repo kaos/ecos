@@ -1,3 +1,17 @@
+2012-01-25  Bernard Fouché <bernard.fouche@kuantic.com>
+
+	* Changes made to support CAN IO package update:
+	* cdl/can_lpc2xxx.cdl: CYGOPT_DEVS_CAN_LPC2XXX_EXTENDED_CFG_KEYS
+	replaced by CYG_IO_SET_CONFIG_CAN_RANGE_FILTER.
+	* include/can_lpc2xxx.h: Commented out unused and not implemented
+	things.
+	* src/can_lpc2xxx.c: CYGNUM_CAN_EVENT_OVERRUN_RX_HW instead of
+	CYGNUM_CAN_EVENT_OVERRUN_RX. CYGOPT_DEVS_CAN_LPC2XXX_EXTENDED_CFG_KEYS
+	replaced by CYG_IO_SET_CONFIG_CAN_RANGE_FILTER. can_lpc2xxx.h not
+	required any more. CYGNUM_CAN_MODE_LISTEN_ONLY_ENTER &
+	CYGNUM_CAN_MODE_LISTEN_ONLY_EXIT return -EINVAL.
+	[ Bugzilla 1001453 ]
+
 2008-07-21  Uwe Kindler <uwe_kindler@web.de>
 	
 	* cdl/can_lpc2xxx.cdl: Added CYGOPT_DEVS_CAN_LPC2XXX_ALIE to make 

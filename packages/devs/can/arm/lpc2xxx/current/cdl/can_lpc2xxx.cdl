@@ -84,8 +84,8 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
             the configuration key CYG_IO_SET_CONFIG_CAN_MSGBUF is not
             supported by this driver."
 
-            cdl_option CYGOPT_DEVS_CAN_LPC2XXX_EXTENDED_CFG_KEYS {
-                display       "Extended acceptance filtering"
+            cdl_option CYGOPT_DEVS_CAN_RANGE_FILTERING_CFG_KEYS {
+                display       "Range filtering"
                 flavor        bool
                 default_value 0
                 description   "
@@ -93,16 +93,12 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
                     message filters for reception of single CAN
                     messages. The global LPC2xxx acceptance filter
                     supports not only single message filters but also
-                    message groups.  A message group is defined by a
+                    message ranges.  A message range is defined by a
                     lower bound CAN identifier and an upper bound CAN
                     identifier. The acceptance filter will accept all
                     messages within this range of CAN identifiers. The
                     acceptance filter supports a number of message
-                    groups for each CAN channel. The support of
-                    message filter groups is not conform to the
-                    standard API of the CAN I/O layer and should only
-                    be used for application where portability is not
-                    important."
+                    ranges for each CAN channel."
              }
              
          cdl_option CYGOPT_DEVS_CAN_LPC2XXX_LUT_ERR_SUPP {

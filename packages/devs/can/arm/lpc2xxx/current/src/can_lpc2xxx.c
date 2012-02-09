@@ -70,7 +70,6 @@
 #include <cyg/io/io.h>
 #include <cyg/io/devtab.h>
 #include <cyg/io/can.h>
-#include <cyg/io/can_lpc2xxx.h>
 #include <cyg/io/can_lpc2xxx_baudrates.h>
 
 
@@ -1298,18 +1297,18 @@ static void lpc2xxx_enter_reset_mode(can_channel *chan)
 }
 
 
-#ifdef CYGOPT_DEVS_CAN_LPC2XXX_EXTENDED_CFG_KEYS
+#ifdef CYGOPT_DEVS_CAN_RANGE_FILTERING_CFG_KEYS
 //===========================================================================
 // Add message filter group
 //===========================================================================
 static Cyg_ErrNo lpc2xxx_can_config_accfilt_group(can_channel *chan, const void* buf, cyg_uint32* len)
 {
     bool                     res;
-    cyg_can_filtergroup_cfg *filter_grp = (cyg_can_filtergroup_cfg *)buf;
+    cyg_can_filter_range_cfg *filter_grp = (cyg_can_filter_range_cfg *)buf;
     lpc2xxx_can_info_t      *info = (lpc2xxx_can_info_t *)chan->dev_priv; 
     
     
-    if (*len != sizeof(cyg_can_filtergroup_cfg))
+    if (*len != sizeof(cyg_can_filter_range_cfg))
     {
         return -EINVAL;
     }
@@ -1339,7 +1338,7 @@ static Cyg_ErrNo lpc2xxx_can_config_accfilt_group(can_channel *chan, const void*
 #endif        
     return res ? ENOERR : -EPERM;
 }
-#endif // CYGOPT_DEVS_CAN_LPC2XXX_EXTENDED_CFG_KEYS
+#endif // CYGOPT_DEVS_CAN_RANGE_FILTERING_CFG_KEYS
 
 
 //===========================================================================
@@ -1380,16 +1379,16 @@ static Cyg_ErrNo lpc2xxx_can_set_config(can_channel *chan, cyg_uint32 key, const
              break;
 #endif // CYGOPT_IO_CAN_RUNTIME_MBOX_CFG
          
-#ifdef CYGOPT_DEVS_CAN_LPC2XXX_EXTENDED_CFG_KEYS
+#ifdef CYGOPT_DEVS_CAN_RANGE_FILTERING_CFG_KEYS
         //
         // Add message filter group to acceptance filter
         //
-        case CYG_IO_SET_CONFIG_LPC2XXX_ACCFILT_GROUP :
+        case CYG_IO_SET_CONFIG_CAN_RANGE_FILTER :
              {
                  return lpc2xxx_can_config_accfilt_group(chan, buf, len);
              }
              break;
-#endif // CYGOPT_DEVS_CAN_LPC2XXX_EXTENDED_CFG_KEYS 
+#endif // CYGOPT_DEVS_CAN_RANGE_FILTERING_CFG_KEYS
                         
         //
         // Change CAN state of CAN module
@@ -1418,6 +1417,8 @@ static Cyg_ErrNo lpc2xxx_can_set_config(can_channel *chan, cyg_uint32 key, const
                     case CYGNUM_CAN_MODE_START :   lpc2xxx_start_module(chan);        break;                       
                     case CYGNUM_CAN_MODE_STANDBY : lpc2xxx_enter_lowpower_mode(chan); break;
                     case CYGNUM_CAN_MODE_CONFIG :  lpc2xxx_enter_reset_mode(chan);    break;
+                    case CYGNUM_CAN_MODE_LISTEN_ONLY_ENTER: return -EINVAL;
+                    case CYGNUM_CAN_MODE_LISTEN_ONLY_EXIT: return -EINVAL;
                 }
              }
              break; // case CYG_IO_SET_CONFIG_CAN_MODE :
@@ -1645,7 +1646,7 @@ static bool lpc2xxx_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, voi
         HAL_READ_UINT32(CAN_CTRL_GSR(info), regval);
         if (regval & GSR_DATA_OVR)
         {
-            pevent->flags |= CYGNUM_CAN_EVENT_OVERRUN_RX;
+            pevent->flags |= CYGNUM_CAN_EVENT_OVERRUN_RX_HW;
             HAL_WRITE_UINT32(CAN_CTRL_CMR(info), CMR_CLEAR_DATA_OVR);
         }
     }
