@@ -1,3 +1,21 @@
+2012-01-22  Bernard Fouché <bernard.fouche@kuantic.com>
+
+	* cdl/io_can.cdl: support for add/remove compiler flags
+	* doc/can.sgml, doc/can_driver_doc.html: updated doc reflecting API
+	changes (range/mask filtering, listen-only mode, return values for
+	xmt_msg/rcv_event, new flags).
+	* include/can.h: given in a match the types of function pointers for
+	can_callbacks_t according to the changes made in can.c.
+	* include/canio.h: flags field in event enlarged to 32 bits to fit
+	new events 'CYGNUM_CAN_EVENT_ERR_ACTIVE' and
+	'CYGNUM_CAN_EVENT_OVERRUN_RX_HW'. Made a 'flag' typedef.
+	cyg_can_event fields reordered so flags size change keeps events the
+	same size.  Defined new filtering capabilities (range/mask). New
+	convenience macro CYGNUM_CAN_EVENT_ALL. New listen-only mode.
+	* src/can.c: can_rcv_event() and can_xmt_msg() now returns cyg_bool
+	(were 'void'). flags using cyg_can_event_flags_t type.
+	[ Bugzilla 1001453 ]
+
 2010-01-13  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* include/can.h: EOF footer: s/SERIAL/CAN/.

@@ -257,7 +257,40 @@ cdl_package CYGPKG_IO_CAN {
                 The initial timeout value in clock ticks for cyg_io_write() calls."
         }
     }
-    
+
+    cdl_component CYGPKG_IO_CAN_OPTIONS {
+        display "CAN device driver build options"
+        flavor  none
+        description   "
+            Package specific build options including control over
+            compiler flags used only in building this package,
+            and details of which tests are built."
+
+
+        cdl_option CYGPKG_IO_CAN_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the CAN device drivers. These flags are used
+                in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_IO_CAN_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the CAN device drivers. These flags are
+                removed from the set of global flags if present."
+        }
+
+    }
+
     cdl_option CYGBLD_IO_CAN_EXTRA_TESTS {
         display "Build extra CAN tests"
         default_value 0

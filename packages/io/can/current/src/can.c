@@ -89,8 +89,8 @@ static Cyg_ErrNo can_set_config(cyg_io_handle_t handle, cyg_uint32 key, const vo
 // Callback functions into upper layer driver
 //
 static void can_init(can_channel *chan);    
-static void can_rcv_event(can_channel *chan, void *pdata);
-static void can_xmt_msg(can_channel *chan, void *pdata);
+static cyg_bool can_rcv_event(can_channel *chan, void *pdata);
+static cyg_bool can_xmt_msg(can_channel *chan, void *pdata);
 
 //
 // Device I/O table
@@ -710,13 +710,14 @@ static cyg_bool can_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWOR
 //===========================================================================
 // Callback for received events
 //===========================================================================
-static void can_rcv_event(can_channel *chan, void *pdata)
+static cyg_bool can_rcv_event(can_channel *chan, void *pdata)
 {
     can_cbuf_t       *cbuf   = &chan->in_cbuf;
     CYG_CAN_EVENT_T  *prxbuf = (CYG_CAN_EVENT_T *)cbuf->pdata;
 #ifdef CYGOPT_IO_CAN_SUPPORT_CALLBACK
-    cyg_uint16        flags;
+    cyg_can_event_flags_t flags;
 #endif
+    cyg_bool          res    = false;
     
     //
     // cbuf is a ring buffer - if the buffer is full, then we overwrite the
@@ -730,6 +731,7 @@ static void can_rcv_event(can_channel *chan, void *pdata)
     prxbuf[cbuf->put].flags = 0; // clear flags because it is a new event
     if (chan->funs->getevent(chan, &prxbuf[cbuf->put], pdata))
     {
+        res = true;
         if (cbuf->data_cnt < cbuf->len)
         {
             cbuf->data_cnt++;
@@ -769,18 +771,21 @@ static void can_rcv_event(can_channel *chan, void *pdata)
     }
     
     cyg_drv_dsr_unlock();
+
+    return res;
 }
 
 
 //===========================================================================
 // Callback function for transmit events
 //===========================================================================
-static void can_xmt_msg(can_channel *chan, void *pdata)
+static cyg_bool can_xmt_msg(can_channel *chan, void *pdata)
 {
     can_cbuf_t        *cbuf    = &chan->out_cbuf;
     can_lowlevel_funs *funs    = chan->funs;  
     CYG_CAN_MSG_T     *ptxbuf  = (CYG_CAN_MSG_T *)cbuf->pdata;
     CYG_CAN_MSG_T     *pbuf_txmsg;
+    cyg_bool           res     = false;
 
     //
     // transmit messages as long as there are messages in the buffer 
@@ -793,6 +798,7 @@ static void can_xmt_msg(can_channel *chan, void *pdata)
         {
             cbuf->get = (cbuf->get + 1) % cbuf->len;
             cbuf->data_cnt--;
+            res = true;
         }
         else
         {
@@ -809,7 +815,7 @@ static void can_xmt_msg(can_channel *chan, void *pdata)
                     cyg_drv_cond_broadcast(&cbuf->wait);
                 }
             }
-            return;
+            return res;
         }
     } // while (cbuf->data_cnt > 0)
     funs->stop_xmit(chan);  // Done with transmit
@@ -819,6 +825,8 @@ static void can_xmt_msg(can_channel *chan, void *pdata)
         cbuf->waiting = false;
         cyg_drv_cond_broadcast(&cbuf->wait);
     }            
+
+    return res;
 }
 
 

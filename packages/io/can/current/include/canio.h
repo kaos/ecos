@@ -99,25 +99,46 @@ typedef enum {
 // hardware but normally these events should cover the most common CAN events
 // that may occur. A combination of the event type values is allowed.
 //
-typedef enum 
-{
-    CYGNUM_CAN_EVENT_RX                  = 0x0001, // message received
-    CYGNUM_CAN_EVENT_TX                  = 0x0002, // mesage transmitted
-    CYGNUM_CAN_EVENT_WARNING_RX          = 0x0004, // tx error counter (TEC) reached warning level (>96)
-    CYGNUM_CAN_EVENT_WARNING_TX          = 0x0008, // rx error counter (REC) reached warning level (>96)
-    CYGNUM_CAN_EVENT_ERR_PASSIVE         = 0x0010, // CAN "error passive" occured
-    CYGNUM_CAN_EVENT_BUS_OFF             = 0x0020, // CAN "bus off" error occured
-    CYGNUM_CAN_EVENT_OVERRUN_RX          = 0x0040, // overrun in RX queue or hardware occured
-    CYGNUM_CAN_EVENT_OVERRUN_TX          = 0x0080, // overrun in TX queue occured
-    CYGNUM_CAN_EVENT_CAN_ERR             = 0x0100, // a CAN bit or frame error occured
-    CYGNUM_CAN_EVENT_LEAVING_STANDBY     = 0x0200, // CAN hardware leaves standby / power don mode or is waked up
-    CYGNUM_CAN_EVENT_ENTERING_STANDBY    = 0x0400, // CAN hardware enters standby / power down mode
-    CYGNUM_CAN_EVENT_ARBITRATION_LOST    = 0x0800, // arbitration lost
-    CYGNUM_CAN_EVENT_FILTER_ERR          = 0x1000, // CAN message filter / acceptance filter error
-    CYGNUM_CAN_EVENT_PHY_FAULT           = 0x2000, // General failure of physical layer detected (if supported by hardware)
-    CYGNUM_CAN_EVENT_PHY_H               = 0x4000, // Fault on CAN-H detected (Low Speed CAN)
-    CYGNUM_CAN_EVENT_PHY_L               = 0x8000, // Fault on CAN-L detected (Low Speed CAN)
-} cyg_can_event_flags;
+#define CYGNUM_CAN_EVENT_RX                  0x00000001 // message received
+#define CYGNUM_CAN_EVENT_TX                  0x00000002 // mesage transmitted
+#define CYGNUM_CAN_EVENT_WARNING_RX          0x00000004 // tx error counter (TEC) reached warning level (>96)
+#define CYGNUM_CAN_EVENT_WARNING_TX          0x00000008 // rx error counter (REC) reached warning level (>96)
+#define CYGNUM_CAN_EVENT_ERR_PASSIVE         0x00000010 // CAN "error passive" occured
+#define CYGNUM_CAN_EVENT_BUS_OFF             0x00000020 // CAN "bus off" error occured
+#define CYGNUM_CAN_EVENT_OVERRUN_RX          0x00000040 // overrun in RX queue occured
+#define CYGNUM_CAN_EVENT_OVERRUN_TX          0x00000080 // overrun in TX queue occured
+#define CYGNUM_CAN_EVENT_CAN_ERR             0x00000100 // a CAN bit or frame error occured
+#define CYGNUM_CAN_EVENT_LEAVING_STANDBY     0x00000200 // CAN hardware leaves standby/power down mode or is waked up
+#define CYGNUM_CAN_EVENT_ENTERING_STANDBY    0x00000400 // CAN hardware enters standby/power down mode
+#define CYGNUM_CAN_EVENT_ARBITRATION_LOST    0x00000800 // arbitration lost
+#define CYGNUM_CAN_EVENT_FILTER_ERR          0x00001000 // CAN message filter / acceptance filter error
+#define CYGNUM_CAN_EVENT_PHY_FAULT           0x00002000 // General failure of physical layer detected (if supported by hardware)
+#define CYGNUM_CAN_EVENT_PHY_H               0x00004000 // Fault on CAN-H detected (Low Speed CAN)
+#define CYGNUM_CAN_EVENT_PHY_L               0x00008000 // Fault on CAN-L detected (Low Speed CAN)
+#define CYGNUM_CAN_EVENT_ERR_ACTIVE          0x00010000 // CAN controller now "error active"
+#define CYGNUM_CAN_EVENT_OVERRUN_RX_HW       0x00020000 // CAN controller reports a RX overrun
+
+typedef cyg_int32 cyg_can_event_flags_t;
+
+#define CYGNUM_CAN_EVENT_ALL                       \
+  CYGNUM_CAN_EVENT_RX                              \
+  |CYGNUM_CAN_EVENT_TX                             \
+  |CYGNUM_CAN_EVENT_WARNING_RX                     \
+  |CYGNUM_CAN_EVENT_WARNING_TX                     \
+  |CYGNUM_CAN_EVENT_ERR_PASSIVE                    \
+  |CYGNUM_CAN_EVENT_BUS_OFF                        \
+  |CYGNUM_CAN_EVENT_OVERRUN_RX                     \
+  |CYGNUM_CAN_EVENT_OVERRUN_TX                     \
+  |CYGNUM_CAN_EVENT_CAN_ERR                        \
+  |CYGNUM_CAN_EVENT_LEAVING_STANDBY                \
+  |CYGNUM_CAN_EVENT_ENTERING_STANDBY               \
+  |CYGNUM_CAN_EVENT_ARBITRATION_LOST               \
+  |CYGNUM_CAN_EVENT_FILTER_ERR                     \
+  |CYGNUM_CAN_EVENT_PHY_FAULT                      \
+  |CYGNUM_CAN_EVENT_PHY_H                          \
+  |CYGNUM_CAN_EVENT_PHY_L                          \
+  |CYGNUM_CAN_EVENT_ERR_ACTIVE                     \
+  |CYGNUM_CAN_EVENT_OVERRUN_RX_HW
 
 //
 // State of CAN controller
@@ -144,7 +165,9 @@ typedef enum e_cyg_can_mode
     CYGNUM_CAN_MODE_STOP,   // set controller into stop mode
     CYGNUM_CAN_MODE_START,  // set controller into operational mode
     CYGNUM_CAN_MODE_STANDBY,// set controller into standby / sleep mode
-    CYGNUM_CAN_MODE_CONFIG  // set controller and driver into a state where it is safe to add/delete message buffers
+    CYGNUM_CAN_MODE_CONFIG, // safe mode to add/delete message buffers
+    CYGNUM_CAN_MODE_LISTEN_ONLY_ENTER, // set controller into listen only mode.
+    CYGNUM_CAN_MODE_LISTEN_ONLY_EXIT   // set controller out of listen only mode.
 } cyg_can_mode;
 
 //
@@ -211,8 +234,8 @@ typedef struct st_cyg_can_message
 typedef struct cyg_can_event_st
 {
     cyg_uint32      timestamp;
+    cyg_can_event_flags_t flags;
     cyg_can_message msg;
-    cyg_uint16      flags;     
 } cyg_can_event;
 
 //
@@ -277,6 +300,26 @@ typedef struct cyg_can_msgbox_cfg_st
 } cyg_can_msgbuf_cfg;
 
 //
+// structure for configuration of identifier range filtering
+//
+typedef struct cyg_can_filter_range_cfg_st
+{
+    cyg_can_id_type        ext;            // type of identifier concerned
+    cyg_uint32             lower_id_bound; // lower bound identifier (included)
+    cyg_uint32             upper_id_bound; // upper bound identifier (included)
+} cyg_can_filter_range_cfg;
+
+//
+// structure for configuration of identifier/mask filtering
+//
+typedef struct cyg_can_filter_mask_cfg_st
+{
+    cyg_can_id_type        ext;            // type of identifier concerned
+    cyg_uint32             id;             // identifier to use for filtering
+    cyg_uint32             mask;           // mask to apply for filtering
+} cyg_can_filter_mask_cfg;
+
+//
 // this data type defines a CAN message filter. It consits
 // of a handle to a message box or message buffer and a CAN message.
 // For the filtering only the id and the ext field of the CAN message are
@@ -306,7 +349,7 @@ typedef cyg_can_msgbuf_cfg cyg_can_remote_buf;
 // Support flags:
 // |   7   |   6   |   5   |   4   |   3    |   2   |   1   |   0    |
 // +-------+-------+-------+-------+--------+-------+-------+--------+
-// | res   |  res  |  res  |timest.|autobaud|FullCAN|   Frametype    |
+// |ListenO|Mask F |Range F|timest.|autobaud|FullCAN|   Frametype    |
 //
 typedef struct cyg_can_hdi_st
 {
@@ -324,7 +367,9 @@ typedef struct cyg_can_hdi_st
 #define CYGNUM_CAN_HDI_FULLCAN                 0x04 // controller supports more than one receive and transmit buffer
 #define CYGNUM_CAN_HDI_AUTBAUD                 0x08 // driver supports automatic baudrate detection
 #define CYGNUM_CAN_HDI_TIMESTAMP               0x10 // driver supports timestamps
-
+#define CYGNUM_CAN_HDI_RANGE_FILTERING         0x20 // driver supports identifier range filtering
+#define CYGNUM_CAN_HDI_MASK_FILTERING          0x40 // driver supports identifier mask filtering
+#define CYGNUM_CAN_HDI_LISTEN_ONLY             0x80 // driver supports 'listen-only' mode.
 
 //
 // Callback configuration structure.
@@ -339,7 +384,7 @@ typedef void (*cyg_can_event_cb_t)(cyg_uint16, CYG_ADDRWORD);
 typedef struct cyg_can_callback_cfg_st
 {
     cyg_can_event_cb_t callback_func;              // callback function
-    cyg_uint16  flag_mask;                         // flags mask
+    cyg_can_event_flags_t flag_mask;               // flags mask
     CYG_ADDRWORD data;                             // data passed to callback
 } cyg_can_callback_cfg;
 

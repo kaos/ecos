@@ -109,9 +109,9 @@ typedef struct can_lowlevel_funs can_lowlevel_funs;
 //
 typedef struct 
 {
-    void (*can_init)(can_channel *chan);              // Initialize the can channel
-    void (*xmt_msg)(can_channel *chan, void *pdata);  // transmit one single message
-    void (*rcv_event)(can_channel *chan, void *pdata);// indicate can event occurance
+    void (*can_init)(can_channel *chan);                   // Initialize the CAN channel
+    cyg_bool (*xmt_msg)(can_channel *chan, void *pdata);   // transmit one single message
+    cyg_bool (*rcv_event)(can_channel *chan, void *pdata); // indicate CAN event occurance
 } can_callbacks_t;
 
 

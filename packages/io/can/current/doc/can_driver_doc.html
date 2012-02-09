@@ -79,7 +79,7 @@
 		</p>
 		<p>It is possible to configure the read call to be blocking (default) or non-blocking. Non-blocking mode requires both the configuration option <code>CYGOPT_IO_CAN_SUPPORT_NONBLOCKING</code> to be enabled, and the specific device to be set to non-blocking mode for reads (<code>see cyg_io_set_config()</code>). In blocking mode, the call will not return until one single CAN event has been read. In<i> </i>non-blocking mode, if there is no CAN event in buffer, the call returns immediately with <code>-EAGAIN</code> and the caller must try again.</p>
 		<p>It is possible to configure the write call to be non-blocking with timeout. None-blocking mode with timeout requires the configuration option <code>CYGOPT_IO_CAN_SUPPORT_NONBLOCKING </code>and<code> CYGOPT_IO_CAN_SUPPORT_TIMEOUTS </code>to be enabled, requires the eCos kernel package to be included and the specific device to be set to non-blocking mode for reads (see <code>cyg_io_set_config()</code>). In non-blocking mode with timeouts, if there is no CAN event in receive buffer, the driver waits a certain amound of time (the timeout time) for a CAN event to arrive. If there is still no CAN event in buffer after expiration of the timeout time, <code> -EINTR</code> is returned and the caller must try again.</p>
-		<p>If a event was sucessfully received, the function returns <code>ENOERR</code>.</p>
+		<p>If an event was sucessfully received, the function returns <code>ENOERR</code>.</p>
 		<p><code>typedef struct cyg_can_event_st<br>
 				{<br>
 				&nbsp;&nbsp;&nbsp;&nbsp;cyg_uint32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;timestamp;<br>
@@ -332,7 +332,7 @@
 		<code>CYG_IO_GET_CONFIG_READ_BLOCKING<br>
 			CYG_IO_GET_CONFIG_WRITE_BLOCKING<br>
 			<br>
-		</code>enable switching between blocking and nonblocking calls separatly for read and write calls. If  blocking calls are configured then the read/write functions return only if a message was stored into TX buffer or a event was received from RX buffer. If nonblocking calls are enabled and there is no space in TX buffer or RX buffer is empty then the function returns immediatelly with <code>-EAGAIN</code>. If nonblocking calls are enabled and additionally timeouts are supported by driver, then the read/write functions wait until  timeout value is expired and then return witn <code>-EINTR</code>. If the read/write operation succeeds during the timed wait then the functions return succesfully with<code> ENOERR</code>.
+		</code>enable switching between blocking and nonblocking calls separatly for read and write calls. If  blocking calls are configured then the read/write functions return only if a message was stored into TX buffer or an event was received from RX buffer. If nonblocking calls are enabled and there is no space in TX buffer or RX buffer is empty then the function returns immediatelly with <code>-EAGAIN</code>. If nonblocking calls are enabled and additionally timeouts are supported by driver, then the read/write functions wait until timeout value is expired and then return witn <code>-EINTR</code>. If the read/write operation succeeds during the timed wait then the functions return succesfully with<code> ENOERR</code>.
 
 		<h4>Message buffer configuration</h4>
 		<p><code>typedef struct cyg_can_msgbox_cfg_st<br>
@@ -345,7 +345,7 @@
 		<p><code>CYG_IO_SET_CONFIG_CAN_MSGBUF<br>
 			</code></p>
 		<p>and exchanging  <code>cyg_can_msgbuf_cfg </code>data structures. The <i>cfg_id</i> field contains the configuration ID that tells the driver what to do with a message buffer, the <i>handle</i> field contains a reference to a certain message buffer and the <i>msg</i> field is necessary for configuration of message buffer parameters. The following configuration identifiers are supported:</p>
-		<p><code>CYGNUM_CAN_MSGBUF_RESET_ALL &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// clears alle message buffers, no message will be received, all remote buffers deleted<br>
+		<p><code>CYGNUM_CAN_MSGBUF_RESET_ALL &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// clears all message buffers, no message will be received, all remote buffers deleted<br>
 			</code><code>CYGNUM_CAN_MSGBUF_RX_FILTER_ALL &nbsp;&nbsp;&nbsp;// cfg driver for reception of all can messges<br>
 			</code><code>CYGNUM_CAN_MSGBUF_RX_FILTER_ADD &nbsp;&nbsp;&nbsp;// add single message filter<br>
 			</code><code>CYGNUM_CAN_MSGBUF_REMOTE_BUF_ADD &nbsp;&nbsp;// add new remote response buffer<br>

@@ -124,7 +124,7 @@ device independent CAN I/O API for accessing devices attached to a CAN
 network. This API handles issues such as locking between threads. The
 package does not contain any hardware-specific code. Instead it will
 call into a CAN device driver to handle the hardware device
-access. This package also defines the inderface that such hardware
+access. This package also defines the interface that such hardware
 drivers should provide.
     </para>
   </listitem>
@@ -173,13 +173,14 @@ All functions return a value of the type <type>Cyg_ErrNo</type>.
 If an error condition is detected, this value will be negative and the 
 absolute value indicates the actual error, as specified in 
 <filename>cyg/error/codes.h</filename>. The only other legal return values 
-will be <varname>ENOERR</varname>, <varname>-EINTR</varname> and 
-<varname>-EAGAIN</varname>. All other function arguments are pointers 
-(references). This allows the drivers to pass information efficiently, 
-both into and out of the driver. The most striking example of this is the 
-<parameter>len</parameter> value passed to the read and write functions. 
-This parameter contains the desired length of data on input to the 
-function and the actual transferred length on return.
+will be <varname>ENOERR</varname>, <varname>-EINTR</varname>,
+<varname>-EINVAL</varname> and <varname>-EAGAIN</varname>.  All other
+function arguments are pointers (references). This allows the drivers
+to pass information efficiently, both into and out of the driver. The
+most striking example of this is the <parameter>len</parameter> value
+passed to the read and write functions.  This parameter contains the
+desired length of data on input to the function and the actual
+transferred length on return.
 </PARA>
     
 <PROGRAMLISTING>
@@ -224,6 +225,12 @@ Cyg_ErrNo <!-- <index></index> --><function>cyg_io_read</function>(
 This function receives one single CAN event from a device. The desired size 
 of data to receive is contained in <parameter>*len</parameter> and the 
 actual size obtained will be returned in the same place. 
+</PARA>
+
+<PARA>
+You may notice that the data sent (messages) is different from the
+data received (events). An event includes flags that describe the
+event, and eventually a received message and a timestamp.
 </PARA>
 
 <PROGRAMLISTING>
@@ -353,7 +360,7 @@ the caller must try again.
 </PARA>
     
 <PARA>
-If a message was sucessfully sent, the function returns <varname>ENOERR</varname>.
+If a message was successfully sent, the function returns <varname>ENOERR</varname>.
 </PARA>
 </SECTION>
     
@@ -455,7 +462,7 @@ cyg_io_read(handle, buf, len)
 </PROGRAMLISTING>
 
 <PARA>
-To receive a message the application calls <function>cyg_can_recv()</function>.
+To receive a message the application calls <function>cyg_io_read()</function>.
 This function receives one single event from a device. The desired size 
 of data to receive is contained in <parameter>*len</parameter> and the
 actual size obtained will be returned in the same place. A pointer to 
@@ -478,7 +485,7 @@ try again.
 </PARA>
     
 <PARA>
-It is possible to configure the write call to be non-blocking with timeout. 
+It is possible to configure the read call to be non-blocking with timeout.
 None-blocking mode with timeout requires the configuration option 
 <varname>CYGOPT_IO_CAN_SUPPORT_NONBLOCKING</varname> and 
 <varname>CYGOPT_IO_CAN_SUPPORT_TIMEOUTS</varname> to be enabled, 
@@ -492,7 +499,7 @@ is returned and the caller must try again.
 </PARA>
     
 <PARA>
-If a event was sucessfully received, the function returns <varname>ENOERR</varname>.    
+If an event was successfully received, the function returns <varname>ENOERR</varname>.
 </PARA>
 </SECTION><!-- cyg_io_read -->
 
@@ -511,8 +518,8 @@ independent type for handling CAN events that may occur.
 typedef struct cyg_can_event_st
 {
     cyg_uint32      timestamp;
+    cyg_can_event_flags_t flags;
     cyg_can_message msg;
-    cyg_uint16      flags;
 } cyg_can_event;
 </PROGRAMLISTING>
 
@@ -529,6 +536,14 @@ contain a timestamp value for an event that occured.
           </para></listitem>
    </varlistentry>
    <varlistentry>
+       <term><type>cyg_can_event_flags_t</type> <varname>flags</varname></term>
+           <listitem><para>
+Event flags. The <varname>flags</varname> field contains bits that
+indicate which kind of events occured. More than one flag can be raised
+in a single event.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
        <term><type>cyg_can_message</type> <varname>msg</varname></term>
            <listitem><para>
 CAN message. The msg field contains a CAN message if an RX or TX event
@@ -538,59 +553,52 @@ the <structfield>msg</structfield> may contain additional event
 specific data.
           </para></listitem>
    </varlistentry>
-   <varlistentry>
-       <term><type>cyg_uint16</type> <varname>flags</varname></term>
-           <listitem><para>
-Event flags. The <varname>flags</varname> field contains 16 bits that 
-indicate which kind of events occured. 
-          </para></listitem>
-   </varlistentry>
 </variablelist>
     
 <PARA>
 The following events are supported and after receiving an event the 
-application should check the flag field against these values:
+application should check the <varname>flags</varname> field against these values:
 </PARA>
     
 <PROGRAMLISTING>
-typedef enum
-{
-  CYGNUM_CAN_EVENT_RX               = 0x0001, // message received
-  CYGNUM_CAN_EVENT_TX               = 0x0002, // message transmitted
-  CYGNUM_CAN_EVENT_WARNING_RX       = 0x0004, // (TEC) reached warning level (>96)
-  CYGNUM_CAN_EVENT_WARNING_TX       = 0x0008, // (REC) reached warning level (>96)
-  CYGNUM_CAN_EVENT_ERR_PASSIVE      = 0x0010, // CAN "error passive" occured
-  CYGNUM_CAN_EVENT_BUS_OFF          = 0x0020, // CAN "bus off" error occured
-  CYGNUM_CAN_EVENT_OVERRUN_RX       = 0x0040, // overrun in RX queue or hardware 
-  CYGNUM_CAN_EVENT_OVERRUN_TX       = 0x0080, // overrun in TX queue occured
-  CYGNUM_CAN_EVENT_CAN_ERR          = 0x0100, // a CAN bit or frame error occured
-  CYGNUM_CAN_EVENT_LEAVING_STANDBY  = 0x0200, // CAN hardware leaves standby
-  CYGNUM_CAN_EVENT_ENTERING_STANDBY = 0x0400, // CAN hardware enters standby
-  CYGNUM_CAN_EVENT_ARBITRATION_LOST = 0x0800, // arbitration lost
-  CYGNUM_CAN_EVENT_FILTER_ERR       = 0x1000, // CAN message filter / acceptance filter error
-  CYGNUM_CAN_EVENT_PHY_FAULT        = 0x2000, // General failure of physical layer 
-  CYGNUM_CAN_EVENT_PHY_H            = 0x4000, // Fault on CAN-H (Low Speed CAN)
-  CYGNUM_CAN_EVENT_PHY_L            = 0x8000, // Fault on CAN-L (Low Speed CAN)
-} cyg_can_event_flags;
+CYGNUM_CAN_EVENT_RX               0x00000001 // message received
+CYGNUM_CAN_EVENT_TX               0x00000002 // mesage transmitted
+CYGNUM_CAN_EVENT_WARNING_RX       0x00000004 // tx error counter (TEC) reached warning level (>96)
+CYGNUM_CAN_EVENT_WARNING_TX       0x00000008 // rx error counter (REC) reached warning level (>96)
+CYGNUM_CAN_EVENT_ERR_PASSIVE      0x00000010 // CAN "error passive" occured
+CYGNUM_CAN_EVENT_BUS_OFF          0x00000020 // CAN "bus off" error occured
+CYGNUM_CAN_EVENT_OVERRUN_RX       0x00000040 // overrun in RX queue occured
+CYGNUM_CAN_EVENT_OVERRUN_TX       0x00000080 // overrun in TX queue occured
+CYGNUM_CAN_EVENT_CAN_ERR          0x00000100 // a CAN bit or frame error occured
+CYGNUM_CAN_EVENT_LEAVING_STANDBY  0x00000200 // CAN hardware leaves standby / power down mode or is waked up
+CYGNUM_CAN_EVENT_ENTERING_STANDBY 0x00000400 // CAN hardware enters standby / power down mode
+CYGNUM_CAN_EVENT_ARBITRATION_LOST 0x00000800 // arbitration lost
+CYGNUM_CAN_EVENT_FILTER_ERR       0x00001000 // CAN message filter / acceptance filter error
+CYGNUM_CAN_EVENT_PHY_FAULT        0x00002000 // General failure of physical layer detected
+CYGNUM_CAN_EVENT_PHY_H            0x00004000 // Fault on CAN-H detected (Low Speed CAN)
+CYGNUM_CAN_EVENT_PHY_L            0x00008000 // Fault on CAN-L detected (Low Speed CAN)
+CYGNUM_CAN_EVENT_ERR_ACTIVE       0x00010000 // CAN controller now "error active"
+CYGNUM_CAN_EVENT_OVERRUN_RX_HW    0x00020000 // CAN controller reports a RX overrun
 </PROGRAMLISTING>
 
 <PARA>
 Often the flags field will contain only one single set flag. But it is 
-possible that a number of flags is set and so the flag field should always 
-be checked by a receiver. I.e. if the <varname>CYGNUM_CAN_EVENT_RX</varname> 
-is set then also the <varname>CYGNUM_CAN_EVENT_OVERRUN_RX</varname> 
-may be set if the received message caused an RX overrun.
+possible that a number of flags is set and so the flag field should
+always be checked by a receiver.  Most of the flags are independent
+from each other and the receiver has to handle each of them separately.
 </PARA>
     
 <PARA>
-The internal receive buffers of the CAN device driver are circular buffers. 
-That means that even if the buffers are completely filled new messages 
-will be received. In this case the newest message will always overwrite 
-the oldest message in receive buffer. If this happens the 
-<varname>CYGNUM_CAN_EVENT_OVERRUN_RX</varname> flag will be set for this 
-new message that caused overwriting of the old one. The 
-<varname>CYGNUM_CAN_EVENT_OVERRUN_RX</varname> flag will be set also if 
-a overrun occures in hardware message buffers of the CAN device.
+The internal receive buffers of the CAN device driver are circular
+buffers.  That means that even if the buffers are completely filled
+new messages will be received. In this case the newest message will
+always overwrite the oldest message in the receive buffer. If this
+happens the
+<varname>CYGNUM_CAN_EVENT_OVERRUN_RX</varname> flag will be set for
+this new message that caused overwriting of the old one. However if an
+overrun occurs in the hardware message buffers of the CAN controller,
+the flag <varname>CYGNUM_CAN_EVENT_OVERRUN_RX_HW</varname> is raised
+instead.
 </PARA>
     
 <PARA>
@@ -692,6 +700,8 @@ CYG_IO_SET_CONFIG_CAN_MSGBUF
 CYG_IO_SET_CONFIG_CAN_MODE
 CYG_IO_SET_CONFIG_CAN_ABORT
 CYG_IO_SET_CONFIG_CAN_CALLBACK
+CYG_IO_SET_CONFIG_CAN_RANGE_FILTER
+CYG_IO_SET_CONFIG_CAN_MASK_FILTER
 </PROGRAMLISTING>
 </SECTION><!-- can-cyg-io-set-config -->
 </SECTION><!-- io-can-api-details -->
@@ -875,8 +885,8 @@ The following flags are available in the field <structfield>support_flags</struc
      
 <PROGRAMLISTING>    
 |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   |
-+-------+-------+-------+-------+-------+-------+-------+-------+
-|  res  |  res  |  res  |timest.|SW-Filt|FullCAN|   Frametype   |
++-------+-------+-------+-------+--------+-------+-------+-------+
+|ListenO|Mask F |Range F|timest.|autobaud|FullCAN|   Frametype   |
 </PROGRAMLISTING>
 
 <variablelist>
@@ -900,17 +910,38 @@ the CAN controller supports more than one message buffer.
     </para></listitem>
   </varlistentry>
   <varlistentry>
-    <term><parameter>SW-Filter</parameter></term>
+    <term><parameter>autobaud</parameter></term>
     <listitem><para>
-If Bit 3 - <varname>CYGNUM_CAN_HDI_FILT_SW</varname> - is set to one then 
-the CAN driver supports some kind of software message filtering.
+If Bit 3 - <varname>CYGNUM_CAN_HDI_AUTBAUD</varname> - is set to one then
+the CAN driver supports an autobaud feature.
     </para></listitem>
   </varlistentry>
   <varlistentry>
     <term><parameter>Timestamp</parameter></term>
     <listitem><para>
 If Bit 4 - <varname>CYGNUM_CAN_HDI_TIMESTAMP</varname> - is set to one then 
-the CAN hardware supports timestamps for CAN messages
+the CAN hardware supports timestamps for CAN messages.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Identifier Range filtering</parameter></term>
+    <listitem><para>
+If Bit 5 - <varname>CYGNUM_CAN_HDI_RANGE_FILTERING</varname> - is set to one
+then the CAN hardware supports message filtering based on identifier ranges.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Identifier Mask filtering</parameter></term>
+    <listitem><para>
+If Bit 6 - <varname>CYGNUM_CAN_HDI_MASK_FILTERING</varname> - is set to one
+then the CAN hardware supports message filtering based on identifier masks.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Listen Only mode</parameter></term>
+    <listitem><para>
+If Bit 7 - <varname>CYGNUM_CAN_HDI_LISTEN_ONLY</varname> - is set to one
+then the CAN hardware supports a 'listen-only' mode.
     </para></listitem>
   </varlistentry>
 </variablelist>
@@ -921,8 +952,8 @@ the CAN hardware supports timestamps for CAN messages
 <PROGRAMLISTING>    
 typedef struct cyg_can_msgbox_info_st
 {
-    cyg_uint8 count; // number of message buffers available for this device
-    cyg_uint8 free;  // number of free message buffers
+    cyg_uint16 count; // number of message buffers available for this device
+    cyg_uint16 free;  // number of free message buffers
 } cyg_can_msgbuf_info;
 </PROGRAMLISTING>
    
@@ -937,13 +968,13 @@ free message buffers.
 
 <variablelist>
    <varlistentry>
-       <term><type>cyg_uint8</type> <varname>count</varname></term>
+       <term><type>cyg_uint16</type> <varname>count</varname></term>
            <listitem><para>
 Counts the number of message buffers supported by the device.
           </para></listitem>
    </varlistentry>
    <varlistentry>
-       <term><type>cyg_uint8</type> <varname>free</varname></term>
+       <term><type>cyg_uint16</type> <varname>free</varname></term>
            <listitem><para>
 Contains the number of free message buffers. The free message buffers are 
 available for setting up remote buffers (<varname>CYG_IO_SET_CONFIG_CAN_REMOTE_BUF</varname>) 
@@ -993,7 +1024,10 @@ typedef enum
 {
   CYGNUM_CAN_MODE_STOP,   // set controller into stop mode
   CYGNUM_CAN_MODE_START,  // set controller into operational mode
-  CYGNUM_CAN_MODE_STANDBY // set controller into standby / sleep mode
+  CYGNUM_CAN_MODE_STANDBY,// set controller into standby / sleep mode
+  CYGNUM_CAN_MODE_CONFIG, // safe mode to add/delete message buffers
+  CYGNUM_CAN_MODE_LISTEN_ONLY_ENTER, // set controller into listen only mode.
+  CYGNUM_CAN_MODE_LISTEN_ONLY_EXIT   // set controller out of listen only mode.
 } cyg_can_mode;
 </PROGRAMLISTING>
  
@@ -1016,13 +1050,35 @@ Set controller into operational mode
 Set controller into standby / sleep mode.
           </para></listitem>
    </varlistentry>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MODE_CONFIG</type></term>
+           <listitem><para>
+Set controller into a mode allowing modifying message buffers.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MODE_LISTEN_ONLY_ENTER</type></term>
+           <listitem><para> Make controller enter listen-only mode (if
+supported by hardware). In such a mode the CAN controller won't
+acknowledge the messages it sees on the bus. This mode can help to
+perform autobaud at application level if the underlying hardware does
+not support it directly. Depending on your CAN transceiver, such a
+mode may also be implemented by the transceiver.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MODE_LISTEN_ONLY_EXIT</type></term>
+           <listitem><para> Make controller exit of listen-only
+mode. The controller will acknowledge all messages it sees on the bus.
+          </para></listitem>
+   </varlistentry>
 </variablelist>
 
 <PARA>
 Before the hardware configuration of the device is changed, that means
 if baud rate is changed or the message buffer and filter configuration
-is changed, the CAN hardware should be set into stop mode and if
-configuration is finished, then device should be set back into
+is changed, the CAN hardware should be set into stop or config mode
+and if configuration is finished, then device should be set back into
 operational mode.  Before the device is set into standby mode, the
 output buffers should be flushed or drained because transmission of a
 CAN message may wake up the CAN hardware. If a received message wakes
@@ -1031,6 +1087,12 @@ a <varname>CYGNUM_CAN_EVENT_LEAVING_STANDBY</varname> event will be
 inserted into receive message buffer or
 the <varname>CYGNUM_CAN_EVENT_LEAVING_STANDBY</varname> flag will be
 set for the message that caused wake up of CAN hardware.
+</PARA>
+
+<PARA>
+You must also check with the CAN controller data sheet if an incoming
+message waking up the controller is fully received and processed by
+the controller, or if such a wake up message is lost.
 </PARA>
 </SECTION> <!-- can-mode-cfg -->
    
@@ -1072,7 +1134,7 @@ CYG_IO_SET_CONFIG_WRITE_BLOCKING
 enable switching between blocking and nonblocking calls separatly for
 read and write calls.  If blocking calls are configured then the
 read/write functions return only if a message was stored into TX
-buffer or a event was received from RX buffer. If non-blocking calls
+buffer or an event was received from RX buffer. If non-blocking calls
 are enabled and there is no space in TX buffer or RX buffer is empty
 then the function returns immediately
 with <varname>-EAGAIN</varname>.
@@ -1103,7 +1165,7 @@ CYG_IO_GET_CONFIG_WRITE_BLOCKING
 <TITLE>Message buffer management</TITLE>
 
 <PARA>
-Full CAN controllers often support more the one message buffer. These
+Full CAN controllers often support more than one message buffer. These
 message buffers are often configurable for transmission or reception
 of certain CAN messages or as a remote buffers.  If a CAN hardware
 supports more than one message buffer then it is possible to configure
@@ -1177,7 +1239,7 @@ CYGNUM_CAN_MSGBUF_REMOTE_BUF_WRITE // stores data into existing remote buffer
    <varlistentry>
        <term><type>CYGNUM_CAN_MSGBUF_RESET_ALL</type></term>
            <listitem><para>
-Clears alle message buffers - no message will be received and all remote buffers are deleted.
+Clears all message buffers - no message will be received and all remote buffers are deleted.
           </para></listitem>
    </varlistentry>
    <varlistentry>
@@ -1437,7 +1499,7 @@ if (ENOERR != cyg_io_set_config(hDrvFlexCAN,
 }
 
 // prepare the message filter
-rx_filter.cfg_id = CYGNUM_CAN_MSGBUF_RX_FILTER_ADD
+rx_filter.cfg_id = CYGNUM_CAN_MSGBUF_RX_FILTER_ADD;
 rx_filter.msg.id  = 0x800;
 rx_filter.msg.ext = CYGNUM_CAN_ID_EXT;
 
@@ -1497,6 +1559,149 @@ if (ENOERR != cyg_io_set_config(hDrvFlexCAN,
 </PROGRAMLISTING> 
 </SECTION> <!-- can-msgfilt-deact -->
 
+<SECTION id="can-id-range-filter">
+<TITLE>Message filtering using identifier ranges</TITLE>
+
+<PARA>
+If the low level driver supports it, you can filter messages using
+identifier ranges. Such filtering is interesting if it is directly
+supported by the CAN controller hardware. Instead of waiting for a
+particular message identifier, the application can define one or more
+ranges of identifiers. If a received message has an identifier value
+(and type) matching a defined identifier range, then the message
+passes the filter and is made available to the application.
+</PARA>
+
+<PARA>
+To add such a filter, use this configuration ID:
+</PARA>
+
+<PROGRAMLISTING>
+CYG_IO_SET_CONFIG_CAN_RANGE_FILTER
+</PROGRAMLISTING>
+
+<PARA>
+The buffer argument given to <function>cyg_io_set_config()</function>
+must point to an area holding the following structure:
+</PARA>
+
+<PROGRAMLISTING>
+typedef struct cyg_can_filter_range_cfg_st
+{
+    cyg_can_id_type        ext;            // type of identifier concerned
+    cyg_uint32             lower_id_bound; // lower bound identifier (included)
+    cyg_uint32             upper_id_bound; // upper bound identifier (included)
+} cyg_can_filter_range_cfg;
+</PROGRAMLISTING>
+
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_can_id_type</type> <varname>ext</varname></term>
+           <listitem><para> Extended ID. If this field
+is <varname>CYGNUM_CAN_ID_EXT</varname> then the next two fields contains
+29 bit extended ID. If <varname>ext</varname>
+contains <varname>CYGNUM_CAN_ID_STD</varname> then the next two fields
+represent 11 bits identifiers.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>lower_id_bound</varname></term>
+           <listitem><para>
+Combined with <varname>upper_id_bound</varname> an identifier range is
+defined. All messages having an identifier of the type defined by
+<varname>ext</varname> and included in the range <varname>lower_id_bound</varname>
+to <varname>upper_id_bound</varname> will pass the filter. The identifiers
+<varname>lower_id_bound</varname> and <varname>upper_id_bound</varname> are
+included in the defined range.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>upper_id_bound</varname></term>
+           <listitem><para>
+Upper identifier value of the defined range.
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+</SECTION> <!-- can-id-range-filter -->
+
+<SECTION id="can-id-mask-filter">
+<TITLE>Message filtering using identifier masks</TITLE>
+
+<PARA>
+If the low level driver supports it, you can filter messages using
+identifier masks. Such filtering is interesting if it is directly
+supported by the CAN controller hardware. Instead of waiting for a
+particular message identifier, the application can define one or more
+pair of identifier and mask. If a received message has an identifier
+value (and type) that, for each bit set of the mask, matches the
+corresponding bit in the provided identifier, then the message passes
+the filter and is made available to the application.
+</PARA>
+
+<PARA>
+To add such a filter, use this configuration ID:
+</PARA>
+
+<PROGRAMLISTING>
+CYG_IO_SET_CONFIG_CAN_MASK_FILTER
+</PROGRAMLISTING>
+
+<PARA>
+The buffer argument given to <function>cyg_io_set_config()</function>
+must point to an area holding the following structure:
+</PARA>
+
+<PROGRAMLISTING>
+typedef struct cyg_can_filter_mask_cfg_st
+{
+    cyg_can_id_type        ext;            // type of identifier concerned
+    cyg_uint32             id;             // identifier to use for filtering
+    cyg_uint32             mask;           // mask to apply for filtering
+} cyg_can_filter_mask_cfg;
+</PROGRAMLISTING>
+
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_can_id_type</type> <varname>ext</varname></term>
+           <listitem><para>
+Extended ID. If this field is <varname>CYGNUM_CAN_ID_EXT</varname> then the
+<structname>id</structname> field contains a 29 bit extended ID. If it
+contains <varname>CYGNUM_CAN_ID_STD</varname> then the ID is 11 bits.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>id</varname></term>
+           <listitem><para>
+Message ID. This is the ID to be matched with an incoming message, after
+having considered the <varname>mask</varname> field.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>mask</varname></term>
+           <listitem><para>
+Mask value. A message will pass the filter if, for each bit set in
+<varname>mask</varname>, the received message ID has its corresponding
+bit equals to the corresponding bit in the <varname>id</varname> field.
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+
+<PARA>
+For instance let's suppose that the <varname>id</varname> field is
+0x05 (bits 0 and 2 are set) and the <varname>mask</varname> field is
+0x07 (bits 0, 1 and 2 are set). If an incoming message has an ID of
+0x01: bit 0 matches since bit 0 is set in the mask and both the
+incoming message and the <varname>id</varname> field have a similar
+value for bit 0. The message ID has its bit 1 set to 0, as
+the <varname>id</varname> field and the mask tells the controller to
+check this bit: it passes too. However the message ID has its bit 2
+unset, while bit 2 of the mask tells the controller to check bit
+2. Bit 2 of the identifier isn't set in the <varname>id</varname>
+field, hence this example message does not pass the filter.
+</PARA>
+
+</SECTION> <!-- can-id-mask-filter -->
+
 <SECTION id="can-event-callback">
 <TITLE>Configuring a callback on events</TITLE>
 
@@ -1527,7 +1732,7 @@ typedef void (*cyg_can_event_cb_t)(cyg_uint16, CYG_ADDRWORD);
 typedef struct cyg_can_callback_cfg_st
 {
     cyg_can_event_cb_t callback_func;   // callback function
-    cyg_uint16  flag_mask;              // flags mask
+    cyg_can_event_flags_t flag_mask;  // flags mask
     CYG_ADDRWORD data;                  // data passed to callback
 } cyg_can_callback_cfg;
 </PROGRAMLISTING>
@@ -1538,7 +1743,7 @@ typedef struct cyg_can_callback_cfg_st
            <listitem><para> 
 Pointer to the callback function. The function will be called from DSR context so
 you should be careful to only call API functions that are safe in DSR
-context.  The First parameter is a combination of event flags for events that have 
+context.  The first parameter is a combination of event flags for events that have
 occurred. Second parameter is a user defined data pointer or value.
           </para></listitem>
    </varlistentry>
@@ -1549,16 +1754,71 @@ Additional user data that will be passed to callback function as a second parame
           </para></listitem>
    </varlistentry>
    <varlistentry>
-       <term><type>cyg_uint16</type> <varname>flag_mask</varname></term>
+       <term><type>cyg_can_event_flags_t</type> <varname>flag_mask</varname></term>
            <listitem><para>
 Should be set with a combination
 of <varname>CYGNUM_CAN_EVENT_*</varname> flags.  If one of these
 events happens, the callback function will be called, with the
 actually event flags passed as a parameter.  To disable the callback
-function from being called set <varname>flag_mask</varname> to 0.
+function from being called set <varname>flag_mask</varname> to 0. To
+set all possible flags use the <varname>CYGNUM_CAN_EVENT_ALL</varname> macro.
           </para></listitem>
    </varlistentry>
 </variablelist>
+
+<PARA>
+Instead of using a thread dedicated to reading CAN events, it is
+possible, if the CAN controller I/O handle was set in non-blocking
+mode for read operations, to have the callback function to read each
+event it is waiting for. However the callback function runs in DSR
+mode, so it must be carefully written to avoid any blocking call.
+</PARA>
+
+<PARA>
+If you plan to have the callback function to perform read operations,
+be aware that <function>cyg_io_read()</function> retrieves events of
+all kinds while the callback function is triggered only on events it
+is expecting, as defined by the <varname>flag_mask</varname>
+field. The side effect is that the callback function, if it is not
+waiting for all events, may see its first parameter (the flag(s)
+describing why the callback function is called) different from an
+event it get from <function>cyg_io_read()</function>.
+</PARA>
+
+<PARA>
+For instance, let's suppose the callback function is expecting
+only <varname>CYGNUM_CAN_EVENT_RX</varname> events while the bus
+activity triggers other kind of events, like
+the <varname>CYGNUM_CAN_EVENT_WARNING_RX</varname> event. It is
+possible to have in the receive queue a first event of
+type <varname>CYGNUM_CAN_EVENT_WARNING_RX</varname> followed by a
+second event of type <varname>CYGNUM_CAN_EVENT_RX</varname>. In that
+case, the callback function is triggered and have its first parameter
+set to <varname>CYGNUM_CAN_EVENT_RX</varname> exactly
+when <varname>CYGNUM_CAN_EVENT_RX</varname> occurs, but if the
+callback function reads the event queue, it will first get
+the <varname>CYGNUM_CAN_EVENT_WARNING_RX</varname> event.
+</PARA>
+
+<PARA>
+If the callback function is set to process all kind of events and
+always call <function>cyg_io_read()</function> to get each event, it
+is possible to have a receive queue size of one event.
+</PARA>
+
+<PARA>
+If the CAN controller does not provide message timestamps of its own,
+or if the provided timestamps do not match your needs, the callback
+function mechanism can be helpful since it is called from the DSR
+processing the hardware related events. The callback function can
+manage timestamps in the way that suits you the best however there is
+a slight delay between an event related to the CAN bus activity occurs
+and the time the callback function runs. If you implement your own
+timestamps this way, pay also attention to what gives you the current
+time. For instance the granularity
+of <function>cyg_current_time()</function> may not be accurate enough,
+according to the clock resolution and your needs of accuracy.
+</PARA>
 
 </SECTION> <!-- can-event-callback -->
 
@@ -1951,24 +2211,30 @@ void (*can_init)(can_channel *chan)
 <PARA>This function is used to initialize the CAN channel.</PARA>
 
 <PROGRAMLISTING>
-void (*xmt_msg)(can_channel *chan, void *pdata)
+cyg_bool (*xmt_msg)(can_channel *chan, void *pdata)
 </PROGRAMLISTING>
 
 <PARA>
 This function would be called from an interrupt handler after a
 transmit interrupt indicating that additional messages may be
 sent. The upper driver will call the <function>putmsg</function>
-function as appropriate to send more data to the device.
+function as appropriate to send more data to the
+device. <function>xmt_msg()</function> returns <literal>true</literal>
+if a message has been provided to the low level
+driver, <literal>false</literal> otherwise.
 </PARA>
 
 <PROGRAMLISTING>
-void (*rcv_event)(can_channel *chan, void *pdata)
+cyg_bool (*rcv_event)(can_channel *chan, void *pdata)
 </PROGRAMLISTING>
 
 <PARA>
-This function is used to tell the driver that a message has arrived
-at the interface or that an event has occurred. This function is typically 
-called from the interrupt handler. 
+This function is used to tell the driver that a message has arrived at
+the interface or that an event has occurred. This function is
+typically called from the interrupt
+handler. <function>rcv_event()</function>
+returns <literal>true</literal> if an event has been provided by the
+low level driver, <literal>false</literal> otherwise.
 </PARA>
 </SECTION><!-- Callbacks -->
 
