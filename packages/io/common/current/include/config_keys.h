@@ -150,6 +150,8 @@
 #define CYG_IO_SET_CONFIG_CAN_MODE                  0x0887
 #define CYG_IO_SET_CONFIG_CAN_ABORT                 0x0888
 #define CYG_IO_SET_CONFIG_CAN_CALLBACK              0x0889
+#define CYG_IO_SET_CONFIG_CAN_RANGE_FILTER          0x088A
+#define CYG_IO_SET_CONFIG_CAN_MASK_FILTER           0x088B
 
 // ======== 0x900 ADC ========================================================
 // Get/Set configuration 'key' values for ADC I/O
