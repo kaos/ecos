@@ -1,3 +1,9 @@
+2012-01-25  Bernard Fouché <bernard.fouche@kuantic.com>
+
+	* src/can_at91sam7.c: CYGNUM_CAN_EVENT_OVERRUN_RX_HW instead of
+	CYGNUM_CAN_EVENT_OVERRUN_RX. CYGNUM_CAN_MODE_LISTEN_ONLY_ENTER &
+	CYGNUM_CAN_MODE_LISTEN_ONLY_EXIT return -EINVAL. [ Bugzilla 1001453 ]
+
 2007-03-23  Uwe Kindler  <uwe_kindler@web.de>
 
 	* AT91SAM7 CAN driver package created

@@ -947,6 +947,8 @@ static Cyg_ErrNo at91sam7_can_set_config(can_channel *chan, cyg_uint32 key, cons
                     case CYGNUM_CAN_MODE_START :   at91sam7_start_module(chan);        break;                       
                     case CYGNUM_CAN_MODE_STANDBY : at91sam7_enter_lowpower_mode(chan); break;
                     case CYGNUM_CAN_MODE_CONFIG :  at91sam7_enter_lowpower_mode(chan); break;
+                    case CYGNUM_CAN_MODE_LISTEN_ONLY_ENTER: return -EINVAL;
+                    case CYGNUM_CAN_MODE_LISTEN_ONLY_EXIT: return -EINVAL;
                 }
              }
              break; // case CYG_IO_SET_CONFIG_CAN_MODE :         
@@ -1132,7 +1134,7 @@ static bool at91sam7_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, vo
             pevent->flags |= CYGNUM_CAN_EVENT_RX; 
             if (msr & MSR_MSG_IGNORED)
             {
-                pevent->flags |= CYGNUM_CAN_EVENT_OVERRUN_RX;
+                pevent->flags |= CYGNUM_CAN_EVENT_OVERRUN_RX_HW;
             }
             
             //
