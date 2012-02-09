@@ -1224,6 +1224,10 @@ flexcan_set_config(can_channel *chan, cyg_uint32 key, const void* buf, cyg_uint3
                     case CYGNUM_CAN_MODE_CONFIG : // stop FlexCAN modul for configuration
                     	 flexcan_stop_chip(chan);
                     	 break;
+
+                    case CYGNUM_CAN_MODE_LISTEN_ONLY_ENTER:
+                    case CYGNUM_CAN_MODE_LISTEN_ONLY_EXIT:
+                    	return -EINVAL;
                 }
              }
              break; // case CYG_IO_SET_CONFIG_CAN_MODE :         
@@ -1329,7 +1333,7 @@ static bool flexcan_is_no_self_tx(cyg_can_event *pevent, flexcan_info *info, fle
         //
         if ((pmbox->ctrlstat_shadow & MBOX_RXCODE_OVERRUN) == MBOX_RXCODE_OVERRUN)
         {
-            pevent->flags |= CYGNUM_CAN_EVENT_OVERRUN_RX;
+            pevent->flags |= CYGNUM_CAN_EVENT_OVERRUN_RX_HW;
         }
 
         return true;
