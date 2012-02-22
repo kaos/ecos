@@ -37,7 +37,6 @@
 
 #include <lwip.h>
 #include <lwip/sockets.h>
-#include <stdio.h>
 
 #ifdef CYGFUN_LWIP_MODE_SEQUENTIAL
 #if LWIP_SOCKET
@@ -57,28 +56,26 @@
 
 #include "nc_test_framework.h"
 
-#define MAIN_STACK_SIZE          (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
-#define LOAD_STACK_SIZE          (2048)
-#define IDLE_STACK_SIZE          (4096)
-#define TMAIN_STACK_SIZE         (2048)
+
+#define STACK_SIZE               (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 #define MAX_LOAD_THREAD_LEVEL    20
 #define MIN_LOAD_THREAD_LEVEL    0
-#define NUM_LOAD_THREADS         5  // NC Master requires up to 50% load.
-#define CYGPKG_NET_THREAD_PRIORITY CYGNUM_LWIP_THREAD_TCPIP_PRIORITY
+#define NUM_LOAD_THREADS         10
+#define CYGPKG_NET_THREAD_PRIORITY 7
 #define IDLE_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY+3
 #define LOAD_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY-1
 #define MAIN_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY-2
 #define DESIRED_BACKGROUND_LOAD  20
 
-static char         main_thread_stack[MAIN_STACK_SIZE];
-static char         idle_thread_stack[IDLE_STACK_SIZE];
+static char         main_thread_stack[STACK_SIZE];
+static char         idle_thread_stack[STACK_SIZE];
 static cyg_thread   idle_thread_data;
 static cyg_handle_t idle_thread_handle;
 static cyg_sem_t    idle_thread_sem;
-volatile static long long idle_thread_count;
+volatile static long long    idle_thread_count;
 static cyg_tick_count_t idle_thread_start_time;
 static cyg_tick_count_t idle_thread_stop_time;
-static char         load_thread_stack[NUM_LOAD_THREADS][LOAD_STACK_SIZE];
+static char         load_thread_stack[NUM_LOAD_THREADS][STACK_SIZE];
 static cyg_thread   load_thread_data[NUM_LOAD_THREADS];
 static cyg_handle_t load_thread_handle[NUM_LOAD_THREADS];
 static cyg_sem_t    load_thread_sem[NUM_LOAD_THREADS];
@@ -93,7 +90,7 @@ static void do_some_random_computation(int p);
 extern void show_net_times(void);
 #endif
 
-#define MAX_BUF (8192+4096)
+#define MAX_BUF 8192
 static unsigned char in_buf[MAX_BUF], out_buf[MAX_BUF];
 
 extern void
@@ -699,7 +696,7 @@ net_idle(cyg_addrword_t param)
     }
 }
 
-static char stack[TMAIN_STACK_SIZE];
+static char stack[STACK_SIZE];
 static cyg_thread thread_data;
 static cyg_handle_t thread_handle;
 
@@ -707,7 +704,7 @@ void
 tmain(cyg_addrword_t p)
 {
     cyg_lwip_sequential_init();
-    cyg_lwip_thread_new("main", net_test, NULL, main_thread_stack, MAIN_STACK_SIZE, MAIN_THREAD_PRIORITY);
+    cyg_lwip_thread_new("main", net_test, NULL, main_thread_stack, STACK_SIZE, MAIN_THREAD_PRIORITY);
 }
 
 externC void
@@ -724,7 +721,7 @@ cyg_start( void )
                       0,                        // entry parameter
                       "Network idle",           // Name
                       &idle_thread_stack[0],    // Stack
-                      IDLE_STACK_SIZE,          // Size
+                      STACK_SIZE,               // Size
                       &idle_thread_handle,      // Handle
                       &idle_thread_data         // Thread data structure
     );
@@ -738,7 +735,7 @@ cyg_start( void )
                           i,                        // entry parameter
                           "Background load",        // Name
                           &load_thread_stack[i][0], // Stack
-                          LOAD_STACK_SIZE,          // Size
+                          STACK_SIZE,               // Size
                           &load_thread_handle[i],   // Handle
                           &load_thread_data[i]      // Thread data structure
         );
@@ -751,7 +748,7 @@ cyg_start( void )
                       0,                        // entry parameter
                       "socket echo test",       // Name
                       &stack[0],                // Stack
-                      TMAIN_STACK_SIZE,         // Size
+                      STACK_SIZE,               // Size
                       &thread_handle,           // Handle
                       &thread_data              // Thread data structure
             );
