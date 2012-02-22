@@ -59,12 +59,19 @@ cdl_package CYGPKG_DEVS_FLASH_SPI_SST25XX {
     implements    CYGHWR_IO_FLASH_INDIRECT_READS
 
     include_dir   cyg/io
-    compile       sst25xx.c
+    compile       -library=libextras.a sst25xx.c
 
     description   "
         Flash memory support for the Silicon Storage Technology SST25xx
         SPI flash devices and compatibles.  This driver implements the
         V2 flash driver API"
+
+    cdl_interface CYGHWR_DEVS_FLASH_SPI_SST25XX_DEVICE {
+        display     "Hardware SST25xx FLASH device drivers"
+        description "
+            This calculated option gives the number of SST25xx flash
+            devices on the current platform."
+    }
 
     cdl_option CYGPKG_DEVS_FLASH_SPI_SST25XX_SUPPORT_JEDECID {
         display       "Device supports JEDEC ID"
@@ -120,6 +127,18 @@ cdl_package CYGPKG_DEVS_FLASH_SPI_SST25XX {
             reading back data.  Read requests for areas larger than
             this block size will automatically be split into a series
             of smaller SPI bus transactions."
+    }
+    
+    cdl_component CYGPKG_DEVS_FLASH_SPI_SST25XX_TESTS {
+        display         "SST25xx tests"
+        flavor          data
+        active_if      CYGPKG_KERNEL
+        active_if      CYGPKG_IO_SPI
+        active_if       { CYGHWR_DEVS_FLASH_SPI_SST25XX_DEVICE >= 1 }
+        no_define
+        calculated      { "tests/flash_sst25xx_test.c" }
+        description     "
+            This option specifies the set of tests for sst25 driver."
     }
 }
 

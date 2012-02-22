@@ -1,3 +1,10 @@
+2012-02-06  Ilija Kocho  <ilijak@siva.com.mk>
+
+    * cdl/flash_sst25xx.cdl
+    * src/sst25xx.c:
+    * tests/flash_sst25xx_test.c: New file
+    Added tests  [Bugzilla 1001450]
+
 2011-04-13  Christophe Coutand  <ecos@hotmail.co.uk>
 
 	* cdl/sst25xx.cdl:

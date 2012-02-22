@@ -51,6 +51,10 @@
 //
 //=============================================================================
 
+#include <cyg/hal/hal_io.h>
+#include <cyg/hal/hal_intr.h>
+#include <cyg/hal/hal_diag.h>
+
 #include <cyg/io/spi.h>
 #include <cyg/io/flash.h>
 #include <cyg/io/flash_dev.h>
