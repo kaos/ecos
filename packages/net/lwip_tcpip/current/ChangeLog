@@ -1,3 +1,10 @@
+2011-08-23  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* tests/nc_test_slave.c: Reduced stack sizes of IDLE, LOAD and TMAIN
+	threads as well as NUM_LOAD_THREADS to 5 (was 10) in order to fit the
+	test for targets with as low as 128KiB RAM.
+	[ Bugzilla 1001344 ]
+
 2011-08-25  John Dallaway  <john@dallaway.org.uk>
 
 	* include/lwipopts.h: Fix naming of

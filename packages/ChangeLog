@@ -1,3 +1,8 @@
+2012-02-22  Ilija Kocho  <ilijak@siva.com.mk>
+
+    ecos.db: Add TWR-K60N512-FXM, Freescale DSPI driver,
+    Freescale EDMA library, Micron CellularRAM support.
+
 2011-10-30  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* NEWS, ecos.db: Add Freescale Kinetis variant HAL, board support

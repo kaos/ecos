@@ -284,6 +284,16 @@ package CYGPKG_DEVS_FLASH_SPI_SST25XX {
         Technology."
 }
 
+package CYGPKG_DEVS_FLASH_SST25XX_FREESCALE_DSPI {
+    alias         { "SST25XX FLASH over Freescale DSPI" }
+
+    directory     devs/flash/freescale/dspi/sst25xx
+    script        flash_sst25xx_freescale_dspi.cdl
+    description   "
+        This package provides a driver for SST25XX serial FLASH
+        attached to a Freescale DSPI interfaces."
+}
+
 package CYGPKG_DEVS_FLASH_ARM_PID {
 	alias 		{ "Support for flash memory on ARM/PID board" flash_arm_pid }
 	directory	devs/flash/arm/pid
@@ -932,6 +942,16 @@ package CYGPKG_DEVS_FLASH_ARM_OLPCX2294_V2 {
             The flash_olpcx2294_v2 provides hardware support for external
             flash memory parts on the Olimex LPC-E2294, LPC-H2294,
             and LPC-L2294-1M boards. It uses eCos Flash v2 API."
+}
+
+package CYGPKG_DEVS_RAM_MICRON_CELLULARRAM {
+	alias		{ "Micron CellularRam 1.5 support" }
+	directory	hal/misc/ram/micron/cellularram
+	script		ram_micron_cellularram.cdl
+	hardware
+        description "
+           This package contains hardware support for Micron
+           CellularRam memory devices."
 }
 
 package CYGPKG_DEVS_TOUCH_IPAQ {
@@ -2430,6 +2450,15 @@ package CYGPKG_DEVS_SPI_ARM_LPC2XXX {
     script        spi_lpc2xxx.cdl
     description "This package provides a driver for the SPI unit of the LPC2xxx
                  controller family."
+}
+
+package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
+    alias         { "Freescale DSPI driver" }
+    hardware
+    directory     devs/spi/freescale/dspi
+    script        spi_freescale_dspi.cdl
+    description   "
+        This package provides a driver for the Freescale DSPI interfaces."
 }
 
 package CYGPKG_IO_SPI {
@@ -6843,6 +6872,16 @@ package CYGPKG_DEVS_DISK_MMC {
     description "Disk driver for MMC cards"
 }
 
+package CYGPKG_DEVS_DISK_MMC_FREESCALE_DSPI {
+    alias         { "MMC/SD disk over Freescale DSPI" }
+    hardware
+    directory     devs/disk/spi/freescale/dspi/mmc
+    script        disk_mmc_freescale_dspi.cdl
+    description   "
+        This package provides a driver for MMC/SD disk attached to a
+        Freescale DSPI interface."
+}
+
 package CYGPKG_IO_DISK {
     alias           { "Disk device drivers" disk io_disk }
     directory       io/disk
@@ -7105,6 +7144,16 @@ target lpc1766stk {
             to run eCos on the Olimex LPC-1766-STK board."
 }
 
+package CYGPKG_HAL_FREESCALE_EDMA {
+    alias         { "Freescale eDMA driver" }
+    hardware
+    directory     hal/misc/freescale/edma
+    script        hal_freescale_edma.cdl
+    description   "
+        This package provides a library for the Freescale eDMA (Enhanced DMA)
+        controller."
+}
+
 package CYGPKG_HAL_CORTEXM_KINETIS {
 	alias		{ "Freescale Kinetis variant HAL" hal_cortexm_kinetis }
 	directory	hal/cortexm/kinetis/var
@@ -7136,16 +7185,31 @@ package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K40X256 {
         eCos on the Freescale Tower development system."
 }
 
+package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512_FXM {
+	alias		{ "Freescale TWR-K60N512-FXM HAL" hal_cortexm_twr_k60n512_fxm }
+	directory	hal/cortexm/kinetis/twr_k60n512_fxm
+	script		hal_cortexm_kinetis_twr_k60n512_fxm.cdl
+	hardware
+        description "
+        The TWR-K60N512-FXM HAL package provides the support needed to run
+        eCos on the Freescale Tower development system equpped with TWR-FXM module."
+}
+
 target freescale_twr_k60n512 {
         alias { "Freescale Kinetis TWR-K60N512" twr_k60n512 }
         packages { CYGPKG_HAL_CORTEXM
                    CYGPKG_HAL_CORTEXM_KINETIS
                    CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512
+                   CYGPKG_HAL_FREESCALE_EDMA
                    CYGPKG_IO_SERIAL_FREESCALE_UART_HDR
                    CYGPKG_IO_SERIAL_FREESCALE_UART
                    CYGPKG_DEVICES_WALLCLOCK_KINETIS_RTC
                    CYGPKG_DEVS_ETH_PHY
                    CYGPKG_DEVS_ETH_FREESCALE_ENET
+                   CYGPKG_IO_SPI
+                   CYGPKG_DEVS_SPI_FREESCALE_DSPI
+                   CYGPKG_DEVS_DISK_MMC
+                   CYGPKG_DEVS_DISK_MMC_FREESCALE_DSPI
                  }
         description "The freescale_twr_k60n512 target provides the packages needed
         to run eCos on the Freescale TWR-K60N512 development system."
@@ -7156,12 +7220,42 @@ target freescale_twr_k40x256 {
         packages { CYGPKG_HAL_CORTEXM
                    CYGPKG_HAL_CORTEXM_KINETIS
                    CYGPKG_HAL_CORTEXM_KINETIS_TWR_K40X256
+                   CYGPKG_HAL_FREESCALE_EDMA
                    CYGPKG_IO_SERIAL_FREESCALE_UART_HDR
                    CYGPKG_IO_SERIAL_FREESCALE_UART
                    CYGPKG_DEVICES_WALLCLOCK_KINETIS_RTC
+                   CYGPKG_IO_SPI
+                   CYGPKG_DEVS_SPI_FREESCALE_DSPI
+                   CYGPKG_DEVS_DISK_MMC
+                   CYGPKG_DEVS_DISK_MMC_FREESCALE_DSPI
                  }
         description "The freescale_twr_k40x256 target provides the packages needed
         to run eCos on the Freescale TWR-K40X256 development system."
+}
+
+target freescale_twr_k60n512_fxm {
+        alias { "Freescale Kinetis TWR-K60N512-FXM" twr_k60n512_fxm }
+        packages { CYGPKG_HAL_CORTEXM
+                   CYGPKG_HAL_CORTEXM_KINETIS
+                   CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512_FXM
+                   CYGPKG_HAL_FREESCALE_EDMA
+                   CYGPKG_IO_SERIAL_FREESCALE_UART_HDR
+                   CYGPKG_IO_SERIAL_FREESCALE_UART
+                   CYGPKG_DEVICES_WALLCLOCK_KINETIS_RTC
+                   CYGPKG_DEVS_ETH_PHY
+                   CYGPKG_DEVS_ETH_FREESCALE_ENET
+                   CYGPKG_DEVS_RAM_MICRON_CELLULARRAM
+                   CYGPKG_IO_SPI
+                   CYGPKG_DEVS_SPI_FREESCALE_DSPI
+                   CYGPKG_DEVS_DISK_MMC
+                   CYGPKG_DEVS_DISK_MMC_FREESCALE_DSPI
+                   CYGPKG_DEVS_FLASH_SPI_SST25XX
+                   CYGPKG_DEVS_FLASH_SST25XX_FREESCALE_DSPI
+                 }
+        description "
+            The freescale_twr_k60n512_fxm target provides the packages needed
+            to run eCos on the Freescale TWR-K60N512 development system
+            equipped with TWR-FXM external memory module."
 }
 
 # ==========================================================================
