@@ -127,7 +127,7 @@ cdl_package CYGPKG_IO_SERIAL_FREESCALE_UART {
             cdl_option CYGNUM_IO_SERIAL_FREESCALE_UART[set ::channel]_INT_PRIORITY {
                 display      "Freescale UART port [set ::channel] interrupt priority"
                 flavor       data
-                default_value 0x80
+                default_value CYGNUM_IO_SERIAL_FREESCALE_UART[set ::channel]_INT_PRIORITY_SP
                 description   "
                     This option selects the interupt priority for the
                     UART [set ::channel] interrupts."

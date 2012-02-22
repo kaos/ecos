@@ -1,3 +1,8 @@
+2012-02-07  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/ser_freescale_uart.cdl:
+	Add consolidated Interrupt Priority Scheme [Bugzilla 1001450]
+	
 2011-03-26  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/ser_freescale_uart.cdl:
