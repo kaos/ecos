@@ -1,0 +1,272 @@
+//===========================================================================
+//
+//      hal_freescale_edma.c
+//
+//      Freescale eDMA support library
+//
+//===========================================================================
+// ####ECOSGPLCOPYRIGHTBEGIN####                                            
+// -------------------------------------------                              
+// This file is part of eCos, the Embedded Configurable Operating System.   
+// Copyright (C) 2011 Free Software Foundation, Inc.                        
+//
+// eCos is free software; you can redistribute it and/or modify it under    
+// the terms of the GNU General Public License as published by the Free     
+// Software Foundation; either version 2 or (at your option) any later      
+// version.                                                                 
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT      
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+// for more details.                                                        
+//
+// You should have received a copy of the GNU General Public License        
+// along with eCos; if not, write to the Free Software Foundation, Inc.,    
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+//
+// As a special exception, if other files instantiate templates or use      
+// macros or inline functions from this file, or you compile this file      
+// and link it with other works to produce a work based on this file,       
+// this file does not by itself cause the resulting work to be covered by   
+// the GNU General Public License. However the source code for this file    
+// must still be made available in accordance with section (3) of the GNU   
+// General Public License v2.                                               
+//
+// This exception does not invalidate any other reasons why a work based    
+// on this file might be covered by the GNU General Public License.         
+// -------------------------------------------                              
+// ####ECOSGPLCOPYRIGHTEND####                                              
+//===========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):     Ilija Kocho <ilijak@siva.com.mk>
+// Date:          2011-11-04
+// Purpose:       Freescale eDMA specific functions
+// Description:
+//
+//####DESCRIPTIONEND####
+//
+//===========================================================================
+
+#include <pkgconf/hal.h>
+#include <pkgconf/hal_freescale_edma.h>
+#ifdef CYGPKG_KERNEL
+#include <pkgconf/kernel.h>
+#endif
+
+#include <cyg/infra/diag.h>
+#include <cyg/infra/cyg_type.h>
+#include <cyg/infra/cyg_trac.h>         // tracing macros
+#include <cyg/infra/cyg_ass.h>          // assertion macros
+
+#include <cyg/hal/hal_arch.h>           // HAL header
+#include <cyg/hal/hal_intr.h>           // HAL header
+#include <cyg/hal/hal_if.h>             // HAL header
+#include <cyg/hal/freescale_edma.h>     // Freescale eDMA defs
+
+// Channel priority register index
+const cyg_uint8 const PRICHAN_I[CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM] =
+{
+    FREESCALE_DMA_PRI_CH0,  FREESCALE_DMA_PRI_CH1,
+    FREESCALE_DMA_PRI_CH2,  FREESCALE_DMA_PRI_CH3,
+    FREESCALE_DMA_PRI_CH4,  FREESCALE_DMA_PRI_CH5,
+    FREESCALE_DMA_PRI_CH6,  FREESCALE_DMA_PRI_CH7,
+    FREESCALE_DMA_PRI_CH8,  FREESCALE_DMA_PRI_CH9,
+    FREESCALE_DMA_PRI_CH10, FREESCALE_DMA_PRI_CH11,
+    FREESCALE_DMA_PRI_CH12, FREESCALE_DMA_PRI_CH13,
+    FREESCALE_DMA_PRI_CH14, FREESCALE_DMA_PRI_CH15
+};
+
+// Find an eDMA channel with given priority
+volatile cyg_uint8*
+hal_freescale_edma_find_chan_with_pri(cyghwr_hal_freescale_edma_t *edma_p,
+                                 cyg_uint8 pri)
+{
+    volatile cyg_uint8 *chan_p;
+
+    for(chan_p = &edma_p->dchpri[0];
+        chan_p < &edma_p->dchpri[CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM];
+        chan_p++)
+    {
+        if(*chan_p == pri) break;
+    }
+    if(chan_p >= &edma_p->dchpri[CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM])
+        chan_p = NULL;
+    return chan_p;
+}
+
+// Initialize an eDMA channel
+// If DMA prority change is required than old priority is assigned to the channel
+// that before this call had requested priority.
+void
+hal_freescale_edma_init_1chan(
+                           cyghwr_hal_freescale_edma_t *edma_p,
+                           cyghwr_hal_freescale_dmamux_t *dmamux_p,
+                           const cyghwr_hal_freescale_dma_chan_set_t *chan_p)
+{
+    cyg_uint8 oldprio;
+    volatile cyg_uint8 *prev_ch_reqprio_p; // Previous chan with req. prio.
+    volatile cyg_uint8 *chcfg_p = &dmamux_p->chcfg[chan_p->dma_chan_i];
+
+    edma_p->cerq = chan_p->dma_chan_i;
+
+    if(chan_p->dma_src & FREESCALE_DMAMUX_CHCFG_SOURCE_M) {
+        *chcfg_p = chan_p->dma_src;
+    } else if(!(chan_p->dma_src & FREESCALE_DMAMUX_CHCFG_ASIS)) {
+        *chcfg_p = 0;
+    }
+
+    if((chan_p->dma_prio != FREESCALE_EDMA_DCHPRI_ASIS) &&
+       (edma_p->dchpri[PRICHAN_I[chan_p->dma_chan_i]] != chan_p->dma_prio))
+    {
+        if((prev_ch_reqprio_p =
+            hal_freescale_edma_find_chan_with_pri(edma_p, chan_p->dma_prio)))
+        {
+            oldprio = edma_p->dchpri[PRICHAN_I[chan_p->dma_chan_i]];
+            edma_p->dchpri[PRICHAN_I[chan_p->dma_chan_i]] = chan_p->dma_prio;
+            *prev_ch_reqprio_p = oldprio;
+        }
+    }
+}
+
+
+// Init DMA controller
+
+const cyg_uint32 FREESCALE_EDMA_CR_INI = 0
+#ifdef CYGOPT_HAL_FREESCALE_EDMA_EMLM
+       | FREESCALE_EDMA_CR_EMLM_M
+#endif
+#ifdef CYGOPT_HAL_FREESCALE_EDMA_CLM
+       | FREESCALE_EDMA_CR_CLM_M
+#endif
+#ifdef CYGOPT_HAL_FREESCALE_EDMA_ERCA
+       | FREESCALE_EDMA_CR_ERCA_M
+#endif
+      ;
+
+void
+hal_freescale_edma_init(cyghwr_hal_freescale_edma_t *edma_p)
+{
+    edma_p->cr |= FREESCALE_EDMA_CR_INI;
+}
+
+// Initialize a set of DMA channels
+void
+hal_freescale_edma_init_chanset(cyghwr_hal_freescale_dma_set_t *inidat_p)
+{
+    cyghwr_hal_freescale_edma_t *edma_p;
+    cyghwr_hal_freescale_dmamux_t *dmamux_p;
+    const cyghwr_hal_freescale_dma_chan_set_t *chan_p;
+
+    edma_p = inidat_p->edma_p;
+
+    hal_freescale_edma_init(edma_p);
+
+    dmamux_p = inidat_p->dmamux_p;
+    for(chan_p = inidat_p->chan_p;
+        chan_p < inidat_p->chan_p + inidat_p->chan_n;
+        chan_p++)
+    {
+        hal_freescale_edma_init_1chan(edma_p, dmamux_p, chan_p);
+    }
+    edma_p->es = 0;
+}
+
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > 16
+#define DMA_CHANMASK_FORMAT "0x%08x"
+#else
+#define DMA_CHANMASK_FORMAT "0x%04x"
+#endif
+
+#define EDMA_DIAG_PRINTF_FORMAT(__mf) "CR=0x%08x ES=0x%08x ERQ=" __mf \
+        " INT=" __mf " ERR=" __mf " HRS=" __mf "\n"
+
+// Display DMA configuration
+void
+hal_freescale_edma_diag(cyghwr_hal_freescale_dma_set_t *inidat_p, cyg_uint32 mask)
+{
+    cyghwr_hal_freescale_edma_t *edma_p;
+    cyghwr_hal_freescale_dmamux_t *dmamux_p;
+    const cyghwr_hal_freescale_dma_chan_set_t *chan_p;
+    cyg_uint8 chan_i;
+    cyg_uint32 chan_p_i;
+
+    edma_p = inidat_p->edma_p;
+    dmamux_p = inidat_p->dmamux_p;
+    diag_printf("DMAMUX: %p DMA: %p\n", dmamux_p, edma_p);
+    diag_printf(EDMA_DIAG_PRINTF_FORMAT(DMA_CHANMASK_FORMAT),
+                edma_p->cr, edma_p->es,
+                edma_p->erq, edma_p->irq, edma_p->err, edma_p->hrs);
+
+    for(chan_i = 0; chan_i < CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM; chan_i++){
+        if(mask & 0x1){
+            diag_printf("Chan %2d: CHCFG=0x%02x (%2d) DCHPRI=0x%02x", chan_i,
+                        dmamux_p->chcfg[chan_i],
+                        FREESCALE_DMAMUX_CHCFG_SOURCE(dmamux_p->chcfg[chan_i]),
+                        edma_p->dchpri[PRICHAN_I[chan_i]]);
+            chan_p = inidat_p->chan_p;
+            for(chan_p_i = 0; chan_p_i < inidat_p->chan_n; chan_p_i++){
+                if(chan_p->dma_chan_i == chan_i){
+                    diag_printf(" ISR_NUM=%2d[0x%02x] ISR_PRI=%3d[0x%02x]",
+                                chan_p->isr_num, chan_p->isr_num,
+                                chan_p->isr_prio, chan_p->isr_prio);
+                }
+                chan_p++;
+            }
+            diag_printf("\n");
+        }
+        mask >>= 1;
+    }
+}
+
+// Initialize eDMA channel TCD
+void
+hal_freescale_edma_transfer_init(cyghwr_hal_freescale_edma_t *edma_p,
+                                 cyg_uint8 chan_i,
+                                 const cyghwr_hal_freescale_edma_tcd_t *tcd_cfg_p)
+{
+    HAL_DMA_TRANSFER_CLEAR(edma_p, chan_i);
+    edma_p->tcd[chan_i] = *tcd_cfg_p;
+}
+
+// Show eDMA TCD
+void hal_freescale_edma_tcd_diag(cyghwr_hal_freescale_edma_tcd_t *tcd_p, cyg_int32 chan_i, const char *prefix)
+{
+    if(chan_i < 0) {
+        diag_printf("TCD %p chan %s:\n", tcd_p, prefix);
+        prefix = "";
+    } else {
+        diag_printf("%sTCD %p chan %d:\n", "", tcd_p, chan_i);
+    }
+
+        diag_printf("%s    saddr=%p soff=0x%04x, attr=0x%04x\n", prefix,
+                    tcd_p->saddr, tcd_p->soff, tcd_p->attr);
+        diag_printf("%s    daddr=%p doff=0x%04x\n", prefix,
+                    tcd_p->daddr, tcd_p->doff);
+        diag_printf("%s    nbytes=%d [0x%08x], slast=%d [0x%08x]\n", prefix,
+                    tcd_p->nbytes.mlno, tcd_p->nbytes.mlno,
+                    tcd_p->slast, tcd_p->slast);
+        diag_printf("%s    %s=%d [%p]\n", prefix,
+                    (tcd_p->csr & FREESCALE_EDMA_CSR_ESG_M) ? "sga" : "dlast",
+                    tcd_p->dlast, tcd_p->sga);
+        diag_printf("%s    biter = %d, citer = %d\n", prefix,
+                    tcd_p->biter.elinkno, tcd_p->citer.elinkno);
+        diag_printf("%s    CSR=0x%04x\n", prefix, tcd_p->csr);
+}
+
+// Show eDMA TCD set
+void hal_freescale_edma_transfer_diag(cyghwr_hal_freescale_edma_t
+                                      *edma_p, cyg_uint8 chan_i, cyg_bool recurse)
+{
+    cyghwr_hal_freescale_edma_tcd_t *tcd_p;
+    const char *prefix = "";
+
+    for(tcd_p = &edma_p->tcd[chan_i]; tcd_p; tcd_p = tcd_p->sga){
+        hal_freescale_edma_tcd_diag(tcd_p, chan_i, prefix);
+        if(!(recurse && (tcd_p->csr & FREESCALE_EDMA_CSR_ESG_M)))
+            break;
+        prefix = "  ";
+    }
+}
+
+// end of freescale_dma.h
