@@ -87,7 +87,7 @@ cdl_package CYGPKG_DEVS_ETH_FREESCALE_ENET {
     cdl_option CYGPKG_DEVS_ETH_FREESCALE_ENET0_INTPRIO {
         display       "Interrupt priority"
         flavor        data
-        default_value 0xE0
+        default_value CYGNUM_DEVS_ETH_FREESCALE_ENET0_INTPRIO_SP
         description   "
             This option selects the interrupt priority for the EMAC
             interrupts."
@@ -256,8 +256,8 @@ cdl_package CYGPKG_DEVS_ETH_FREESCALE_ENET {
 
     cdl_component CYGSEM_DEVS_ETH_FREESCALE_ENET_ACCEL {
         display "TCP/IP acceleration"
-        flavor bool
-        default_value { is_active (CYGPKG_LWIP_CHECKSUMS) ? 1 : 0 }
+        flavor none
+        no_define
         description "
             Freescale ENET provides for hardware TCP/IP header checksum
             generation and check."
@@ -389,6 +389,44 @@ cdl_package CYGPKG_DEVS_ETH_FREESCALE_ENET {
             problems disable fast IRQ mask."
     }
 
+    cdl_component CYGPKG_DEVS_ETH_FREESCALE_ENET_REDBOOT_HOLDS_ESA {
+        display         "RedBoot manages ESA initialization data"
+        flavor          bool
+        default_value   0
+
+        active_if     CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+        active_if     (CYGPKG_REDBOOT || CYGSEM_HAL_USE_ROM_MONITOR)
+
+        description   "
+            Enabling this option will allow the ethernet station
+            address to be acquired from RedBoot's configuration data,
+            stored in flash memory.  It can be overridden individually
+            by the 'Set the ethernet station address' option for each
+            interface."
+
+
+        cdl_component CYGPKG_DEVS_ETH_FREESCALE_ENET_REDBOOT_HOLDS_ESA_VARS {
+            display        "Export RedBoot command to set ESA in FLASH config"
+            flavor         none
+            no_define
+            description "
+                This component contains options which, when enabled, allow
+                RedBoot to support the setting of the ESA in the FLASH
+                configuration. This can then subsequently be accessed by
+                applications using virtual vector calls if those applications
+                are also built with
+                CYGPKG_DEVS_ETH_FREESCALE_ENET_REDBOOT_HOLDS_ESA enabled."
+
+            cdl_option CYGSEM_DEVS_ETH_FREESCALE_ENET_REDBOOT_HOLDS_ESA_ETH0 {
+                display         "RedBoot manages ESA for eth0"
+                flavor          bool
+                default_value   1
+                active_if       CYGSEM_REDBOOT_FLASH_CONFIG
+                active_if       CYGPKG_REDBOOT_NETWORKING
+            }
+        }
+    }
+    
     cdl_option CYGPKG_DEVS_ETH_FREESCALE_ENET_DEBUG_LEVEL {
          display "Driver debug output level"
          flavor  data

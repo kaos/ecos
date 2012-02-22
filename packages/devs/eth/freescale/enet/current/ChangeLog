@@ -1,3 +1,9 @@
+2012-01-06  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/eth_freescale_enet.cdl:
+	* src/if_freescale_enet.c:
+	Add Redboot ESA support [Bugzilla 1001450]
+
 2011-08-26  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/eth_freescale_enet.cdl:

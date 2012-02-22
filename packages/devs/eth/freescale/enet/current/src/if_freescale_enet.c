@@ -243,6 +243,39 @@ CYG_MACRO_END
 
 #endif // CYGOPT_DEVS_ETH_FREESCALE_ENET_STATS
 
+// --------------------------------------------------------------
+// RedBoot configuration options for managing ESAs for us
+
+// Decide whether to have redboot config vars for it...
+#if defined(CYGSEM_REDBOOT_FLASH_CONFIG) && defined(CYGPKG_REDBOOT_NETWORKING)
+#include <redboot.h>
+#include <flash_config.h>
+
+#ifdef CYGSEM_DEVS_ETH_FREESCALE_ENET_REDBOOT_HOLDS_ESA_ETH0
+RedBoot_config_option("Network hardware address [MAC] for eth0",
+                      eth0_esa_data,
+                      ALWAYS_ENABLED, true,
+                      CONFIG_ESA, 0);
+#endif // CYGSEM_DEVS_ETH_FREESCALE_ENET_REDBOOT_HOLDS_ESA_ETH0
+#endif  // CYGPKG_REDBOOT_NETWORKING && CYGSEM_REDBOOT_FLASH_CONFIG
+
+// and initialization code to read them
+// - independent of whether we are building RedBoot right now:
+#ifdef CYGPKG_DEVS_ETH_FREESCALE_ENET_REDBOOT_HOLDS_ESA
+#include <cyg/hal/hal_if.h>
+#ifndef CONFIG_ESA
+    #define CONFIG_ESA (6)
+#endif
+
+#define CYGHWR_DEVS_ETH_FREESCALE_ENET_GET_ESA( mac_address, ok )        \
+  CYG_MACRO_START                                                     \
+  ok = CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,     \
+                                    "eth0_esa_data",                  \
+                                    mac_address,                      \
+                                    CONFIG_ESA);                      \
+  CYG_MACRO_END
+#endif // CYGPKG_DEVS_ETH_FREESCALE_ENET_REDBOOT_HOLDS_ESA
+
 
 // ENET device ===============================================================
 // Freescale ENET driver private data ----------------------------------------
@@ -571,7 +604,7 @@ enet_init_bd(enet_bd_t *bd_p, cyg_uint32 bd_size, cyg_uint16 cntrl_init,
         bd_p->ebd_ctrl = ebd_ctrl;
         bd_p->hlen_proto = 0;
         bd_p->payload_csum = 0;
-        bd_p->bdu = 0;
+        bd_p->bdu = ENET_TXBD_BDU;
         bd_p->timestamp_1588 = 0;
         bd_p->reserved[0] = 0;
         bd_p->reserved[1] = 0;
@@ -698,7 +731,9 @@ enet_eth_init(struct cyg_netdevtab_entry *tab)
     freescale_enet_priv_t *enet_priv_p =
           (freescale_enet_priv_t *) sc->driver_private;
     CYG_ADDRWORD enet_base = enet_priv_p->enet_base;
-
+#ifdef CYGHWR_DEVS_ETH_FREESCALE_ENET_GET_ESA
+    bool esa_ok = false;
+#endif
     enet_cfg_pins(enet_priv_p);
 
     HAL_WRITE_UINT32(enet_base + FREESCALE_ENET_REG_EIMR, 0);
@@ -736,6 +771,16 @@ enet_eth_init(struct cyg_netdevtab_entry *tab)
 # endif // CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY
 #endif // CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 
+#ifdef CYGHWR_DEVS_ETH_FREESCALE_ENET_GET_ESA
+    // Get MAC address from RedBoot configuration variables
+    CYGHWR_DEVS_ETH_FREESCALE_ENET_GET_ESA(&enet_priv_p->enaddr[0], esa_ok);
+    // If this call fails myMacAddr is unchanged and MAC address from
+    // CDL is used
+    if (!esa_ok) {
+       // Can't figure out ESA
+       debug1_printf("Freescale ENET - Warning! ESA unknown\n");
+    }
+#endif
     // Set the source address for the controller
     enet_set_mac_addr (enet_base, enet_priv_p->enaddr);
 
@@ -918,7 +963,7 @@ enet_eth_can_send(struct eth_drv_sc *sc)
     enet_bd_t *tx_bd_p = enet_priv_p->txbd_head_p;
 
     ENET_TXBD_NEXT(tx_bd_p, enet_priv_p);
-    debug2_printf("ENET: can send: %d\n", tx_bd_p->ctrl & ENET_TXBD_R);
+    debug2_printf("ENET: can send: %d\n", !(tx_bd_p->ctrl & ENET_TXBD_R));
     if(!(tx_bd_p->ctrl & ENET_TXBD_R))
         return 1;
     else
@@ -933,16 +978,20 @@ enet_eth_can_send(struct eth_drv_sc *sc)
 static void inline
 enet_eth_send_trigger(freescale_enet_priv_t *enet_priv_p)
 {
-    //  Inform ENET that transmit descriptor(s) is(are) available.
-    HAL_WRITE_UINT32(enet_priv_p->enet_base + FREESCALE_ENET_REG_TDAR,
-                     FREESCALE_ENET_TDAR_TDAR_M);
+    cyg_uint32 tdar;
+
+    do {
+        HAL_READ_UINT32(enet_priv_p->enet_base + FREESCALE_ENET_REG_TDAR, tdar);
+    } while(tdar & FREESCALE_ENET_TDAR_TDAR_M);
+    tdar = FREESCALE_ENET_TDAR_TDAR_M;
+    HAL_WRITE_UINT32(enet_priv_p->enet_base + FREESCALE_ENET_REG_TDAR, tdar);
 }
 
-#define ENET_ETH_SEND_RDY(__bd_p) \
+#define ENET_ETH_SEND_RDY(__bd_p,_ad_flag) \
 CYG_MACRO_START \
     cyg_uint16 ctrl; \
     ctrl = __bd_p->ctrl & ENET_TXBD_W; \
-    ctrl |= ENET_TXBD_R | ENET_TXBD_TC; \
+    ctrl |= ENET_TXBD_R | ENET_TXBD_TC | (_ad_flag); \
     __bd_p->ctrl = ctrl; \
 CYG_MACRO_END
 
@@ -970,30 +1019,32 @@ enet_eth_send_nocopy(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list,
         (sc->funs->eth_drv->tx_done)(sc, key, 0);
         return;
     }
-#if DEBUG_ENET >= 2
-    if(enet_priv_p->txbd_avail < 2) {
-        diag_printf("ENET Send: sg_len %d avail %d\n", sg_len, enet_priv_p->txbd_avail);
-    }
-#endif
+    debug3_printf("ENET Send: sg_len %d avail %d\n", sg_len, enet_priv_p->txbd_avail);
     tx_bd_p=enet_priv_p->txbd_head_p;
     for(sg_list_z=sg_list+sg_len; sg_list<sg_list_z; sg_list++) {
         ENET_TXBD_ALLOC(tx_bd_p, enet_priv_p);
         tx_bd_p->buffer_p=(cyg_uint8 *)CYG_CPU_TO_BE32(sg_list->buf);
         tx_bd_p->len=CYG_CPU_TO_BE16(sg_list->len);
-        if(tx_bd0_p) {
-            ENET_ETH_SEND_RDY(tx_bd_p);
-        } else {
-            tx_bd0_p=tx_bd_p;
-        }
 # ifdef CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
         tx_bd_p->bdu = 0;
 # endif // CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
+        if(tx_bd0_p) {
+            ENET_ETH_SEND_RDY(tx_bd_p, 0);
+        } else {
+            tx_bd0_p=tx_bd_p;
+        }
     }
-    ENET_ETH_SEND_RDY(tx_bd0_p);
-    tx_bd_p->ctrl |= (ENET_TXBD_L | ENET_TXKEY_FLAG); // is last and has key
     tx_key_p=enet_priv_p->txkey_head_p;
     *tx_key_p = key;
     ENET_TXKEY_NEXT(tx_key_p, enet_priv_p);
+    if(tx_bd_p != tx_bd0_p) {
+        debug3_printf("ENET Send2: Key[%p] = 0x%x\n", tx_key_p, key);
+        tx_bd_p->ctrl |= (ENET_TXBD_L | ENET_TXKEY_FLAG); // is last and has key
+        ENET_ETH_SEND_RDY(tx_bd0_p, 0);
+    } else {
+        debug3_printf("ENET Send1: Key[%p] = 0x%x\n", tx_key_p, key);
+        ENET_ETH_SEND_RDY(tx_bd0_p, ENET_TXBD_L | ENET_TXKEY_FLAG);
+    }
     enet_priv_p->txkey_head_p = tx_key_p;
     enet_priv_p->txbd_head_p = tx_bd_p;
     enet_eth_send_trigger(enet_priv_p);
@@ -1014,45 +1065,43 @@ enet_eth_send_copying(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list,
     freescale_enet_priv_t *enet_priv_p =
           (freescale_enet_priv_t *)sc->driver_private;
     enet_bd_t *tx_bd_p;
-    enet_bd_t *tx_bd_save_p;
     struct eth_drv_sg *sg_list_z;
     cyg_uint16 ctrl;
+    cyg_uint8* txbuf_p;
+    cyg_uint32 txbuf_k;
+    enet_bd_t *tx_bd_save_p;
 
     tx_bd_p=enet_priv_p->txbd_head_p;
-    debug2_printf("ENET Send: sg_len %d\n", sg_len);
-    for(sg_list_z=sg_list+sg_len; sg_list<sg_list_z; sg_list++) {
-        debug2_printf("ENET: Sending sg\n");
-        tx_bd_save_p=tx_bd_p;
-        ENET_TXBD_NEXT(tx_bd_p, enet_priv_p);
-
-        if(tx_bd_p->ctrl & ENET_TXBD_R) {
-            debug2_printf("ENET: Send underrun, waiting for free buf.\n");
-            enet_eth_send_trigger(enet_priv_p);
-            ENET_ETH_WAIT(1);
-            if(tx_bd_p->ctrl & ENET_TXBD_R) {
-                ENET_ETH_WAIT(1);
-                if(tx_bd_p->ctrl & ENET_TXBD_R) {
-                    debug2_printf("ENET Send: aborting packet.\n");
-                    enet_priv_p->txbd_head_p = tx_bd_save_p;
-                    (sc->funs->eth_drv->tx_done)(sc, key, 0);
-                    return;
-                }
-            }
-        }
-
-        memcpy((cyg_uint8 *)CYG_CPU_TO_BE32((cyg_uint32)tx_bd_p->buffer_p),
-               (void *)sg_list->buf, sg_list->len);
-        tx_bd_p->len=CYG_CPU_TO_BE16(sg_list->len);
-        ctrl = tx_bd_p->ctrl & ENET_TXBD_W;
-        ctrl |= ENET_TXBD_R | ENET_TXBD_TC;
-        tx_bd_p->ctrl = ctrl;
 # ifdef CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
-        tx_bd_p->bdu = 0;
-# endif // CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
+    while(!(tx_bd_p->bdu & ENET_TXBD_BDU)){
+        debug1_printf("ENET Send: Waiting for BDU %p\n", tx_bd_p);
     }
-    tx_bd_p->ctrl |= (ENET_TXBD_L); // is last
+# endif // CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
+    debug2_printf("ENET Send: sg_len %d total_len %d\n", sg_len, total_len);
+    tx_bd_save_p=tx_bd_p;
+    ENET_TXBD_NEXT(tx_bd_p, enet_priv_p);
+    txbuf_p = (cyg_uint8 *)CYG_CPU_TO_BE32((cyg_uint32)tx_bd_p->buffer_p);
+    txbuf_k = 0;
+    for(sg_list_z=sg_list+sg_len; sg_list<sg_list_z; sg_list++) {
+        if((txbuf_k += sg_list->len) > enet_priv_p->txbuf_size) {
+            debug1_printf("ENET Send: Buffer overflow: %d (max = %d)\n", txbuf_k,
+                          enet_priv_p->txbuf_size);
+            enet_priv_p->txbd_head_p = tx_bd_save_p;
+            (sc->funs->eth_drv->tx_done)(sc, key, 0);
+            return;
+        }
+        memcpy(txbuf_p, (cyg_uint8 *)sg_list->buf, sg_list->len);
+        txbuf_p += sg_list->len;
+    }
+    tx_bd_p->len=CYG_CPU_TO_BE16(total_len);
+    ctrl = tx_bd_p->ctrl & ENET_TXBD_W;
+    ctrl |= ENET_TXBD_R | ENET_TXBD_TC | ENET_TXBD_L;
+# ifdef CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
+    tx_bd_p->bdu = 0;
+# endif // CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
+    tx_bd_p->ctrl = ctrl;
     enet_priv_p->txbd_head_p = tx_bd_p;
-    debug2_printf("ENET Send: trigger.\n");
+    debug2_printf("ENET Send: trigger, done.\n");
     enet_eth_send_trigger(enet_priv_p);
     (sc->funs->eth_drv->tx_done)(sc, key, 0);
 }
@@ -1070,11 +1119,12 @@ enet_eth_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     struct eth_drv_sg *sg_list_z;
     enet_bd_t *rx_bd_p;
 
+    debug3_printf("ENET recv: sg_len=%d first len=%d\n", sg_len, sg_list->len);
     rx_bd_p=enet_priv_p->rxbd_p;
     rxbuffer_p=(cyg_uint8 *)CYG_CPU_TO_BE32((cyg_uint32)rx_bd_p->buffer_p);
     for(sg_list_z=sg_list+sg_len; sg_list<sg_list_z; sg_list++) {
         if(sg_list->buf) {
-            memcpy((void *)sg_list->buf, rxbuffer_p, sg_list->len);
+            memcpy((cyg_uint8 *)sg_list->buf, rxbuffer_p, sg_list->len);
             rxbuffer_p+=sg_list->len;
         }
     }
@@ -1199,7 +1249,7 @@ enet_eth_deliver_nocopy(struct eth_drv_sc * sc)
 
     tx_bd_tail_p = enet_priv_p->txbd_tail_p;
     HAL_READ_UINT32(enet_base + FREESCALE_ENET_REG_EIR, eir);
-    need_service = ENET_DELIVER_NEED_SERVICE;
+    need_service = eir & ENET_DELIVER_NEED_SERVICE;
     do {
         //Clear all ENET Interrupt events
         HAL_WRITE_UINT32(enet_base + FREESCALE_ENET_REG_EIR,
@@ -1256,12 +1306,19 @@ enet_eth_deliver_nocopy(struct eth_drv_sc * sc)
                 } else {
                     ENET_BD_AVAIL_INC(enet_priv_p);
                     if(ctrl & ENET_TXKEY_FLAG){
-                        ctrl &= ~ENET_TXKEY_FLAG;
-                        tx_bd_tail_p->ctrl = ctrl;
+# ifdef CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
+                        while(!(tx_bd_tail_p->bdu & ENET_TXBD_BDU)){
+                            debug1_printf("ENET Send: Waiting for BDU %p\n", tx_bd_tail_p);
+                        }
+# endif // CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
                         tx_key_tail_p = enet_priv_p->txkey_tail_p;
-                        (tx_done)(sc, *tx_key_tail_p, 0);
+                        debug3_printf("ENET Deliver: Key[%p] = 0x%x\n",
+                                      tx_key_tail_p, *tx_key_tail_p);
                         ENET_TXKEY_NEXT(tx_key_tail_p, enet_priv_p);
                         enet_priv_p->txkey_tail_p = tx_key_tail_p;
+                        ctrl &= ~ENET_TXKEY_FLAG;
+                        tx_bd_tail_p->ctrl = ctrl;
+                        (tx_done)(sc, *tx_key_tail_p, 0);
                     }
                     if(enet_priv_p->txbd_avail == enet_priv_p->txbd_num) {
                         debug3_printf("ENET: Tx All sent.\n");
@@ -1275,6 +1332,7 @@ enet_eth_deliver_nocopy(struct eth_drv_sc * sc)
         HAL_READ_UINT32(enet_base + FREESCALE_ENET_REG_EIR, eir);
         need_service |= eir & ENET_DELIVER_NEED_SERVICE;
     } while(need_service);
+    debug3_printf("ENET: Delivered.\n");
     enet_priv_p->txbd_tail_p = tx_bd_tail_p;
 # ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 #  ifdef CYGOPT_DEVS_ETH_FREESCALE_ENET_IRQ_FASTMASK
@@ -1307,7 +1365,7 @@ enet_eth_deliver_copying(struct eth_drv_sc * sc)
 
     recv = sc->funs->eth_drv->recv;
     HAL_READ_UINT32(enet_base + FREESCALE_ENET_REG_EIR, eir);
-    need_service = ENET_DELIVER_NEED_SERVICE;
+    need_service = eir & ENET_DELIVER_NEED_SERVICE;
     do {
         //Clear all ENET Interrupt events
         HAL_WRITE_UINT32(enet_base + FREESCALE_ENET_REG_EIR,
@@ -1335,7 +1393,7 @@ enet_eth_deliver_copying(struct eth_drv_sc * sc)
 # ifdef  CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
                 rx_bd_p->bdu = 0;
 # endif // CYGSEM_DEVS_ETH_FREESCALE_ENET_BD_ENHANCED
-                // Inform ENET that free Rx buffers have beeen freed.
+                // Inform ENET that Rx buffers have been freed.
                 HAL_WRITE_UINT32(enet_priv_p->enet_base +
                                  FREESCALE_ENET_REG_RDAR,
                                  FREESCALE_ENET_RDAR_RDAR_M);
