@@ -1,0 +1,46 @@
+// eCos memory layout
+
+#include <pkgconf/hal.h>
+#include <cyg/infra/cyg_type.inc>
+
+MEMORY
+{
+    sram_l : ORIGIN = 0x20000000 - CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE, LENGTH = CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE
+    sram_u : ORIGIN = 0x20000000, LENGTH = CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE-CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+    flash  : ORIGIN = 0x00000000, LENGTH = CYGHWR_HAL_KINETIS_FLASH_SIZE
+    ram    : ORIGIN = CYGHWR_HAL_KINETIS_FB_CS0_AR, LENGTH = CYGHWR_HAL_KINETIS_FB_CS0_SIZE
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    SECTION_rom_vectors (flash, 0x00000000, LMA_EQ_VMA)
+    USER_SECTION(kinetis_misc, flash, ALIGN (0x8), LMA_EQ_VMA)
+
+    // Kinetis FLASH configuration field. Must be present at 0x00000400
+    // Warning: Omitting FLASH configuration field or moving it to
+    //          other location may lock Kinetis controller.
+    // See src/kinetis_mis.c for definition
+
+    .flash_conf 0x00000400 : { KEEP (*(.flash_conf)) } > flash
+
+    SECTION_RELOCS (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_text (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_fini (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_rodata (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_rodata1 (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_fixup (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_gcc_except_table (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_eh_frame (flash, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_got (flash, ALIGN (0x8), LMA_EQ_VMA)
+    USER_SECTION (code_sram, sram_l, 0x20000000 - CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE (NOLOAD), LMA_EQ_VMA)
+    USER_SECTION (data_sram, sram_u, 0x20000000 (NOLOAD), LMA_EQ_VMA)
+    SECTION_data (ram, CYGHWR_HAL_KINETIS_FB_CS0_AR, FOLLOWING (.got))
+    SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+    SECTIONS_END
+}
+
+hal_vsr_table = (0x20000000);
+hal_virtual_vector_table = hal_vsr_table + 128*4;
+hal_startup_stack = (0x20000000 + CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE);

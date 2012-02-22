@@ -1,0 +1,51 @@
+2012-01-06 Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_kinetis_twr_k60n512_fxm.cdl:
+	* include/plf_arch.h:
+	* include/plf_intr.h:
+	* include/plf_io.h:
+	* include/hal_kinetis_flexbus.h
+	* src/twr_k60n512_fxm_misc.c:
+	* include/pkgconf/mltkinetis_flash_sram2s_extram_rom.h
+	* include/pkgconf/mltkinetis_flash_sram2s_extram_rom.ldi
+	* include/pkgconf/mltkinetis_flash_sram2s_jtag.h
+	* include/pkgconf/mltkinetis_flash_sram2s_jtag.ldi
+	* include/pkgconf/mltkinetis_flash_sram2s_ram.h
+	* include/pkgconf/mltkinetis_flash_sram2s_ram.ldi
+	* include/pkgconf/mltkinetis_flash_unisram_extram.h
+	* include/pkgconf/mltkinetis_flash_unisram_extram_jtag.h
+	* include/pkgconf/mltkinetis_flash_unisram_extram_jtag.ldi
+	* include/pkgconf/mltkinetis_flash_unisram_extram.ldi
+	* include/pkgconf/mltkinetis_flash_unisram_extram_ram.h
+	* include/pkgconf/mltkinetis_flash_unisram_extram_ram.ldi
+	* include/pkgconf/mltkinetis_flash_unisram_extram_rom.h
+	* include/pkgconf/mltkinetis_flash_unisram_extram_rom.ldi
+	* include/pkgconf/mltkinetis_flash_unisram_jtag.h
+	* include/pkgconf/mltkinetis_flash_unisram_jtag.ldi
+	* include/pkgconf/mltkinetis_flash_unisram_ram.h
+	* include/pkgconf/mltkinetis_flash_unisram_ram.ldi
+	New package -- Freescale TWR-K60N512-FXM board.  [Bugzilla 1001450]
+	
+//===========================================================================
+// ####GPLCOPYRIGHTBEGIN####                                                
+// -------------------------------------------                              
+// This file is part of eCos, the Embedded Configurable Operating System.   
+// Copyright (C) 2012 Free Software Foundation, Inc.                        
+//
+// This program is free software; you can redistribute it and/or modify     
+// it under the terms of the GNU General Public License as published by     
+// the Free Software Foundation; either version 2 or (at your option) any   
+// later version.                                                           
+//
+// This program is distributed in the hope that it will be useful, but      
+// WITHOUT ANY WARRANTY; without even the implied warranty of               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        
+// General Public License for more details.                                 
+//
+// You should have received a copy of the GNU General Public License        
+// along with this program; if not, write to the                            
+// Free Software Foundation, Inc., 51 Franklin Street,                      
+// Fifth Floor, Boston, MA  02110-1301, USA.                                
+// -------------------------------------------                              
+// ####GPLCOPYRIGHTEND####                                                  
+//===========================================================================
