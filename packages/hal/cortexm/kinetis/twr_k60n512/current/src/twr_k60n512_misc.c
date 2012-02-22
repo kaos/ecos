@@ -76,7 +76,6 @@ __externC cyg_uint32 __srom_data_start;
 __externC cyg_uint32 __bss_start;
 __externC cyg_uint32 __bss_end;
 
-
 //==========================================================================
 // System init
 //
@@ -91,6 +90,7 @@ hal_system_init( void )
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_SRAM)
     hal_wdog_disable();
     hal_gpio_init();
+    hal_start_clocks();
 #endif
 #if defined(CYG_HAL_STARTUP_SRAM) && !defined(CYGHWR_HAL_CORTEXM_KINETIS_SRAM_UNIFIED)
     // Note: For CYG_HAL_STARTUP_SRAM, the SRAM_L bank simulates ROM
@@ -135,8 +135,6 @@ hal_gpio_init(void)
     // Disable MPU
     mpu_p->cesr = 0;
 }
-
-
 
 //==========================================================================
 
@@ -223,7 +221,6 @@ cyg_plf_memory_segment(int seg, unsigned char **start, unsigned char **end)
 } // cyg_plf_memory_segment()
 
 #endif // CYGPKG_REDBOOT
-
 
 //==========================================================================
 // EOF twr_k60n512_misc.c

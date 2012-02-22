@@ -71,6 +71,9 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512 {
 
     requires      { is_active(CYGPKG_DEVS_ETH_PHY) implies
         (1 == CYGHWR_DEVS_ETH_PHY_KSZ8041) }
+    requires      { is_active(CYGPKG_HAL_FREESCALE_EDMA) implies
+        (CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM == 16) }
+
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_cortexm_kinetis_twr_k60n512.h>"
         puts $::cdl_header "#define HAL_PLATFORM_CPU    \"Cortex-M4\""
@@ -78,6 +81,23 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512 {
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
     }
 
+    cdl_component CYG_HAL_STARTUP_ENV {
+        display "Startup type"
+        flavor data
+        no_define
+        calculated {
+            !CYG_HAL_STARTUP_PLF ? CYG_HAL_STARTUP :
+            ((CYG_HAL_STARTUP_PLF == "ByVariant") ?
+            (CYG_HAL_STARTUP . "(Variant)") :
+            (CYG_HAL_STARTUP . "(Platform)"))
+        }
+        description "
+            Startup type configuration defines the system memory layout.
+            Startup type  can be defined by the variant (CYG_HAL_STARTUP_VAR)
+            or a platform (CYG_HAL_STARTUP_PLF). If CYG_HAL_STARTUP_PLF
+            is defined and not equal to 'ByVariant' then it shall
+            override CYG_HAL_STARTUP_VAR."
+    }
 
     cdl_option CYGHWR_HAL_CORTEXM_KINETIS_PLF_XTAL_OR_OSC_FREQ {
         display "Platform Clock Frequency"
@@ -182,6 +202,30 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512 {
         legal_values { "B" "C" "User" }
         description "
             Digital I/O provided by HAL for ENET IEEE 1588 timers."
+    }
+
+    cdl_component CYGHWR_DEVS_DISK_MMC_FREESCALE_DSPI_BUS {
+        display "MMC Disk SPI bus"
+        flavor data
+        parent CYGPKG_DEVS_DISK_MMC_FREESCALE_DSPI
+        calculated 1
+
+        requires CYGHWR_DEVS_SPI_FREESCALE_DSPI1 == 1
+        implements CYGINT_DEVS_SPI_FREESCALE_DSPI1
+        implements CYGINT_FREESCALE_DSPI1_HAS_MASS
+
+        cdl_option CYGHWR_DEVS_DISK_MMC_FREESCALE_DSPI_CS {
+            display "Device number (CS)"
+            flavor data
+            calculated 0
+            implements CYGINT_FREESCALE_DSPI1_CS0
+        }
+    }
+
+    cdl_component CYGHWR_HAL_DEVS_IRQ_PRIO_SCHEME {
+        display "Interrupt priority scheme"
+        flavor none
+        description "Consolidated interrupt priority scheme setting."
     }
 
     cdl_component CYGBLD_GLOBAL_OPTIONS {
