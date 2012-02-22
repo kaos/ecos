@@ -1,0 +1,84 @@
+##==========================================================================
+##
+##      kinetis_flexbus.cdl
+##
+##      Cortex-M Freescale Kinetis FlexBus
+##
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2011 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    Ilija Kocho <ilijak@siva.com.mk>
+## Date:         2011-12-11
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+#        cdl_component CYGPKG_HAL_CORTEXM_KINETIS_FLEXBUS {
+#        display       "FlexBus"
+
+for { set ::chipsel 0 } { $::chipsel < 6 } { incr ::chipsel } {
+    
+    cdl_interface CYGINT_HAL_KINETIS_FB_CS[set ::chipsel] {
+        display     "Platform uses Chip select [set ::chipsel]"
+        flavor      bool
+        description "
+            This interface will be implemented if the specific
+            controller being used provides chip select [set ::chipsel], and if
+            that chip select is used on target hardware."
+    }
+    
+    cdl_component CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel] {
+        display       "Chip select [set ::chipsel]"
+        flavor        bool
+        active_if     CYGINT_HAL_KINETIS_FB_CS[set ::chipsel]
+        default_value CYGINT_HAL_KINETIS_FB_CS[set ::chipsel]
+        description   "
+            This option includes initialization data for
+            chip select [set ::chipsel]."
+        
+        cdl_option CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PS {
+            display "Port size (encoded)"
+            flavor data
+            calculated ( \
+               CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 32 ? 0 : \
+               CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 8  ? 1 : \
+               CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 16 ? 2 : 3)
+        }
+    }
+}
+
+
+# EOF kinetis_flexbus.cdl

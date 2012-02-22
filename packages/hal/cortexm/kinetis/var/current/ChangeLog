@@ -1,3 +1,18 @@
+2012-01-05  Ilija Kocho  <ilijak@siva.com.mk>
+
+    * cdl/kinetis_irq_scheme.cdl
+    Centralized IRQ priority scheme.
+
+	* cdl/hal_cortexm_kinetis.cdl:
+	* cdl/kinetis_flexbus.cdl
+	* include/var_io_devs.h:
+	* include/var_io.h:
+	* src/kinetis_clocking.c:
+	* src/kinetis_misc.c:
+	Add I/O defs for eDMA, DSPI. Add flexbus control.
+	CYG_HAL_STARTUP parenthed bt CYG_HAL_STARTUP_ENV.
+	Early clock start [Bugzilla 1001450]
+
 2011-11-15  Tomas Frydrych <tomas@sleepfive.com>
 
 	* include/var_io_gpio.h:

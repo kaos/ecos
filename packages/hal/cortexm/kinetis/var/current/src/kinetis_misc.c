@@ -66,10 +66,7 @@
 #include <cyg/hal/hal_intr.h>           // HAL header
 #include <cyg/hal/hal_if.h>             // HAL header
 
-
-
-// Clock related functions are in kinetis_clocking.c
-void hal_start_clocks( void );
+void sst25xx_freescale_dspi_reg(void);
 
 #ifdef CYG_HAL_STARTUP_ROM
 
@@ -103,16 +100,14 @@ hal_kinetis_flash_conf_p( void )
 
 //=== KINETIS FLASH security configuration END. ============================
 
-
+//volatile cyg_uint32 *poin;
 //==========================================================================
 // Setup variant specific hardware
 //=========================================================================
 
-
 void hal_variant_init( void )
 {
-    hal_start_clocks();
-
+    hal_update_clock_var();
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     hal_if_init();
 #endif

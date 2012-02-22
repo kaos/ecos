@@ -55,6 +55,22 @@
 //=============================================================================
 // DEVS:
 // Following macros may be, and usually are borrwed by some device drivers.
+
+
+//=============================================================================
+// Peripheral clock
+
+//
+//===========================================================================
+
+
+//=============================================================================
+// DEVS:
+// Following macros may be, and usually are borrwed by some device drivers.
+
+// Peripheral clock [Hz];
+__externC cyg_uint32 hal_get_peripheral_clock(void);
+
 //-----------------------------------------------------------------------------
 // Freescale UART
 // Borrow some HAL resources to Freescale UART driver
@@ -126,6 +142,7 @@
 # define CYGHWR_IO_FREESCALE_UART_PIN(__pin) \
         hal_set_pin_function(__pin)
 
+
 // Set baud rate
 __externC void hal_freescale_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 
@@ -142,6 +159,144 @@ __externC void hal_freescale_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
         hal_set_pin_function(__pin)
 
 #endif
+
+//----------------------------------------------------------------------------
+// DSPI
+// Lend some HAL dependent macros to DSPI device driver
+
+// DSPI - Peripheral instance base addresses
+#define CYGADDR_IO_SPI_FREESCALE_DSPI0_P ((cyghwr_devs_freescale_dspi_t*)0x4002C000)
+#define CYGADDR_IO_SPI_FREESCALE_DSPI1_P ((cyghwr_devs_freescale_dspi_t*)0x4002D000)
+#define CYGADDR_IO_SPI_FREESCALE_DSPI2_P ((cyghwr_devs_freescale_dspi_t*)0x400AC000)
+
+#define CYGHWR_IO_SPI_FREESCALE_DSPI_CLOCK hal_get_peripheral_clock();
+
+#ifndef __ASSEMBLER__
+
+# define CYGHWR_IO_FREESCALE_DSPI_PIN(__pin) \
+        hal_set_pin_function(__pin)
+
+#endif
+
+#ifndef KINETIS_PIN_SPI0_OUT_OPT
+#define KINETIS_PIN_SPI0_OUT_OPT (CYGHWR_HAL_KINETIS_PORT_PCR_DSE_M | \
+                                 CYGHWR_HAL_KINETIS_PORT_PCR_SRE_M)
+#endif
+#ifndef KINETIS_PIN_SPI0_CS_OPT
+#define KINETIS_PIN_SPI0_CS_OPT  (CYGHWR_HAL_KINETIS_PORT_PCR_DSE_M | \
+                                 CYGHWR_HAL_KINETIS_PORT_PCR_SRE_M)
+#endif
+#ifndef KINETIS_PIN_SPI0_IN_OPT
+#define KINETIS_PIN_SPI0_IN_OPT  (CYGHWR_HAL_KINETIS_PORT_PCR_PE_M |  \
+                                 CYGHWR_HAL_KINETIS_PORT_PCR_PS_M)
+#endif
+
+#ifndef KINETIS_PIN_SPI1_OUT_OPT
+#define KINETIS_PIN_SPI1_OUT_OPT (CYGHWR_HAL_KINETIS_PORT_PCR_DSE_M | \
+                                 CYGHWR_HAL_KINETIS_PORT_PCR_SRE_M)
+#endif
+#ifndef KINETIS_PIN_SPI1_CS_OPT
+#define KINETIS_PIN_SPI1_CS_OPT  (CYGHWR_HAL_KINETIS_PORT_PCR_DSE_M | \
+                                 CYGHWR_HAL_KINETIS_PORT_PCR_SRE_M)
+#endif
+#ifndef KINETIS_PIN_SPI1_IN_OPT
+#define KINETIS_PIN_SPI1_IN_OPT  (CYGHWR_HAL_KINETIS_PORT_PCR_PE_M |  \
+                                 CYGHWR_HAL_KINETIS_PORT_PCR_PS_M)
+#endif
+#ifndef KINETIS_PIN_SPI2_OUT_OPT
+#define KINETIS_PIN_SPI2_OUT_OPT (CYGHWR_HAL_KINETIS_PORT_PCR_DSE_M | \
+                                 CYGHWR_HAL_KINETIS_PORT_PCR_SRE_M)
+#endif
+#ifndef KINETIS_PIN_SPI2_CS_OPT
+#define KINETIS_PIN_SPI2_CS_OPT  (CYGHWR_HAL_KINETIS_PORT_PCR_DSE_M | \
+                                 CYGHWR_HAL_KINETIS_PORT_PCR_SRE_M)
+#endif
+#ifndef KINETIS_PIN_SPI2_IN_OPT
+#define KINETIS_PIN_SPI2_IN_OPT  (CYGHWR_HAL_KINETIS_PORT_PCR_PE_M |  \
+                                 CYGHWR_HAL_KINETIS_PORT_PCR_PS_M)
+#endif
+
+// DMA MUX ------------------------------------------------------------------
+// DMAMUX DMA request sources
+#define FREESCALE_DMAMUX_SRC_KINETIS_DISABLE      0
+#define FREESCALE_DMAMUX_SRC_KINETIS_RESERVE      1
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART0R       2
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART0T       3
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART1R       4
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART1T       5
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART2R       6
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART2T       7
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART3R       8
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART3T       9
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART4R      10
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART4T      11
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART5R      12
+#define FREESCALE_DMAMUX_SRC_KINETIS_UART5T      13
+#define FREESCALE_DMAMUX_SRC_KINETIS_I2S0R       14
+#define FREESCALE_DMAMUX_SRC_KINETIS_I3S0T       15
+#define FREESCALE_DMAMUX_SRC_KINETIS_SPI0R       16
+#define FREESCALE_DMAMUX_SRC_KINETIS_SPI0T       17
+#define FREESCALE_DMAMUX_SRC_KINETIS_SPI1R       18
+#define FREESCALE_DMAMUX_SRC_KINETIS_SPI1T       19
+#define FREESCALE_DMAMUX_SRC_KINETIS_SPI2R       20
+#define FREESCALE_DMAMUX_SRC_KINETIS_SPI2T       21
+#define FREESCALE_DMAMUX_SRC_KINETIS_I2C0        22
+#define FREESCALE_DMAMUX_SRC_KINETIS_I2C1        23
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM0C0      24
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM0C1      25
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM0C2      26
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM0C3      27
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM0C4      28
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM0C5      29
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM0C6      30
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM0C7      31
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM1C0      32
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM1C1      33
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM2C0      34
+#define FREESCALE_DMAMUX_SRC_KINETIS_FTM2C1      35
+#define FREESCALE_DMAMUX_SRC_KINETIS_1588T0      36
+#define FREESCALE_DMAMUX_SRC_KINETIS_1588T1      37
+#define FREESCALE_DMAMUX_SRC_KINETIS_1588T2      38
+#define FREESCALE_DMAMUX_SRC_KINETIS_1588T3      39
+#define FREESCALE_DMAMUX_SRC_KINETIS_ADC0        40
+#define FREESCALE_DMAMUX_SRC_KINETIS_ADC1        41
+#define FREESCALE_DMAMUX_SRC_KINETIS_CMP0        42
+#define FREESCALE_DMAMUX_SRC_KINETIS_CMP1        43
+#define FREESCALE_DMAMUX_SRC_KINETIS_CMP2        44
+#define FREESCALE_DMAMUX_SRC_KINETIS_DAC0        45
+#define FREESCALE_DMAMUX_SRC_KINETIS_DAC1        46
+#define FREESCALE_DMAMUX_SRC_KINETIS_CMT         47
+#define FREESCALE_DMAMUX_SRC_KINETIS_PDB         48
+#define FREESCALE_DMAMUX_SRC_KINETIS_PORTA       49
+#define FREESCALE_DMAMUX_SRC_KINETIS_PORTB       50
+#define FREESCALE_DMAMUX_SRC_KINETIS_PORTC       51
+#define FREESCALE_DMAMUX_SRC_KINETIS_PORTD       52
+#define FREESCALE_DMAMUX_SRC_KINETIS_PORTE       53
+#define FREESCALE_DMAMUX_SRC_KINETIS_DMAMUX0     54
+#define FREESCALE_DMAMUX_SRC_KINETIS_DMAMUX1     55
+#define FREESCALE_DMAMUX_SRC_KINETIS_DMAMUX2     56
+#define FREESCALE_DMAMUX_SRC_KINETIS_DMAMUX3     57
+#define FREESCALE_DMAMUX_SRC_KINETIS_DMAMUX4     58
+#define FREESCALE_DMAMUX_SRC_KINETIS_DMAMUX5     59
+#define FREESCALE_DMAMUX_SRC_KINETIS_DMAMUX6     60
+#define FREESCALE_DMAMUX_SRC_KINETIS_DMAMUX7     61
+#define FREESCALE_DMAMUX_SRC_KINETIS_DMAMUX8     62
+#define FREESCALE_DMAMUX_SRC_KINETIS_DMAMUX9     63
+
+#define FREESCALE_DMAMUX_SRC_SPI0_RX FREESCALE_DMAMUX_SRC_KINETIS_SPI0R
+#define FREESCALE_DMAMUX_SRC_SPI0_TX FREESCALE_DMAMUX_SRC_KINETIS_SPI0T
+#define FREESCALE_DMAMUX_SRC_SPI1_RX FREESCALE_DMAMUX_SRC_KINETIS_SPI1R
+#define FREESCALE_DMAMUX_SRC_SPI1_TX FREESCALE_DMAMUX_SRC_KINETIS_SPI1T
+#define FREESCALE_DMAMUX_SRC_SPI2_RX FREESCALE_DMAMUX_SRC_KINETIS_SPI2R
+#define FREESCALE_DMAMUX_SRC_SPI2_TX FREESCALE_DMAMUX_SRC_KINETIS_SPI2T
+
+//----------------------------------------------------------------------------
+// eDMA
+// Lend some eDMA macros to device driver that use DMA
+
+// Base address
+#define CYGHWR_IO_FREESCALE_EDMA0_P CYGHWR_HAL_FREESCALE_EDMA0_P
+#define CYGHWR_IO_FREESCALE_DMAMUX0_P CYGHWR_HAL_FREESCALE_DMAMUX0_P
 
 //-----------------------------------------------------------------------------
 // end of var_io_devs.h

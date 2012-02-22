@@ -104,10 +104,6 @@ hal_start_clocks( void )
     // Main clock - MCG
     hal_start_main_clock();
 #endif
-    hal_kinetis_sysclk=hal_get_cpu_clock();
-    hal_kinetis_busclk=hal_kinetis_sysclk /
-          CYGHWR_HAL_CORTEXM_KINETIS_CLKDIV_PER_BUS;
-    hal_cortexm_systick_clock=hal_kinetis_sysclk;
     // Trace clock
 #ifdef CYGHWR_HAL_CORTEXM_KINETIS_TRACECLK_CORE
     sim_p->sopt2 |= CYGHWR_HAL_KINETIS_SIM_SOPT2_TRACECLKSEL_M;
@@ -333,6 +329,21 @@ hal_freescale_uart_setbaud(cyg_uint32 uart_p, cyg_uint32 baud)
         regval |= brfa & 0x1f;
         HAL_WRITE_UINT8(uart_p + CYGHWR_DEV_FREESCALE_UART_C4, regval);
     }
+}
+
+
+void hal_update_clock_var(void)
+{
+    hal_kinetis_sysclk=hal_get_cpu_clock();
+    hal_kinetis_busclk=hal_kinetis_sysclk /
+          CYGHWR_HAL_CORTEXM_KINETIS_CLKDIV_PER_BUS;
+    hal_cortexm_systick_clock=hal_kinetis_sysclk;
+}
+
+
+cyg_uint32 hal_get_peripheral_clock(void)
+{
+    return hal_kinetis_busclk;
 }
 
 //==========================================================================

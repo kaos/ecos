@@ -153,7 +153,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
     cdl_option CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY {
         display       "Clock interrupt ISR priority"
         flavor        data
-        default_value 0xE0
+        calculated CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY_SP
         description   "Set clock ISR priority. Default setting is lowest priority."
     }
 
@@ -183,38 +183,40 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         }
     }
 
-    cdl_component CYG_HAL_STARTUP {
-        display       "Startup type"
+    cdl_option CYG_HAL_STARTUP_VAR {
+        display       "By variant"
         flavor        data
-        calculated  {
-            (CYG_HAL_STARTUP_PLF && (CYG_HAL_STARTUP_PLF!="ByVariant")) ?
-            CYG_HAL_STARTUP_PLF : CYG_HAL_STARTUP_VAR
-        }
-        no_define
-        define -file system.h CYG_HAL_STARTUP
+        parent CYG_HAL_STARTUP_ENV
+        default_value {
+            (CYG_HAL_STARTUP_PLF) && (CYG_HAL_STARTUP_PLF!="ByVariant") ?
+            "ByPlatform" : "ROM" }
+        legal_values  { "ROM" "SRAM" }
+        active_if ((!CYG_HAL_STARTUP_PLF) || (CYG_HAL_STARTUP_PLF=="ByVariant"))
         description   "
+        'ROM' startup builds a stand-alone application which will
+        be placed into flash. SRAM startup builds application
+        intended for loading in on-chip SRAM by means of JTAG/SWD.
+        Note: Variant Startup Type can be overriden/overloaded by
+        Platform Startup Type."
+    }
+
+        cdl_component CYG_HAL_STARTUP {
+            display       "Startup type calculator"
+            flavor        data
+            parent CYG_HAL_STARTUP_ENV
+            calculated  {
+                (CYG_HAL_STARTUP_PLF && (CYG_HAL_STARTUP_PLF!="ByVariant")) ?
+                CYG_HAL_STARTUP_PLF : CYG_HAL_STARTUP_VAR
+            }
+            no_define
+            define -file system.h CYG_HAL_STARTUP
+            description "
             Startup type defines what type of application shall be built.
             Startup type  can be defined by variant (CYG_HAL_STARTUP_VAR)
             or platform (CYG_HAL_STARTUP_PLF). If CYG_HAL_STARTUP_PLF
             is defined and not equal to 'ByVariant' then it shall
             override CYG_HAL_STARTUP_VAR."
-
-        cdl_option CYG_HAL_STARTUP_VAR {
-            display       "By variant"
-            flavor        data
-            default_value {
-                (CYG_HAL_STARTUP_PLF) && (CYG_HAL_STARTUP_PLF!="ByVariant") ?
-                "ByPlatform" : "ROM" }
-            legal_values  { "ROM" "SRAM" }
-            active_if ((!CYG_HAL_STARTUP_PLF) || (CYG_HAL_STARTUP_PLF=="ByVariant"))
-            description   "
-                'ROM' startup builds a stand-alone application which will
-                be placed into flash. SRAM startup builds application
-                intended for loading in on-chip SRAM by means of JTAG/SWD.
-                Note: Variant Startup Type can be overriden/overloaded by
-                Platform Startup Type."
         }
-    }
 
     cdl_component CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_CONF {
         display "FlexNVM configuration"
@@ -314,6 +316,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         display "Memory layout"
         flavor data
         no_define
+        parent CYG_HAL_STARTUP_ENV
         calculated {
             (CYGHWR_MEMORY_LAYOUT_PLF) ? CYGHWR_MEMORY_LAYOUT_PLF :
             (CYG_HAL_STARTUP == "ROM" ) ? "kinetis_"
@@ -505,13 +508,13 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
                         display "Port size (encoded)"
                         flavor data
                         calculated ( \
-                            CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 32 ? 0 : \
-                            CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 8  ? 1 : \
-                            CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 16 ? 2 : 3)
+                                    CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 32 ? 0 : \
+                                    CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 8  ? 1 : \
+                                    CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 16 ? 2 : 3)
+                    }
                     }
                 }
             }
-        }
 
         cdl_component CYGHWR_HAL_KINETIS_FLASH_CONF {
         display "Flash configuration field"
@@ -591,6 +594,25 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
                 on-chip UART [set ::channel] has RTS/CTS flow control
                 that is accessible on the target hardware."
         }
+    }
+
+    cdl_interface CYGINT_HAL_DMA {
+        display "Platform uses DMA"
+        flavor bool
+        description "
+            This interface will be implemented if the specific
+            controller being used provides DMA and if DMA is
+            used on target hardware"
+    }
+
+    cdl_component CYGHWR_HAL_DEVS_IRQ_PRIO_SCHEME_VAR {
+        display "Variant IRQ priority defaults"
+        no_define
+        flavor none
+        parent CYGHWR_HAL_DEVS_IRQ_PRIO_SCHEME
+        description "
+            Interrupt priorities defined by Kinetis variant"
+        script kinetis_irq_scheme.cdl
     }
 
     cdl_component CYGPKG_HAL_CORTEXM_KINETIS_OPTIONS {

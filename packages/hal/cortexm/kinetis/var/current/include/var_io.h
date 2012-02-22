@@ -1028,6 +1028,11 @@ typedef volatile struct cyghwr_hal_kinetis_mpu_s {
 #ifdef CYGPKG_HAL_CORTEXM_KINETIS_FLEXBUS
 # include <cyg/hal/var_io_flexbus.h>
 #endif
+//----------------------------------------------------------------------------
+// DMA
+//#ifdef CYGPKG_HAL_CORTEXM_KINETIS_DMA
+//# include <cyg/hal/var_io_dma.h>
+//#endif
 
 //---------------------------------------------------------------------------
 // GPIO
@@ -1040,6 +1045,11 @@ typedef volatile struct cyghwr_hal_kinetis_mpu_s {
 #include <cyg/hal/var_io_devs.h>
 
 // End Peripherals
+
+// Some miscelaneous function prototypes
+// Clock related functions are in kinetis_clocking.c
+__externC void hal_start_clocks(void);
+__externC void hal_update_clock_var(void);
 
 //-----------------------------------------------------------------------------
 // end of var_io.h
