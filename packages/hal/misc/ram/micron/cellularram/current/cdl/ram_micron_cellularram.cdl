@@ -1,0 +1,277 @@
+# ====================================================================
+#
+#      ram_micron_cellularram.cdl
+#
+#      RAM memory - Hardware support for Micron Cellularram
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2011 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later
+## version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with eCos; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+##
+## As a special exception, if other files instantiate templates or use
+## macros or inline functions from this file, or you compile this file
+## and link it with other works to produce a work based on this file,
+## this file does not by itself cause the resulting work to be covered by
+## the GNU General Public License. However the source code for this file
+## must still be made available in accordance with section (3) of the GNU
+## General Public License v2.
+##
+## This exception does not invalidate any other reasons why a work based
+## on this file might be covered by the GNU General Public License.
+## -------------------------------------------
+## ####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      ilijak
+# Contributors:
+# Date:           2011-10-05
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_RAM_MICRON_CELLULARRAM {
+    display       "Micron CellularRam 1.5 support"
+
+    parent        CYGPKG_HAL_EXTRN_MEMORY
+    active_if	  CYGPKG_HAL_EXTRN_MEMORY
+
+    include_dir   cyg/devs
+    compile       -library=libextras.a ram_micron_cellularram.c
+
+    description   "
+        RAM memory device support for Micron CellularRam 1.5
+        Micron CellularRam supports Asynchronous and Sybchronous/Burst bus
+        modes."
+
+    define_proc {
+        puts $::cdl_header "#include <pkgconf/system.h>";
+    }
+
+    cdl_interface CYGINT_DEVS_RAM0_MICRON_CELLULAR {
+    }
+
+    cdl_component CYGHWR_DEVS_RAM0_MICRON_CELLULAR {
+        display "Micron Cellular Ram 1.5 chip 0"
+        flavor bool
+        default_value CYGINT_DEVS_RAM0_MICRON_CELLULAR
+        no_define
+
+        active_if CYGINT_DEVS_RAM0_MICRON_CELLULAR
+
+        cdl_option CYGHWR_RAM0_MICRON_CELLULAR_SIZE {
+            display "RAM size \[Bytes\]"
+            flavor data
+            default_value 0x01000000
+        }
+        cdl_component CYGHWR_RAM0_MICRON_BCR_SETTO {
+            display "Bus Configuration Register"
+            flavor data
+
+            calculated {
+                0x0 +
+                ((CYGHWR_RAM0_MICRON_BCR_ASYNC == "ASYNC" ? 1 : 0) << 15) +
+                ((CYGHWR_RAM0_MICRON_BCR_IL == "VARIABLE" ? 0 : 1) << 14) +
+                ((CYGHWR_RAM0_MICRON_BCR_LC & 0x7) << 11)                 +
+                ((CYGHWR_RAM0_MICRON_BCR_WP == "HIGH"     ? 1 : 0) << 10) +
+                ((CYGHWR_RAM0_MICRON_BCR_WC == "1"        ? 1 : 0) << 8)  +
+
+                ((CYGHWR_RAM0_MICRON_BCR_DS == "FULL" ? 0 :
+                  CYGHWR_RAM0_MICRON_BCR_DS == "1/2"  ? 1 : 2) << 4)      +
+
+                ((CYGHWR_RAM0_MICRON_BCR_BW == "NOWRAP"   ? 1 : 0) << 3)  +
+
+                (CYGHWR_RAM0_MICRON_BCR_BL ==  4   ? 1 :
+                 CYGHWR_RAM0_MICRON_BCR_BL ==  8   ? 2 :
+                 CYGHWR_RAM0_MICRON_BCR_BL ==  16  ? 3 :
+                 CYGHWR_RAM0_MICRON_BCR_BL ==  32  ? 4 : 7)
+            }
+
+            cdl_option CYGHWR_RAM0_MICRON_BCR_ASYNC {
+                display "Asynchronous/Synchronous mode"
+                flavor data
+                no_define
+                default_value { "SYNC" }
+                legal_values { "SYNC" "ASYNC" }
+            }
+
+            cdl_option CYGHWR_RAM0_MICRON_BCR_IL {
+                display "Initial latency"
+                flavor data
+                no_define
+                default_value { "FIXED" }
+                legal_values { "VARIABLE" "FIXED" }
+            }
+
+            cdl_option CYGHWR_RAM0_MICRON_BCR_LC {
+                display "Latency code"
+                flavor data
+                no_define
+                default_value 2
+                legal_values { 2 3 4 5 6 8 }
+            }
+
+            cdl_option CYGHWR_RAM0_MICRON_BCR_WP {
+                display "Active WAIT polarity"
+                flavor data
+                no_define
+                default_value { "LOW" }
+                legal_values { "HIGH" "LOW" }
+            }
+
+            cdl_option CYGHWR_RAM0_MICRON_BCR_WC {
+                display "WAIT configuration"
+                flavor data
+                no_define
+                default_value 1
+                legal_values { 0 1 }
+            }
+
+            cdl_option CYGHWR_RAM0_MICRON_BCR_DS {
+                display "Drive strength"
+                flavor data
+                no_define
+                default_value { "FULL" }
+                legal_values { "FULL" "1/2" "1/4" }
+            }
+
+            cdl_option CYGHWR_RAM0_MICRON_BCR_BW {
+                display "Burst wrap"
+                flavor data
+                no_define
+                default_value { "NOWRAP" }
+                legal_values { "WRAP" "NOWRAP" }
+            }
+
+            cdl_option CYGHWR_RAM0_MICRON_BCR_BL {
+                display "Burst length"
+                flavor data
+                no_define
+                default_value { "PERMANENT" }
+                legal_values { 4 8 16 32 "PERMANENT" }
+            }
+        }
+    }
+
+    cdl_interface CYGINT_DEVS_RAM1_MICRON_CELLULAR {
+    }
+
+    cdl_component CYGHWR_DEVS_RAM1_MICRON_CELLULAR {
+        display "Micron Cellular Ram 1.5 chip 1"
+        flavor bool
+        default_value CYGINT_DEVS_RAM1_MICRON_CELLULAR
+        no_define
+
+        active_if CYGINT_DEVS_RAM1_MICRON_CELLULAR
+
+        cdl_option CYGHWR_RAM1_MICRON_CELLULAR_SIZE {
+            display "RAM size \[Bytes\]"
+            flavor data
+            default_value 0x00100000
+        }
+        cdl_component CYGHWR_RAM1_MICRON_BCR_SETTO {
+            display "Bus Configuration Register"
+            flavor data
+
+            calculated {
+                0x0 +
+                ((CYGHWR_RAM1_MICRON_BCR_ASYNC == "ASYNC" ? 1 : 0) << 15) +
+                ((CYGHWR_RAM1_MICRON_BCR_IL == "VARIABLE" ? 0 : 1) << 14) +
+                ((CYGHWR_RAM1_MICRON_BCR_LC & 0x7) << 11)                 +
+                ((CYGHWR_RAM1_MICRON_BCR_WP == "HIGH"     ? 1 : 0) << 10) +
+                ((CYGHWR_RAM1_MICRON_BCR_WC == "1"        ? 1 : 0) << 8)  +
+
+                ((CYGHWR_RAM1_MICRON_BCR_DS == "FULL" ? 0 :
+                  CYGHWR_RAM1_MICRON_BCR_DS == "1/2"  ? 1 : 2) << 4)      +
+
+                ((CYGHWR_RAM1_MICRON_BCR_BW == "NOWRAP"   ? 1 : 0) << 3)  +
+
+                (CYGHWR_RAM1_MICRON_BCR_BL ==  4   ? 1 :
+                 CYGHWR_RAM1_MICRON_BCR_BL ==  8   ? 2 :
+                 CYGHWR_RAM1_MICRON_BCR_BL ==  16  ? 3 :
+                 CYGHWR_RAM1_MICRON_BCR_BL ==  32  ? 4 : 7)
+            }
+
+            cdl_option CYGHWR_RAM1_MICRON_BCR_ASYNC {
+                display "Asynchronous/Synchronous mode"
+                flavor data
+                no_define
+                default_value { "SYNC" }
+                legal_values { "SYNC" "ASYNC" }
+            }
+
+            cdl_option CYGHWR_RAM1_MICRON_BCR_IL {
+                display "Initial latency"
+                flavor data
+                no_define
+                default_value { "FIXED" }
+                legal_values { "VARIABLE" "FIXED" }
+            }
+
+            cdl_option CYGHWR_RAM1_MICRON_BCR_LC {
+                display "Latency code"
+                flavor data
+                no_define
+                default_value 2
+                legal_values { 2 3 4 5 6 8 }
+            }
+
+            cdl_option CYGHWR_RAM1_MICRON_BCR_WP {
+                display "Active WAIT polarity"
+                flavor data
+                no_define
+                default_value { "LOW" }
+                legal_values { "HIGH" "LOW" }
+            }
+
+            cdl_option CYGHWR_RAM1_MICRON_BCR_WC {
+                display "WAIT configuration"
+                flavor data
+                no_define
+                default_value 1
+                legal_values { 0 1 }
+            }
+
+            cdl_option CYGHWR_RAM1_MICRON_BCR_DS {
+                display "Drive strength"
+                flavor data
+                no_define
+                default_value { "FULL" }
+                legal_values { "FULL" "1/2" "1/4" }
+            }
+
+            cdl_option CYGHWR_RAM1_MICRON_BCR_BW {
+                display "Burst wrap"
+                flavor data
+                no_define
+                default_value { "NOWRAP" }
+                legal_values { "WRAP" "NOWRAP" }
+            }
+
+            cdl_option CYGHWR_RAM1_MICRON_BCR_BL {
+                display "Burst length"
+                flavor data
+                no_define
+                default_value { "PERMANENT" }
+                legal_values { 4 8 16 32 "PERMANENT" }
+            }
+        }
+    }
+}
