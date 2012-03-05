@@ -1,3 +1,7 @@
+2012-03-04  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* tests/fnmatch.c: Add missed CYG_TEST_INIT().
+
 2011-05-23  Manuel Borchers  <manuel@matronix.de>
 
 	* src/dir.cxx (rewinddir): Fix tracing of rewinddir().

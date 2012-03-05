@@ -119,6 +119,8 @@ int main( int argc, char **argv )
     { 0,           FNM_PERIOD|FNM_PATHNAME, "/.abc", "/.abc" }
   };
   
+  CYG_TEST_INIT();
+
   for (i=0; i < CYG_NELEM(test_case); i++) {
     if (test_case[i].result != 
         fnmatch(test_case[i].pattern,
