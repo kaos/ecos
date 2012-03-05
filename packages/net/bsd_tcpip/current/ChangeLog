@@ -1,3 +1,8 @@
+2012-02-29  Grant Edwards <grant.b.edwards@gmail.com>
+
+	* cdl/freebsd_net.cdl:  Add -fno-strict-aliasing compiler flag to fix
+	compiler warnings from newer versions (4.6) of gcc. [ bugzilla 1001501 ]
+
 2011-05-12  John Dallaway  <john@dallaway.org.uk>
 
 	* include/sys/param.h: Fix cyg_arc4random() extern. Issue reported by

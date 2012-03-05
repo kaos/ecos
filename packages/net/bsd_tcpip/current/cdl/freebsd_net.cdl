@@ -466,7 +466,7 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
             display "Additional compiler flags"
             flavor  data
             no_define
-            default_value { "-D_KERNEL" }
+            default_value { "-D_KERNEL -fno-strict-aliasing" }
             description   "
                 This option modifies the set of compiler flags for
                 building the networking package.
