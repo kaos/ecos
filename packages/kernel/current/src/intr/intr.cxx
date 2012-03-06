@@ -467,7 +467,7 @@ Cyg_Interrupt::attach(void)
 
     if( chain_list[index] == NULL )
     {
-        int in_use;
+        int in_use CYGBLD_ATTRIB_UNUSED;
         // First Interrupt on this chain, just assign it and register
         // the chain_isr with the HAL.
         
@@ -499,8 +499,7 @@ Cyg_Interrupt::attach(void)
 #else
     
     {
-        int in_use;
-
+        int in_use CYGBLD_ATTRIB_UNUSED;
 
         HAL_INTERRUPT_IN_USE( vector, in_use );
         CYG_ASSERT( 0 == in_use, "Interrupt vector not free.");
