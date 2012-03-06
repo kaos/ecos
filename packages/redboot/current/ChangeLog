@@ -1,3 +1,20 @@
+2012-03-06  Grant Edwards  <grant.b.edwards@gmail.com>
+
+	* src/net/net_io.c:
+	* cdl/redboot.cdl: Added new CDL option
+	CYGPKG_REDBOOT_NETWORKING_BOOTP to control whether BOOTP/DHCP
+	support is built into Redboot.  Moved "DEFAULT_NO_BOOTP" option
+	into the new package.
+	[ Bugzilla 1001177 ]
+
+	* src/net/bootp.c:
+	* cdl/redboot.cdl: Re-wrote BOOTP/DHCP client code to fix retry
+	mechanism and to fix race conditions that were corrupting the
+	received IP configuration data.  Added verbose BOOTP/DHCP output
+	CDL option.
+	[ Bugzilla 1001177 ]
+
+
 2011-12-02  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/redboot.cdl: Fix typographical error. Issue reported by

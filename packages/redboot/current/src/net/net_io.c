@@ -59,6 +59,10 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
+#ifndef CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
+#define CYGSEM_REDBOOT_DEFAULT_NO_BOOTP 0
+#endif
+
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
 #include <flash_config.h>
 
@@ -90,15 +94,14 @@ RedBoot_config_option("Default network device",
 // negated (if false, the others apply) which makes the names even more
 // confusing.
 
-#ifndef CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
-#define CYGSEM_REDBOOT_DEFAULT_NO_BOOTP 0
-#endif
+#ifdef CYGPKG_REDBOOT_NETWORKING_BOOTP
 RedBoot_config_option("Use BOOTP for network configuration",
                       bootp, 
                       ALWAYS_ENABLED, true,
                       CONFIG_BOOL,
                       !CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
     );
+#endif
 RedBoot_config_option("Local IP address",
                       bootp_my_ip,
                       "bootp", false,
@@ -689,10 +692,10 @@ net_init(void)
 #endif
 
     // Set defaults as appropriate
-#ifdef CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
-    use_bootp = false;
-#else
+#if defined(CYGPKG_REDBOOT_NETWORKING_BOOTP) && !CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
     use_bootp = true;
+#else
+    use_bootp = false;
 #endif
 #ifdef CYGDBG_REDBOOT_NET_DEBUG
     net_debug = true;
@@ -707,7 +710,9 @@ net_init(void)
 #endif
     flash_get_config("net_debug", &net_debug, CONFIG_BOOL);
     flash_get_config("gdb_port", &gdb_port, CONFIG_INT);
+#ifdef CYGPKG_REDBOOT_NETWORKING_BOOTP
     flash_get_config("bootp", &use_bootp, CONFIG_BOOL);
+#endif
     if (!use_bootp) {
         flash_get_IP("bootp_my_ip", &__local_ip_addr);
 #ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
@@ -767,6 +772,7 @@ net_init(void)
         return;
     }    
     // Initialize the network [if present]
+#ifdef CYGPKG_REDBOOT_NETWORKING_BOOTP
     if (use_bootp) {
         if (__bootp_find_local_ip(&my_bootp_info) == 0) {
             have_net = true;
@@ -781,7 +787,9 @@ net_init(void)
                 have_net = true;
             }
         }
-    } else {
+    }
+#endif
+    if (!use_bootp) {
         if (__local_ip_addr[0] == 0 && __local_ip_addr[1] == 0 &&
             __local_ip_addr[2] == 0 && __local_ip_addr[3] == 0) {
             show_eth_info();
@@ -813,7 +821,11 @@ net_init(void)
     }
 }
 
-static char usage[] = "[-b] [-l <local_ip_address>[/<mask_len>]] [-h <server_address>]"
+static char usage[] = ""
+#ifdef CYGPKG_REDBOOT_NETWORKING_BOOTP
+       " [-b]"
+#endif
+       " [-l <local_ip_address>[/<mask_len>]] [-h <server_address>]"
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
 	" [-d <dns_server_address>]"
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS_FCONFIG_DOMAIN                                                  
@@ -836,7 +848,9 @@ do_ip_addr(int argc, char *argv[])
     struct option_info opts[5];
     char *ip_addr, *host_addr;
     bool ip_addr_set, host_addr_set;
+#ifdef CYGPKG_REDBOOT_NETWORKING_BOOTP
     bool do_bootp = false;
+#endif
     struct sockaddr_in host;
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
     char *dns_addr;
@@ -857,9 +871,12 @@ do_ip_addr(int argc, char *argv[])
               (void *)&ip_addr, (bool *)&ip_addr_set, "local IP address");
     init_opts(&opts[1], 'h', true, OPTION_ARG_TYPE_STR, 
               (void *)&host_addr, (bool *)&host_addr_set, "default server address");
+    num_opts = 2;
+#ifdef CYGPKG_REDBOOT_NETWORKING_BOOTP
     init_opts(&opts[2], 'b', false, OPTION_ARG_TYPE_FLG,
               &do_bootp, 0, "use BOOTP");
-    num_opts = 3;
+    num_opts++;
+#endif
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
     init_opts(&opts[num_opts], 'd', true, OPTION_ARG_TYPE_STR, 
               (void *)&dns_addr, (bool *)&dns_addr_set, "DNS server address");
@@ -875,11 +892,13 @@ do_ip_addr(int argc, char *argv[])
     if (!scan_opts(argc, argv, 1, opts, num_opts, 0, 0, "")) {
         return;
     }
+#ifdef CYGPKG_REDBOOT_NETWORKING_BOOTP
     if (do_bootp) {
         if (__bootp_find_local_ip(&my_bootp_info) != 0) {
             diag_printf("Failed to get BOOTP address\n");
         }
     }
+#endif
     if (ip_addr_set) {
 #ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
         char *slash_pos;

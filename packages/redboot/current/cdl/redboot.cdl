@@ -251,6 +251,7 @@ cdl_package CYGPKG_REDBOOT {
             display       "Include POSIX checksum command"
             doc           ref/cksum-command.html
             default_value 1
+            requires      CYGPKG_CRC
             compile -library=libextras.a cksum.c
         }
 
@@ -339,7 +340,7 @@ cdl_package CYGPKG_REDBOOT {
             active_if     CYGPKG_IO_ETH_DRIVERS
             default_value 1
             implements    CYGINT_REDBOOT_LOAD_METHOD
-            compile net/bootp.c net/udp.c net/ip.c net/pktbuf.c net/cksum.c
+            compile net/udp.c net/ip.c net/pktbuf.c net/cksum.c
             compile net/enet.c net/icmp.c net/tcp.c net/timers.c net/arp.c
             compile net/inet_addr.c
             compile -library=libextras.a net/ping.c net/net_io.c 
@@ -389,17 +390,6 @@ cdl_package CYGPKG_REDBOOT {
                     an IP address is configured into the Flash
                     configuration, that will be used in preference."
     
-                cdl_option CYGSEM_REDBOOT_DEFAULT_NO_BOOTP {
-                     display          "Do not try to use BOOTP"
-                     flavor           bool
-                     default_value    0
-                     description      "
-                         By default Redboot tries to use BOOTP to get an IP
-                         address. If there's no BOOTP server on your network
-                         use this option to avoid the wait until the
-                         timeout. This option is overriden by the
-                         configuration stored in flash."
-                }
                 cdl_option CYGDAT_REDBOOT_DEFAULT_BOOTP_SERVER_IP_ADDR {
                      display           "Default bootp server"
                      flavor            booldata
@@ -415,21 +405,54 @@ cdl_package CYGPKG_REDBOOT {
                           preference."
                 }
             }
-    
-            cdl_component CYGSEM_REDBOOT_NETWORKING_DHCP {
-                display          "Use DHCP to get IP information"
+
+            cdl_component CYGPKG_REDBOOT_NETWORKING_BOOTP {
+                display          "Enable BOOTP/DHCP support"
                 flavor           bool
                 default_value    1
+                compile          net/bootp.c
                 description      "
-                    Use DHCP protocol to obtain pertinent IP addresses, such 
-                    as the client, server, gateway, etc."
+                    Use BOOTP/DHCP protocol to obtain pertinent IP
+                    addresses, such as the client, server, gateway,
+                    etc."
+                
+                cdl_component CYGSEM_REDBOOT_NETWORKING_DHCP {
+                    display          "Enable DHCP in addition to BOOTP support"
+                    flavor           bool
+                    default_value    1
+                    description      "
+                    Enables DHCP protocol in addition to BOOTP.  If not enabled,
+                    only BOOTP will be suported."
+                }
+
+                cdl_component CYGSEM_REDBOOT_NETWORKING_BOOTP_VERBOSE {
+                    display          "Enable verbose output from BOOTP/DHCP code"
+                    flavor           bool
+                    default_value    0
+                    description      "
+                    Enable more verbose output from BOOTP/DHCP that logs rx/tx
+                    packet types and state-machine transitions."
+                }
+
+                cdl_option CYGSEM_REDBOOT_DEFAULT_NO_BOOTP {
+                    display          "Do not try to use BOOTP/DHCP"
+                    flavor           bool
+                    default_value    0
+                    description      "
+                         By default Redboot tries to use BOOTP/DHCP to
+                         get an IP address when BOOTP/DHCP support is
+                         present in Redboot. If there's no BOOTP/DHCP
+                         server on your network use this option to
+                         avoid waiting for the BOOTP/DHCP timeouts and
+                         retries. This option is overriden by the
+                         configuration stored in flash."
+                }
             }
-    
+
             cdl_component CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY {
                 display          "Use a gateway for non-local IP traffic"
                 flavor           bool
                 default_value    1
-                requires         CYGSEM_REDBOOT_NETWORKING_DHCP
                 description      "
                   Enabling this option will allow the RedBoot networking
                 stack to use a \[single\] gateway to reach a non-local
@@ -932,6 +955,7 @@ cdl_package CYGPKG_REDBOOT {
                 display       "Use CRC checksums on FIS images."
                 flavor        bool
                 default_value 1
+                requires      CYGPKG_CRC
                 description "
                   When this option is enabled, RedBoot will use CRC checksums
                   when reading and writing flash images."

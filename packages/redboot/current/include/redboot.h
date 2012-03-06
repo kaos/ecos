@@ -67,7 +67,9 @@
 #include <net/net.h>
 #include <net/bootp.h>
 // Determine an IP address for this node, using BOOTP
+#ifdef CYGPKG_REDBOOT_NETWORKING_BOOTP
 extern int __bootp_find_local_ip(bootp_header_t *info);
+#endif
 #endif
 
 #ifdef DEFINE_VARS
