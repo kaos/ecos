@@ -1,3 +1,10 @@
+2012-03-06  Grant Edwards <grant.b.edwards@gmail.com>
+
+	* src/malloc.cxx (free):
+	* src/kapi.cxx (cyg_mempool_var_free, cyg_mempool_fix_free): Fix
+	compiler warnings about variables that are set but never
+	referenced. [ Bugzilla 1001511 ]
+
 2009-09-01  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/heapgen.tcl (tcl_path): use the makefile's HOST instead of

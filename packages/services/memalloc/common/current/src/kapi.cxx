@@ -166,7 +166,7 @@ externC void *cyg_mempool_var_try_alloc(
 /* Frees memory back into variable size pool. */
 externC void cyg_mempool_var_free(cyg_handle_t varpool, void *p) __THROW
 {
-    cyg_bool b;
+    cyg_bool b CYGBLD_ATTRIB_UNUSED;
     b = ((Cyg_Mempool_Variable *)varpool)->free((cyg_uint8 *)p, 0);
     CYG_ASSERT( b, "Bad free");
 }
@@ -267,7 +267,7 @@ externC void *cyg_mempool_fix_try_alloc(cyg_handle_t fixpool) __THROW
 /* Frees memory back into fixed size pool. */
 externC void cyg_mempool_fix_free(cyg_handle_t fixpool, void *p) __THROW
 {
-    cyg_bool b;
+    cyg_bool b CYGBLD_ATTRIB_UNUSED;
     b = ((Cyg_Mempool_Fixed *)fixpool)->free((cyg_uint8 *)p);
     CYG_ASSERT( b, "Bad free");
 }

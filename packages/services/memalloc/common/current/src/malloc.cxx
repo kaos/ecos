@@ -155,7 +155,7 @@ malloc( size_t size )
 void
 free( void *ptr )
 {
-    cyg_bool freeret;
+    cyg_bool freeret CYGBLD_ATTRIB_UNUSED;
 
     CYG_REPORT_FUNCNAME( "free");
     
