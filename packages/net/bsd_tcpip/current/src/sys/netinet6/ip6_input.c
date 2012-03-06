@@ -222,7 +222,7 @@ int ip6_fw_enable = 1;
 
 struct ip6stat ip6stat;
 
-static void ip6_init2 __P((void *));
+void ip6_init2 __P((void *));
 static struct mbuf *ip6_setdstifaddr __P((struct mbuf *, struct in6_ifaddr *));
 
 static int ip6_hopopts_input __P((u_int32_t *, u_int32_t *, struct mbuf **, int *));
@@ -338,7 +338,7 @@ ip6_init()
 #endif
 }
 
-static void
+void
 ip6_init2(dummy)
 	void *dummy;
 {

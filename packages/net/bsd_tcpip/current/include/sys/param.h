@@ -222,6 +222,7 @@
 #define ip6_get_prevhdr cyg_ip6_get_prevhdr
 #define ip6_getdstifaddr cyg_ip6_getdstifaddr
 #define ip6_init cyg_ip6_init
+#define ip6_init2 cyg_ip6_init2
 #define ip6_input cyg_ip6_input
 #define ip6_lasthdr cyg_ip6_lasthdr
 #define ip6_mforward cyg_ip6_mforward

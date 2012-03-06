@@ -1,3 +1,12 @@
+2012-03-06  Grant Edwards <grant.b.edwards@gmail.com>
+	
+	* include/sys/param.h:
+	* src/sys/netinet6/ip6_input.c:  Make ip6_init2() visible globally
+	as cyg_ip6_init2() so that it's possible to disable ipv6 support
+	at runtime by munging the net init table and replacing calls to
+	net_add_domain(&inet6domain) and ip6_init2() with calls to a noop
+	function. [ Bugzilla 1001502 ]
+
 2012-02-29  Grant Edwards <grant.b.edwards@gmail.com>
 
 	* cdl/freebsd_net.cdl:  Add -fno-strict-aliasing compiler flag to fix
