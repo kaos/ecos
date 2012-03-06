@@ -369,9 +369,11 @@ in_pcbladdr(inp, nam, plocal_sin)
 #define ifatoia(ifa)	((struct in_ifaddr *)(ifa))
 		if (sin->sin_addr.s_addr == INADDR_ANY)
 		    sin->sin_addr = IA_SIN(TAILQ_FIRST(&in_ifaddrhead))->sin_addr;
+#ifdef CYGOPT_NET_FREEBSD_FORCE_DIRECTED_BROADCAST
 		else if (sin->sin_addr.s_addr == (u_long)INADDR_BROADCAST &&
 		  (TAILQ_FIRST(&in_ifaddrhead)->ia_ifp->if_flags & IFF_BROADCAST))
 		    sin->sin_addr = satosin(&TAILQ_FIRST(&in_ifaddrhead)->ia_broadaddr)->sin_addr;
+#endif
 	}
 	if (inp->inp_laddr.s_addr == INADDR_ANY) {
 		register struct route *ro;

@@ -494,4 +494,29 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
             These are test specifically for the FreeBSD stack. These test features
             which only the FreeBSD stack has"
     }
+
+    cdl_option CYGOPT_NET_FREEBSD_FORCE_DIRECTED_BROADCAST {
+        display       "Convert limited broadcast addresses into directed broadcasts"
+        flavor        bool
+        default_value 1
+        description   "
+            In line with other IP stack implementations, the BSD
+            network stack has historically converted packets sent to
+            the INADDR_BROADCAST destination addresses
+            (255.255.255.255) into a more specific directed broadcast
+            address according to the address configuration of the
+            primary network interface. For example if your network
+            interface is configured as 192.168.100.33/24 and you send
+            a UDP broadcast packet to 255.255.255.255, it will
+            actually be sent with a destination IP address of
+            192.168.100.255. Over time, this behavior has been
+            criticized for various reasons.  The primary reason is
+            that it becomes impossible to send UDP packets to
+            255.255.255.255 once the primary network (broadcast)
+            interface is configured with address information. For this
+            reason, it is possible to disable this behavior with this
+            option so that packets will be sent explicitly to
+            INADDR_BROADCAST when that destination address is
+            specified."
+    }
 }

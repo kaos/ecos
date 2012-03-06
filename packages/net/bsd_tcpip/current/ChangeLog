@@ -1,5 +1,15 @@
 2012-03-06  Grant Edwards <grant.b.edwards@gmail.com>
 	
+	* cdl/freebsd_net.cdl:
+	* src/sys/netinet/in_pcb.c: Add CDL option
+	CYGOPT_NET_FREEBSD_FORCE_DIRECTED_BROADCAST that allows you to
+	control whether or not packets sent to 255.255.255.255 get
+	redirected to the interface's subnet broadcast address.  By
+	default, this option is enabled (behavior is the same as
+	before this change). [ Bugzilla 1001508 ]
+	
+2012-03-06  Grant Edwards <grant.b.edwards@gmail.com>
+	
 	* include/sys/param.h:
 	* src/sys/netinet6/ip6_input.c:  Make ip6_init2() visible globally
 	as cyg_ip6_init2() so that it's possible to disable ipv6 support
