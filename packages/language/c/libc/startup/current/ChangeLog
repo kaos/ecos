@@ -1,3 +1,9 @@
+2012-03-06  Grant Edwards <grant.b.edwards@gmail.com>
+	
+	* src/abort.cxx (abort):
+	* src/exit.cxx (exit): Fix compiler warnings about unused 'rc'
+	variables. [ Bugzilla 1001506 ]
+	
 2007-10-05  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/main.cxx (main): Suspend main thread, rather than exit.

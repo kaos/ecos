@@ -87,7 +87,7 @@ exit( int status )
 
 #ifdef CYGSEM_LIBC_EXIT_CALLS_FFLUSH
 
-    int rc;
+    int rc CYGBLD_ATTRIB_UNUSED;
 
     CYG_TRACE0( true, "Calling fflush( NULL )" );
     rc = fflush( NULL );

@@ -75,7 +75,7 @@ abort( void )
     CYG_REPORT_FUNCNAME( "abort" );
     
 #if CYGINT_ISO_SIGNAL_IMPL > 0
-    int rc;
+    int rc CYGBLD_ATTRIB_UNUSED;
     
     rc = raise(SIGABRT);
     
