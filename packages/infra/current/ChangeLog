@@ -1,3 +1,8 @@
+2012-03-06  Grant Edwards  <grant.b.edwards@gmail.com>
+	
+	* src/diag.cxx: Fix compiler warnings about variables that are set
+	but never read. [ Bugzilla 1001503 ]
+
 2010-09-13  Chris Holgate  <chris@zynaptic.com>
 
 	* include/diag.h:
