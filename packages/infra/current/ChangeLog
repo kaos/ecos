@@ -1,4 +1,10 @@
 2012-03-06  Grant Edwards  <grant.b.edwards@gmail.com>
+
+	* include/cyg_type.h: Add CYGBLD_ATTRIB_UNUSED macro to be used to
+	eliminate compiler warnings about unused or set-but-not-referenced
+	varibles. Part of: [ Bugzilla 1001504 ]
+	
+2012-03-06  
 	
 	* src/diag.cxx: Fix compiler warnings about variables that are set
 	but never read. [ Bugzilla 1001503 ]

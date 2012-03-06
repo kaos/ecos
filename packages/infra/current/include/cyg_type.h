@@ -452,6 +452,11 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_STRFTIME_FORMAT(__format__, __args__) \
         __attribute__((format (strftime, __format__, __args__)))
 
+// Tell compiler not to warn us about an unused variable -- generally
+// because it will be used when sources are build under certain
+// circumstances (e.g. with debugging or asserts enabled.
+# define CYGBLD_ATTRIB_UNUSED  __attribute__((unused))
+
 // Tell the compiler not to throw away a variable or function. Only known
 // available on 3.3.2 or above. Old version's didn't throw them away,
 // but using the unused attribute should stop warnings.
@@ -463,6 +468,8 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 #  endif
 # endif 
 #else // non-GNU
+
+# define CYGBLD_ATTRIB_UNUSED  /* nothing */
 
 # define CYGBLD_ATTRIB_CONSTRUCTOR
 
