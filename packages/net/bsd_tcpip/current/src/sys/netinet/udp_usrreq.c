@@ -667,7 +667,6 @@ udp_output(inp, m, addr, control, p)
 	register struct udpiphdr *ui;
 	register int len = m->m_pkthdr.len;
 	struct in_addr laddr;
-	struct sockaddr_in *sin;
 	int s = 0, error = 0;
 
         bzero(&laddr, sizeof(laddr));
@@ -680,7 +679,6 @@ udp_output(inp, m, addr, control, p)
 	}
 
 	if (addr) {
-		sin = (struct sockaddr_in *)addr;
 		laddr = inp->inp_laddr;
 		if (inp->inp_faddr.s_addr != INADDR_ANY) {
 			error = EISCONN;
@@ -840,7 +838,6 @@ udp_connect(struct socket *so, struct sockaddr *nam, struct proc *p)
 {
 	struct inpcb *inp;
 	int s, error;
-	struct sockaddr_in *sin;
 
 	inp = sotoinpcb(so);
 	if (inp == 0)
@@ -850,7 +847,6 @@ udp_connect(struct socket *so, struct sockaddr *nam, struct proc *p)
 	error = 0;
 	s = splnet();
 	if (error == 0) {
-		sin = (struct sockaddr_in *)nam;
 		error = in_pcbconnect(inp, nam, p);
 	}
 	splx(s);

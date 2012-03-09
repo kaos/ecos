@@ -817,12 +817,10 @@ encap6_ctlinput(cmd, sa, d0)
 	void *d0;
 {
 	void *d = d0;
-	struct ip6_hdr *ip6;
-	struct mbuf *m;
-	int off;
+	struct ip6_hdr *ip6 CYGBLD_ATTRIB_UNUSED;
+	struct mbuf *m CYGBLD_ATTRIB_UNUSED;
+	int off CYGBLD_ATTRIB_UNUSED;
 	struct ip6ctlparam *ip6cp = NULL;
-	const struct sockaddr_in6 *sa6_src = NULL;
-	void *cmdarg;
 	int nxt;
 	struct encaptab *ep;
 	const struct ip6protosw *psw;
@@ -848,14 +846,10 @@ encap6_ctlinput(cmd, sa, d0)
 		m = ip6cp->ip6c_m;
 		ip6 = ip6cp->ip6c_ip6;
 		off = ip6cp->ip6c_off;
-		cmdarg = ip6cp->ip6c_cmdarg;
-		sa6_src = ip6cp->ip6c_src;
 		nxt = ip6cp->ip6c_nxt;
 	} else {
 		m = NULL;
 		ip6 = NULL;
-		cmdarg = NULL;
-		sa6_src = &sa6_any;
 		nxt = -1;
 	}
 

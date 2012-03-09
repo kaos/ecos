@@ -147,7 +147,7 @@ ether_output(ifp, m, dst, rt0)
  	u_char esrc[6], edst[6];
 	register struct rtentry *rt;
 	register struct ether_header *eh;
-	int off, loop_copy = 0;
+	int loop_copy = 0;
 	int hlen;	/* link layer header lenght */
 	struct arpcom *ac = IFP2AC(ifp);
 
@@ -184,7 +184,6 @@ ether_output(ifp, m, dst, rt0)
 	case AF_INET:
 		if (!arpresolve(ac, rt, m, dst, edst, rt0))
 			return (0);	/* if not yet resolved */
-		off = m->m_pkthdr.len - m->m_len;
 		type = htons(ETHERTYPE_IP);
 		break;
 #endif
@@ -194,7 +193,6 @@ ether_output(ifp, m, dst, rt0)
 			/* Something bad happened */
 			return(0);
 		}
-		off = m->m_pkthdr.len - m->m_len;
 		type = htons(ETHERTYPE_IPV6);
 		break;
 #endif
@@ -935,7 +933,7 @@ ether_resolvemulti(ifp, llsa, sa)
 		sdl->sdl_index = ifp->if_index;
 		sdl->sdl_type = IFT_ETHER;
 		sdl->sdl_alen = ETHER_ADDR_LEN;
-		e_addr = LLADDR(sdl);
+		e_addr = (unsigned char*)LLADDR(sdl);
 		ETHER_MAP_IPV6_MULTICAST(&sin6->sin6_addr, e_addr);
 		*llsa = (struct sockaddr *)sdl;
 		return 0;

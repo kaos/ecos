@@ -119,7 +119,6 @@ tcp_output(tp)
 	int off, flags, error;
 	register struct mbuf *m;
 	struct ip *ip = NULL;
-	register struct ipovly *ipov = NULL;
 #ifdef INET6
 	struct ip6_hdr *ip6 = NULL;
 #endif /* INET6 */
@@ -650,7 +649,6 @@ send:
 #endif /* INET6 */
       {
 	ip = mtod(m, struct ip *);
-	ipov = (struct ipovly *)ip;
 	th = (struct tcphdr *)(ip + 1);
 	/* this picks up the pseudo header (w/o the length) */
 	tcp_fillheaders(tp, ip, th);

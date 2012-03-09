@@ -132,7 +132,7 @@ tcp_usr_attach(struct socket *so, int proto, struct proc *p)
 	int s = splnet();
 	int error;
 	struct inpcb *inp = sotoinpcb(so);
-	struct tcpcb *tp = 0;
+	struct tcpcb *tp CYGBLD_ATTRIB_UNUSED = 0;
 	TCPDEBUG0;
 
 	TCPDEBUG1();
@@ -205,7 +205,7 @@ tcp_usr_bind(struct socket *so, struct sockaddr *nam, struct proc *p)
 	int s = splnet();
 	int error = 0;
 	struct inpcb *inp = sotoinpcb(so);
-	struct tcpcb *tp;
+	struct tcpcb *tp CYGBLD_ATTRIB_UNUSED;
 	struct sockaddr_in *sinp;
 
 	COMMON_START();
@@ -234,7 +234,7 @@ tcp6_usr_bind(struct socket *so, struct sockaddr *nam, struct proc *p)
 	int s = splnet();
 	int error = 0;
 	struct inpcb *inp = sotoinpcb(so);
-	struct tcpcb *tp;
+	struct tcpcb *tp CYGBLD_ATTRIB_UNUSED;
 	struct sockaddr_in6 *sin6p;
 
 	COMMON_START();
@@ -429,7 +429,7 @@ tcp_usr_accept(struct socket *so, struct sockaddr **nam)
 	int s = splnet();
 	int error = 0;
 	struct inpcb *inp = sotoinpcb(so);
-	struct tcpcb *tp = NULL;
+	struct tcpcb *tp CYGBLD_ATTRIB_UNUSED = NULL;
 	TCPDEBUG0;
 
 	if (so->so_state & SS_ISDISCONNECTED) {
@@ -453,7 +453,7 @@ tcp6_usr_accept(struct socket *so, struct sockaddr **nam)
 	int s = splnet();
 	int error = 0;
 	struct inpcb *inp = sotoinpcb(so);
-	struct tcpcb *tp = NULL;
+	struct tcpcb *tp CYGBLD_ATTRIB_UNUSED = NULL;
 	TCPDEBUG0;
 
 	if (so->so_state & SS_ISDISCONNECTED) {

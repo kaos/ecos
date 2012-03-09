@@ -411,7 +411,7 @@ tcp_input(m, off0)
 	struct ip6_hdr *ip6 = NULL;
 	int isipv6;
 #endif /* INET6 */
-	int rstreason; /* For badport_bandlim accounting purposes */
+	int rstreason CYGBLD_ATTRIB_UNUSED; /* For badport_bandlim accounting purposes */
 
 #ifdef INET6
 	isipv6 = (mtod(m, struct ip *)->ip_v == 6) ? 1 : 0;

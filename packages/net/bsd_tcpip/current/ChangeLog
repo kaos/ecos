@@ -1,3 +1,19 @@
+2012-03-08  Grant Edwards <grant.b.edwards@gmail.com>
+
+	* src/sys/net/if_ethersubr.c (ether_output, ether_resolvemulti):
+	Fix compiler warning by removing variable that was set but never
+	referenced.  Fix compiler warning about signed/unsigned pointer
+	mismatch.
+	* src/sys/netinet/tcp_input.c (tcp_input):
+	* src/sys/netinet/tcp_output.c (tcp_output):
+	* src/sys/netinet/ip_encap.c (encap6_ctlinput):
+	* src/sys/netinet/udp_usrreq.c (udp_output, udp_connect): Fix
+	compiler warnings about variables that are set but not referenced.
+	Some are removed, others that are referenced in
+	conditionally-compiled code are marked with the "unused"
+	attribute.
+	[ Bugzilla 1001525 ]
+
 2012-03-06  Grant Edwards <grant.b.edwards@gmail.com>
 	
 	* cdl/freebsd_net.cdl:
