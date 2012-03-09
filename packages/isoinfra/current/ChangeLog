@@ -1,3 +1,8 @@
+2012-03-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/time.h: Add suseconds_t and useconds_t here for now.
+	* include/sys/time.h: Use suseconds_t when defining struct timeval.
+
 2009-06-03  Ross Younger  <wry@ecoscentric.com>
 
 	* include/sys/stat.h: Include cyg_type.h for __externC
