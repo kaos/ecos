@@ -259,9 +259,6 @@ rip6_ctlinput(cmd, sa, d)
 	struct sockaddr *sa;
 	void *d;
 {
-	struct ip6_hdr *ip6;
-	struct mbuf *m;
-	int off = 0;
 	struct ip6ctlparam *ip6cp = NULL;
 	const struct sockaddr_in6 *sa6_src = NULL;
 	void *cmdarg;
@@ -283,14 +280,9 @@ rip6_ctlinput(cmd, sa, d)
 	/* if the parameter is from icmp6, decode it. */
 	if (d != NULL) {
 		ip6cp = (struct ip6ctlparam *)d;
-		m = ip6cp->ip6c_m;
-		ip6 = ip6cp->ip6c_ip6;
-		off = ip6cp->ip6c_off;
 		cmdarg = ip6cp->ip6c_cmdarg;
 		sa6_src = ip6cp->ip6c_src;
 	} else {
-		m = NULL;
-		ip6 = NULL;
 		cmdarg = NULL;
 		sa6_src = &sa6_any;
 	}

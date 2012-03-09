@@ -1605,7 +1605,7 @@ phyint_send(ip6, mifp, m)
 {
 	struct mbuf *mb_copy;
 	struct ifnet *ifp = mifp->m6_ifp;
-	int error = 0;
+	int error CYGBLD_ATTRIB_UNUSED = 0;
 #ifdef __NetBSD__
 	int s = splsoftnet();	/* needs to protect static "ro" below. */
 #else
@@ -1896,7 +1896,6 @@ pim6_input(mp, offp, proto)
 		struct mbuf *mcp;
 		struct ip6_hdr *eip6;
 		u_int32_t *reghdr;
-		int rc;
 	
 		++pim6stat.pim6s_rcv_registers;
 
@@ -2000,15 +1999,15 @@ pim6_input(mp, offp, proto)
 
 #if defined(__FreeBSD__) && __FreeBSD__ >= 3
 #if (__FreeBSD_version >= 410000)
- 		rc = if_simloop(mif6table[reg_mif_num].m6_ifp, m,
+ 		if_simloop(mif6table[reg_mif_num].m6_ifp, m,
 				dst.sin6_family, (int)NULL);
 #else
- 		rc = if_simloop(mif6table[reg_mif_num].m6_ifp, m,
+ 		if_simloop(mif6table[reg_mif_num].m6_ifp, m,
 				(struct sockaddr *) &dst, NULL);
 
 #endif
 #else
- 		rc = looutput(mif6table[reg_mif_num].m6_ifp, m,
+ 		looutput(mif6table[reg_mif_num].m6_ifp, m,
 			      (struct sockaddr *) &dst,
 			      (struct rtentry *) NULL);
 #endif

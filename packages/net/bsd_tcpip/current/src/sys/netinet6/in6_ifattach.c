@@ -209,7 +209,7 @@ get_rand_ifid(ifp, in6)
 	/* generate 8 bytes of pseudo-random value. */
 	bzero(&ctxt, sizeof(ctxt));
 	MD5Init(&ctxt);
-	MD5Update(&ctxt, hostname, hostnamelen);
+	MD5Update(&ctxt, (unsigned char*)hostname, hostnamelen);
 	MD5Final(digest, &ctxt);
 
 	/* assumes sizeof(digest) > sizeof(ifid) */
@@ -411,7 +411,7 @@ get_hw_ifid(ifp, in6)
 	return -1;
 
 found:
-	addr = LLADDR(sdl);
+	addr = (unsigned char*)LLADDR(sdl);
 	addrlen = sdl->sdl_alen;
 
 	switch (ifp->if_type) {
@@ -841,7 +841,7 @@ in6_nigroup(ifp, name, namelen, in6)
 	l = p - name;
 	strncpy(n, name, l);
 	n[(int)l] = '\0';
-	for (q = n; *q; q++) {
+	for (q = (unsigned char*)n; *q; q++) {
 		if ('A' <= *q && *q <= 'Z')
 			*q = *q - 'A' + 'a';
 	}
@@ -849,8 +849,8 @@ in6_nigroup(ifp, name, namelen, in6)
 	/* generate 8 bytes of pseudo-random value. */
 	bzero(&ctxt, sizeof(ctxt));
 	MD5Init(&ctxt);
-	MD5Update(&ctxt, &l, sizeof(l));
-	MD5Update(&ctxt, n, l);
+	MD5Update(&ctxt, (unsigned char*)&l, sizeof(l));
+	MD5Update(&ctxt, (unsigned char*)n, l);
 	MD5Final(digest, &ctxt);
 
 	bzero(in6, sizeof(*in6));

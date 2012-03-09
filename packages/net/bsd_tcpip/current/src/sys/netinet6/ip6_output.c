@@ -1654,7 +1654,7 @@ ip6_insert_jumboopt(exthdrs, plen)
 			n->m_len = oldoptlen + JUMBOOPTLEN;
 			bcopy(mtod(mopt, caddr_t), mtod(n, caddr_t),
 			      oldoptlen);
-			optbuf = mtod(n, caddr_t) + oldoptlen;
+			optbuf = (unsigned char*)mtod(n, caddr_t) + oldoptlen;
 			m_freem(mopt);
 			mopt = exthdrs->ip6e_hbh = n;
 		} else {
@@ -1822,7 +1822,6 @@ ip6_ctloutput(op, so, level, optname, mp)
 	void *optdata;
 	struct ip6_recvpktopts *rcvopts;
 #if defined(IPSEC) && defined(__OpenBSD__)
-	struct proc *p = curproc; /* XXX */
 	struct tdb *tdb;
 	struct tdb_ident *tdbip, tdbi;
 	int s;
@@ -1832,7 +1831,6 @@ ip6_ctloutput(op, so, level, optname, mp)
 	int error, optval;
 	int level, op, optname;
 	int optlen;
-	struct proc *p;
 
 	if (!sopt) {
 		panic("ip6_ctloutput: arg soopt is NULL");
@@ -1841,7 +1839,6 @@ ip6_ctloutput(op, so, level, optname, mp)
         op = sopt->sopt_dir;
         optname = sopt->sopt_name;
         optlen = sopt->sopt_valsize;
-        p = sopt->sopt_p;
 #else
 #ifdef HAVE_NRL_INPCB
 	struct inpcb *inp = sotoinpcb(so);
@@ -1853,7 +1850,6 @@ ip6_ctloutput(op, so, level, optname, mp)
 	int error, optval;
 	int optlen;
 #if defined(__NetBSD__) || (defined(__FreeBSD__) && __FreeBSD__ >= 3)
-	struct proc *p = curproc;	/* XXX */
 #endif
 
 	optlen = m ? m->m_len : 0;
@@ -2863,7 +2859,6 @@ ip6_raw_ctloutput(op, so, level, optname, mp)
 #endif
 #if defined(__FreeBSD__) && __FreeBSD__ >= 3
 	int level, op, optname;
-	struct proc *p;
 #else
 	struct mbuf *m = *mp;
 #endif /* FreeBSD >= 3 */
@@ -2876,7 +2871,6 @@ ip6_raw_ctloutput(op, so, level, optname, mp)
         op = sopt->sopt_dir;
         optname = sopt->sopt_name;
         optlen = sopt->sopt_valsize;
-        p = sopt->sopt_p;
 #else
 	optlen = m ? m->m_len : 0;
 #endif /* FreeBSD >= 3 */

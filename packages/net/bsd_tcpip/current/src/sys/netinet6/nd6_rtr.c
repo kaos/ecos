@@ -1258,7 +1258,6 @@ prelist_update(new, dr, m)
 	int s = splnet();
 #endif
 	int error = 0;
-	int newprefix = 0;
 	int auth;
 	struct in6_addrlifetime lt6_tmp;
 
@@ -1316,8 +1315,6 @@ prelist_update(new, dr, m)
 			pfxrtr_add(pr, dr);
 	} else {
 		struct nd_prefix *newpr = NULL;
-
-		newprefix = 1;
 
 		if (new->ndpr_vltime == 0)
 			goto end;

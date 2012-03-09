@@ -1,5 +1,28 @@
 2012-03-08  Grant Edwards <grant.b.edwards@gmail.com>
 
+	* src/sys/netinet6/icmp6.c (icmp6_redirect_input):
+	* src/sys/netinet6/in6_src.c (in6_selectroute):
+	* src/sys/netinet6/ip6_mroute.c (phyint_send, pim6_input):
+	* src/sys/netinet6/nd6.c (nd6_timer, nd6_dad_ns_input):
+	* src/sys/netinet6/nd6_rtr.c (prelist_update):
+	* src/sys/netinet6/ip6_output.c (ip6_ctloutput, ip6_raw_ctloutput):
+	* src/sys/netinet6/raw_ip6.c (rip6_ctlinput):
+	* src/sys/netinet6/ip6_input.c (ip6_hopopts_input): Fix compiler
+	warnings by removing variables that are set but never referenced,
+	or by declaring them as "unused" if they are referenced only by
+	conditionally-compiled code.
+	* src/sys/netinet6/raw_ip6.c (rip6_ctlinput):
+	* src/sys/netinet6/in6_ifattach.c (get_rand_ifid,in6_nigroup):
+	* src/sys/netinet6/ip6_output.c (ip6_insert_jumboopt):
+	* src/sys/netinet6/ip6_input.c (ip6_get_prevhdr): Fix compiler
+	warnings about signed/unsigned char mismatches.
+	* src/sys/netinet6/ip6_input.c (ip6_savecontrol): Fix
+	grouping/precedence/paren error in flag checking expression --
+	verified same fix is already in upstream.
+	[ Bugzilla 1001526 ]
+
+2012-03-08  Grant Edwards <grant.b.edwards@gmail.com>
+
 	* src/sys/net/if_ethersubr.c (ether_output, ether_resolvemulti):
 	Fix compiler warning by removing variable that was set but never
 	referenced.  Fix compiler warning about signed/unsigned pointer

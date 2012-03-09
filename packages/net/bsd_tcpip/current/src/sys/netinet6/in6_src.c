@@ -716,8 +716,6 @@ in6_selectroute(dstsock, opts, mopts, ro, retifp, retrt, clone)
 	 * a new one.
 	 */
 	if (ro) {
-		int newroute = 0;
-
 		if (ro->ro_rt &&
 		    (!(ro->ro_rt->rt_flags & RTF_UP) ||
 		     !IN6_ARE_ADDR_EQUAL(&satosin6(&ro->ro_dst)->sin6_addr,
@@ -729,7 +727,6 @@ in6_selectroute(dstsock, opts, mopts, ro, retifp, retrt, clone)
 			struct sockaddr_in6 *sa6;
 
 			/* No route yet, so try to acquire one */
-			newroute = 1;
 			bzero(&ro->ro_dst, sizeof(struct sockaddr_in6));
 			sa6 = (struct sockaddr_in6 *)&ro->ro_dst;
 			sa6->sin6_family = AF_INET6;
