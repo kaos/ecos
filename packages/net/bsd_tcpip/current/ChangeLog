@@ -1,5 +1,10 @@
 2012-03-08  Grant Edwards <grant.b.edwards@gmail.com>
 
+	* doc/freebsd.sgml: Add section on how to disable ipv6 support at
+	runtime. [ Bugzilla 1001502 ]
+
+2012-03-08  Grant Edwards <grant.b.edwards@gmail.com>
+
 	* src/sys/netinet6/icmp6.c (icmp6_redirect_input):
 	* src/sys/netinet6/in6_src.c (in6_selectroute):
 	* src/sys/netinet6/ip6_mroute.c (phyint_send, pim6_input):

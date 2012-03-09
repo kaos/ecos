@@ -191,6 +191,97 @@ void <function>cyg_select_abort</function>(void)
 <function>cyg_select_with_abort()</function> call
 to cease waiting and continue execution.</PARA>
 </SECT1>
-</CHAPTER>
 
+<SECT1 id="tcpip-freebsd-disabling-ipv6-at-runtime">
+<TITLE>Disabling IPv6 Support at Runtime</TITLE>
+<PARA>
+The FreeBSD stack starts up with IPv4 support in an essentially
+"disabled" state.  It requires the application to take positive actions
+to assign IPv4 address and routes before the interfaces will respond
+to packets from the outside world.
+</PARA>
+<PARA>
+This is not true of IPv6 support.  If IPv6 support was enabled in the
+eCos build, the staic will start up with link-local addresses
+assigned and interfaces listening to certain multicast addresses.  The
+stack will not only respond to IPv6 packets, it will spontaneously
+send IPv6 packets without actions from application code.
+</PARA>
+<PARA>
+If an eCos application wishes to disable IPv6 support at runtime, the
+decision has to be made very early in the boot process and actions
+taken to prevent the invocation of IPv6 startup code in the network
+stack.  This involves two rather obscure "tricks":
+<ITEMIZEDLIST>
+<LISTITEM><PARA>
+Using a dummy device driver's "init" hook as a place to execute some
+code early in the startup process
+</PARA></LISTITEM>
+<LISTITEM><PARA> Monkey-patching the network stack's table of
+initializers by looping through it and checking the function pointers
+against certain globally visible symbols and replacing the two
+IPv6-specific function pointers with pointers to a "noop" function.
+</PARA></LISTITEM>
+</ITEMIZEDLIST>
+</PARA>
+<PARA>
+The code listing below shows an example of disabling IPv6 support at
+runtime if the global variable we_want_to_disable_ipv6 is non-zero.
+The assumption is that some code in the HAL initialization or
+somewhere else has made the decision whether or not to disable IPv6
+support and set that variable accordingly.
+</PARA>
+<PROGRAMLISTING>
+// Sample code showing a method of disabling IPv6 support at runtime
+
+// Do-nothing function we can patch into the network stack's init table
+// when we want to disable one of the entries
+static void
+init_noop(void *dummy)
+{
+}
+
+// Function that loops through the network stack's init table and
+// disables the two IPv6 entries
+static void
+disable_ipv6(void)
+{
+    extern struct init_tab_entry __NET_INIT_TAB__[],
+                    __NET_INIT_TAB_END__;
+    struct init_tab_entry *init_entry;
+    extern void     cyg_net_add_domain(void *);
+    extern void     ip6_init2(void *);
+    extern char     inet6domain[];
+
+    for (init_entry = __NET_INIT_TAB__; init_entry != &__NET_INIT_TAB_END__;
+         init_entry++)
+        if ((init_entry->fun == ip6_init2)
+            || (init_entry->fun == cyg_net_add_domain
+                && init_entry->data == (void *)inet6domain))
+            init_entry->fun = init_noop;
+}
+
+// Function called early in the inintialization process via a dummy
+// device table entry
+static bool
+early_init(struct cyg_devtab_entry *tab)
+{
+    if (we_want_to_disable_ipv6)
+        disable_ipv6();
+    return 0;
+}
+
+// Dummy device driver table entry that will call the above early_init()
+// function during the startup process
+DEVTAB_ENTRY(device_master_early_init,
+             "neveruse",
+             NULL,
+             NULL,
+             early_init,
+             NULL,
+             NULL
+    );
+</PROGRAMLISTING>
+</SECT1>
+</CHAPTER>
 </PART>
