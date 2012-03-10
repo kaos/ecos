@@ -202,7 +202,7 @@ to packets from the outside world.
 </PARA>
 <PARA>
 This is not true of IPv6 support.  If IPv6 support was enabled in the
-eCos build, the staic will start up with link-local addresses
+eCos build, the stack will start up with link-local addresses
 assigned and interfaces listening to certain multicast addresses.  The
 stack will not only respond to IPv6 packets, it will spontaneously
 send IPv6 packets without actions from application code.
