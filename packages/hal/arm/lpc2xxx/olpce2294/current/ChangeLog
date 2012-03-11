@@ -1,3 +1,8 @@
+2012-03-07  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* include/hal_platform_setup.h: Fix assembler warning (s suffix on
+	comparison instruction is deprecated), s/cmps/cmp/.
+
 2009-02-02  Sergei Gavrikov <sergei.gavrikov@gmail.com>
 
  	* cdl/hal_arm_lpc2xxx_olpce2294.cdl: Expanded a list the legal baud

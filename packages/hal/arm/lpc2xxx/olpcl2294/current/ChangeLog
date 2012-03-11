@@ -1,3 +1,8 @@
+2012-03-07  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* include/hal_platform_setup.h: Fix assembler warning (s suffix on
+	comparison instruction is deprecated), s/cmps/cmp/.
+
 2010-11-03  JF Argentino  <jf.argentino@osean.fr>
 2010-11-24  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 

@@ -118,7 +118,7 @@
 1:
         ldr r3,[r0,#4]!
         str r3,[r1,#4]!
-        cmps r0,r2
+        cmp r0,r2
         bne 1b
 
         ldr r0,=CYGARC_HAL_LPC2XXX_REG_SCB_BASE
