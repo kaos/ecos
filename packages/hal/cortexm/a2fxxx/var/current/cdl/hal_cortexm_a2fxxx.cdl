@@ -1,0 +1,732 @@
+##==========================================================================
+##
+##      hal_cortexm_a2f.cdl
+##
+##      Cortex-M A2F variant HAL configuration data
+##
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2011 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    ccoutand
+## Contributors: 
+## Date:         2011-02-03
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+cdl_package CYGPKG_HAL_CORTEXM_A2FXXX {
+    display       "Actel Smartfusion A2Fxxx Variant (Cortex-M3)"
+    parent        CYGPKG_HAL_CORTEXM
+    hardware
+    include_dir   cyg/hal
+    define_header hal_cortexm_a2fxxx.h
+    description   "
+        This package provides generic support for the Actel Smarfusiom Cortex-M3 
+        based microcontroller family. It is also necessary to select a platform 
+        HAL package."
+
+    compile       hal_diag.c a2fxxx_misc.c hal_dma.c
+
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
+
+    requires      { CYGHWR_HAL_CORTEXM == "M3" }
+    requires      { CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE == "INTERNAL" }
+
+    cdl_option CYGHWR_HAL_CORTEXM_A2FXXX {
+        display          "Actel Smartfusion A2F variant in use"
+        flavor           data
+        default_value    { "A2F200" }
+        legal_values     { "A2F060" "A2F200" "A2F500" }
+        description      "The Smartfusion has several variants, the main differences
+                          being in the size of on-chip FLASH and SRAM and numbers of
+                          some analog peripherals. This option allows the platform HAL 
+                          to select the specific microcontroller fitted."
+    }
+
+    cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS {
+        display         "CPU priority levels"
+        flavor          data
+        calculated      5
+        description     "This option defines the number of bits used to
+                         encode the exception priority levels that this
+                         variant of the Cortex-M CPU implements."
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_CLOCK {
+        display       "Clocking"
+        description   "Select this option to configure the internal 
+                 clock network of the device. Due to large amount of possible combination of 
+                 clock configuration, it is recommended to use the Actel MSS configuration tool
+                 and let the system boot handle the clock settings. Some of the requirement for
+                 setting the clock network of the device are : The On-chip Oscillator 
+                 clock frequency is fixed to 100 MHz and cannot be changed. The Main Crystal
+                 Oscillator clock frequency must be between 1.5 MHz and 20 MHz when the PLL is
+                 used or between 32 KHz and 20 MHz when the PLL is bypassed. The Main Crystal 
+                 Oscillator (RC network configuration) clock frequency must be between 1.5MHz 
+                 and 4 MHz when the PLL is used or between 32 KHz and 4 MHz when the PLL is 
+                 bypassed. For all other sources, the source clock frequency must be between 
+                 1.5 MHz and 176MHz when the PLL is used or between 32 KHz and 250 MHz when the 
+                 PLL is bypassed."
+        flavor         bool
+        default_value  0
+
+        cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_CLKIN {
+            display       "Input clock selection"
+            flavor         none
+            description   "Configure the input clocks of the device."
+
+            cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_CLKA {
+                display       "Clock A configuration"
+                flavor         bool
+                default_value { CYGHWR_HAL_CORTEXM_A2FXXX_PLL }
+                description   "Configure the clock A input of the device."
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKA_SRC {
+                    display        "Clock A source"
+                    flavor          data
+                    legal_values    { "AUIN" "AUIP" "ADIP" "GLAINT" "RCOSC" "MOSC" }
+                    default_value   { "RCOSC" }
+                    description   "
+                        Select the clock A source. Valid choices are the main oscillator,
+                        the RC oscillator, the FPGA fabric or the dedicated single-ended or 
+                        differential IOs."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKA_FREQ {
+                    display         "Clock A frequency in Hz"
+                    flavor           data
+                    legal_values     { 1500000 to 176000000 }
+                    default_value    { CYGHWR_HAL_CORTEXM_A2FXXX_CLKA_SRC == "RCOSC" ? 100000000 : 20000000 }
+                    description   "
+                        Select the clock A source frequency in Hz. Additional restrictions 
+                        of the frequency range apply giving the clock source. It is left to 
+                        the user to take care of not exceeding the limits provided by the 
+                        device user manual."
+                }
+            }
+
+            cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_CLKB {
+                display       "Clock B configuration"
+                flavor         bool
+                description   "Configure the clock B input of the device."
+                default_value  0
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKB_SRC {
+                    display       "Clock B source"
+                    flavor         data
+                    legal_values   { "BUIN" "BUIP" "BDIP" "GLBINT" "RCOSC" "MOSC" }
+                    default_value  { "MOSC" }
+                    description   "
+                        Select the clock B source. Valid choices are the main oscillator,
+                        the RC oscillator, the FPGA fabric or the dedicated single-ended or 
+                        differential IOs."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKB_FREQ {
+                    display         "Clock B frequency in Hz"
+                    flavor           data
+                    legal_values     { 32000 to 350000000 }
+                    default_value    { CYGHWR_HAL_CORTEXM_A2FXXX_CLKB_SRC == "RCOSC" ? 100000000 : 20000000 }
+                    description   "
+                        Select the clock B source frequency in Hz. Additional restrictions 
+                        of the frequency range apply giving the clock source. It is left to 
+                        the user to take care of not exceeding the limits provided by the 
+                        device user manual."
+                }
+            }
+
+            cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_CLKC {
+                display       "Clock C configuration"
+                flavor         bool
+                description   "Configure the clock C input of the device."
+                default_value  0
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKC_SRC {
+                    display       "Clock C source"
+                    flavor        data
+                    legal_values  { "CUIN" "CUIP" "CDIP" "GLCINT" "RCOSC" "32KOSC"}
+                    default_value { "RCOSC" }
+                    description   "
+                        Select the clock C source. Valid choices are the main oscillator,
+                        the RC oscillator, the FPGA fabric or the dedicated single-ended or 
+                        differential IOs."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKC_FREQ {
+                    display         "Clock C frequency in Hz"
+                    flavor          data
+                    legal_values    { 32000 to 350000000 }
+                    default_value   { CYGHWR_HAL_CORTEXM_A2FXXX_CLKC_SRC == "RCOSC" ? 100000000 : 20000000 }
+                    description   "
+                        Select the clock B source frequency in Hz. Additional restrictions 
+                        of the frequency range apply giving the clock source. It is left to 
+                        the user to take care of not exceeding the limits provided by the 
+                        device user manual."
+                }
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_PLL {
+            display       "PLL configuration"
+            flavor         bool
+            requires       CYGHWR_HAL_CORTEXM_A2FXXX_CLKA
+            description   "Configure the device PLL."
+            default_value  1
+
+            cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_PLL_MULT {
+                display       "PLL Multiplier"
+                flavor         data
+                legal_values  { 1 to 128 }
+                default_value { 1 }
+                description   "
+                    Select the PLL multiplier coefficient (m)."
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_PLL_DIV {
+                display       "PLL Divider"
+                flavor         data
+                legal_values  { 1 to 128 }
+                default_value { 1 }
+                description   "
+                    Select the PLL divider coefficient (n)."
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_PLL_FREQ {
+                display       "PLL output frequency"
+                flavor        data
+                calculated    { CYGHWR_HAL_CORTEXM_A2FXXX_PLL ? ( CYGHWR_HAL_CORTEXM_A2FXXX_CLKA_FREQ * CYGHWR_HAL_CORTEXM_A2FXXX_PLL_MULT ) / CYGHWR_HAL_CORTEXM_A2FXXX_PLL_DIV : 0 }
+                legal_values  { 22000000 to 350000000 }
+                description   "
+                    Computed PLL output frequency."
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_PLL_FB_DELAY {
+                display       "PLL Feedback delay"
+                flavor        data
+                legal_values  { 0 to 15 }
+                default_value { 0 }
+                description   "
+                    Select the PLL Feedback loop delay. Field FBDLY from user manual. 
+                    Value from 535 to 5560ns."
+            }
+
+            cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_PLL_XDELAY {
+                display       "PLL Additional delay"
+                flavor        bool
+                default_value 0
+                description   "
+                    Add 2ns additional delay on PLL feedback loop."
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_CLKOUT {
+            display       "Global clock output configuration"
+            flavor         none
+            description   "Configure the Global clocks of the device."
+
+            cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA {
+                display       "Global clock A configuration"
+                flavor         bool
+                default_value { CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT == "CLKGA" }
+                description   "Configure the Global clock A of the device."
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_SRC {
+                    display         "Global clock A source"
+                    flavor           data
+                    legal_values    { "CLKA" "PLL_VCO0" "PLL_VCO90" "PLL_VCO180" "PLL_VCO270" "PLL_VCO0_DL" }
+                    default_value   { "PLL_VCO0" }
+                    requires        { CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_SRC == "CLKA" ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKA : CYGHWR_HAL_CORTEXM_A2FXXX_PLL }
+                    description   "
+                        Select the Global clock A source. Valid choices are the PLL output (with different phases)
+                        or the clock A input."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_DIV {
+                    display        "Global clock A divider"
+                    flavor          data
+                    legal_values   { 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8 8.5 9 9.5 
+                                     10 10.5 11 11.5 12 12.5 13 13.5 14 14.5 15 16 17 18 19 
+                                     20 21 22 23 24 25 26 27 28 29 30 31 32 }
+                    default_value  { 1 }
+                    description   "
+                        Select the Global clock A divider value."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_DIV10 {
+                    display        "Global clock A divider * 10"
+                    flavor          data
+                    calculated     { CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_DIV * 10 }
+                    description   "
+                        Computed Global clock A divider value multiplied by 10."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_DELAY {
+                    display        "Global clock A delay line"
+                    flavor          data
+                    legal_values   { 0 to 15 }
+                    default_value  { 0 }
+                    description   "
+                        Select the Global clock A delay value."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_FREQ {
+                    display        "Global clock A Frequency"
+                    flavor          data
+                    legal_values   { 1 to 100000000 }
+                    calculated     { ( CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_SRC == "PLL_VCO0" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_SRC == "PLL_VCO90" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_SRC == "PLL_VCO180" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_SRC == "PLL_VCO270" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_SRC == "PLL_VCO0_DL" ) ? ( ( CYGHWR_HAL_CORTEXM_A2FXXX_PLL_FREQ * 10) / CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_DIV10 ) : CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_SRC == "CLKA" ? ( (CYGHWR_HAL_CORTEXM_A2FXXX_CLKA_FREQ * 10) / CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_DIV10 ) : 0 }
+                    description   "
+                        Computed Global clock A frequency."
+                }
+            }
+
+            cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB {
+                display      "Global clock B configuration"
+                flavor        bool
+                description  "Configure the Global clock B of the device."
+                default_value { CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK && CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK_RATIO != 1 }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_SRC {
+                    display       "Global clock B source"
+                    flavor         data
+                    legal_values  { "CLKB" "CLKGA" "PLL_VCO0" "PLL_VCO90" "PLL_VCO180" "PLL_VCO270" "PLL_VCO0_DL" }
+                    default_value { "PLL_VCO0" }
+                    requires      { CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_SRC == "CLKB" ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKB : CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_SRC == "CLKGA" ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA : CYGHWR_HAL_CORTEXM_A2FXXX_PLL }
+                    description   "
+                        Select the Global clock B source. Valid choices are the PLL output (with different phases),
+                        the clock B input or the global clock A output."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_DIV {
+                    display       "Global clock B divider"
+                    flavor         data
+                    legal_values   { 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8 8.5 9 9.5 
+                                     10 10.5 11 11.5 12 12.5 13 13.5 14 14.5 15 16 17 18 19 
+                                     20 21 22 23 24 25 26 27 28 29 30 31 32 }
+                    default_value { 1 }
+                    description   "
+                        Select the Global clock B divider value."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_DIV10 {
+                    display        "Global clock B divider * 10"
+                    flavor          data
+                    calculated     { CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_DIV * 10 }
+                    description   "
+                        Computed Global clock B divider value multiplied by 10."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_DELAY {
+                    display       "Global clock B delay line"
+                    flavor         data
+                    legal_values  { 0 to 15 }
+                    default_value { 0 }
+                    description   "
+                        Select the Global clock B delay value."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_FREQ {
+                    display        "Global clock B Frequency"
+                    flavor          data
+                    calculated     { ( CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_SRC == "PLL_VCO0" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_SRC == "PLL_VCO90" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_SRC == "PLL_VCO180" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_SRC == "PLL_VCO270" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_SRC == "PLL_VCO0_DL" ) ? ( (CYGHWR_HAL_CORTEXM_A2FXXX_PLL_FREQ*10) / CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_DIV10 ) : CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_SRC == "CLKB" ? ( (CYGHWR_HAL_CORTEXM_A2FXXX_CLKB_FREQ * 10) / CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_DIV10 ) : CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_SRC == "CLKGA" ? ( (CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_FREQ * 10) / CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_DIV10 ) : 0 }
+                    description   "
+                        Computed Global clock B frequency."
+                }
+            }
+
+            cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC {
+                display       "Global clock C configuration"
+                flavor        bool
+                description   "Configure the Global clock C of the device."
+                default_value { CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT == "CLKGC" }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC {
+                    display       "Global clock C source"
+                    flavor         data
+                    legal_values  { "CLKC" "CLKGA" "PLL_VCO0" "PLL_VCO90" "PLL_VCO180" "PLL_VCO270" "PLL_VCO0_DL" }
+                    default_value { "PLL_VCO0" }
+                    requires      { CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC == "CLKC" ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKC : CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC == "CLKGA" ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA : CYGHWR_HAL_CORTEXM_A2FXXX_PLL }
+                    description   "
+                        Select the Global clock C source. Valid choices are the PLL output (with different phases),
+                        the clock C input or the global clock A output."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_DIV {
+                    display       "Global clock C divider"
+                    flavor         data
+                    legal_values   { 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8 8.5 9 9.5 
+                                     10 10.5 11 11.5 12 12.5 13 13.5 14 14.5 15 16 17 18 19 
+                                     20 21 22 23 24 25 26 27 28 29 30 31 32 }
+                    default_value { 1 }
+                    description   "
+                        Select the Global clock C divider value."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_DIV10 {
+                    display        "Global clock C divider * 10"
+                    flavor          data
+                    calculated     { CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_DIV * 10 }
+                    description    "
+                        Computed Global clock C divider value multiplied by 10."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_DELAY {
+                    display       "Global clock C delay line"
+                    flavor         data
+                    legal_values  { 0 to 15 }
+                    default_value { 0 }
+                    description   "
+                        Select the Global clock C delay value."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_FREQ {
+                    display       "Global clock C Frequency"
+                    flavor         data
+                    calculated     { ( CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC == "PLL_VCO0" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC == "PLL_VCO90" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC == "PLL_VCO180" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC == "PLL_VCO270" || CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC == "PLL_VCO0_DL" ) ? ( (CYGHWR_HAL_CORTEXM_A2FXXX_PLL_FREQ*10) / CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_DIV10 ) : CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC == "CLKC" ? ( (CYGHWR_HAL_CORTEXM_A2FXXX_CLKC_FREQ * 10) / CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_DIV10 ) : CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC == "CLKGA" ? ( (CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_FREQ * 10) / CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_DIV10 ) : 0 }
+                    description   "
+                        Computed Global clock C frequency."
+                }
+            }
+
+            cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_MSS_FPGA {
+                display      "MSS / FPGA Clock configuration"
+                flavor        none
+                description  "Configure the MSS and Fabric master clock."
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT {
+                    display       "NGMUX output clock"
+                    flavor         data
+                    legal_values  { "CLKGA" "CLKGC" }
+                    default_value { "CLKGA" }
+                    requires      { CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT == "CLKGA" ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA : ( CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC && CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_SRC != "CLKGA" ) }
+                    description   "
+                        Select the NGMUX output clock. Valid choices are the Global Clock A or C."
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT_FREQ {
+                    display       "NGMUX output clock frequency"
+                    flavor        data
+                    legal_values  { 1 to 100000000 }
+                    calculated    { CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT == "CLKGA" ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKGA_FREQ : CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC_FREQ }
+                    description   "
+                        Computed NGMUX output clock frequency."
+                }
+
+                cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK {
+                    display       "Fabric clock configuration"
+                    flavor         bool
+                    default_value  0
+                    description   "Set the Fabric master clock. The Fabric frequency ration
+                        specifies which clock source to be used. For a ration of 1, the fabric 
+                        and MSS clock source are the same. For a ration of 2 of 4, the fabric 
+                        clock source is CLKGB and the ration between CLKGB and the MSS clock must 
+                        be configured by the user to be equal to 2 or 4."
+
+                    cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK_RATIO {
+                        display       "Fabric to MSS clock ratio"
+                        flavor        data
+                        legal_values  { 1 2 4 }
+                        requires      { CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK_RATIO != 1 ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB : 1 }
+                        requires      { CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK_RATIO != 1 ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_FREQ == CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT_FREQ / CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK_RATIO : 1 }
+                        default_value { 1 }
+                        description   "
+                            Select the Fabric to MSS clock ratio."
+                    }
+
+                    cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK_FREQ {
+                        display       "Fabric clock Frequency"
+                        flavor         data
+                        calculated    { ( CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK && CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK_RATIO != 1 ) ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKGB_FREQ : ( CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK && CYGHWR_HAL_CORTEXM_A2FXXX_FAB_CLK_RATIO == 1 ) ?  CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT_FREQ  : 0 }
+                        description   "
+                            Computed Fabric clock frequency."
+                    }
+                }
+
+                cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_MSS_CLK {
+                    display       "MSS clock configuration"
+                    flavor         none
+                    description   "Configure the MSS master clock."
+
+                    cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_MSS_CLK_DELAY {
+                        display       "MSS clock delay"
+                        flavor         data
+                        legal_values  { 0 to 15 }
+                        default_value { 0 }
+                        description   "
+                            Select the MSS clock delay. Field FBDLY. Value from 535 to 5560ns."
+                    }
+
+                    cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_ACE_CLK {
+                        display       "ACE clock configuration"
+                        flavor         bool
+                        default_value  0
+                        description   "Configure the ACE master clock."
+
+                        cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_ACLK_DIV {
+                           display       "ACE clock divider"
+                            flavor        data
+                            legal_values  { 1 2 4 }
+                            default_value { 1 }
+                            description   "
+                                Select the ACE clock divider value."
+                        }
+
+                        cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_ACLK_FREQ {
+                            display       "ACE clock Frequency"
+                            flavor         data
+                            calculated    { CYGHWR_HAL_CORTEXM_A2FXXX_ACE_CLK ? CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT_FREQ / CYGHWR_HAL_CORTEXM_A2FXXX_ACLK_DIV : 0 }
+                            description   "
+                                Computed ACE clock frequency."
+                        }
+                    }
+
+                    cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_PCLK0_CLK {
+                        display      "PCLK0 clock configuration"
+                        flavor        none
+                        description  "Configure the PCLK0 clock."
+
+                        cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_PCLK0_DIV {
+                            display       "PCLK0 clock divider"
+                            flavor        data
+                            legal_values  { 1 2 4 }
+                            default_value { 1 }
+                            description   "
+                                Select PCLK0 clock divider value."
+                        }
+
+                        cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_PCLK0_FREQ {
+                            display       "PCLK0 clock Frequency"
+                            flavor         data
+                            calculated    { CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT_FREQ ? CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT_FREQ / CYGHWR_HAL_CORTEXM_A2FXXX_PCLK0_DIV : 0 }
+                            description   "
+                                Computed PCLK0 clock frequency."
+                        }
+                    }
+
+                    cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_PCLK1_CLK {
+                        display       "PCLK1 clock configuration"
+                        flavor         none
+                        description   "Configure the PCLK1 clock."
+                        
+                        cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_PCLK1_DIV {
+                            display       "PCLK1 clock divider"
+                            flavor         data
+                            legal_values  { 1 2 4 }
+                            default_value { 1 }
+                            description   "
+                                Select PCLK1 clock divider value."
+                        }
+
+                        cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_PCLK1_FREQ {
+                            display       "PCLK1 clock Frequency"
+                            flavor         data
+                            calculated    { CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT_FREQ ? CYGHWR_HAL_CORTEXM_A2FXXX_NGMUX_CLKOUT_FREQ / CYGHWR_HAL_CORTEXM_A2FXXX_PCLK1_DIV : 0 }
+                            description   "
+                                Computed PCLK1 clock frequency."
+                        }
+                    }
+                }
+            }
+
+            cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_MAC_CLK {
+                display       "Ethernet MAC clock configuration"
+                flavor         bool
+                default_value  0
+
+                cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_MAC_SRC {
+                    display       "Ethernet MAC clock source"
+                    flavor         data
+                    legal_values  { "CLKGC" "EXTERNAL" }
+                    default_value { "CLKGC" }
+                    requires      { CYGHWR_HAL_CORTEXM_A2FXXX_MAC_SRC == "CLKGC" ? CYGHWR_HAL_CORTEXM_A2FXXX_CLKGC  : 1 }
+                    description   "
+                        Select the Ethernet MAC clock source."
+                }
+            }
+        }
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_A2FXXX_DMA {
+        display       "DMA"
+        flavor        none
+        description   "
+            DMA controller configuration."
+
+        cdl_option CYGDBG_HAL_CORTEXM_A2FXXX_DMA_TRACE {
+            display       "Display status messages during DMA operations"
+            flavor        bool
+            default_value 0
+            description   "
+               Selecting this option will cause the DMA driver to print status
+               messages as various DMA operations are undertaken."
+        }
+    }
+
+    cdl_option CYGSEM_HAL_CORTEXM_A2FXXX_CLOCK_CHATTER {
+        display        "Trace clock network configuration."
+        default_value   1
+        flavor          bool
+        description     "
+            Enable debug tracing of the clock configuration."
+    }
+
+    cdl_option CYGSEM_HAL_CORTEXM_A2FXXX_DEFINES_IDLE_THREAD_ACTION {
+        display        "Override IDLE thread action"
+        default_value   1
+        flavor          bool
+        description     "
+            Override IDLE thread action defined by the architectural HAL.
+            The option must be active when running the application from a
+            debugger. The 'WFI' IDLE instruction defined in the architectural
+            HAL leads to software crash when application runs from a debugger."
+    }
+
+    cdl_component  CYGPKG_HAL_CORTEXM_A2FXXX_IO {
+        display         "IO configuration"
+        flavor          bool
+        default_value   0
+        description   "
+                Overwrite the default IO configuration
+        "
+
+        cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_IO_WEST_BANK {
+            display       "IO west bank buffer type"
+            legal_values  { "LVCMOS_3V3" "LVCMOS_2V5" "LVCMOS_1V8" "LVCMOS_1V5" }
+            default_value { "LVCMOS_3V3" }
+            flavor        data
+            description   "
+                Select the device west bank IO buffer type to be used.
+            "
+        }
+        cdl_option CYGHWR_HAL_CORTEXM_A2FXXX_IO_EAST_BANK {
+            display       "IO east bank buffer type"
+            legal_values  { "LVCMOS_3V3" "LVCMOS_2V5" "LVCMOS_1V8" "LVCMOS_1V5" }
+            default_value { "LVCMOS_3V3" }
+            flavor        data
+            description   "
+                Select the device west bank IO buffer type to be used.
+            "
+        }
+    }
+
+    cdl_component CYGHWR_HAL_DEVS_IRQ_PRIO_SCHEME_VAR {
+        display    "Variant IRQ priority defaults"
+        no_define
+        flavor     none
+        parent     CYGHWR_HAL_DEVS_IRQ_PRIO_SCHEME
+        description "
+            Interrupt priorities defined by the variant HAL"
+        script     hal_cortexm_a2fxxx_irq.cdl
+    }
+
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants"
+        flavor        none
+        no_define
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            default_value 1000000000
+        }
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            default_value 100
+        }
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+            default_value 1000000 / CYGNUM_HAL_RTC_DENOMINATOR
+            description   "The period defined here is something of a fake, it is expressed
+                           in terms of a notional 1MHz clock. The value actually installed
+                           in the hardware is calculated from the current settings of the
+                           clock generation hardware."
+        }
+    }
+
+    cdl_interface CYGINT_HAL_A2FXXX_UART0 {
+        display     "Platform has UART0 serial port"
+        description "The platform has a socket on UART0."
+    }
+
+    cdl_interface CYGINT_HAL_A2FXXX_UART1 {
+        display     "Platform has UART1 serial port"
+        description "The platform has a socket on UART1."
+    }
+
+    cdl_component CYGPKG_HAL_CORTEXM_A2FXXX_OPTIONS {
+        display "Build options"
+        flavor  none
+        description   "
+        Package specific build options including control over
+        compiler flags used only in building this package."
+
+        cdl_option CYGPKG_HAL_CORTEXM_A2FXXX_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the A2F variant HAL package. These flags are used
+                in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_HAL_CORTEXM_A2FXXX_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the A2F variant HAL package. These flags are removed from
+                the set of global flags if present."
+        }
+    }
+
+    cdl_option CYGPKG_HAL_CORTEXM_A2FXXX_TESTS {
+        display "A2F tests"
+        active_if      CYGPKG_KERNEL
+        flavor  data
+        no_define
+        calculated { "tests/timers" }
+        description   "
+            This option specifies the set of tests for the A2F HAL."
+    }
+
+}

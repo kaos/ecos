@@ -1,0 +1,42 @@
+2011-06-26  Christophe Coutand  <ecos@hotmail.co.uk>
+
+	* cdl/hal_cortexm_a2fxxx.cdl:
+	* cdl/hal_cortexm_a2fxxx_irq.cdl:
+	* include/hal_cache.h:
+	* include/hal_diag.h:
+	* include/plf_stub.h:
+	* include/var_arch.h:
+	* include/variant.inc:
+	* include/var_intr.h:
+	* include/var_io.h:
+	* src/hal_diag.c:
+	* src/hal_dma.c:
+	* src/a2fxxx_misc.c:
+	* tests/timers.c:
+	New package -- Actel SmartFusion Cortex-M3 variant HAL.
+	[Bugzilla 1001291]
+
+//===========================================================================
+// ####GPLCOPYRIGHTBEGIN####                                                
+// -------------------------------------------                              
+// This file is part of eCos, the Embedded Configurable Operating System.   
+// Copyright (C) 2011 Free Software Foundation, Inc.                        
+//
+// This program is free software; you can redistribute it and/or modify     
+// it under the terms of the GNU General Public License as published by     
+// the Free Software Foundation; either version 2 or (at your option) any   
+// later version.                                                           
+//
+// This program is distributed in the hope that it will be useful, but      
+// WITHOUT ANY WARRANTY; without even the implied warranty of               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        
+// General Public License for more details.                                 
+//
+// You should have received a copy of the GNU General Public License        
+// along with this program; if not, write to the                            
+// Free Software Foundation, Inc., 51 Franklin Street,                      
+// Fifth Floor, Boston, MA  02110-1301, USA.                                
+// -------------------------------------------                              
+// ####GPLCOPYRIGHTEND####                                                  
+//===========================================================================
+

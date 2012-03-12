@@ -1,0 +1,150 @@
+##==========================================================================
+##
+##      hal_cortexm_a2fxxx_irq.cdl
+##
+##      Cortex-M A2F configuration data
+##
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2012 Free Software Foundation, Inc.                  
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    ccoutand
+## Date:         2012-02-20
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+
+    cdl_option CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY {
+        display       "Clock interrupt ISR priority"
+        flavor         data
+        calculated     0xF0
+        description   "Set clock ISR priority to lowest priority."
+    }
+
+
+    cdl_option CYGNUM_HAL_CORTEXM_A2FXXX_DMA_ISR_PRIORITY {
+        display       "DMA peripheral interrupt ISR priority"
+        flavor         data
+        default_value  0x70
+             legal_values { 0x00 0x08 0x10 0x18 0x20 0x28 0x30 0x38 0x40 0x48
+                0x50 0x58 0x60 0x68 0x70 0x78 0x80 0x88 0x90 0x98
+                0xA0 0xA8 0xB0 0xB8 0xC0 0xC8 0xD0 0xD8 0xE0 0xE8
+                0xF0 }
+        description   "
+          Set DMA controller ISR priority."
+     }
+
+    cdl_component CYGHWR_HAL_DEVS_IRQ_PRIO_SCHEME_I2C {
+        display "I2C IRQ priorities"
+        flavor none
+        no_define
+
+        cdl_option CYGNUM_DEVS_I2C_CORTEXM_A2FXXX_I2C0_ISR_PRIORITY {
+            display   "I2C bus 0 interrupt priority"
+            flavor     data
+            active_if  CYGPKG_DEVS_I2C_CORTEXM_A2FXXX
+            legal_values { 0x00 0x08 0x10 0x18 0x20 0x28 0x30 0x38 0x40 0x48
+                0x50 0x58 0x60 0x68 0x70 0x78 0x80 0x88 0x90 0x98
+                0xA0 0xA8 0xB0 0xB8 0xC0 0xC8 0xD0 0xD8 0xE0 0xE8
+                0xF0 }
+            default_value 0x78
+        }
+
+        cdl_option CYGNUM_DEVS_I2C_CORTEXM_A2FXXX_I2C1_ISR_PRIORITY {
+            display   "I2C bus 1 interrupt priority"
+            flavor     data
+            active_if  CYGPKG_DEVS_I2C_CORTEXM_A2FXXX
+            legal_values { 0x00 0x08 0x10 0x18 0x20 0x28 0x30 0x38 0x40 0x48
+                0x50 0x58 0x60 0x68 0x70 0x78 0x80 0x88 0x90 0x98
+                0xA0 0xA8 0xB0 0xB8 0xC0 0xC8 0xD0 0xD8 0xE0 0xE8
+                0xF0 }
+            default_value 0x78
+        }
+    }
+
+    cdl_component CYGHWR_HAL_DEVS_IRQ_PRIO_SCHEME_ETH {
+        display   "Ethernet IRQ priorities"
+        flavor     none
+        no_define
+
+        cdl_option CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_ISR_SP {
+            display       "Ethernet interrupt ISR priority"
+            active_if      CYGPKG_DEVS_ETH_CORTEXM_A2FXXX
+            flavor         data
+            no_define
+            default_value  0x78
+                legal_values { 0x00 0x08 0x10 0x18 0x20 0x28 0x30 0x38 0x40 0x48
+                    0x50 0x58 0x60 0x68 0x70 0x78 0x80 0x88 0x90 0x98
+                    0xA0 0xA8 0xB0 0xB8 0xC0 0xC8 0xD0 0xD8 0xE0 0xE8
+                    0xF0 }
+            description   "
+                  Set the Ethernet controller ISR priority."
+       }
+    }
+
+    cdl_component CYGHWR_HAL_DEVS_IRQ_PRIO_SCHEME_SERIAL {
+        display   "Serial controller IRQ priorities"
+        flavor     none
+        no_define
+
+        cdl_option CYGNUM_DEVS_SERIAL_CORTEXM_A2FXXX_SERIAL0_ISR_SP {
+            display       "Serial port 0 driver ISR priority"
+            active_if      CYGPKG_IO_SERIAL_CORTEXM_A2FXXX_SERIAL0
+            flavor         data
+            no_define
+            default_value  0x78
+                legal_values { 0x00 0x08 0x10 0x18 0x20 0x28 0x30 0x38 0x40 0x48
+                    0x50 0x58 0x60 0x68 0x70 0x78 0x80 0x88 0x90 0x98
+                    0xA0 0xA8 0xB0 0xB8 0xC0 0xC8 0xD0 0xD8 0xE0 0xE8
+                    0xF0 }
+            description   "
+                  Set the serial 0 controller ISR priority."
+       }
+
+        cdl_option CYGNUM_DEVS_SERIAL_CORTEXM_A2FXXX_SERIAL1_ISR_SP {
+            display       "Serial port 1 driver ISR priority"
+            active_if      CYGPKG_IO_SERIAL_CORTEXM_A2FXXX_SERIAL1
+            flavor         data
+            no_define
+            default_value  0x80
+                legal_values { 0x00 0x08 0x10 0x18 0x20 0x28 0x30 0x38 0x40 0x48
+                    0x50 0x58 0x60 0x68 0x70 0x78 0x80 0x88 0x90 0x98
+                    0xA0 0xA8 0xB0 0xB8 0xC0 0xC8 0xD0 0xD8 0xE0 0xE8
+                    0xF0 }
+            description   "
+                  Set the serial 1 controller ISR priority."
+       }
+    }
