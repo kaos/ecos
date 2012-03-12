@@ -1,0 +1,39 @@
+// eCos memory layout
+
+#include <pkgconf/hal.h>
+#include <cyg/infra/cyg_type.inc>
+
+#define PLF_FOLLOWING(_section_) FOLLOWING_ALIGNED(_section_, 8)
+
+MEMORY
+{
+    sram    : ORIGIN = 0x20000000, LENGTH = 0x00010000-CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+    flash   : ORIGIN = 0x60000000, LENGTH = 0x00040000
+    /* flash mirrored to 0x00000000 */
+    flashm  : ORIGIN = 0x00000000, LENGTH = 0x00040000
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    SECTION_rom_vectors (flashm, 0x00000000, AT (0x60000000))
+    SECTION_text (flashm, ALIGN (0x8), PLF_FOLLOWING (.rom_vectors))
+    SECTION_fini (flashm, ALIGN (0x8), PLF_FOLLOWING (.text))
+    SECTION_rodata (flashm, ALIGN (0x8), PLF_FOLLOWING (.fini))
+    SECTION_rodata1 (flashm, ALIGN (0x8), PLF_FOLLOWING (.rodata))
+    SECTION_fixup (flashm, ALIGN (0x8), PLF_FOLLOWING (.rodata1))
+    SECTION_gcc_except_table (flashm, ALIGN (0x8), PLF_FOLLOWING (.fixup))
+    SECTION_eh_frame (flashm, ALIGN (0x8), PLF_FOLLOWING (.gcc_except_table))
+    SECTION_got (flashm, ALIGN (0x8), PLF_FOLLOWING (.eh_frame))
+    SECTION_sram (sram, 0x20000400, PLF_FOLLOWING (.got))
+    SECTION_data (sram, ALIGN (0x8), PLF_FOLLOWING (.sram))
+    SECTION_bss (sram, ALIGN (0x8), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+    SECTIONS_END
+}
+
+hal_vsr_table = 0x20000000;
+hal_virtual_vector_table = hal_vsr_table + 128*4;
+hal_startup_stack = 0x20000000 + 1024*64;
+
+

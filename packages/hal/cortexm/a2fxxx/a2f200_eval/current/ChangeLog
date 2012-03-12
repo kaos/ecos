@@ -1,0 +1,45 @@
+2011-01-18  Christophe Coutand  <ecos@hotmail.co.uk>
+
+	* cdl/hal_cortexm_a2f200_eval.cdl:
+	* doc/a2f200e.sgml
+	* src/a2f200_eval_misc.c:
+	* src/platform_i2c.c:
+	* host/memory-map.xml:
+	* host/softconsole_flash_init.txt:
+	* host/softconsole_sram_init.txt:
+	* include/plf_arch.h:
+	* include/plf_intr.h:
+	* include/plf_io.h:
+	* include/pkgconf/mlt_cortexm_a2f200_eval_rom.ldi:
+	* include/pkgconf/mlt_cortexm_a2f200_eval_rom.h:
+	* include/pkgconf/mlt_cortexm_a2f200_eval_rom_sc.ldi:
+	* include/pkgconf/mlt_cortexm_a2f200_eval_rom_sc.h:
+	* include/pkgconf/mlt_cortexm_a2f200_eval_sram.ldi:
+	* include/pkgconf/mlt_cortexm_a2f200_eval_sram.h:
+	New package -- Actel Smartfusion A2F200 EVAL board HAL.
+	[Bugzilla 1001291]
+
+//===========================================================================
+// ####GPLCOPYRIGHTBEGIN####                                                
+// -------------------------------------------                              
+// This file is part of eCos, the Embedded Configurable Operating System.   
+// Copyright (C) 2011 Free Software Foundation, Inc.                        
+//
+// This program is free software; you can redistribute it and/or modify     
+// it under the terms of the GNU General Public License as published by     
+// the Free Software Foundation; either version 2 or (at your option) any   
+// later version.                                                           
+//
+// This program is distributed in the hope that it will be useful, but      
+// WITHOUT ANY WARRANTY; without even the implied warranty of               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        
+// General Public License for more details.                                 
+//
+// You should have received a copy of the GNU General Public License        
+// along with this program; if not, write to the                            
+// Free Software Foundation, Inc., 51 Franklin Street,                      
+// Fifth Floor, Boston, MA  02110-1301, USA.                                
+// -------------------------------------------                              
+// ####GPLCOPYRIGHTEND####                                                  
+//===========================================================================
+

@@ -1,0 +1,814 @@
+<!-- DOCTYPE reference  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     a2f200e.sgml                                                -->
+<!--                                                                 -->
+<!--     Actel Smartfusion Board Support.                            -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2011 Free Software Foundation, Inc.               -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTEND####                                     -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   ccoutand                                           -->
+<!-- Contact(s):                                                     -->
+<!-- Date:        2011/06/04                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+<part id="hal-cortexm-a2fxxx-a2f200-eval"><title>Actel Smartfusion Board Support</title>
+
+  <!-- {{{ Actel Smartfusion Board Support  -->
+  <chapter id="a2f200-eval-chapter">
+
+      <title>Actel Smartfusion Board Support</title>
+
+      <!-- {{{ Overview -->
+      <refentry id="a2f200-over">
+
+      <refmeta>
+          <refentrytitle>Overview</refentrytitle>
+      </refmeta>
+
+      <refnamediv>
+          <refname>Overview</refname>
+          <refpurpose>Actel Smartfusion Board Support</refpurpose>
+      </refnamediv>
+
+      <refsect1 id="a2f200-eval-overview"><title>Overview</title>
+
+      <para>
+        The Actel Smartfusion evaluation kit uses the A2F200 microcontroller from the 
+        Actel smartfusion family. The SmartFusion devices are a mix of programmable 
+        logic around a ARM cortex-M3 based processor. The SmartFusion has 3 variants: 
+        A2F060, A2F200, A2F500. The main difference between parts are the amount of 
+        RAM, FLASH as well as programmable logic. In addition, the A2F060 does not
+        include the Ethernet controller peripheral.
+        The A2F200 device includes 256KB of internal FLASH (also called Embedded 
+        Non-volatile Memory, ENVM) and 64KB of internal SRAM. 
+        The device has various peripherals such as UART, I2C, SPI, Ethernet MAC, ADC or 
+        DAC as well as the FPGA fabric. 
+        The kit features an OLED graphical display and UART0 is accessible via the 
+        on-board USB to UART converter. The kit also includes a serial flash, the Atmel 
+        AT25DF641 part (8MB memory). 
+        The FPGA fabric uses a non-volatile technology thus removing the 
+        need of additional flash memory for storing the FPGA programming matrix.
+      </para>
+
+      <para>
+        The eCos port targets standalone ROM application. The eCos device drivers include
+        support for the I2C and SPI buses as well as UART and Ethernet Controller. No 
+        device driver is currently available for the ADC/DAC or the In-Application 
+        Programming feature that allows the application to re-program the FLASH or the 
+        FPGA fabric.
+        The Smartfusion (A2Fxxx) HAL includes a timer test application and the A2F200 evaluation 
+        board flash device package includes a test application for the SPI serial flash.
+      </para>
+     </refsect1>
+     <!-- }}} -->
+
+      <!-- {{{ Tools -->
+     <refsect1 id="a2f200-eval-tools"><title>Tools</title>
+
+     <para>
+        For compilation, the official eCos ARM toolchain is required (gcc version 4.3.2). 
+        For debugging, while the board offers a JTAG interface, the HAL was developed using 
+        the SoftConsole IDE supplied from Actel. SoftConsole is an Eclipse based IDE 
+        installed along with the CodeSourcery ARM compiler / debugger.  The ARM GDB and Sprite 
+        utilities from CodeSourcery are used to debug the target. The target includes an on-board 
+        debugger and is connected to the host via a USB cable. GDB interfaces the  
+        on-board debugger through the Actel flashpro driver. Detailed example of a debugging 
+        session is described later in this chapter.
+      </para>
+
+     </refsect1>
+     <!-- }}} -->
+     </refentry>
+     
+
+     <!-- {{{ HAL port -->
+       <refentry id="a2f200-eval-hal">
+      <refmeta>
+          <refentrytitle>HAL and Device Drivers</refentrytitle>
+      </refmeta>
+
+      <refnamediv>
+          <refname>HAL</refname>
+          <refpurpose>Actel HAL and Device Drivers</refpurpose>
+      </refnamediv>
+
+      <!-- {{{ Clocking -->
+     <refsect1 id="a2f200-eval-hal-clock"><title>Clocking</title>
+
+     <para>
+         The internal clock network of the Smarfusion devices includes a large amount of possible 
+         configuration combination. The network has 3 different input clocks (CLKA, CLKB and CLKC), 
+         each of them can be connected to a different clock source such as the main oscillator, the 
+         RC oscillator, the FPGA fabric or the dedicated single-ended or differential IO. The clock
+         network has an internal PLL and 3 global output clocks (CLKGA, CLKGB and CLKGC). The cortex-M3,
+         digital and analog peripherals clocks are derived either from CLKGA or CLKGC through the
+         NGMUX.
+         Due to the large amount of configuration parameters, it is recommended to use the Actel MSS
+         configuration tool to setup the clock network and let the system boot handle the configuration.
+         However, the eCos HAL includes all the required options to setup the clock network. Note that
+         only a limited subset of combinations have been tested.
+     </para>
+
+     </refsect1>
+     <!-- }}} -->
+
+     <!-- {{{ SPI Bus -->
+     <refsect1 id="a2f200-eval-hal-spi"><title>SPI bus</title>
+
+     <para>
+        The Actel AF2xxx microcontroller family has 2 SPI buses available. Each SPI bus has 
+        a certain number of slave select line (called SPI_x_SSx) that are directly driven by 
+        the SPI controller. 
+        The first SPI bus has 4 slave select lines available (SPI_0_SS0 to SPI_0_SS3) while the 
+        second bus has 8 of them (SPI_1_SS0 to SPI_1_SS7). In addition, the eCos SPI driver allows
+        using the GPIO of the microcontroller as slave select lines which is in some cases required. 
+        In the rest of this chapter, the former case is called SPI controlled slave select while 
+        the later is called GPIO controlled slave select
+     </para>
+
+     <para>
+        NOTE: The SPI_x_SSx microcontroller dedicated pins can be used as GPIO, thus, it is possible 
+        to use SPI_0_SS0 as slave select either in SPI or GPIO controlled mode. This is true for all 
+        SPI_x_SSx pins.
+     </para>
+
+     <para>
+        New SPI devices are instantiated using the following macro:
+     </para>
+     <programlisting width=80>
+        #include <filename class="headerfile">&lt;cyg/io/spi.h&gt;</filename>
+        #include <filename class="headerfile">&lt;cyg/io/spi_a2fxxx.h&gt;</filename>
+
+        #define CYG_DEVS_SPI_CORTEXM_A2FXXX_DEVICE(                    \
+                _name_, _bus_, _csnum_, _csgpio_, _proto_, _clpol_,    \
+                _clpha_, _brate_, _csup_dly_, _csdw_dly_, _trbt_dly_)
+
+
+        _name_     is the name of the SPI device. This will be used to 
+                   reference a data structure of type cyg_spi_device 
+                   which can be passed to the SPI driver API without 
+                   needing a cast.
+        _bus_      is the bus number to which this device is attached 
+                   (1 or 2).
+        _csgpio_   when set to false:
+                    - the device slave select line is controlled by the 
+                      SPI controller.
+                   when set to true:
+                    - the device slave select line is a GPIO of the 
+                      processor controlled by the SPI driver.
+        _csnum_    when _csgpio_ is set to false : 
+                    - is the slave select line used for this device, 
+                      numbered from 0.
+                   when _csgpio_ is set to true : 
+                    - is the GPIO number used to drive the device slave 
+                      select line.
+        _proto_    is the SPI bus protocol:
+                    0 -> Motorola SPI Mode (_clpol_ and _clpha_ are 
+                         valid in this mode)
+                    1 -> National Semiconductor MICROWIRE Mode
+                    2 -> Texas Instruments (TI) Synchronous Serial Mode
+        _clpol_    is the SPI bus clock polarity used by the device 
+                   (valid only for Motorola SPI Protocol).
+        _clpha_    is the SPI bus clock phase used by the device 
+                   (valid only for Motorola SPI Protocol).
+        _brate_    is the SPI bus clock baud rate used by the device, 
+                   measured in Hz.
+        _csup_dly_ is the minimum delay between slave select assert and 
+                   transfer start, measured in microseconds.
+        _csdw_dly_ is the minimum delay between transfer end and slave 
+                   select deassert, measured in microseconds.
+        _trbt_dly_ is the minimum delay between consecutive transfers.
+     </programlisting>
+
+     <para>
+        NOTE: _csup_dly_ and _csdw_dly_ are only valid when GPIOs are configured to drive the 
+        slave select line. When the SPI controller drives the slave select line itself, the user 
+        has no control over the exact timing.
+     </para>
+
+     <para>
+        The Actel Smartfusion board features a SPI serial flash (AT25DF641) attached 
+        to the first SPI bus. The SPI flash is connected to the SPI_0_SS0 line, however, to suit 
+        eCos SPI transaction, the line is configured as a general purpose IO and controlled by the 
+        SPI driver.
+     </para>
+
+     <para>
+        The following section describes how the SPI serial flash is declared. The code is located
+        in devs/fash/cortexm/a2fxxx/a2f200_eval/flash_a2f200_eval.c. The required includes are:
+     </para>
+
+     <programlisting width=80>
+        #include <filename class="headerfile">&lt;cyg/io/spi.h&gt;</filename>
+        #include <filename class="headerfile">&lt;cyg/io/at25dfxxx.h&gt;</filename>
+        #include <filename class="headerfile">&lt;cyg/io/spi_a2fxxx.h&gt;</filename>
+     </programlisting>
+
+     <para>
+        The device is defined to be connected on SPI bus 1, using GPIO 19 for slave select.
+        The Motorola protocol (mode 0) is selected with a bus clock speed of 25MHz.
+     </para>
+
+     <programlisting width=80>
+         CYG_DEVS_SPI_CORTEXM_A2FXXX_DEVICE (
+            at25dfxxx_spi_device, 1, 19, true, A2FXXX_SPI_MOTOROLA, 0, 0, 25000000, 1, 1, 1
+         );
+        
+         _bus_      = 1 
+         _csgpio_   = true -> use GPIO
+         _csgpio_   = 19   -> GPIO19 also SPI_0_SS0
+         _proto_    = Motorola Protocol
+         _clpol_    = 0
+         _clpha_    = 0
+         _brate_    = 25MHz
+         _csup_dly  = 1us
+         _csdw_dly_ = 1us
+         _trbt_dly_ = 1us
+     </programlisting>
+
+     <para>
+        From the default CDL, SPI bus 1 uses the DMA channel 0 for outbound and channel 1 for inbound 
+        transfer. SPI bus 2 uses DMA channel 2 and 3 respectively. The DMA channel number are selected 
+        with:
+     </para>
+
+     <programlisting width=80>
+        CYGNUM_DEVS_SPI_CORTEXM_A2FXXX_BUS1_TX_DMA
+        CYGNUM_DEVS_SPI_CORTEXM_A2FXXX_BUS1_RX_DMA 
+        and
+        CYGNUM_DEVS_SPI_CORTEXM_A2FXXX_BUS2_TX_DMA
+        CYGNUM_DEVS_SPI_CORTEXM_A2FXXX_BUS2_RX_DMA 
+     </programlisting>
+
+     </refsect1>
+     <!-- }}} -->
+
+      <!-- {{{ I2C Bus -->
+     <refsect1 id="a2f200-eval-hal-i2c"><title>I2C bus</title>
+
+     <para>
+        The Actel microcontroller family has 2 I2C buses available and the Smartfusion evaluation kit
+        feature an OLED display connected to the first I2C bus with address 0x3C. 
+        The I2C driver is tested using the OLED display, however, the OLED driver is not part of the 
+        eCos HAL. A new I2C bus is instantiated using the following macro:
+     </para>
+
+     <programlisting width=80>
+        #define CYG_A2FXXX_I2C_BUS(                             \
+                _name_,                                         \
+                _init_fn_,                                      \
+                _base_,                                         \
+                _base_bb_,                                      \
+                _periph_,                                       \
+                _isr_vec_,                                      \
+                _isr_pri_)                                      \
+
+        _name_      is the name of the SPI device.
+        _init_fn_   is the I2C initialization function to be called by the C constructor.
+        _base_      is the base address of the I2C peripheral.
+        _base_bb_   is the Bit-Band base address of the I2C peripheral.
+        _periph_    is the peripheral bit identifier for reset/release operation.
+        _isr_vec_   is the peripheral interrupt vector number.
+        _isr_pri_   is the interrupt priority.
+     </programlisting>
+
+     <para>
+        The following section describes how the I2C bus 0 is declared. The code is located in
+        hal/cortexm/a2fxxx/a2f200_eval/current/src/platform_i2c.c. The required includes are:
+     </para>
+
+     <programlisting width=80>
+        #include <filename class="headerfile">&lt;cyg/io/i2c.h&gt;</filename>
+        #include <filename class="headerfile">&lt;cyg/io/i2c_a2fxxx.h&gt;</filename>
+     </programlisting>
+
+     <para>
+        The first part declares the I2C bus 0 and the second part attached a I2C device with address
+        0x3C to the bus.
+     </para>
+
+     <programlisting width=80>
+         CYG_A2FXXX_I2C_BUS(hal_a2fxxx_i2c0_bus,
+                 a2fxxx_i2c0_init,
+                 CYGHWR_HAL_A2FXXX_I2C0,
+                 CYGHWR_HAL_A2FXXX_I2C0_BB,
+                 CYGHWR_HAL_A2FXXX_SC_CLR_SOFTRST_CR_I2C0,
+                 CYGNUM_HAL_INTERRUPT_I2C0_0,
+                 0x60);
+
+         _name_     = hal_a2fxxx_i2c0_bus
+         _init_fn_  = a2fxxx_i2c0_init
+         _base_     = CYGHWR_HAL_A2FXXX_I2C0                    // Base address
+         _base_bb_  = CYGHWR_HAL_A2FXXX_I2C0_BB                 // for bit-band access
+         _periph_   = CYGHWR_HAL_A2FXXX_SC_CLR_SOFTRST_CR_I2C0
+         _isr_vec_  = CYGNUM_HAL_INTERRUPT_I2C0_0
+         _isr_pri_  = 0x60
+
+         CYG_I2C_DEVICE(i2c_a2fxxx_oled,
+                 &#38hal_a2fxxx_i2c0_bus,
+                 0x3c,
+                 0,
+                 CYG_I2C_DEFAULT_DELAY);
+     </programlisting>
+
+     </refsect1>
+     <!-- }}} -->
+
+      <!-- {{{ Ethernet Controller -->
+     <refsect1 id="a2f200-eval-hal-eth"><title>Ethernet Controller</title>
+
+     <para>
+         The Ethernet MAC layer of the Actel device is compliant with the RMII 10/100Mbps specification.
+         The development kit interface the DP83848 PHY from National Semiconductor.
+     </para>
+     <para>
+         NOTE: To use the Ethernet interface of the evaluation kit, the FPGA fabric must be programmed.
+         The Ethernet PHY input clock (50MHz) is connected to an IO only accessible from the fabric. It 
+         is therefore required to route the MAC_CLK from the clock network to the IO (T6).
+     </para>
+     <para>
+         Some of the driver configuration parameters accessible from the CDL file are:
+     </para>
+
+     <variablelist>
+     <varlistentry>
+          <term>CYGSEM_DEVS_ETH_CORTEXM_A2FXXX_CHATTER</term>
+          <listitem>
+          <para>
+           Selecting this option will cause the Ethernet driver to print status
+           messages as various Ethernet operations are undertaken. This is option
+           is designed to help debugging the Ethernet driver.
+          </para>
+          </listitem>
+     </varlistentry>
+
+     <varlistentry>
+          <term>CYGSEM_DEVS_ETH_CORTEXM_A2FXXX_PROMISCUOUS</term>
+          <listitem>
+          <para>
+           Selecting this option will set the Ethernet MAC in promiscuous mode, all Ethernet
+           packets will be delivered to the application layer whether or not destinated to the
+           device.
+          </para>
+          </listitem>
+     </varlistentry>
+
+     <varlistentry>
+          <term>CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_BUFSIZE_TX</term>
+          <listitem>
+          <para>
+           This option specifies the size of the internal transmit buffers used
+           for the Ethernet device.
+          </para>
+          </listitem>
+     </varlistentry>
+
+     <varlistentry>
+          <term>CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_BUFSIZE_RX</term>
+          <listitem>
+          <para>
+           This option specifies the size of the internal receive buffers used
+           for the Ethernet device.
+          </para>
+          </listitem>
+     </varlistentry>
+
+     <varlistentry>
+          <term>CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_TxNUM</term>
+          <listitem>
+          <para>
+           This option specifies the number of output buffer packets
+           to be used for the Ethernet device.
+          </para>
+          </listitem>
+     </varlistentry>
+
+     <varlistentry>
+          <term>CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_RxNUM</term>
+          <listitem>
+          <para>
+           This option specifies the number of input buffer packets
+           to be used for the Ethernet device.
+          </para>
+          </listitem>
+     </varlistentry>
+
+     <varlistentry>
+          <term>CYGSEM_DEVS_ETH_CORTEXM_A2FXXX_STATS</term>
+          <listitem>
+          <para>
+           Selecting this option will cause the Ethernet driver to accumulate statistics 
+           provided from the MAC layer.
+          </para>
+          </listitem>
+     </varlistentry>
+     </variablelist>
+
+     </refsect1>
+     <!-- }}} -->
+
+      <!-- {{{ Serial -->
+     <refsect1 id="a2f200-eval-hal-serial"><title>Serial</title>
+
+     <para>
+         The Actel A2Fxxx uses the 16x5x generic serial device driver. The driver is instantiaced through 
+         the CYGPKG_IO_SERIAL_CORTEXM_A2FXXX serial package.
+     </para>
+
+     </refsect1>
+     <!-- }}} -->
+
+      <!-- {{{ DMA -->
+     <refsect1 id="a2f200-eval-hal-dma"><title>DMA</title>
+
+     <para>
+         The eCos HAL offers some basics routines to configure and use the 8 DMA channels
+         available in the Smartfusion chips. It must be noted that all channels are sharing 
+         the same interrupt. The current implementation limits the transfer size to byte 
+         tranfer ( field TRANSFER_SIZE from the CHANNEL_x_CONTROL register ).
+         Currently only the SPI driver makes use of the DMA interface.
+     </para>
+
+     <para>
+         DMA channels are registered / released with <literal>a2fxxx_dma_ch_attach</literal> and 
+         <literal>a2fxxx_dma_ch_detach</literal> respectively:
+     </para>
+
+     <programlisting width=80>
+     cyg_uint32
+     a2fxxx_dma_ch_attach(cyg_uint8 ch, cyg_ISR_t *isr, cyg_DSR_t *dsr, cyg_addrword_t data)
+
+     ch         specify the DMA channel numbered from 0.
+     isr        specify the interrupt ISR to call for this channel.
+     dsr        specify the interrupt DSR to call for this channel.
+     data       data argument passed to the ISR and DSR routine.
+     </programlisting>
+
+     <programlisting width=80>
+     void
+     a2fxxx_dma_ch_detach (cyg_uint8 ch)
+
+     ch         specify the DMA channel number from 0 to 7
+     </programlisting>
+
+
+     <para>
+         DMA channels are configured with <literal>a2fxxx_dma_ch_setup</literal> :
+     </para>
+
+     <programlisting width=80>
+     cyg_uint32
+     a2fxxx_dma_ch_setup(cyg_uint8 ch, cyg_uint8 type, cyg_bool outbound, 
+           cyg_uint8 src_incr, cyg_uint8 dst_incr, cyg_bool pri, cyg_uint8 wr_adj)
+
+     ch         is the DMA channel numbered from 0.
+     type       is the transfer type to be performed. For valid
+                values, check CYGHWR_HAL_A2FXXX_DMA_XFER(_x) in var_io.h.
+     outbound   set to true for transfer out of memory, false for transfer 
+                to memory
+     src_incr   is the memory address increment step for the source. Valid
+                values are 0, 1, 2 and 4 byte(s). 0 can be used for DMA
+                transfer from peripheral FIFO for instance.
+     dst_incr   is the memory address increment step for the destination.
+                Valid values are 0, 1, 2 and 4 byte(s). 0 can be used for 
+                DMA transfer to peripheral FIFO for instance.
+     pri        is the DMA channel priority (true = high , false = low)
+     wr_adj     indicates the number of FCLK periods which the PDMA must wait 
+                after completion of a read or write access to a peripheral
+                before evaluating the out-of-band status signals from that 
+                peripheral for another transfer.
+     </programlisting>
+
+     <para>
+         DMA transfer are initiated using <literal>a2fxxx_dma_xfer</literal> :
+     </para>
+
+     <programlisting width=80>
+     cyg_uint32
+     a2fxxx_dma_xfer (cyg_uint8 ch, cyg_bool polled, cyg_uint32 len, cyg_uint8 *src, 
+                          cyg_uint8 *dst)
+
+     ch         is the DMA channel numbered from 0.
+     polled     set to true to use the DMA channel in polling mode ( no
+                end of tranfer interrupt are raised ).
+     len        select the length of the transfer ( in number of byte
+                transfered ).
+     src        is the start address from which data is to be read during 
+                the next DMA transfer cycle.
+     dst        is the start address from which data is to be written during 
+                the next DMA transfer cycle.
+     </programlisting>
+
+     <para>
+         DMA interrupts are cleared with <literal>a2fxxx_dma_clear_interrupt</literal> and
+         status of the transaction is retreived with <literal>a2fxxx_dma_get_comp_flag</literal> :
+     </para>
+
+     <programlisting width=80>
+     void
+     a2fxxx_dma_clear_interrupt (cyg_uint8 ch)
+
+     cyg_uint8 
+     a2fxxx_dma_get_comp_flag (cyg_uint8 ch)
+
+     ch         is the DMA channel numbered from 0.
+     </programlisting>
+
+     </refsect1>
+     <!-- }}} -->
+
+     </refentry>
+     <!-- }}} -->
+
+
+     <!-- {{{ Configuration -->
+     <refentry id="a2f200-eval-conf">
+     <refmeta>
+         <refentrytitle>Configuration</refentrytitle>
+     </refmeta>
+     <refnamediv>
+         <refname>Configuration</refname>
+         <refpurpose>Configure, compile and debug the application</refpurpose>
+     </refnamediv>
+
+     <refsect1 id="a2f200-eval-conf-ov">
+     <title><!-- <index></index> -->Overview</title>
+     <para>
+        For compilation of the application, the official eCos ARM toolchain is required 
+        (gcc version 4.3.2). 
+        For debugging, it is needed to install the FlashPro utility from Actel as well 
+        as SoftConsole. SoftConsole is an Eclipse based IDE from Microsemi that installs  
+        along with the CodeSourcery ARM toolchain. Both are freely available and require 
+        a Windows OS based host workstation.
+        To use some peripherals such as the Ethernet controller, the FPGA fabric must be
+        configured to route the Ethernet PHY clock from the MAC_CLK. It is recommended to
+        restore the factory image provided from Actel as a starting point in case the user  
+        has already experimented with the fabric.
+     </para>
+     </refsect1>
+     <!-- }}} -->
+
+     <refsect1 id="a2f200-eval-conf-build">
+     <title><!-- <index></index> -->Building the application</title>
+
+     <para>
+         The steps needed to build the HAL library for the Smartfusion evaluation board are:
+     </para>
+     <screen>
+         $ mkdir a2f200_eval
+         $ cd a2f200_eval
+         $ ecosconfig new smartfusion kernel
+         $ ecosconfig resolve
+         $ ecosconfig tree
+         $ make
+     </screen>
+     <para>
+         At the end of the build the <filename
+         class="directory">install/lib</filename> subdirectory should contain the library and linker script and the <filename
+         class="directory">install/include</filename> subdirectory the necessary includes to compile the application.
+     </para>
+
+     <para>
+         The differents startup type available for this platforme are:
+     </para>
+
+     <informaltable frame="all">
+       <tgroup cols="2" colsep="1" rowsep="1" align="left">
+         <thead>
+           <row>
+             <entry>Configuration (HAL_PLF_STARTUP_TYPE)</entry>
+             <entry>Description</entry>
+           </row>
+         </thead>
+         <tbody>
+           <row>
+             <entry>ROM</entry>
+             <entry>Application running from the board's internal flash, LMA = 0x60000000 and VMA = 0x60000000</entry>
+           </row>
+           <row>
+             <entry>SRAM</entry>
+             <entry>Application running from the board's internal RAM, LMA = 0x20000000 and VMA = 0x20000000</entry>
+           </row>
+           <row>
+             <entry>ROM_SOFTCONSOLE</entry>
+             <entry>Application running from the board's internal flash, LMA = 0x60000000 and VMA = 0x00000000</entry>
+           </row>
+         </tbody>
+       </tgroup>
+     </informaltable>
+
+     </refsect1>
+     <!-- }}} -->
+
+     <refsect1 id="a2f200-eval-conf-sys">
+     <title><!-- <index></index> -->System Boot</title>
+
+     <para>
+         The Smartfusion devices boot process is not entirely controlled by the user. The 
+         Embedded Non-volatile Memory contains spare pages that are reserved to store 
+         specific data such as the factory boot code, the manufacturing parameters, the 
+         system boot code or other data such as the Analog block or MSS configuration.
+     </para>
+
+     <para>
+         As described in the device user manual, the device first boots from factory boot
+         code before jumping to the system boot and eventually giving the hand to the user 
+         code, in this case, the eCos ROM application.
+     </para>
+
+     <para>
+         The Actel MSS configuration tool can be used to alter the system boot and the 
+         configuration pages. The ENVM spare pages can then be re-programmed using the 
+         Actel FlashPro utility. The FlashPro utility can also be used to program the 
+         FPGA fabric if required.
+     </para>
+
+     <informaltable frame="all">
+       <tgroup cols="2" colsep="1" rowsep="1" align="left">
+         <thead>
+           <row>
+             <entry>Spare page content</entry>
+             <entry>Address</entry>
+           </row>
+         </thead>
+         <tbody>
+           <row>
+             <entry>Manufacturing parameters</entry>
+             <entry>0x60080000</entry>
+           </row>
+           <row>
+             <entry>Factory boot</entry>
+             <entry>0x60080400</entry>
+           </row>
+           <row>
+             <entry>System Boot</entry>
+             <entry>0x60080800</entry>
+           </row>
+           <row>
+             <entry>Analog block configuration</entry>
+             <entry>0x60081600</entry>
+           </row>
+           <row>
+             <entry>MSS configuration</entry>
+             <entry>0x60081E80</entry>
+           </row>
+         </tbody>
+       </tgroup>
+     </informaltable>
+
+     </refsect1>
+     <!-- }}} -->
+
+     <refsect1 id="a2f200-eval-conf-dbg">
+     <title><!-- <index></index> -->Debugging from console</title>
+
+     <para>
+         Loading of the application to internal FLASH or RAM of the target is done either 
+         using the SoftConsole IDE supplied from Actel or GDB from command line. The later
+         case is described in this paragraph.
+     </para>
+
+     <para>
+         To debug ROM based application, while configuring eCos, select the ROM_SOFTCONSOLE 
+         startup type. The ROM_SOFTCONSOLE startup type is equivalent to a ROM startup but 
+         while the application is loaded at address 0x60000000 (FLASH), it runs and is debugged 
+         from address 0x00000000. This is done by setting the load address (LMA) to 0x60000000 
+         and the virtual address (VMA) to 0x00000000 in the eCos memory layout file. In this 
+         example, the timers test application from the eCos Smartfusion HAL is compiled:
+     </para>
+
+     <screen>
+         $ mkdir a2f200_eval
+         $ cd a2f200_eval
+         $ ecosconfig new smartfusion kernel
+           -> Select ROM_SOFTCONSOLE statup type
+         $ ecosconfig resolve
+         $ ecosconfig tree
+         $ make
+         $ make -s tests IGNORE_LINK_ERRORS=y
+     </screen>
+ 
+     <para>
+        Once the application is compiled, from a Windows command interpreter, start the 
+        actel-keepalive utility:
+     </para>
+
+     <screen>
+         c:> start actel-keepalive actel-keepalive
+     </screen>
+
+     <para>
+        The GDB initialisation sequence located in a2fxxx/a2f200_eval/current/host/softconsole_flash_init.txt
+        is an example of initialisation sequence to use for debugging application located in
+        ROM. For RAM based application, the initialisation sequence from 
+        a2fxxx/a2f200_eval/current/host/softconsole_sram_init.txt shall be used.
+        Make sure to replace the path to the debugger toolchain and the eCos repository first. The GDB
+        initialisation sequence without in-line comments is:
+     </para>
+
+     <screen>
+        set arm fallback-mode thumb
+        target remote | "C:/Program Files (x86)/Microsemi/SoftConsole v3.3/Sourcery-G++/b-
+        in/arm-none-eabi-sprite" flashpro:?cpu=Cortex-M3 "C:/wrk/ecos/packages/hal/cortex-
+        m/a2fxxx/a2f200_eval/current/host"
+        set mem inaccessible-by-default off
+        set *0x40006010 = 0x4C6E55FA
+        set *0xE0042000 = 0
+        set *0xE0042008 = 1
+        set *0xE0042040 = 0x00207FFD
+        set *0xE004203C = 0x00000001
+        set *0xE0042030 = *0xE0042030 & 0xFFFFFFF7
+        set *0xE000ED08 = 0x00000000
+        load
+        set $sp = *0x60080000
+        set $pc = *0x60080004 - 1
+     </screen>
+
+     <para>
+         Start the GDB session to debug the timers test example:
+     </para>
+
+     <screen>
+         C:\root\a2f200_eval>arm-none-eabi-gdb install\tests\hal\cortexm\a2fxxx\var\curren-
+         t\tests\timers
+         GNU gdb (Sourcery G++ Lite Sourcery G++ Lite 2010q1-188 + Actel 1.2) 7.0.50.20100-
+         218-cvs
+         Copyright (C) 2010 Free Software Foundation, Inc.
+         License GPLv3+: GNU GPL version 3 or later &lt;http://gnu.org/licenses/gpl.html&gt;
+         This is free software: you are free to change and redistribute it.
+         There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+         and "show warranty" for details.
+         This GDB was configured as "--host=i686-mingw32 --target=arm-none-eabi".
+         For bug reporting instructions, please see:
+         &lt;https://support.codesourcery.com/GNUToolchain/&gt;...
+         Reading symbols from c:\root\a2f200_eval\install\tests\hal\cortexm\a2fxxx\var\curren-
+         t\tests\timers...done.
+         (gdb)
+     </screen>
+
+     <para>
+        A typical log from the GDB initialisation sequence is shown here:
+     </para>
+
+     <screen>
+        Remote debugging using | "C:/Program Files (x86)/Microsemi/SoftConsole v3.3/Sourc-
+        ery-G++/bin/arm-none-eabi-sprite" flashpro:?cpu=Cortex-M3 "C:/wrk/ecos/packages/h-
+        al/cortexm/a2fxxx/a2f200_eval/current/host"
+        arm-none-eabi-sprite: Using memory map C:/wrk/ecos/packages/hal/cortexm/a2fxxx/a2f-
+        200_eval/current/host/memory-map.xml
+        arm-none-eabi-sprite: Target reset
+        arm-none-eabi-sprite: Transferring memory map (may cause a delay)
+        0x6008051c in ?? ()
+        Loading section .rom_vectors, size 0x8 lma 0x60000000
+        Loading section .ARM.exidx, size 0x10 lma 0x60000008
+        Loading section .text, size 0x3340 lma 0x60000018
+        Loading section .rodata, size 0x4dc lma 0x60003358
+        Loading section .data, size 0x318 lma 0x6000383c
+        arm-none-eabi-sprite: Using host routines for flash programming
+        arm-none-eabi-sprite: Start of flash programming
+        arm-none-eabi-sprite: Comparing flash memory contents of actel-smartfusion-envm @-
+        0x60000000
+        arm-none-eabi-sprite: Program 0x60000000 sector [0x0,+0x80) unchanged
+        arm-none-eabi-sprite: Program 0x60000000 sector [0x80,+0x80) unchanged
+        arm-none-eabi-sprite: Program 0x60000000 sector [0x100,+0x80) unchanged
+        ....
+        arm-none-eabi-sprite: Program 0x60000000 sector [0x3b00,+0x80) unchanged
+        arm-none-eabi-sprite: End of programming
+        Start address 0x18, load size 15180
+        Transfer rate: 8 KB/sec, 62 bytes/write.
+     </screen>
+
+     </refsect1>
+     <!-- }}} -->
+
+   </refentry>
+   <!-- }}} -->
+     
+  </chapter>
+   <!-- }}} -->
+
+</part>
+
+  

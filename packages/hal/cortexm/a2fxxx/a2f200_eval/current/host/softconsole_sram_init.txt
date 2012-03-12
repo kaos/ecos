@@ -1,0 +1,42 @@
+
+# GDB initialization sequence provided from SoftConsole IDE with slight modification
+# for eCos
+
+# [1] Targeting SmartFusion embedded SRAM (esram) @ 0x20000000.
+#     Loads and debugs at 0x20000000 (i.e. ld LMA=VMA=0x20000000).
+
+# Make sure 16-bit Thumb mode breakpoint requests are always used.
+set arm fallback-mode thumb
+
+# PATH to the arm-none-eabi-sprite utility and eCos repository must be
+# updated according to a particular setup
+target remote | "C:/Program Files (x86)/Microsemi/SoftConsole v3.3/Sourcery-G++/bin/arm-none-eabi-sprite" flashpro:?cpu=Cortex-M3 "C:/wrk/ecos/packages/hal/cortexm/a2fxxx/a2f200_eval/current/host"
+
+# Don't restrict memory access to just regions defined in linker script
+set mem inaccessible-by-default off
+
+# Disable the watchdog
+set *0x40006010 = 0x4C6E55FA
+
+# Configure external memory controller to access external RAM.
+
+# Program EMC_CONFIG_0_REG
+set *0xE0042040 = 0x00207FFD
+# Program EMC_MUX_CONFIG_REG
+set *0xE004203C = 0x00000001
+# Program SOFT_RESET_REG
+set *0xE0042030 = *0xE0042030 & 0xFFFFFFF7
+
+# Set temporary breakpoint on main (must be s/w BP - Cortex-M3 h/w BPs only below 0x20000000)
+thb cyg_usert_start
+
+# Specify user application vector table
+set *0xE000ED08 = 0x20000400
+
+# Load the program
+load
+
+# Ensure chip boot code runs before transferring control to user application
+# Initialize SP & PC from chip boot vector table
+set $sp = *0x60080000
+set $pc = *0x60080004 - 1

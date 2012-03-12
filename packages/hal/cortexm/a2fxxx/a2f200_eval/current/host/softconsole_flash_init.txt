@@ -1,0 +1,53 @@
+
+# GDB initialization sequence provided from SoftConsole IDE with slight modification
+# for eCos
+
+# [1] Targeting SmartFusion embedded NVM (envm) @ 0x60000000.
+#     Loads at 0x60000000 but runs/debugs at 0x00000000 (i.e. ld LMA=0x60000000, VMA=0x00000000)
+
+# Make sure 16-bit Thumb mode breakpoint requests are always used.
+set arm fallback-mode thumb
+
+# Invoke debug sprite in Cortex-M3 mode
+#
+# PATH to the arm-none-eabi-sprite utility and eCos repository must be
+# updated according to a particular setup
+target remote | "C:/Program Files (x86)/Microsemi/SoftConsole v3.3/Sourcery-G++/bin/arm-none-eabi-sprite" flashpro:?cpu=Cortex-M3 "C:/wrk/ecos/packages/hal/cortexm/a2fxxx/a2f200_eval/current/host"
+
+# Don't restrict memory access to just regions defined in linker script
+set mem inaccessible-by-default off
+
+# Disable the watchdog
+set *0x40006010 = 0x4C6E55FA
+
+# Ensure that eSRAM IS NOT mapped to 0x00000000
+# Clear ESRAM_CONFIG system register bit 0 (COM_ESRAMFWREMAP)
+set *0xE0042000 = 0
+# Ensure that eNVM @ 0x60000000 IS mapped to 0x00000000
+# Set ENVM_REMAP_BASE register COM_ENVMREMAPBASE field to 1
+set *0xE0042008 = 1
+
+# Configure external memory controller to access external RAM.
+
+# Program EMC_CONFIG_0_REG
+set *0xE0042040 = 0x00207FFD
+# Program EMC_MUX_CONFIG_REG
+set *0xE004203C = 0x00000001
+# Program SOFT_RESET_REG
+set *0xE0042030 = *0xE0042030 & 0xFFFFFFF7
+
+#set *0xE0042004 = 0x00000001
+
+# Set temporary breakpoint on main (must be h/w BP for eNVM)
+thb cyg_usert_start
+
+# Specify user application vector table (remapped/mirrored address)
+set *0xE000ED08 = 0x00000000
+
+# Load the program
+load
+
+# Ensure chip boot code runs before transferring control to user application
+# Initialize SP & PC from chip boot vector table
+set $sp = *0x60080000
+set $pc = *0x60080004 - 1
