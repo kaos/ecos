@@ -1,0 +1,152 @@
+#==========================================================================
+#
+#      a2fxxx_eth.cdl
+#
+#      Ethernet drivers for Actel AF2xxx Controller
+#
+#==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2011 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+#==========================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):    ccoutand
+# Contributors:
+# Date:         2011-05-04
+# Purpose:
+# Description:
+#
+#####DESCRIPTIONEND####
+#
+#========================================================================*/
+
+cdl_package CYGPKG_DEVS_ETH_CORTEXM_A2FXXX {
+    display       "Actel Smartfusion Ethernet driver"
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if     CYGPKG_IO_ETH_DRIVERS
+    active_if     CYGPKG_HAL_CORTEXM_A2FXXX
+
+    implements    CYGHWR_NET_DRIVERS
+    implements    CYGHWR_NET_DRIVER_ETH0
+
+    include_dir   net
+    description   "
+       Ethernet drivers for Actel AF2xxx Controller."
+
+    compile       -library=libextras.a if_a2fxxx.c
+
+    cdl_option CYGSEM_DEVS_ETH_CORTEXM_A2FXXX_PROMISCUOUS {
+        display         "Promiscuous Mode"
+        flavor          bool
+        default_value   0
+        description     "
+           Selecting this option will set the Ethernet MAC in promiscuous mode, all Ethernet
+           packets will be delivered to the application layer."
+    }
+
+    cdl_option CYGSEM_DEVS_ETH_CORTEXM_A2FXXX_CHATTER {
+        display         "Display status messages during Ethernet operations"
+        flavor          bool
+        default_value   0
+        description     "
+           Selecting this option will cause the Ethernet driver to print status
+           messages as various Ethernet operations are undertaken."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_ISR_PRIORITY {
+        display       "Ethernet interrupt ISR priority"
+        flavor        data
+        default_value CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_ISR_SP
+        description   "
+              Set the Ethernet controller ISR priority."
+    }
+
+    cdl_option CYGSEM_DEVS_ETH_CORTEXM_A2FXXX_STATS {
+        display         "Maintain statistics at the MAC layer"
+        flavor          bool
+        default_value   0
+        description     "
+           Selecting this option will cause the Ethernet driver to accumulate statistics
+           provided from the MAC layer."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_BUFSIZE_TX {
+        display       "Buffer size"
+        flavor        data
+        default_value 1536
+        description   "
+            This option specifies the size of the internal transmit buffers used
+            for the Actel A2Fxxx/Ethernet device."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_BUFSIZE_RX {
+        display       "Buffer size"
+        flavor        data
+        default_value 1536
+        description   "
+            This option specifies the size of the internal receive buffers used
+            for the Actel A2Fxxx/Ethernet device."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_TxNUM {
+        display       "Number of output buffers"
+        flavor        data
+        legal_values  2 to 8
+        default_value 4
+        description   "
+            This option specifies the number of output buffer packets
+            to be used for the Actel A2Fxxx/Ethernet device."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_CORTEXM_A2FXXX_RxNUM {
+        display       "Number of input buffers"
+        flavor        data
+        legal_values  2 to 8
+        default_value 4
+        description   "
+            This option specifies the number of input buffer packets
+            to be used for the Actel A2Fxxx/Ethernet device."
+    }
+
+    cdl_option  CYGPKG_DEVS_ETH_CORTEXM_A2FXXX_CFLAGS_ADD {
+        display "Additional compiler flags"
+        flavor  data
+        no_define
+        default_value { "-D_KERNEL -D__ECOS" }
+        description   "
+            This option modifies the set of compiler flags for
+            building the Actel A2Fxxx Ethernet driver package.
+            These flags are used in addition to the set of global flags."
+    }
+}
+
+# EOF a2fxxx_eth.cdl
