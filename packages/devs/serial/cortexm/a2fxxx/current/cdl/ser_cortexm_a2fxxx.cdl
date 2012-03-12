@@ -1,0 +1,219 @@
+# ====================================================================
+#
+#      ser_cortexm_a2fxxx.cdl
+#
+#      eCos serial Cortex-M3/Actel Smartfusion configuration data
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2011 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      ccoutand
+# Original data:  gthomas
+# Contributors:
+# Date:           2011-03-20
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_IO_SERIAL_CORTEXM_A2FXXX {
+    display       "Cortex-M3/Actel Smartfusion serial device drivers"
+
+    parent        CYGPKG_IO_SERIAL_DEVICES
+    active_if     CYGPKG_IO_SERIAL
+    active_if     CYGPKG_HAL_CORTEXM_A2FXXX
+    implements    CYGINT_IO_SERIAL_GENERIC_16X5X_CHAN_INTPRIO
+
+
+    requires      CYGPKG_ERROR
+    include_dir   cyg/io
+
+    description   "
+           This option enables the serial device drivers for the
+           Cortex-M3/Actel Smartfusion."
+
+    # FIXME: This really belongs in the GENERIC_16X5X package
+    cdl_interface CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED {
+        display   "Generic 16x5x serial driver required"
+    }
+    define_proc {
+        puts $::cdl_header "#define CYGPRI_IO_SERIAL_GENERIC_16X5X_STEP 4"
+    }
+
+    requires { CYGPKG_IO_SERIAL_GENERIC_16X5X_XMIT_REQUIRE_PRIME == "1" }
+
+    define_proc {
+        puts $::cdl_system_header "/***** serial driver proc output start *****/"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_GENERIC_16X5X_INL <cyg/io/ser_cortexm_a2fxxx.inl>"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_GENERIC_16X5X_CFG <pkgconf/io_serial_cortexm_a2fxxx.h>"
+        puts $::cdl_system_header "/*****  serial driver proc output end  *****/"
+    }
+
+    cdl_component CYGPKG_IO_SERIAL_CORTEXM_A2FXXX_SERIAL0 {
+        display       "Cortex-M3/Actel Smartfusion serial port 0 driver"
+        flavor        bool
+        default_value 1
+
+        implements CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED
+        implements CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+        implements CYGINT_IO_SERIAL_LINE_STATUS_HW
+
+        description   "
+            This option includes the serial device driver for the
+            Cortex-M3/Actel Smartfusion port 0."
+
+        cdl_option CYGDAT_IO_SERIAL_CORTEXM_A2FXXX_SERIAL0_NAME {
+            display       "Device name for the serial port 0 driver"
+            flavor         data
+            default_value {"\"/dev/ser0\""}
+            description   "
+                This option specifies the name of the serial device
+                for the Cortex-M3/Actel Smartfusion port 0."
+        }
+
+        cdl_option CYGNUM_IO_SERIAL_CORTEXM_A2FXXX_SERIAL0_BAUD {
+            display       "Baud rate for the serial port 0 driver"
+            flavor         data
+            legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400
+                            3600 4800 7200 9600 14400 19200 38400
+                            57600 115200 230400 }
+            default_value 38400
+            description   "
+                This option specifies the default baud rate (speed)
+                for the Cortex-M3/Actel Smartfusion port 0."
+        }
+
+        cdl_option CYGNUM_IO_SERIAL_CORTEXM_A2FXXX_SERIAL0_BUFSIZE {
+            display       "Buffer size for the serial port 0 driver"
+            flavor         data
+            legal_values   0 to 8192
+            default_value  128
+            description   "
+                This option specifies the size of the internal buffers
+                used for the Cortex-M3/Actel Smartfusion port 0."
+        }
+
+        cdl_option CYGNUM_IO_SERIAL_CORTEXM_A2FXXX_SERIAL0_INTPRIO {
+            display       "Interrupt priority of the serial port 0 ISR"
+            flavor         data
+            default_value { CYGNUM_DEVS_SERIAL_CORTEXM_A2FXXX_SERIAL0_ISR_SP }
+            requires { is_active(CYGNUM_IO_SERIAL_CORTEXM_A2FXXX_SERIAL1_INTPRIO)
+                           implies CYGNUM_IO_SERIAL_CORTEXM_A2FXXX_SERIAL0_INTPRIO !=
+                           CYGNUM_IO_SERIAL_CORTEXM_A2FXXX_SERIAL1_INTPRIO }
+            description "
+                  This option specifies the interrupt priority of the
+                  ISR of the serial port 1 interrupt in the NVIC."
+        }
+
+    }
+
+    cdl_component CYGPKG_IO_SERIAL_CORTEXM_A2FXXX_SERIAL1 {
+        display       "Cortex-M3/Actel Smartfusion serial port 1 driver"
+        flavor        bool
+        default_value 0
+
+        implements CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED
+        implements CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+        implements CYGINT_IO_SERIAL_LINE_STATUS_HW
+
+        description   "
+            This option includes the serial device driver for the
+            Cortex-M3/Actel Smartfusion port 1."
+
+        cdl_option CYGDAT_IO_SERIAL_CORTEXM_A2FXXX_SERIAL1_NAME {
+            display       "Device name for the serial port 1 driver"
+            flavor         data
+            default_value {"\"/dev/ser1\""}
+            description   "
+                This option specifies the name of the serial device
+                for the Cortex-M3/Actel Smartfusion port 1."
+        }
+
+        cdl_option CYGNUM_IO_SERIAL_CORTEXM_A2FXXX_SERIAL1_BAUD {
+            display       "Baud rate for the serial port 1 driver"
+            flavor         data
+            legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400
+                            3600 4800 7200 9600 14400 19200 38400
+                            57600 115200 230400 }
+            default_value 38400
+            description   "
+                This option specifies the default baud rate (speed)
+                for the Cortex-M3/Actel Smartfusion port 1."
+         }
+
+         cdl_option CYGNUM_IO_SERIAL_CORTEXM_A2FXXX_SERIAL1_BUFSIZE {
+             display       "Buffer size for the serial port 1 driver"
+             flavor         data
+             legal_values   0 to 8192
+             default_value  128
+             description   "
+                 This option specifies the size of the internal
+                 buffers used for the Cortex-M3/Actel Smartfusion port 1."
+         }
+
+         cdl_option CYGNUM_IO_SERIAL_CORTEXM_A2FXXX_SERIAL1_INTPRIO {
+              display      "Interrupt priority of the serial port 1 ISR"
+              flavor        data
+              default_value { CYGNUM_DEVS_SERIAL_CORTEXM_A2FXXX_SERIAL0_ISR_SP }
+              description "
+                  This option specifies the interrupt priority of the
+                  ISR of the serial port 1 interrupt in the NVIC."
+         }
+    }
+
+    cdl_component CYGPKG_IO_SERIAL_CORTEXM_A2FXXX_TESTING {
+        display    "Testing parameters"
+        flavor     bool
+        calculated 1
+        active_if  CYGPKG_IO_SERIAL_CORTEXM_A2FXXX_SERIAL0
+
+        implements CYGINT_IO_SERIAL_TEST_SKIP_9600
+        implements CYGINT_IO_SERIAL_TEST_SKIP_115200
+        implements CYGINT_IO_SERIAL_TEST_SKIP_PARITY_EVEN
+
+        cdl_option CYGPRI_SER_TEST_SER_DEV {
+            display       "Serial device used for testing"
+            flavor        data
+            default_value { CYGDAT_IO_SERIAL_CORTEXM_A2FXXX_SERIAL0_NAME }
+        }
+
+        define_proc {
+            puts $::cdl_header "#define CYGPRI_SER_TEST_CRASH_ID \"a2fxxx\""
+            puts $::cdl_header "#define CYGPRI_SER_TEST_TTY_DEV  \"/dev/tty0\""
+        }
+    }
+}
+
+# EOF ser_cortexm_a2fxx.cdl
