@@ -1167,6 +1167,15 @@ package CYGPKG_IO_SERIAL_ARM_LPC24XX {
     description       "ARM LPC24XX/LPC17XX serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_CORTEXM_A2FXXX {
+    alias             { "Cortex-M3/Actel Smartfusion (A2Fxxx) serial device drivers"
+                        devs_serial_cortexm_a2fxxx a2fxxx_serial_driver }
+    hardware
+    directory         devs/serial/cortexm/a2fxxx
+    script            ser_cortexm_a2fxxx.cdl
+    description       "Cortex-M3/Actel Smartfusion serial device drivers"
+}
+
 package CYGPKG_IO_SERIAL_POWERPC_COGENT {
     alias             { "Cogent PowerPC serial device drivers"
                         devs_serial_powerpc_cogent cogent_serial_driver }
@@ -1420,6 +1429,14 @@ package CYGPKG_DEVS_ETH_FREESCALE_ENET {
         script          eth_freescale_enet.cdl
         hardware
         description     "Ethernet driver for the Freescale ENET ethernet controller."
+}
+
+package CYGPKG_DEVS_ETH_CORTEXM_A2FXXX {
+    alias        { "Cortex-M3/Actel Smartfusion (A2Fxxx) ethernet driver" a2fxxx_eth_driver }
+    directory    devs/eth/cortexm/a2fxxx
+    script       a2fxxx_eth.cdl
+    hardware
+    description  "Actel A2Fxxx Ethernet driver for Cortex-M3 A2Fxxx based boards."
 }
 
 package CYGPKG_IO_SERIAL_SH_EDK7708 {
@@ -2461,6 +2478,15 @@ package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
         This package provides a driver for the Freescale DSPI interfaces."
 }
 
+package CYGPKG_DEVS_SPI_CORTEXM_A2FXXX {
+    alias         { "Cortex-M3/Actel Smartfusion (A2Fxxx) SPI driver" }
+    hardware
+    directory     devs/spi/cortexm/a2fxxx
+    script        spi_a2fxxx.cdl
+    description "This package provides a driver for the SPI peripheral of Actel Smartfusion (A2Fxxx)
+                 controller family."
+}
+
 package CYGPKG_IO_SPI {
         alias      { "Generic SPI support" spi io_spi spi_io }
         directory  io/spi
@@ -2511,6 +2537,15 @@ package CYGPKG_DEVS_I2C_CORTEXM_LM3S {
     description  "
         This package provides a driver for the I2C unit of the Stellaris
         Cortex-M3 controller family."
+}
+
+package CYGPKG_DEVS_I2C_CORTEXM_A2FXXX {
+    alias           { "Cortex-M3/Actel Smartfusion (A2Fxxx) I2C driver" a2fxxx_i2c a2fxxx_i2c_driver i2c_a2fxxx}
+    hardware
+    directory       devs/i2c/cortexm/a2fxxx
+    script          i2c_a2fxxx.cdl
+    description "This package provides a driver for the I2C peripheral of the Actel Smartfusion (A2Fxxx)
+                 controller family."
 }
 
 package CYGPKG_DEVS_ADC_ARM_LPC24XX {
@@ -7257,6 +7292,68 @@ target freescale_twr_k60n512_fxm {
             to run eCos on the Freescale TWR-K60N512 development system
             equipped with TWR-FXM external memory module."
 }
+
+package CYGPKG_HAL_CORTEXM_A2FXXX {
+    alias       { "Cortex-M3/Actel Smartfusion A2Fxxx variant HAL"  hal_cortexm_a2fxxx }
+    directory   hal/cortexm/a2fxxx/var
+    script      hal_cortexm_a2fxxx.cdl
+    hardware
+    description "
+        The Actel A2Fxxx HAL package provides the support needed to run
+        eCos and RedBoot on targets based on the Actel A2Fxxx
+        family of microcontrollers."
+}
+
+package CYGPKG_HAL_CORTEXM_A2F200_EVAL {
+    alias       { "Actel A2F200 EVAL HAL" hal_cortexm_a2f200_eval }
+    directory   hal/cortexm/a2fxxx/a2f200_eval
+    script      hal_cortexm_a2f200_eval.cdl
+    hardware
+    description "
+        The Actel A2F200 HAL package provides the support needed to run
+        eCos on the Actel A2F200 EVAL board."
+}
+
+package CYGPKG_DEVS_FLASH_CORTEXM_A2F200_EVAL {
+     alias      { "Actel SmartFusion evaluation board flash support" a2fxxx_eval_flash_driver }
+     hardware
+     directory   devs/flash/cortexm/a2fxxx/a2f200_eval
+     script      flash_a2f200_eval.cdl
+     description  "
+           Flash driver specifics for the Actel SmartFusion evaluation board (A2F200 EVAL)."
+}
+
+package CYGPKG_DEVS_ETH_CORTEXM_A2F200_EVAL {
+    alias        { "Actel Smartfusion ethernet evaluation board support" a2f200_eval_eth_driver }
+    hardware
+    directory     devs/eth/cortexm/a2f200_eval
+    script        a2f200_eval.cdl
+    description   "Ethernet driver specifics for Actel Smartfusion evaluation boards (A2F200 EVAL)."
+}
+
+
+target smartfusion {
+        alias { "Actel SmartFusion evaluation board (A2F200_EVAL)" smartfusion }
+        packages { CYGPKG_HAL_CORTEXM
+                   CYGPKG_HAL_CORTEXM_A2FXXX
+                   CYGPKG_HAL_CORTEXM_A2F200_EVAL
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_IO_SERIAL_CORTEXM_A2FXXX
+                   CYGPKG_IO_I2C
+                   CYGPKG_DEVS_I2C_CORTEXM_A2FXXX
+                   CYGPKG_DEVS_SPI_CORTEXM_A2FXXX
+                   CYGPKG_IO_SPI
+                   CYGPKG_DEVS_FLASH_SPI_AT25DFXXX
+                   CYGPKG_DEVS_FLASH_CORTEXM_A2F200_EVAL
+                   CYGPKG_DEVS_ETH_CORTEXM_A2F200_EVAL
+                   CYGPKG_DEVS_ETH_CORTEXM_A2FXXX
+                   CYGPKG_DEVS_ETH_PHY
+                 }
+        description "
+        The a2f200_eval target provides the packages needed
+        to run eCos on the Actel A2F200 EVAL (Smartfusion) board."
+}
+
 
 # ==========================================================================
 # End of ecos.db
