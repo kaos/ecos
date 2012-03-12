@@ -1,0 +1,121 @@
+# ==========================================================================
+#
+#      a2f200_eval.cdl
+#
+#      Ethernet driver specifics for Actel Smartfusion (A2F200) board
+#
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2011 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):    ccoutand
+# Contributors:
+# Date:         2011-05-04
+# Purpose:
+# Description:  Ethernet driver specifics for Actel Smartfusion (A2F200)
+#               board
+#
+#####DESCRIPTIONEND####
+#
+# ==========================================================================
+
+
+cdl_package CYGPKG_DEVS_ETH_CORTEXM_A2F200_EVAL {
+    display       "Actel Smartfusion (A2F200) kit Ethernet support"
+    description   "
+        Ethernet driver specifics for Actel Smartfusion (A2F200) board"
+
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if     CYGPKG_IO_ETH_DRIVERS
+    active_if     CYGPKG_HAL_CORTEXM
+    active_if     CYGPKG_HAL_CORTEXM_A2FXXX
+
+    requires      CYGPKG_DEVS_ETH_CORTEXM_A2FXXX
+
+    include_dir   cyg/io
+
+    define_proc {
+        puts $::cdl_system_header "#define CYGDAT_DEVS_CORTEXM_A2FXXX_ETH_CDL <pkgconf/devs_eth_cortexm_a2f200_eval.h>"
+        puts $::cdl_system_header "#define CYGDAT_DEVS_CORTEXM_A2FXXX_ETH_INL <cyg/io/a2f200_eval_eth.inl>"
+    }
+
+    cdl_component CYGPKG_DEVS_ETH_CORTEXM_A2F200_EVAL_ETH0 {
+        display       "Actel Smartfusion (A2F200) Ethernet port 0 driver"
+        flavor        bool
+        default_value 1
+        description   "
+            This option includes the Ethernet device driver on the
+            Actel Smartfusion (A2F200) motherboard."
+
+        implements CYGHWR_NET_DRIVERS
+        implements CYGHWR_NET_DRIVER_ETH0
+
+        cdl_option CYGDAT_DEVS_ETH_CORTEXM_A2F200_EVAL_ETH0_NAME {
+            display       "Device name for the Ethernet port 0 driver"
+            flavor        data
+            default_value {"\"eth0\""}
+            description   "
+                This option sets the name of the Ethernet device for the
+                Ethernet port 0."
+        }
+
+        cdl_option CYGDAT_DEVS_ETH_CORTEXM_A2F200_EVAL_ETH0_PHY_ADDRESS {
+            display       "Ethernet PHY address of the Ethernet port 0 driver"
+            flavor        data
+            default_value 0
+            description   "
+                This option sets the Ethernet PHY address of the Ethernet device for the
+                Ethernet port 0."
+        }
+
+        cdl_component CYGSEM_DEVS_ETH_CORTEXM_A2F200_EVAL_ETH0_SET_ESA {
+            display       "Set the Ethernet station address"
+            flavor        bool
+            default_value !CYGPKG_DEVS_ETH_TSEC_ETH_REDBOOT_HOLDS_ESA
+            description   "Enabling this option will allow the Ethernet
+            station address to be forced to the value set by the
+            configuration.  This may be required if the hardware does
+            not include a serial EEPROM for the ESA, and if RedBoot's
+            flash configuration support is not available."
+
+            cdl_option CYGDAT_DEVS_ETH_CORTEXM_A2F200_EVAL_ETH0_ESA {
+                display       "The Ethernet station address"
+                flavor        data
+                default_value {"{0x00, 0x20, 0x0E, 0x10, 0x39, 0x89}"}
+                description   "The Ethernet station address"
+            }
+        }
+    }
+
+}
