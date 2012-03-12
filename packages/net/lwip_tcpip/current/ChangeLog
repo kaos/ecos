@@ -1,3 +1,8 @@
+2012-03-06  Ilija Kocho  <ilijak@siva.com.mk>
+
+    * src/core/tcp_out.c: Fix compiler warning about unused variables.
+    [Bugzilla 1001521]
+
 2011-08-23  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* tests/nc_test_slave.c: Reduced stack sizes of IDLE, LOAD and TMAIN

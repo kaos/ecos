@@ -462,7 +462,9 @@ err_t
 tcp_send_empty_ack(struct tcp_pcb *pcb)
 {
   struct pbuf *p;
+#if LWIP_TCP_TIMESTAMPS || CHECKSUM_GEN_TCP
   struct tcp_hdr *tcphdr;
+#endif
   u8_t optlen = 0;
 
 #if LWIP_TCP_TIMESTAMPS
@@ -479,8 +481,10 @@ tcp_send_empty_ack(struct tcp_pcb *pcb)
               ("tcp_output: sending ACK for %"U32_F"\n", pcb->rcv_nxt));
   /* remove ACK flags from the PCB, as we send an empty ACK now */
   pcb->flags &= ~(TF_ACK_DELAY | TF_ACK_NOW);
-
-  tcphdr = tcp_output_set_header(pcb, p, optlen, htonl(pcb->snd_nxt));
+#if LWIP_TCP_TIMESTAMPS || CHECKSUM_GEN_TCP
+  tcphdr =
+#endif
+  tcp_output_set_header(pcb, p, optlen, htonl(pcb->snd_nxt));
 
   /* NB. MSS option is only sent on SYNs, so ignore it here */
 #if LWIP_TCP_TIMESTAMPS
@@ -932,8 +936,9 @@ void
 tcp_keepalive(struct tcp_pcb *pcb)
 {
   struct pbuf *p;
+#if CHECKSUM_GEN_TCP
   struct tcp_hdr *tcphdr;
-
+#endif
   LWIP_DEBUGF(TCP_DEBUG, ("tcp_keepalive: sending KEEPALIVE probe to %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
                           ip4_addr1(&pcb->remote_ip), ip4_addr2(&pcb->remote_ip),
                           ip4_addr3(&pcb->remote_ip), ip4_addr4(&pcb->remote_ip)));
@@ -950,8 +955,10 @@ tcp_keepalive(struct tcp_pcb *pcb)
   }
   LWIP_ASSERT("check that first pbuf can hold struct tcp_hdr",
               (p->len >= sizeof(struct tcp_hdr)));
-
-  tcphdr = tcp_output_set_header(pcb, p, 0, htonl(pcb->snd_nxt - 1));
+#if CHECKSUM_GEN_TCP
+  tcphdr =
+#endif
+  tcp_output_set_header(pcb, p, 0, htonl(pcb->snd_nxt - 1));
 
 #if CHECKSUM_GEN_TCP
   tcphdr->chksum = inet_chksum_pseudo(p, &pcb->local_ip, &pcb->remote_ip,
