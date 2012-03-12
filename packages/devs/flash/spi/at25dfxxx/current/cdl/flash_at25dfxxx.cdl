@@ -65,6 +65,13 @@ cdl_package CYGPKG_DEVS_FLASH_SPI_AT25DFXXX {
         Flash memory support for Atmel AT95DFxxx SPI flash devices
         and compatibles.  This driver implements the V2 flash driver API."
 
+    cdl_interface CYGHWR_DEVS_FLASH_SPI_AT25DFXXX_DEVICE {
+        display     "Hardware AT25DFxxx FLASH device drivers"
+        description "
+            This calculated option gives the number of AT25DFxxx flash
+            devices on the current platform."
+    }
+
     cdl_option CYGPKG_DEVS_FLASH_SPI_AT25DFXXX_BLOCK_SIZE {
         display       "Flash block size in bytes"
         legal_values  { 4096 32768 65536 }
@@ -107,6 +114,19 @@ cdl_package CYGPKG_DEVS_FLASH_SPI_AT25DFXXX {
             reading back data.  Read requests for areas larger than
             this block size will automatically be split into a series
             of smaller SPI bus transactions."
+    }
+
+    cdl_option CYGPKG_DEVS_FLASH_SPI_AT25DFXXX_TESTS {
+        display        "SPI flash driver tests for Atmel AT95DFxxx flash"
+        active_if      CYGPKG_KERNEL
+        active_if      CYGPKG_IO_SPI
+        requires       { CYGHWR_DEVS_FLASH_SPI_AT25DFXXX_DEVICE >= 1 }
+        flavor         data
+        no_define
+        calculated     { "tests/at25dfxxx_test.c" }
+        description    "
+            This option specifies the set of tests for the Atmel AT95DFxxx
+            SPI flash."
     }
 }
 

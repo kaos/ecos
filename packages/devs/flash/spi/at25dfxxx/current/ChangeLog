@@ -1,3 +1,10 @@
+
+2012-01-05  Christophe Coutand  <ecos@hotmail.co.uk>
+	* cdl/at25dfxxx.cdl:
+	* tests/at25dfxxx_test.c: 
+	Added Atmel AT25DFxxx driver test application.
+	[Bugzilla 1001449]
+
 2011-04-13  Christophe Coutand  <ecos@hotmail.co.uk>
 
 	* cdl/at25dfxxx.cdl:
