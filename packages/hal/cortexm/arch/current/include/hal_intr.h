@@ -353,7 +353,7 @@ __externC cyg_uint32 hal_cortexm_systick_clock;
 
 #define HAL_CLOCK_RESET( __vector, __period )                           \
 {                                                                       \
-    cyg_uint32 __csr;                                                   \
+    cyg_uint32 __csr CYGBLD_ATTRIB_UNUSED;                              \
     HAL_READ_UINT32(CYGARC_REG_SYSTICK_BASE+CYGARC_REG_SYSTICK_CSR, __csr ); \
 }
 
