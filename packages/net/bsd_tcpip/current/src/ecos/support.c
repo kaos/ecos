@@ -979,14 +979,13 @@ static int
 _dumpentry(struct radix_node *rn, void *vw)
 {
     struct rtentry *rt = (struct rtentry *)rn;
-    struct sockaddr *dst, *gate, *netmask, *genmask;
+    struct sockaddr *dst, *gate, *netmask;
     char addr[64], *cp;
     pr_fun *pr = (pr_fun *)vw;
 
     dst = rt_key(rt);
     gate = rt->rt_gateway;
     netmask = rt_mask(rt);
-    genmask = rt->rt_genmask;
     if ((rt->rt_flags & (RTF_UP | RTF_WASCLONED)) == RTF_UP) {
         _inet_ntop(dst, addr, sizeof(addr));
         (*pr)("%-15s ", addr);
@@ -1030,7 +1029,7 @@ _dumpentry(struct radix_node *rn, void *vw)
 void
 show_network_tables(pr_fun *pr)
 {
-    int i, error;
+    int i;
     struct radix_node_head *rnh;
     struct ifnet *ifp;
 
@@ -1039,7 +1038,7 @@ show_network_tables(pr_fun *pr)
     (*pr)("Destination     Gateway         Mask            Flags    Interface\n");
     for (i = 1; i <= AF_MAX; i++) {
         if ((rnh = rt_tables[i]) != NULL) {
-            error = rnh->rnh_walktree(rnh, _dumpentry, pr);
+            rnh->rnh_walktree(rnh, _dumpentry, pr);
         }
     }
 

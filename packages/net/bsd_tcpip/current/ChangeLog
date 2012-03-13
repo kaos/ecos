@@ -1,3 +1,9 @@
+2012-03-13  Grant Edwards <grant.b.edwards@gmail.com>
+
+	* src/ecos/support.c (_dumpentry, show_network_tables): Fix
+	compiler warnings by removing variables that are set but never
+	referenced. [ Bugzilla 1001516 ]
+
 2012-03-08  Grant Edwards <grant.b.edwards@gmail.com>
 
 	* doc/freebsd.sgml: Add section on how to disable ipv6 support at
