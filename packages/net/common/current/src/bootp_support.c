@@ -449,7 +449,7 @@ init_net(const char *intf, struct bootp *bp)
     int s=-1;
     int one = 1;
     struct ecos_rtentry route;
-    struct in_addr netmask, gateway;
+    struct in_addr gateway;
     unsigned int length;
     int retcode = false;
     
@@ -481,7 +481,6 @@ init_net(const char *intf, struct bootp *bp)
 
     length = sizeof(addrp->sin_addr);
     if (get_bootp_option(bp, TAG_SUBNET_MASK, &addrp->sin_addr,&length)) {
-        netmask = addrp->sin_addr;
         if (ioctl(s, SIOCSIFNETMASK, &ifr)) {
             perror("SIOCSIFNETMASK");
             goto out;

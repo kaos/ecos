@@ -1,3 +1,9 @@
+2012-03-13  Grant Edwards <grant.b.edwards@gmail.com>
+
+	* src/bootp_support.c (init_net): Fix compiler warning by removing
+	'netmask' variable which is set but then never used.
+	[ Bugzilla 1001516 ]
+	
 2012-03-06  Grant Edwards <grant.b.edwards@gmail.com>
 	
 	* current/src/inet_ntop.c (inet_ntop6): Fixed compiler warnings
