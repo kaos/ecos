@@ -947,7 +947,7 @@ hal_ctrlc_check(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
     int gdb_vector = vector-1;
-    int isr_ret, ctrlc = 0;
+    int ctrlc = 0;
 
     // This check only to avoid crash on older stubs in case of unhandled
     // interrupts. It is a bit messy, but required in a transition period.
@@ -957,7 +957,7 @@ hal_ctrlc_check(CYG_ADDRWORD vector, CYG_ADDRWORD data)
         gdb_vector = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_DBG_ISR_VECTOR);
     }
     if (vector == gdb_vector) {
-        isr_ret = CYGACC_COMM_IF_DBG_ISR(*__chan, &ctrlc, vector, data);
+        CYGACC_COMM_IF_DBG_ISR(*__chan, &ctrlc, vector, data);
         if (ctrlc) {
             cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
             return true;

@@ -1,3 +1,8 @@
+2012-03-09  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* src/hal_if.c (hal_ctrlc_check): Fix compiler warning about
+	variable that is set but not used (isr_ret has been removed).
+
 2011-01-13  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/hal.cdl: Add a CDL interface to control whether interrupt
