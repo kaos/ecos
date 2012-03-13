@@ -125,7 +125,7 @@ cause_illegal_access(void)
             );
     
 #else    
-    volatile int x;
+    volatile int x CYGBLD_ATTRIB_UNUSED;
     volatile CYG_ADDRESS p=(CYG_ADDRESS) &jbuf;
 
     do

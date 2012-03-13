@@ -1,3 +1,9 @@
+2012-03-08  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* src/mqueue.cxx: Fix compiler warnings about variables that are set
+	but not used.
+	* tests/signal2.c: Ditto.
+
 2010-02-08  Jay Foster  <jay@systech.com>
 
 	* src/signal.cxx (pthread_kill): Corrected return value for

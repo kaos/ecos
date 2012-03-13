@@ -227,7 +227,7 @@ mq_open( const char *name, int oflag, ... )
     mqd_t retval;
     cyg_ucount32 i;
     struct mqtabent *qtabent=NULL;
-    int interr;
+    int interr CYGBLD_ATTRIB_UNUSED;
 
     interr = pthread_mutex_lock( &mqtab_mut );
     // should never fail
@@ -256,7 +256,7 @@ mq_open( const char *name, int oflag, ... )
 
     // so if we didn't find something, we must be being asked to create it
     if (NULL == qtabent) {
-        mode_t mode; // FIXME: mode ignored for now
+        mode_t mode CYGBLD_ATTRIB_UNUSED; // FIXME: mode ignored for now
         const struct mq_attr *attr;
         const struct mq_attr default_attr = { 0, MQ_OPEN_MAX, 128 };
         va_list args;
@@ -426,7 +426,7 @@ mq_close( mqd_t mqdes )
     }
 #endif
     
-    int interr;
+    int interr CYGBLD_ATTRIB_UNUSED;
 
     interr = pthread_mutex_lock( &mqtab_mut );
     // should never fail
@@ -493,7 +493,8 @@ mq_unlink( const char *name )
     CYG_REPORT_FUNCTYPE( "returning %d" );
     CYG_REPORT_FUNCARG1( "name=%s", name );
 
-    int retval, interr;
+    int retval;
+    int interr CYGBLD_ATTRIB_UNUSED;
     cyg_ucount32 i;
     struct mqtabent *qtabent=NULL;
 
