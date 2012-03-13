@@ -47,6 +47,7 @@ hal/m68k/arch/current/doc/m68k.sgml
 hal/m68k/mcf52xx/var/current/doc/mcf52xx.sgml
 hal/m68k/mcf52xx/mcf5272/proc/current/doc/mcf5272.sgml
 hal/m68k/mcf52xx/mcf5272/m5272c3/current/doc/m5272c3.sgml
+hal/cortexm/a2fxxx/a2f200_eval/current/doc/a2f200e.sgml
 hal/cortexm/lm3s/ek_lm3s811/current/doc/ek_lm3s811.sgml
 hal/sh/sh4_202_md/current/doc/sh4_202_md.sgml
 devs/usb/sa11x0/current/doc/usbs_sa11x0.sgml
