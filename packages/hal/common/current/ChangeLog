@@ -1,3 +1,9 @@
+2012-03-14  Grant Edwards <grant.b.edwards@gmail.com>
+
+	* src/generic-stub.c (process_query): Fix compiler warning about
+	variable that is set but not used (only used in conditionally
+	compiled code). [ Bugzilla 1001535 ]
+	
 2012-03-09  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* src/hal_if.c (hal_ctrlc_check): Fix compiler warning about

@@ -2007,7 +2007,7 @@ process_query (char *pkt)
   else
     {
       char ch ;
-      char * subpkt ;
+      char *subpkt CYGBLD_ATTRIB_UNUSED;
       ch = *pkt ;
       subpkt = pkt + 1 ;
       switch (ch)
