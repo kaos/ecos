@@ -436,7 +436,7 @@ void hal_interrupt_set_level(int vector, int level)
     if (level < 16)
     {
         cyg_uint32 addr_offset =  level << 2;
-        cyg_uint32 reg_val;
+        cyg_uint32 reg_val CYGBLD_ATTRIB_UNUSED;
         
         HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
                         CYGARC_HAL_LPC2XXX_REG_VICVECTCNTL0 + 

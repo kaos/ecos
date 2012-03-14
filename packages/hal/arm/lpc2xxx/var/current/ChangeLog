@@ -1,3 +1,8 @@
+2012-03-13  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* src/lpc2xxx_misc.c: Fix compiler warning about variable that is set
+	but not used.
+
 2009-06-10  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* src/hal_diag.c: workaround for a suppressing a compiler warning,
