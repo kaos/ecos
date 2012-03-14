@@ -74,7 +74,6 @@ cyg_handle_t thread_handle;
 void
 tty_api_test(cyg_io_handle_t* handle)
 {
-    int res;
     cyg_uint32 len;
     unsigned char buffer[16];
 
@@ -85,8 +84,8 @@ tty_api_test(cyg_io_handle_t* handle)
     CYG_TEST_FAIL_FINISH("Not reached");
 
     // read & write
-    res = cyg_io_read(handle, &buffer[0], &len);
-    res = cyg_io_write(handle, &buffer[0], &len);
+    cyg_io_read(handle, &buffer[0], &len);
+    cyg_io_write(handle, &buffer[0], &len);
 
     // cyg_io_get_config
     // TTY layer

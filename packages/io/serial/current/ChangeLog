@@ -1,3 +1,9 @@
+2012-03-13  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* tests/serial1.c: Fix compiler warning about variable that is set but
+	not used.
+	* tests/tty1.c: Ditto.
+
 2011-03-28  Ilija Kocho  <ilijak@siva.com.mk>
 	    Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 

@@ -75,7 +75,6 @@ void
 serial_api_test(int dummy)
 {
     cyg_io_handle_t handle;
-    int res;
     cyg_uint32 len;
     unsigned char buffer[16];
 
@@ -88,8 +87,8 @@ serial_api_test(int dummy)
     test_open_ser(&handle);
 
     // read & write
-    res = cyg_io_read(handle, &buffer[0], &len);
-    res = cyg_io_write(handle, &buffer[0], &len);
+    cyg_io_read(handle, &buffer[0], &len);
+    cyg_io_write(handle, &buffer[0], &len);
 
     // cyg_io_get_config
     cyg_io_get_config(handle, 
