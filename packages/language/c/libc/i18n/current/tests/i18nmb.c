@@ -221,12 +221,10 @@ main( int argc, char *argv[] )
   wchar_t wcbuff[100];
   char buff[100];
   
-  char *ptr, *locale;
-  int result, i, j, k;
+  char *ptr, *locale CYGBLD_ATTRIB_UNUSED;
+  int result, i, j, k CYGBLD_ATTRIB_UNUSED;
   wchar_t *wcptr;
 
-  k=0; locale=NULL; // silence warnings
-  
   CYG_TEST_INIT();
   
   CYG_TEST_INFO( "Starting tests from testcase " __FILE__ " for C library "

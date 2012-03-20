@@ -1,3 +1,9 @@
+2012-03-19  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+            Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/i18nmb.c (main): Fix compiler warnings about variables are
+	set but not used. Enter CYGBLD_ATTRIB_UNUSED.
+
 2009-01-26  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/ctype.c: Allow to run if CYGPKG_LIBC_STARTUP isn't there.
