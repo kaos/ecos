@@ -151,11 +151,15 @@ static void entry0( CYG_ADDRWORD data )
 
 static void entry1( CYG_ADDRWORD data )
 {
+#ifdef CYGMTH_MBOX_PUT_CAN_WAIT
     cyg_count8 i;
+#endif
 
     Cyg_Thread::self()->set_priority(5);
     
+#ifdef CYGMTH_MBOX_PUT_CAN_WAIT
     i = (cyg_count8)m1.get();
+#endif
     CYG_TEST_CHECK(1==q++, "bad synchronization");
     m0.PUT((void *)3);                  // wake t0
 

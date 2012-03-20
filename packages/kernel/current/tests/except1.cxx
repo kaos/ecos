@@ -122,7 +122,7 @@ cause_fpe(int num)
 
 void cause_exception(void)
 {
-    int x;
+    int x CYGBLD_ATTRIB_UNUSED;
     unsigned int p=0;
 
     // First try for an address exception (unaligned access exception

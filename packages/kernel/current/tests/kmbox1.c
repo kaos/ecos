@@ -151,8 +151,10 @@ static void entry0( cyg_addrword_t data )
 
 static void entry1( cyg_addrword_t data )
 {
+#ifdef CYGMTH_MBOX_PUT_CAN_WAIT
     cyg_count8 i;
     i = (cyg_count8)cyg_mbox_get(m1);
+#endif
     CYG_TEST_CHECK(1==q++, "bad synchronization");
     cyg_mbox_PUT(m0, (void *)3);                  // wake t0
 

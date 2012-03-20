@@ -1,3 +1,15 @@
+2012-03-19  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+            Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/except1.cxx (cause_exception): Fix compiler warning about
+	variable that is set but not used. Enter CYGBLD_ATTRIB_UNUSED.
+	* tests/kexcept1.c (cause_exception): Ditto.
+	* tests/kmbox1.c (entry1): Fix compiler warning about variable that
+	is set but not used. Use by a conditional CYGMTH_MBOX_PUT_CAN_WAIT.
+	* tests/mbox1.cxx (entry1): Ditto.
+	* tests/tm_basic.cxx (run_thread_tests, run_mbox_tests,
+	run_flag_tests): Remove unused variables.
+
 2012-03-06  Grant Edwards <grant.b.edwards@gmail.com>
 	
 	* src/intr/intr.cxx (attach): Fix compiler warning about unused

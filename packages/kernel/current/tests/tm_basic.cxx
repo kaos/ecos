@@ -507,7 +507,6 @@ void
 run_thread_tests(void)
 {
     int i;
-    cyg_priority_t prio;
 
     // Set my priority higher than any I plan to create
     cyg_thread_set_priority(cyg_thread_self(), 2);
@@ -563,7 +562,7 @@ run_thread_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
         HAL_CLOCK_READ(&thread_ft[i].start);
-        prio = cyg_thread_get_priority(threads[i]);
+        cyg_thread_get_priority(threads[i]);
         HAL_CLOCK_READ(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Get priority");
@@ -844,8 +843,7 @@ run_mutex_circuit_test(void)
 void
 run_mbox_tests(void)
 {
-    int i, cnt;
-    void *item;
+    int i;
     // Mailbox primitives
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
@@ -858,7 +856,7 @@ run_mbox_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
         HAL_CLOCK_READ(&mbox_ft[i].start);
-        cnt = cyg_mbox_peek(test_mbox_handles[i]);
+        cyg_mbox_peek(test_mbox_handles[i]);
         HAL_CLOCK_READ(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Peek [empty] mbox");
@@ -875,7 +873,7 @@ run_mbox_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
         HAL_CLOCK_READ(&mbox_ft[i].start);
-        cnt = cyg_mbox_peek(test_mbox_handles[i]);
+        cyg_mbox_peek(test_mbox_handles[i]);
         HAL_CLOCK_READ(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Peek [1 msg] mbox");
@@ -891,7 +889,7 @@ run_mbox_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
         HAL_CLOCK_READ(&mbox_ft[i].start);
-        cnt = cyg_mbox_peek(test_mbox_handles[i]);
+        cyg_mbox_peek(test_mbox_handles[i]);
         HAL_CLOCK_READ(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Peek [2 msgs] mbox");
@@ -899,7 +897,7 @@ run_mbox_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
         HAL_CLOCK_READ(&mbox_ft[i].start);
-        item = cyg_mbox_get(test_mbox_handles[i]);
+        cyg_mbox_get(test_mbox_handles[i]);
         HAL_CLOCK_READ(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Get [first] mbox");
@@ -907,7 +905,7 @@ run_mbox_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
         HAL_CLOCK_READ(&mbox_ft[i].start);
-        item = cyg_mbox_get(test_mbox_handles[i]);
+        cyg_mbox_get(test_mbox_handles[i]);
         HAL_CLOCK_READ(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Get [second] mbox");
@@ -924,7 +922,7 @@ run_mbox_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
         HAL_CLOCK_READ(&mbox_ft[i].start);
-        item = cyg_mbox_peek_item(test_mbox_handles[i]);
+        cyg_mbox_peek_item(test_mbox_handles[i]);
         HAL_CLOCK_READ(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Peek item [non-empty] mbox");
@@ -932,7 +930,7 @@ run_mbox_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
         HAL_CLOCK_READ(&mbox_ft[i].start);
-        item = cyg_mbox_tryget(test_mbox_handles[i]);
+        cyg_mbox_tryget(test_mbox_handles[i]);
         HAL_CLOCK_READ(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Tryget [non-empty] mbox");
@@ -940,7 +938,7 @@ run_mbox_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
         HAL_CLOCK_READ(&mbox_ft[i].start);
-        item = cyg_mbox_peek_item(test_mbox_handles[i]);
+        cyg_mbox_peek_item(test_mbox_handles[i]);
         HAL_CLOCK_READ(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Peek item [empty] mbox");
@@ -948,7 +946,7 @@ run_mbox_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
         HAL_CLOCK_READ(&mbox_ft[i].start);
-        item = cyg_mbox_tryget(test_mbox_handles[i]);
+        cyg_mbox_tryget(test_mbox_handles[i]);
         HAL_CLOCK_READ(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Tryget [empty] mbox");
@@ -1160,7 +1158,6 @@ void
 run_flag_tests(void)
 {
     int i;
-    cyg_flag_value_t val;
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nflags;  i++) {
@@ -1239,7 +1236,7 @@ run_flag_tests(void)
     for (i = 0;  i < nflags;  i++) {
         cyg_flag_setbits(&test_flags[i], 0x11);
         HAL_CLOCK_READ(&flag_ft[i].start);
-        val = cyg_flag_peek(&test_flags[i]);
+        cyg_flag_peek(&test_flags[i]);
         HAL_CLOCK_READ(&flag_ft[i].end);
     }
     show_times(flag_ft, nflags, "Peek on flag");
