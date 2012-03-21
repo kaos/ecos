@@ -163,7 +163,7 @@ STRATA_FNNAME(strata_hw_cfi)(struct cyg_flash_dev* dev, cyg_strata_dev* strata_d
     int     dev_size;
     int     i;
     int     erase_regions;
-    cyg_uint8 writebuffer_lsb, writebuffer_msb;
+    cyg_uint8 writebuffer_lsb;
     cyg_uint32 writebuffer;
 
     sf_diag("addr %08x %d cmd %08x\n",addr, sizeof(STRATA_TYPE), STRATA_COMMAND_CFI);
@@ -210,7 +210,7 @@ STRATA_FNNAME(strata_hw_cfi)(struct cyg_flash_dev* dev, cyg_strata_dev* strata_d
     }
 
     writebuffer_lsb = STRATA_UNSWAP(addr[STRATA_OFFSET_CFI_WRITE_BUFFER_LSB]) & 0x00FF;
-    writebuffer_msb = STRATA_UNSWAP(addr[STRATA_OFFSET_CFI_WRITE_BUFFER_MSB]) & 0x00FF;
+    /* No need to include MSB, it would never be as large as 2^256 ! */
     writebuffer = 1 << writebuffer_lsb;
 
     strata_dev->bufsize = writebuffer / sizeof(STRATA_TYPE);

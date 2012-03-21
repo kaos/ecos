@@ -1,3 +1,9 @@
+2012-03-21  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+            Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/strata_aux.c (strata_hw_cfi): Fix compiler warnings that
+	variable is set but not used. [ Bugzilla 1001541 ]
+
 2009-04-21  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/strata.c: Added set of parentheses around macro parameters
