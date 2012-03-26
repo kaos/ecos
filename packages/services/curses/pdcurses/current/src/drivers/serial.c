@@ -293,15 +293,18 @@ PDC_get_rows(void)
 // ---------------------------------------------------------------------------
 
 static int      key_code = ERR;
-static unsigned char keystroke[4] = { '\0', '\0', '\0', '\0' };
+static union {
+    cyg_uint32      key;
+    cyg_uint8       seq[4];
+} kk = {0};
 
-#define _FLSH_KEY() *(unsigned int *) &keystroke[0] = 0;
+#define SYM kk.seq
+#define FLUSH() kk.key=0
+
 #if (CYG_BYTEORDER == CYG_LSBFIRST)
-// Little endian
-# define _UNGET_KEY(_n_)  *(unsigned int *) &keystroke[0] >>= 8*(_n_)
-#elif (CYG_BYTEORDER == CYG_MSBFIRST)
-// Big endian
-# define _UNGET_KEY(_n_)  *(unsigned int *) &keystroke[0] <<= 8*(_n_)
+# define POP(x) kk.key>>=8*(x)
+#else
+# define POP(x) kk.key<<=8*(x)
 #endif
 
 bool
@@ -319,73 +322,73 @@ PDC_check_key(void)
     return (dev_buf_conf.rx_count > 0);
 #else
     if ((count = dev_buf_conf.rx_count) > 0) {
-        if (keystroke[0] == '\0') {
+        if (SYM[0] == '\0') {
             count = min(count, 4);
-            cyg_io_read(handle, &keystroke[0], &count);
-        } else if (keystroke[1] == '\0') {
+            cyg_io_read(handle, &SYM[0], &count);
+        } else if (SYM[1] == '\0') {
             count = min(count, 3);
-            cyg_io_read(handle, &keystroke[1], &count);
-        } else if (keystroke[2] == '\0') {
+            cyg_io_read(handle, &SYM[1], &count);
+        } else if (SYM[2] == '\0') {
             count = min(count, 2);
-            cyg_io_read(handle, &keystroke[2], &count);
-        } else if (keystroke[3] == '\0') {
+            cyg_io_read(handle, &SYM[2], &count);
+        } else if (SYM[3] == '\0') {
             count = min(count, 1);
-            cyg_io_read(handle, &keystroke[3], &count);
+            cyg_io_read(handle, &SYM[3], &count);
         }
     }
-    if (keystroke[0] == '\0')
+    if (SYM[0] == '\0')
         return FALSE;
-    switch (keystroke[0]) {
+    switch (SYM[0]) {
     case '\x1b':
-        switch (keystroke[1]) {
+        switch (SYM[1]) {
         case '[':
-            switch (keystroke[2]) {
+            switch (SYM[2]) {
                 // ^[[A -- KEY_UP
             case 'A':
                 key_code = KEY_UP;
-                _UNGET_KEY(3);
+                POP(3);
                 return TRUE;
                 // ^[[B -- KEY_DOWN
             case 'B':
                 key_code = KEY_DOWN;
-                _UNGET_KEY(3);
+                POP(3);
                 return TRUE;
                 // ^[[C -- KEY_RIGHT
             case 'C':
                 key_code = KEY_RIGHT;
-                _UNGET_KEY(3);
+                POP(3);
                 return TRUE;
                 // ^[[D -- KEY_LEFT
             case 'D':
                 key_code = KEY_LEFT;
-                _UNGET_KEY(3);
+                POP(3);
                 return TRUE;
             case '1':
             case '4':
             case '5':
             case '6':
-                switch (keystroke[3]) {
+                switch (SYM[3]) {
                 case '~':
-                    switch (keystroke[2]) {
+                    switch (SYM[2]) {
                         // ^[[1~ -- KEY_HOME
                     case '1':
                         key_code = KEY_HOME;
-                        _FLSH_KEY();
+                        FLUSH();
                         return TRUE;
                         // ^[[4~ -- KEY_END
                     case '4':
                         key_code = KEY_END;
-                        _FLSH_KEY();
+                        FLUSH();
                         return TRUE;
                         // ^[[5~ -- KEY_PPAGE
                     case '5':
                         key_code = KEY_PPAGE;
-                        _FLSH_KEY();
+                        FLUSH();
                         return TRUE;
                         // ^[[6~ -- KEY_NPAGE
                     case '6':
                         key_code = KEY_NPAGE;
-                        _FLSH_KEY();
+                        FLUSH();
                         return TRUE;
                     }
                 default:
@@ -395,16 +398,16 @@ PDC_check_key(void)
                 break;
             }
         case 'O':
-            switch (keystroke[2]) {
+            switch (SYM[2]) {
                 // ^[OF -- KEY_END
             case 'F':
                 key_code = KEY_END;
-                _UNGET_KEY(3);
+                POP(3);
                 return TRUE;
                 // ^[OH -- KEY_HOME
             case 'H':
                 key_code = KEY_HOME;
-                _UNGET_KEY(3);
+                POP(3);
                 return TRUE;
             default:
                 break;
@@ -415,8 +418,8 @@ PDC_check_key(void)
     default:
         break;
     }
-    key_code = keystroke[0];
-    _UNGET_KEY(1);
+    key_code = SYM[0];
+    POP(1);
     return TRUE;
 #endif                          // ENABLE_KEYPAD
 }
@@ -435,7 +438,7 @@ PDC_flushinp(void)
     cyg_io_get_config(handle, CYG_IO_GET_CONFIG_SERIAL_INPUT_FLUSH, NULL,
                       NULL);
 #ifdef ENABLE_KEYPAD
-    _FLSH_KEY();
+    FLUSH();
 #endif
 }
 
