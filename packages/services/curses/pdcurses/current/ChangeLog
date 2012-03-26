@@ -1,3 +1,8 @@
+2012-03-26  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* examples/*: Removed an odd skeleton of PDcurses application.
+	NOTE: PDCurses is not thread-safe. [ Bugilla 1001544 ]
+
 2012-03-24  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* src/drivers/serial.c (PDC_check_key): Refactored to fix new compiler
