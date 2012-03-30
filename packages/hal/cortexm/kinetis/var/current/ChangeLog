@@ -1,3 +1,12 @@
+2012-01-11  Tomas Frydrych <tomas@sleepfive.com>
+
+	* include/var_io.h:
+	Allow for overriding of CYGHWR_HAL_KINETIS_SIM_SCGC?_ALL_M mask
+	from platform definitions.
+
+	* include/var_io_devs.h:
+	Define base pointer for SLCD controller
+
 2012-01-05  Ilija Kocho  <ilijak@siva.com.mk>
 
     * cdl/kinetis_irq_scheme.cdl
@@ -56,7 +65,7 @@
 // ####GPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

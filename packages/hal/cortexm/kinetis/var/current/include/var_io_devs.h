@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -70,6 +70,13 @@
 
 // Peripheral clock [Hz];
 __externC cyg_uint32 hal_get_peripheral_clock(void);
+
+//----------------------------------------------------------------------------
+// SLCD
+// Only for the K40 variant
+#if CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM == 40
+#define CYGADDR_HAL_FREESCALE_SLCD_BASE (0x400BE000)
+#endif
 
 //-----------------------------------------------------------------------------
 // Freescale UART

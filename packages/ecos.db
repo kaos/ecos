@@ -10,7 +10,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -5829,6 +5829,7 @@ target linux {
                       CYGPKG_DEVS_WALLCLOCK_SYNTH      
                       CYGPKG_DEVS_FRAMEBUF_SYNTH
                       CYGPKG_DEVS_ADC_SYNTH
+                      CYGPKG_DEVS_DISK_ECOSYNTH
         }
         description "
     	    The linux target provides the 
@@ -7164,7 +7165,7 @@ target ek-lm3s811 {
 }
 
 target lpc1766stk {
-        alias      { "Olimex LPC-1766-STK" lpc1766stk }
+        alias      { "Olimex LPC-1766-STK" }
         packages   { CYGPKG_HAL_CORTEXM
                      CYGPKG_HAL_CORTEXM_LPC17XX
                      CYGPKG_HAL_CORTEXM_LPC17XX_LPC1766STK
@@ -7230,6 +7231,16 @@ package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512_FXM {
         eCos on the Freescale Tower development system equpped with TWR-FXM module."
 }
 
+package CYGPKG_HAL_CORTEXM_KINETIS_KWIKSTIK {
+	alias		{ "Freescale KwikStik HAL" hal_cortexm_kwikstik }
+	directory	hal/cortexm/kinetis/kwikstik
+	script		hal_cortexm_kinetis_kwikstik.cdl
+	hardware
+        description "
+        The KwikStik HAL package provides the support needed to run
+        eCos on the Freescale KwikStik development board."
+}
+
 target freescale_twr_k60n512 {
         alias { "Freescale Kinetis TWR-K60N512" twr_k60n512 }
         packages { CYGPKG_HAL_CORTEXM
@@ -7266,6 +7277,19 @@ target freescale_twr_k40x256 {
                  }
         description "The freescale_twr_k40x256 target provides the packages needed
         to run eCos on the Freescale TWR-K40X256 development system."
+}
+
+target freescale_kwikstik {
+        alias { "Freescale Kinetis KwikStik" kwikstik }
+        packages { CYGPKG_HAL_CORTEXM
+                   CYGPKG_HAL_CORTEXM_KINETIS
+                   CYGPKG_HAL_CORTEXM_KINETIS_KWIKSTIK
+                   CYGPKG_IO_SERIAL_FREESCALE_UART_HDR
+                   CYGPKG_IO_SERIAL_FREESCALE_UART
+                   CYGPKG_DEVICES_WALLCLOCK_KINETIS_RTC
+                 }
+        description "The freescale_kwikstik target provides the packages needed
+        to run eCos on the Freescale KwikStik development board."
 }
 
 target freescale_twr_k60n512_fxm {

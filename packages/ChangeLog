@@ -1,13 +1,18 @@
+2012-03-30  John Dallaway  <john@dallaway.org.uk>
+
+	* NEWS, ecos.db: Add Freescale KwikStik HAL package and target.
+	Patch from Tomas Frydrych.
+
 2012-03-12 Christophe Coutand  <ecos@hotmail.co.uk>
 
-    ecos.db: Add Actel SmartFusion A2Fvvv variant HAL, board support
-    package for Actel A2F200 inluding Actel serial, ethernet, spi and
-    i2c drivers as well as spi flash driver.
+    	* ecos.db: Add Actel SmartFusion A2Fvvv variant HAL, board support
+	package for Actel A2F200 inluding Actel serial, ethernet, spi and
+	i2c drivers as well as spi flash driver.
 
 2012-02-22  Ilija Kocho  <ilijak@siva.com.mk>
 
-    ecos.db: Add TWR-K60N512-FXM, Freescale DSPI driver,
-    Freescale EDMA library, Micron CellularRAM support.
+	* ecos.db: Add TWR-K60N512-FXM, Freescale DSPI driver,
+	Freescale EDMA library, Micron CellularRAM support.
 
 2011-10-30  Ilija Kocho  <ilijak@siva.com.mk>
 

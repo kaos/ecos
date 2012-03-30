@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -565,8 +565,10 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC1_UART5_M           0x800
 #define CYGHWR_HAL_KINETIS_SIM_SCGC1_UART5_S           11
 
+#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC1_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC1_ALL_M \
  (CYGHWR_HAL_KINETIS_SIM_SCGC1_UART4_M | CYGHWR_HAL_KINETIS_SIM_SCGC1_UART5_M)
+#endif
 
 // SCGC2 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC2_ENET_M            0x1
@@ -576,10 +578,12 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC1_M            0x2000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC1_S            13
 
+#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC2_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC2_ALL_M         \
             (CYGHWR_HAL_KINETIS_SIM_SCGC2_ENET_M | \
              CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC0_M | \
              CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC1_M)
+#endif
 
 // SCGC3 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_RNGB_M            0x1
@@ -595,6 +599,7 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC1_M            0x8000000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC1_S            27
 
+#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC3_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_ALL_M             \
             (CYGHWR_HAL_KINETIS_SIM_SCGC3_RNGB_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC3_FLEXCAN1_M | \
@@ -602,6 +607,7 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
              CYGHWR_HAL_KINETIS_SIM_SCGC3_SDHC_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC3_FTM2_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC1_M)
+#endif
 
 // SCGC4 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC4_EWM_M             0x2
@@ -629,6 +635,7 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC4_LLWU_M            0x10000000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC4_LLWU_S            28
 
+#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC4_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC4_ALL_M \
  (CYGHWR_HAL_KINETIS_SIM_SCGC4_EWM_M |CYGHWR_HAL_KINETIS_SIM_SCGC4_CMT_M |    \
  CYGHWR_HAL_KINETIS_SIM_SCGC4_I2C0_M |CYGHWR_HAL_KINETIS_SIM_SCGC4_I2C1_M |   \
@@ -636,6 +643,7 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
  CYGHWR_HAL_KINETIS_SIM_SCGC4_UART2_M | CYGHWR_HAL_KINETIS_SIM_SCGC4_UART3_M |\
  CYGHWR_HAL_KINETIS_SIM_SCGC4_USBOTG_M | CYGHWR_HAL_KINETIS_SIM_SCGC4_CMP_M | \
  CYGHWR_HAL_KINETIS_SIM_SCGC4_VREF_M | CYGHWR_HAL_KINETIS_SIM_SCGC4_LLWU_M)
+#endif
 
 // SCGC5 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC5_LPTIMER_M         0x1
@@ -655,6 +663,7 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_M           0x2000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_S           13
 
+#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC5_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC5_ALL_M            \
             (CYGHWR_HAL_KINETIS_SIM_SCGC5_LPTIMER_M | \
              CYGHWR_HAL_KINETIS_SIM_SCGC5_REGFILE_M | \
@@ -664,6 +673,7 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
              CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTC_M |   \
              CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTD_M |   \
              CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_M)
+#endif
 
 // SCGC6 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_FTFL_M            0x1
@@ -695,6 +705,7 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_RTC_M             0x20000000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_RTC_S             29
 
+#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC6_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_ALL_M             \
             (CYGHWR_HAL_KINETIS_SIM_SCGC6_FTFL_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX_M |   \
@@ -710,6 +721,7 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
              CYGHWR_HAL_KINETIS_SIM_SCGC6_FTM1_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC6_ADC0_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC6_RTC_M)
+#endif
 
 // SCGC7 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC7_FLEXBUS_M         0x1
@@ -719,10 +731,12 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC7_MPU_M             0x4
 #define CYGHWR_HAL_KINETIS_SIM_SCGC7_MPU_S             2
 
+#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC7_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC7_ALL_M            \
             (CYGHWR_HAL_KINETIS_SIM_SCGC7_FLEXBUS_M | \
              CYGHWR_HAL_KINETIS_SIM_SCGC7_DMA_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC7_MPU_M)
+#endif
 
 // CLKDIV1 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_CLKDIV1_OUTDIV4_M       0xF0000

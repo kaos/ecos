@@ -1,3 +1,5 @@
+* Freescale KwikStik platform HAL by Tomas Frydrych.
+* Actel SmartFusion variant HAL and BSP by Christophe Coutand.
 * Freescale Kinetis variant HAL and BSP for TWR-K60N512 and TWR-K40X256
   including Freescale UART and Ethernet drivers by Ilija Kocho.
 * SPI flash driver for Silicon Storage Technology (SST25xx devices)
