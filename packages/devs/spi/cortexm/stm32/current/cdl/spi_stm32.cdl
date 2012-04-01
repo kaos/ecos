@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+## Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -65,11 +65,11 @@ cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_PIN_TOGGLE_RATE {
     display       "Pin toggle rate"
     description   "
         Selects the pin toggle rate in MHz to be used for the SPI interfaces.  Higher toggle
-        rates allow increased baud rates at the expense of power and EMI.
-    "
+        rates allow increased baud rates at the expense of power and EMI. Only certain rates
+        are valid on different STM32 families, check part documentation for which may be used."
     flavor        data
-    default_value { 2 }
-    legal_values  { 2 10 50 }
+    default_value { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F1") ? 10 : 25 }
+    legal_values  { 2 10 25 50 80 100 }
 }
 
 cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS1 {
@@ -78,18 +78,17 @@ cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS1 {
         Enable SPI bus 1 on the STM32 device.
     "
     flavor        bool
-    default_value false
+    default_value 0
 
     cdl_option CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS1_CS_GPIOS {
         display       "SPI chip selects"
         description   "
             This is a comma separated list of GPIOs which are to be used as chip
-            select lines for the SPI bus.  For the purposes of specifying
-            which GPIOs to use, they are numbered consecutively from 0 (A0)
-            through 16 (B0) to 111 (G15).
+            select lines for the SPI bus. Each GPIO is defined by the SPI_CS()
+            macro which gives the port and pin number.
         "
         flavor        data
-        default_value { "4" }
+        default_value { "SPI_CS(A, 4)" }
     }
 
     cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_BUS1_BBUF_SIZE {
@@ -107,13 +106,13 @@ cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS1 {
     cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_BUS1_TXINTR_PRI {
         display       "Transmit DMA interrupt priority"
         flavor        data
-        default_value 5
+        default_value 64+5
     }
 
     cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_BUS1_RXINTR_PRI {
         display       "Receive DMA interrupt priority"
         flavor        data
-        default_value 6
+        default_value 128+6
     }
 }
 
@@ -123,18 +122,17 @@ cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS2 {
         Enable SPI bus 2 on the STM32 device.
     "
     flavor        bool
-    default_value false
+    default_value 0
 
     cdl_option CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS2_CS_GPIOS {
         display       "SPI chip selects"
         description   "
             This is a comma separated list of GPIOs which are to be used as chip
-            select lines for the SPI bus.  For the purposes of specifying
-            which GPIOs to use, they are numbered consecutively from 0 (A0)
-            through 16 (B0) to 111 (G15).
+            select lines for the SPI bus. Each GPIO is defined by the SPI_CS()
+            macro which gives the port and pin number.
         "
         flavor        data
-        default_value { "28" }
+        default_value { "SPI_CS(B, 12)" }
     }
 
     cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_BUS2_BBUF_SIZE {
@@ -152,13 +150,13 @@ cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS2 {
     cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_BUS2_TXINTR_PRI {
         display       "Transmit DMA interrupt priority"
         flavor        data
-        default_value 7
+        default_value 64+7
     }
 
     cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_BUS2_RXINTR_PRI {
         display       "Receive DMA interrupt priority"
         flavor        data
-        default_value 8
+        default_value 128+8
     }
 }
 
@@ -171,7 +169,7 @@ cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3 {
         SPI bus initialisation instead.
     "
     flavor        bool
-    default_value false
+    default_value 0
 
     cdl_option CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3_DISABLE_DEBUG_PORT {
         display       "Disable debug port"
@@ -180,19 +178,18 @@ cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3 {
             initialising SPI bus 3, freeing up the SPI interface pins.
         "
         flavor        bool
-        default_value false
+        default_value 0
     }
 
     cdl_option CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3_CS_GPIOS {
         display       "SPI chip selects"
         description   "
             This is a comma separated list of GPIOs which are to be used as chip
-            select lines for the SPI bus.  For the purposes of specifying
-            which GPIOs to use, they are numbered consecutively from 0 (A0)
-            through 16 (B0) to 111 (G15).
+            select lines for the SPI bus. Each GPIO is defined by the SPI_CS()
+            macro which gives the port and pin number.
         "
         flavor        data
-        default_value { "15" }
+        default_value { "SPI_CS(A, 15)" }
     }
 
     cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_BUS3_BBUF_SIZE {
@@ -210,13 +207,13 @@ cdl_component CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3 {
     cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_BUS3_TXINTR_PRI {
         display       "Transmit DMA interrupt priority"
         flavor        data
-        default_value 9
+        default_value 64+9
     }
 
     cdl_option CYGNUM_DEVS_SPI_CORTEXM_STM32_BUS3_RXINTR_PRI {
         display       "Receive DMA interrupt priority"
         flavor        data
-        default_value 10
+        default_value 128+10
     }
 }
 
@@ -263,7 +260,8 @@ cdl_component CYGPKG_DEVS_SPI_CORTEXM_STM32_OPTIONS {
     }
 
     cdl_option CYGPKG_DEVS_SPI_CORTEXM_STM32_TESTS {
-        display         "STM32 SPI tests"
+        display         "SPI tests"
+        active_if       CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS1
         flavor          data
         no_define
         calculated      { CYGBLD_DEVS_SPI_CORTEXM_STM32_LOOPBACK_TEST ? "tests/loopback" : "" } 

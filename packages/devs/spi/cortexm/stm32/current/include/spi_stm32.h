@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2012 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -41,7 +41,7 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   Chris Holgate
+// Author(s):   Chris Holgate, nickg
 // Date:        2008-11-27
 // Purpose:     STM32 SPI driver definitions.
 // Description: 
@@ -58,6 +58,8 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/drv_api.h>
 #include <cyg/io/spi.h>
+
+#include <cyg/hal/var_dma.h>
 
 //-----------------------------------------------------------------------------
 // Macro for defining a SPI device and attaching it to the appropriate bus.
@@ -102,16 +104,14 @@ extern cyg_spi_device _name_ __attribute__((alias ( #_name_ "_stm32" )));
 
 typedef struct cyg_spi_cortexm_stm32_bus_setup_s
 {
-    cyg_uint32        apb_freq;        // Peripheral bus frequency (fp).
+    cyg_uint32        *apb_freq;       // Peripheral bus frequency.
     cyg_haladdress    spi_reg_base;    // Base address of SPI register block.
-    cyg_haladdress    dma_reg_base;    // Base address of DMA register block.
-    cyg_uint8         dma_tx_channel;  // TX DMA channel for this bus.
-    cyg_uint8         dma_rx_channel;  // RX DMA channel for this bus.
+
+    cyg_uint32        spi_enable;      // SPI bus clock enable
     cyg_uint8         cs_gpio_num;     // Number of chip selects for this bus.
-    const cyg_uint8*  cs_gpio_list;    // List of GPIOs used as chip selects.
-    const cyg_uint8*  spi_gpio_list;   // List of GPIOs used by the SPI interface.
-    cyg_vector_t      dma_tx_intr;     // Interrupt used for DMA transmit.
-    cyg_vector_t      dma_rx_intr;     // Interrupt used for DMA receive.
+    const cyg_uint32* cs_gpio_list;    // List of GPIOs used as chip selects.
+    const cyg_uint32* spi_gpio_list;   // List of GPIOs used by the SPI interface.
+    cyg_uint32        spi_gpio_remap;  // Remap GPIO lines to alternate pins.
     cyg_priority_t    dma_tx_intr_pri; // Interrupt priority for DMA transmit.
     cyg_priority_t    dma_rx_intr_pri; // Interrupt priority for DMA receive.
     cyg_uint32        bbuf_size;       // Size of bounce buffers.
@@ -129,10 +129,9 @@ typedef struct cyg_spi_cortexm_stm32_bus_s
     const cyg_spi_cortexm_stm32_bus_setup_t* setup;
 
     // ---- Driver state (private) ----
-    cyg_interrupt     tx_intr_data;    // DMA interrupt data (TX).
-    cyg_interrupt     rx_intr_data;    // DMA interrupt data (RX).
-    cyg_handle_t      tx_intr_handle;  // DMA interrupt handle (TX).
-    cyg_handle_t      rx_intr_handle;  // DMA interrupt handle (RX).
+
+    hal_stm32_dma_stream dma_tx_stream;  // TX DMA stream for this bus.
+    hal_stm32_dma_stream dma_rx_stream;  // RX DMA stream for this bus.
     cyg_drv_mutex_t   mutex;           // Transfer mutex.
     cyg_drv_cond_t    condvar;         // Transfer condition variable.
     cyg_bool          tx_dma_done;     // Flags used to signal completion.

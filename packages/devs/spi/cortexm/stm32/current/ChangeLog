@@ -1,3 +1,42 @@
+2012-03-28  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/spi_stm32.c (bus3_rx_bbuf): Fix typo in attribute.
+
+2012-03-23  James Smith  <jsmith@ecoscentric.com>
+
+	* src/spi_stm32.c (CYGHWR_HAL_STM32_GPIO_MODE_OUT_SPEED_SPI):
+	Rename CYGHWR_HAL_STM32_GPIO_MODE_OUT_SPI to allow the same
+	SPEED_SPI value to be used for F1 and F2/F4 targets.
+	(SPI_CS): Use new wrapper macros to provide a single common SPI_CS
+	manifest.
+
+2012-03-15  James Smith  <jsmith@ecoscentric.com>
+
+	* src/spi_stm32.c: Use HIPERFORMANCE manifest to allow F2 and F4
+	device GPIO initialisation support.
+	(dma_channel_setup): Avoid compiler pointer type warning.
+
+2012-03-05  James Smith  <jsmith@ecoscentric.com>
+
+	* src/spi_stm32.c (spi_transaction_dma): Avoid race condition by
+	seting the TX and RX DMA done flags to false prior to configuring
+	(and starting) the DMA transfer.
+
+2012-01-12  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/spi_stm32.cdl: Select pin toggle rate based on STM32
+	family. Define interrupt priorities to include DMA channel
+	priorities. Undo 2011-12-09 change, F2 now supported.
+
+	* include/spi_stm32.h (cyg_spi_cortexm_stm32_bus_s):
+	* src/spi_stm32.c: Substantial reorganization to use DMA API.
+	NOTE: Currently only fully tested on F2 parts.
+
+2011-12-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/spi_stm32.cdl: For now, only allow this package to be
+	active with F1 family processors.
+
 2011-09-27  Ilija Stanislevik  <ilijas@siva.mk>
 
 	* src/spi_stm32.c: Add support for CYG_IO_GET_CONFIG_SPI_CLOCKRATE and
@@ -8,10 +47,37 @@
 
 	* cdl/spi_stm32.cdl: Add build options for CFLAGS and loopback test.
 
+2009-10-22  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/spi_stm32.cdl: Fix descriptions for chip select
+	options. Only build local test if SPI bus 1 is active.
+
+	* include/spi_stm32.h (cyg_spi_cortexm_stm32_bus_setup_s): Add
+	spi_gpio_remap field.
+
+	* src/spi_stm32.c (bus1_setup, bus2_setup, bus3_setup): Fix CS
+	number calculation, add remap to each bus.
+	(stm32_spi_bus_setup): Move enables to correct place. Add code to
+	remap SPI pins if defined.
+
 2009-08-24  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* cdl/spi_stm32.cdl: added testcase.
 	* include/spi_stm32.h: initializing spi_cr1_val with zero.
+
+2009-06-29  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/spi_stm32.cdl: 
+	* include/spi_stm32.h (cyg_spi_cortexm_stm32_bus_setup_s):
+	* src/spi_stm32.c: Add support for individual device clock
+	enables. Also change mechanism for specifying CS lines that is
+	more in keeping with other devices.
+
+2009-03-23  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/spi_stm32.cdl: Fix up a few oddities.
+
+	* src/spi_stm32.c (spi_diag): Add some diagnostics.
 
 2009-02-10  Bart Veer  <bartv@ecoscentric.com>
 
