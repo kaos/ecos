@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2008 Free Software Foundation, Inc.                        
+## Copyright (C) 2008 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -49,6 +49,8 @@
 cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
     display       "ST STM3210E EVAL Development Board HAL"
     parent        CYGPKG_HAL_CORTEXM_STM32
+    requires      { CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F1" }
+    requires      { CYGHWR_HAL_CORTEXM_STM32_F1 == "F103ZE" }
     define_header hal_cortexm_stm32_stm3210e_eval.h
     include_dir   cyg/hal
     hardware
@@ -89,11 +91,11 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
         display "Memory layout"
         flavor data
         no_define
-        calculated    { (CYG_HAL_STARTUP == "RAM" ) ? "cortexm_stm3210e_eval_ram"      :
-                        (CYG_HAL_STARTUP == "SRAM") ? "cortexm_stm3210e_eval_sram"     :
-                        (CYG_HAL_STARTUP == "ROM" ) ? "cortexm_stm3210e_eval_rom"      :
-                        (CYG_HAL_STARTUP == "JTAG") ? "cortexm_stm3210e_eval_jtag"     :
-                                                      "undefined" }
+        calculated    { (CYG_HAL_STARTUP == "RAM"    ) ? "cortexm_stm3210e_eval_ram"      :
+                        (CYG_HAL_STARTUP == "SRAM"   ) ? "cortexm_stm3210e_eval_sram"     :
+                        (CYG_HAL_STARTUP == "ROM"    ) ? "cortexm_stm3210e_eval_rom"      :
+                        (CYG_HAL_STARTUP == "JTAG"   ) ? "cortexm_stm3210e_eval_jtag"     :
+                                                         "undefined" }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
                 display "Memory layout linker script fragment"
@@ -121,13 +123,26 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
         description     "Main clock input."
     }
 
-    cdl_option CYGHWR_HAL_CORTEXM_STM32_FLASH {
-        display         "External NOR flash support"
+    cdl_component CYGHWR_HAL_CORTEXM_STM32_FLASH {
+        display         "Flash support"
         parent          CYGPKG_IO_FLASH
         active_if       CYGPKG_IO_FLASH
-        flavor          none
         compile         -library=libextras.a stm3210e_eval_flash.c
-        description "This option enables support for the external NOR flash device."
+        default_value   1
+        description     "Control flash device support for STM3210E-EVAL board."
+    
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_FLASH_INTERNAL {
+            display         "Internal flash support"
+            default_value   1
+            description     "This option enables support for the internal flash device."
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_FLASH_NOR {
+            display         "External NOR flash support"
+            default_value   1
+            description     "This option enables support for the external NOR flash device."
+        }
+
     }
 
     # Both UARTs 0 and 1 are available for diagnostic/debug use.
@@ -175,6 +190,12 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
         description   "
             This option controls the default baud rate used for the
             console connection.
+            RedBoot usess polling to transfer data over this port and
+            might not be able to keep up with baud rates above the
+            default, particularly when doing XYZmodem downloads. The
+            interrupt-driven device driver is able to handle these
+            baud rates, so any high speed application transfers should
+            use that instead.
             Note: this should match the value chosen for the GDB port if the
             diagnostic and GDB port are the same."
     }
@@ -187,11 +208,16 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
         description   "
             This option controls the default baud rate used for the
             GDB connection.
+            RedBoot usess polling to transfer data over this port and
+            might not be able to keep up with baud rates above the
+            default, particularly when doing XYZmodem downloads. The
+            interrupt-driven device driver is able to handle these
+            baud rates, so any high speed application transfers should
+            use that instead.
             Note: this should match the value chosen for the console port if the
             console and GDB port are the same."
     }
 
-    
     cdl_component CYGBLD_GLOBAL_OPTIONS {
         display "Global build options"
         flavor  none
@@ -232,6 +258,36 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
                 packages may define options which override these global flags."
         }
     }
+
+    cdl_component CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL_OPTIONS {
+        display "stm3210e HAL build options"
+                flavor  none
+                description   "
+                        Package specific build options including control over
+                        compiler flags used only in building this HAL."
+
+                cdl_option CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL_CFLAGS_ADD {
+                        display "Additional compiler flags"
+                        flavor  data
+                        no_define
+                        default_value { "-Werror" }
+                        description   "
+                                This option modifies the set of compiler flags
+                                for building this HAL. These flags are used
+                                in addition to the set of global flags."
+                        }
+                cdl_option CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL_CFLAGS_REMOVE {
+                        display "Suppressed compiler flags"
+                        flavor  data
+                        no_define
+                        default_value { "" }
+                        description   "
+                                This option modifies the set of compiler flags
+                                for building this HAL. These flags are
+                                removed from the set of global flags if
+                                present."
+                }
+        }
 
     cdl_option CYGSEM_HAL_ROM_MONITOR {
         display       "Behave as a ROM monitor"
@@ -280,15 +336,7 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
             configuration."
 
         requires { CYGNUM_REDBOOT_FLASH_BASE == 0x64000000 }
-
-        cdl_option CYGPRI_HAL_STM3210E_EVAL_MEM_SEGMENTS {
-            display       "Set RedBoot memory segments"
-            requires      { CYGBLD_REDBOOT_MAX_MEM_SEGMENTS == 3 }
-            no_define
-            calculated    2
-            description   "This CDL option is used to inform RedBoot of the
-                           number of RAM memory segments on this platform."
-        }
+        requires { CYGBLD_REDBOOT_MAX_MEM_SEGMENTS == 2 }
 
         cdl_option CYGBLD_BUILD_REDBOOT_BIN {
             display       "Build Redboot ROM binary images"
@@ -327,5 +375,4 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
                      build process to be converted to S-Record and binary
                      files."
     }
-    
 }

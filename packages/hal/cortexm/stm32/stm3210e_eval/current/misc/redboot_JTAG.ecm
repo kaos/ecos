@@ -59,7 +59,7 @@ cdl_option CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG {
 };
 
 cdl_option CYGBLD_BUILD_REDBOOT_WITH_EXEC {
-    user_value 0
+     user_value 0
 };
 
 cdl_option CYGOPT_REDBOOT_FIS_REDBOOT {
@@ -68,10 +68,6 @@ cdl_option CYGOPT_REDBOOT_FIS_REDBOOT {
 
 cdl_component CYGOPT_REDBOOT_FIS_REDBOOT_POST {
     user_value 0
-};
-
-cdl_option CYGNUM_REDBOOT_FLASH_RESERVED_DEVICES {
-    user_value 1 0x08000000
 };
 
 cdl_option CYGBLD_ISO_STRTOK_R_HEADER {
@@ -93,5 +89,11 @@ cdl_option CYGBLD_ISO_STRING_MEMFUNCS_HEADER {
 cdl_option CYGBLD_ISO_STRING_STRFUNCS_HEADER {
     inferred_value 1 <cyg/libc/string/string.h>
 };
+
+
+cdl_option CYGNUM_REDBOOT_FLASH_RESERVED_DEVICES {
+    user_value 1 "0x08000000"
+};
+
 
 

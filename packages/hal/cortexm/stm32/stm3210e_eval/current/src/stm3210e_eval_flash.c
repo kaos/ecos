@@ -60,12 +60,13 @@
 #include <cyg/hal/hal_io.h>
 
 
+#ifdef CYGHWR_HAL_CORTEXM_STM32_FLASH_INTERNAL
 //--------------------------------------------------------------------------
 // Internal flash
 
 #include <cyg/io/stm32_flash.h>
 
-cyg_stm32_flash_dev hal_stm32_flash_priv;
+const cyg_stm32_flash_dev hal_stm32_flash_priv;
 
 CYG_FLASH_DRIVER(hal_stm32_flash,
                  &cyg_stm32_flash_funs,
@@ -77,6 +78,9 @@ CYG_FLASH_DRIVER(hal_stm32_flash,
                  &hal_stm32_flash_priv
 );
 
+#endif // CYGHWR_HAL_CORTEXM_STM32_FLASH_INTERNAL
+
+#ifdef CYGHWR_HAL_CORTEXM_STM32_FLASH_NOR
 //--------------------------------------------------------------------------
 // There is a Spansion S29GL128P90FFIR20 or a NUMONYX equivalent.
 // These are AMD compatible and with CFI can all be handled by the AMD
@@ -104,6 +108,8 @@ CYG_FLASH_DRIVER(hal_stm3210e_flash,
                  0,
                  hal_stm3210e_flash_priv.block_info,
                  &hal_stm3210e_flash_priv);
+
+#endif // CYGHWR_HAL_CORTEXM_STM32_FLASH_NOR
 
 //--------------------------------------------------------------------------
 // EOF stm3210e_eval_flash.c

@@ -76,25 +76,25 @@ __externC void hal_system_init( void )
 {
     CYG_ADDRESS base;
     
-#if defined(CYG_HAL_STARTUP_ROM) | defined(CYG_HAL_STARTUP_SRAM)
+#if defined(CYG_HAL_STARTUP_ROM) | defined(CYG_HAL_STARTUP_ROMINT) | defined(CYG_HAL_STARTUP_SRAM)
     
     // Enable peripheral clocks in RCC
 
     base = CYGHWR_HAL_STM32_RCC;
     
     HAL_WRITE_UINT32(base+CYGHWR_HAL_STM32_RCC_AHBENR,
-                     CYGHWR_HAL_STM32_RCC_AHBENR_FSMC |
-                     CYGHWR_HAL_STM32_RCC_AHBENR_FLITF|
-                     CYGHWR_HAL_STM32_RCC_AHBENR_SRAM );
+                     BIT_(CYGHWR_HAL_STM32_RCC_AHBENR_FSMC)  |
+                     BIT_(CYGHWR_HAL_STM32_RCC_AHBENR_FLITF) |
+                     BIT_(CYGHWR_HAL_STM32_RCC_AHBENR_SRAM)  );
 
     HAL_WRITE_UINT32(base+CYGHWR_HAL_STM32_RCC_APB2ENR,
-                     CYGHWR_HAL_STM32_RCC_APB2ENR_IOPA |
-                     CYGHWR_HAL_STM32_RCC_APB2ENR_IOPB |
-                     CYGHWR_HAL_STM32_RCC_APB2ENR_IOPC |
-                     CYGHWR_HAL_STM32_RCC_APB2ENR_IOPD |
-                     CYGHWR_HAL_STM32_RCC_APB2ENR_IOPE |
-                     CYGHWR_HAL_STM32_RCC_APB2ENR_IOPF |
-                     CYGHWR_HAL_STM32_RCC_APB2ENR_IOPG );
+                     BIT_(CYGHWR_HAL_STM32_RCC_APB2ENR_IOPA) |
+                     BIT_(CYGHWR_HAL_STM32_RCC_APB2ENR_IOPB) |
+                     BIT_(CYGHWR_HAL_STM32_RCC_APB2ENR_IOPC) |
+                     BIT_(CYGHWR_HAL_STM32_RCC_APB2ENR_IOPD) |
+                     BIT_(CYGHWR_HAL_STM32_RCC_APB2ENR_IOPE) |
+                     BIT_(CYGHWR_HAL_STM32_RCC_APB2ENR_IOPF) |
+                     BIT_(CYGHWR_HAL_STM32_RCC_APB2ENR_IOPG) );
 
     // Set all unused GPIO lines to input with pull down to prevent
     // them floating and annoying any external hardware.
@@ -236,6 +236,11 @@ cyg_plf_memory_segment(int seg, unsigned char **start, unsigned char **end)
     case 1:
         *start = (unsigned char *)CYGMEM_REGION_sram;
         *end = (unsigned char *)(CYGMEM_REGION_sram + CYGMEM_REGION_sram_SIZE);
+        break;
+#elif defined(CYGMEM_REGION_xram)
+    case 1:
+        *start = (unsigned char *)CYGMEM_REGION_xram;
+        *end = (unsigned char *)(CYGMEM_REGION_xram + CYGMEM_REGION_xram_SIZE);
         break;
 #endif
     default:

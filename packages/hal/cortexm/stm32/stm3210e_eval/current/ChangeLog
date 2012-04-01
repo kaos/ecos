@@ -1,8 +1,57 @@
+2012-03-23  James Smith  <jsmith@ecoscentric.com>
+
+	* include/plf_io.h: Update GPIO pin definitions to use new PIN
+	wrapper macros. Update to use common SPEED_SPI name for SPI pin
+	speed selection.
+
+2012-02-29  James Smith  <jsmith@ecoscentric.com>
+
+	* src/stm3210e_eval_flash.c: Flash structure needs to be "const"
+	to match header.
+
+2012-01-12  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/plf_io.h: Add SPI and I2C pin and DMA definitions.
+
+2011-12-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3210e_eval.cdl: Just set a requires on
+	RedBoot's number of memory segments to be 2 rather than using a
+	non-configurable option.
+
+2011-12-08  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3210e_eval.cdl: Indicate to new STM32 variant
+	HAL CDL that this is an F103ZE processor.
+
+2011-01-27  Nick Garnett  <nickg@ecoscentric.com>
+
+	* misc/redboot_JTAG.ecm:
+	* misc/redboot_ROM.ecm: Define CYGNUM_REDBOOT_FLASH_RESERVED_DEVICES
+	to take on-chip flash out of FIS control.
+
+2011-01-01  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3210e_eval.cdl
+	(CYGHWR_HAL_CORTEXM_STM32_FLASH): Should be on by default if generic flash
+	active in configuration.
+
 2010-08-29  John Dallaway  <john@dallaway.org.uk>
 
 	* misc/redboot_JTAG.ecm, misc/redbooot_ROM.ecm:
 	Inhibit the FIS directory entry for RedBoot and management of the
 	internal flash. Issues reported by Carlo Caione.
+
+2009-11-09  Ross Younger  <wry@ecoscentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3210e_eval.cdl: Add 
+	  CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL_CFLAGS_{ADD,REMOVE},
+	  default to -Werror.
+
+2009-07-02  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/stm3210e_eval_misc.c (hal_system_init): Adjust clock enables
+	in line with changes to bit definitions.
 
 2009-02-04  Nick Garnett  <nickg@ecoscentric.com>
 
@@ -37,6 +86,18 @@
 	* include/pkgconf/mlt_cortexm_stm3210e_eval_ram.ldi (hal_startup_stack):
 	Adjust initial stack to top of external SRAM.
 
+2008-10-28  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_rom.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_rom.h:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_ram.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_ram.h:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_jtag.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_jtag.h:	
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_sram.ldi:
+	* include/pkgconf/mlt_cortexm_stm3210e_eval_sram.h: Adjust top of
+	RAM to 1MB.
+	
 2008-10-10  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/pkgconf/mlt_cortexm_stm3210e_eval_rom.ldi:
