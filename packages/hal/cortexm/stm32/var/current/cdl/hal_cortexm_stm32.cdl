@@ -48,7 +48,7 @@
 ##==========================================================================
 
 cdl_package CYGPKG_HAL_CORTEXM_STM32 {
-    display       "Cortex-M3 STM32 Variant"
+    display       "Cortex-M3/-M4 STM32 Variant"
     parent        CYGPKG_HAL_CORTEXM
     hardware
     include_dir   cyg/hal
@@ -58,7 +58,7 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
         microcontroller family.
         It is also necessary to select a variant and platform HAL package."
 
-    compile       hal_diag.c stm32_misc.c
+    compile       hal_diag.c stm32_misc.c stm32_dma.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
@@ -66,15 +66,24 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
     implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
     implements    CYGINT_PROFILE_HAL_TIMER
 
-    requires      { CYGHWR_HAL_CORTEXM == "M3" }
+    requires      { (CYGHWR_HAL_CORTEXM == "M3") || (CYGHWR_HAL_CORTEXM == "M4") }
+
+    cdl_component CYGHWR_HAL_CORTEXM_STM32_SELECTION {
+        display          "STM32 processor selection"
+        no_define
+        flavor           none
+        description      "
+            The options within this component allow you to select which STM32
+            processor is in use."
+
 
     cdl_option CYGHWR_HAL_CORTEXM_STM32 {
-        display          "STM32 variant in use"
+            display          "STM32 processor variant in use"
         flavor           data
-        default_value    {"F103ZE"}
-        legal_values     {"F103RC" "F103VC" "F103ZC"
-                          "F103RD" "F103VD" "F103ZD"
-                          "F103RE" "F103VE" "F103ZE" }
+            default_value    { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F1") ? CYGHWR_HAL_CORTEXM_STM32_F1 : \
+                               (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") ? CYGHWR_HAL_CORTEXM_STM32_F2 : \
+			       CYGHWR_HAL_CORTEXM_STM32_F4 }
+            # At some point we'll add the L1, etc. here.
         description      "The STM32 has several variants, the main differences
                           being in the size of on-chip FLASH and SRAM
                           and numbers of some peripherals. This option
@@ -82,6 +91,103 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
                           microcontroller fitted."
     }
                           
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_FAMILY {
+            display          "Processor family in use"
+            flavor           data
+            default_value    { "F1" }
+            legal_values     { "F1" "F2" "F4" }
+	    # NOTE: F1/F2 imply CYGHWR_HAL_CORTEXM_M3 and F4 implies CYGHWR_HAL_CORTEXM_M4
+            description      "
+                Which family of STM32 processors is in use. This will
+                usually be the leading part of the processor model name."
+        }
+
+	# NOTE: This allows later L1 support to still select "FAMILY_HIPERFORMANCE" if the I/O is the same:
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE {
+            display     "Part belongs to ST Hi-Performance family"
+	    active_if   { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") || (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4") }
+	    calculated  { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") || (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4") }
+            description "
+	        Indicates that this part conforms to the I/O
+		definitions for the Hi-Performance family of
+		devices. Currently this includes the STM32 F2 and F4
+		devices."
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_F1 {
+            display          "F1 processor family selection"
+            flavor           data
+            active_if        { CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F1" }
+            default_value    {"F103ZE"}
+            legal_values     {"F103RC" "F103VC" "F103ZC"
+                              "F103RD" "F103VD" "F103ZD"
+                              "F103RE" "F103VE" "F103ZE"
+                              "F105R8" "F105V8"
+                              "F105RB" "F105VB"
+                              "F105RC" "F105VC"
+                              "F107RB" "F107VB"
+                              "F107RC" "F107VC"
+                             }
+            requires         { CYGHWR_HAL_CORTEXM_STM32 == CYGHWR_HAL_CORTEXM_STM32_F1 }
+            description "
+                This option specifies which member of the STM32F1 family is
+                in use."
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_F2 {
+            display          "F2 processor family selection"
+            flavor           data
+            active_if        { CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2" }
+            default_value    {"F207IG"}
+            legal_values     {"F205RB" "F205RC" "F205RE" "F205RF" "F205RG"
+                              "F205VB" "F205VC" "F205VE" "F205VF" "F205VG"
+                              "F205ZB" "F205ZC" "F205ZE" "F205ZF" "F205ZG"
+                              "F207VB" "F207VC" "F207VE" "F207VF" "F207VG"
+                              "F207ZB" "F207ZC" "F207ZE" "F207ZF" "F207ZG"
+                              "F207IB" "F207IC" "F207IE" "F207IF" "F207IG"
+                             }
+            requires         { CYGHWR_HAL_CORTEXM_STM32 == CYGHWR_HAL_CORTEXM_STM32_F2 }
+            description "
+                This option specifies which member of the STM32F2 family is
+                in use."
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_F4 {
+            display          "F4 processor family selection"
+            flavor           data
+            active_if        { CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4" }
+            default_value    {"F407IG"}
+            # NOTEs: The "F4xxxE" parts have 512MB on-chip flash and
+            # the "F4xxxG" parts have 1MB on-chip flash. The "F41xxx"
+            # parts have CRYPTO support.
+            legal_values     {"F405RG" "F405VG" "F405ZG"
+                              "F415RG" "F415VG" "F415ZG"
+                              "F407IG" "F407VG" "F407ZG"
+                              "F407IE" "F407VE" "F407ZE"
+                              "F417IG" "F417VG" "F417ZG"
+                              "F417IE" "F417VE" "F417ZE"
+                             }
+            requires         { CYGHWR_HAL_CORTEXM_STM32 == CYGHWR_HAL_CORTEXM_STM32_F4 }
+            description "
+                This option specifies which member of the STM32F4 family is
+                in use."
+        }
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY {
+        display         "Part belongs to connectivity family"
+        default_value   { (CYGHWR_HAL_CORTEXM_STM32 == "F105R8") || (CYGHWR_HAL_CORTEXM_STM32 == "F105V8") ||
+                          (CYGHWR_HAL_CORTEXM_STM32 == "F105RB") || (CYGHWR_HAL_CORTEXM_STM32 == "F105VB") ||
+                          (CYGHWR_HAL_CORTEXM_STM32 == "F105RC") || (CYGHWR_HAL_CORTEXM_STM32 == "F105VC") ||
+                          (CYGHWR_HAL_CORTEXM_STM32 == "F107RB") || (CYGHWR_HAL_CORTEXM_STM32 == "F107VB") ||
+                          (CYGHWR_HAL_CORTEXM_STM32 == "F107RC") || (CYGHWR_HAL_CORTEXM_STM32 == "F107VC") ||
+                          (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") || (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4")
+                        }
+        description     "Indicates that this part belongs to the connectivity
+                         family of devices. These have slightly different interrupt
+                         and GPIO layouts to the original STM32 F103 devices."
+    }
+    
     cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS {
         display         "CPU priority levels"
         flavor          data
@@ -95,20 +201,62 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
    
     cdl_component CYGHWR_HAL_CORTEXM_STM32_CLOCK {
         display         "Clock setup calculations"
-        default_value   1
+        flavor          none
+        no_define
         
         cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE {
             display         "PLL input source"
             flavor          data
             default_value   { "HSE" }
-            legal_values    { "HSI_HALF" "HSE" "HSE_HALF" }
+            legal_values    { "HSI" "HSE" }
+            description     "
+                This sets whether the PLL will be driven by the external
+                high-speed clock (HSE), or internal high-speed clock (HSI)."
         }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV {
+            display         "PLL pre-divider"
+            flavor          data
+            default_value   1
+            legal_values    1 to 63
+            requires        { !CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV <= 2) }
+            requires        { (CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F1") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV <= 16) }
+            requires        { ((CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F1") && (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE == "HSI")) implies \
+                                  (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV == 2) }
+            requires        { ((CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F2") || (CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F4")) implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV >= 2) }
+            description     "
+               This option corresponds to the divider used before input to the PLL.
+               On non-connectivity parts, you can only divide by 2 or 1. On other
+               F1 parts, if using HSI as the clock source, then that is automatically
+               divided by 2. If using HSE as the clock source, then this value corresponds
+               to the PREDIV1 field of register RCC_CFGR2. On F2 and F4 parts, this value
+               corresponds to the PLLM field of RCC_PLLCFGR."
+        }
+
 
         cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL {
             display         "PLL multiplier"
             flavor          data
             default_value   9
-            legal_values    2 to 16
+            legal_values    2 to 432
+            requires        { (CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F1") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL <= 16) }
+            requires        { ((CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F2") || (CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F4")) implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL <= 432) }
+            description     "
+                This value is used to multiply up the PLL input. On the F1 it corresponds
+                to the PLLMUL field of RCC_CFGR. On the F2 and F4 it corresponds to the PLLN
+                field of RCC_PLLCFGR."
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_SYSCLK_DIV {
+            display         "SYSCLK divider"
+            flavor          data
+            active_if       { ((CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F2") || (CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F4")) }
+            default_value   4
+            legal_values    { 2 4 6 8 }
+            description     "
+                This value is used to divide down the PLL output for use as
+                the SYSCLK clock. This corresponds to the PLLP field of
+                RCC_PLLCFGR"
         }
 
         cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV {
@@ -116,6 +264,7 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
             flavor          data
             default_value   1
             legal_values    { 1 2 4 8 16 64 128 256 512 }
+            description     "Divider for AHB"
         }
         
         cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK1_DIV {
@@ -123,6 +272,7 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
             flavor          data
             default_value   2
             legal_values    { 1 2 4 8 16 }
+            description     "Divider for APB1"
         }
 
         cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV {
@@ -130,6 +280,20 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
             flavor          data
             default_value   1
             legal_values    { 1 2 4 8 16 }
+            description     "Divider for APB2"
+        }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV {
+            display         "PLLQ divider"
+            flavor          data
+            active_if       { ((CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F2") || (CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F4")) }
+            default_value   10
+            legal_values    4 to 15
+            description     "
+               This PLL divider is used in the F2 and F4 families to divide down the
+               PLL output clock (VCO clock) for use by the USB OTG FS, SDIO
+               and RNG peripherals. USB OTG FS requires a 48MHz clock and
+               other peripherals require a clock no greater than 48MHz."
         }
     }
 
@@ -191,6 +355,71 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
         description "The platform has a socket on UART4."
     }
     
+    cdl_interface CYGINT_HAL_STM32_UART5 {
+        display     "Platform has UART5 serial port"
+        description "The platform has a socket on UART5."
+    }
+
+    cdl_option CYGHWR_HAL_STM32_UART0_REMAP {
+        display       "Remap UART0 (USART1) pins"
+        default_value 0
+
+        description   "Remap UART0 (USART1) to alternate set of pins.
+                       This will usually be set by the platform
+                       HAL to reflect the configuration of the hardware."
+    }
+
+    cdl_option CYGHWR_HAL_STM32_UART1_REMAP {
+        display       "Remap UART1 (USART2) pins"
+        default_value 0
+
+        description   "Remap UART1 (USART2) to alternate set of pins.
+                       This will usually be set by the platform
+                       HAL to reflect the configuration of the hardware."
+    }
+
+    cdl_option CYGHWR_HAL_STM32_UART2_REMAP {
+        display       "Remap UART2 (USART3) pins"
+        flavor        data
+        default_value { "NONE" }
+        legal_values  { "NONE" "PARTIAL" "FULL" }
+
+        description   "Remap UART2 (USART3) to alternate set of pins.
+                       This will usually be set by the platform
+                       HAL to reflect the configuration of the hardware."
+    }
+
+    cdl_option CYGHWR_HAL_STM32_I2C1_REMAP {
+        display       "Remap I2C bus 1 pins"
+        default_value 0
+
+        description   "Remap I2C bus 1 to alternate set of pins.
+                       This will usually be set by the platform
+                       HAL to reflect the configuration of the hardware."
+    }
+
+    cdl_option CYGHWR_HAL_STM32_SPI1_REMAP {
+        display       "Remap SPI bus 1 pins"
+        active_if     CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY
+        default_value 0
+
+        description   "Remap SPI bus 1 to alternate set of pins.
+                       This will usually be set by the platform
+                       HAL to reflect the configuration of the hardware."
+    }
+
+    cdl_option CYGHWR_HAL_STM32_SPI3_REMAP {
+        display       "Remap SPI bus 3 pins"
+        active_if     CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY
+        default_value 0
+
+        description   "Remap SPI bus 3 to alternate set of pins.
+                       This will usually be set by the platform
+                       HAL to reflect the configuration of the hardware.
+                       This option is only available on connectivity line
+                       devices."
+    }
+
     cdl_option CYGFUN_HAL_CORTEXM_STM32_PROFILE_TIMER {
         display       "Use TIM2 for gprof profiling"
         active_if     CYGPKG_PROFILE_GPROF
@@ -247,3 +476,5 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
     }
     
 }
+
+# EOF hal_cortexm_stm32.cdl

@@ -127,6 +127,9 @@ cyg_uint32 hal_stm32_hclk;
 cyg_uint32 hal_stm32_pclk1;
 cyg_uint32 hal_stm32_pclk2;
 cyg_uint32 hal_cortexm_systick_clock;
+#if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
+cyg_uint32 hal_stm32_qclk;
+#endif
 
 void hal_start_clocks( void );
 cyg_uint32 hal_exti_isr( cyg_uint32 vector, CYG_ADDRWORD data );
@@ -135,11 +138,6 @@ cyg_uint32 hal_exti_isr( cyg_uint32 vector, CYG_ADDRWORD data );
 
 void hal_variant_init( void )
 {
-    CYG_ADDRESS rcc = CYGHWR_HAL_STM32_RCC;
-
-    // Enable all devices in RCC
-    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_APB2ENR, 0xFFFFFFFF );
-    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_APB1ENR, 0xFFFFFFFF );
 
 #if 1 //!defined(CYG_HAL_STARTUP_RAM)
     hal_start_clocks();
@@ -167,15 +165,11 @@ void hal_start_clocks( void )
     
     // Reset RCC
 
-    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, 0x00000001 );
+    cr = CYGHWR_HAL_STM32_RCC_CR_HSION;
+    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
     
     // Start up HSE clock
     
-    HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
-    cr &= ~(CYGHWR_HAL_STM32_RCC_CR_HSEON|CYGHWR_HAL_STM32_RCC_CR_HSEBYP);
-    HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
-
-    HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
     cr |= CYGHWR_HAL_STM32_RCC_CR_HSEON;
     HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CR, cr );
     
@@ -188,24 +182,77 @@ void hal_start_clocks( void )
 
     // Configure clocks
     
-    hal_stm32_sysclk = CYGARC_HAL_CORTEXM_STM32_INPUT_CLOCK;
+    // Temporarily divide by 4 until we've dealt with potential large
+    // multiplications overflow.
+    hal_stm32_sysclk = CYGARC_HAL_CORTEXM_STM32_INPUT_CLOCK >> 2;
     
     cfgr = 0;
 
+#if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_F1)
+
 #if defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSE)
     cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_HSE;
-#elif defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSE_HALF)
-    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_HSE |
-            CYGHWR_HAL_STM32_RCC_CFGR_PLLXTPRE;
-    hal_stm32_sysclk /= 2;
-#elif defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSI_HALF)
-    hal_stm32_sysclk /= 2;
 #endif
+
+    // Just a little sanity check.
+#if defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSI) && (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV != 2)
+# error PLL PREDIV must be 2
+#endif
+
+    // Ordering could be important if divisions below cause truncation, so multiply first.
+    hal_stm32_sysclk *= CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL;
+
+#ifdef CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY
+    HAL_WRITE_UINT32( rcc + CYGHWR_HAL_STM32_RCC_CFGR2,
+                      CYGHWR_HAL_STM32_RCC_CFGR2_PREDIV1(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV-1) );
+    hal_stm32_sysclk /= CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV;
+#else
+    // Non-connectivity parts can only use PLLXTPRE
+    if ( CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV == 2 )
+    {
+        cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PLLXTPRE; // irrelevant if HSI used, so just set anyway.
+    hal_stm32_sysclk /= 2;
+    }
+#endif
+    hal_stm32_sysclk <<= 2; // return to correct range now we've dealt with risk of overflow.
     
     cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PLLMUL(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL);
     cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_HPRE;
     cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PPRE1;
     cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PPRE2;
+
+#elif defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
+
+#if defined(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE_HSE)
+    cfgr |= CYGHWR_HAL_STM32_RCC_PLLCFGR_PLLSRC_HSE;
+#endif
+
+    cfgr |= CYGHWR_HAL_STM32_RCC_PLLCFGR_PLLM(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV);
+    cfgr |= CYGHWR_HAL_STM32_RCC_PLLCFGR_PLLN(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL);
+    // Ordering could be important if divisions below cause truncation, so multiply first.
+    hal_stm32_sysclk *= CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL;
+    hal_stm32_sysclk /= CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV;
+
+    hal_stm32_sysclk <<= 2; // return to correct range now we've dealt with risk of overflow.
+
+    cfgr |= CYGHWR_HAL_STM32_RCC_PLLCFGR_PLLP(CYGHWR_HAL_CORTEXM_STM32_CLOCK_SYSCLK_DIV);
+    cfgr |= CYGHWR_HAL_STM32_RCC_PLLCFGR_PLLQ(CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV);
+
+    // qclk divides down VCO output, so calc it first before updating sysclk for PLLP
+    hal_stm32_qclk = hal_stm32_sysclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV;
+
+    hal_stm32_sysclk /= CYGHWR_HAL_CORTEXM_STM32_CLOCK_SYSCLK_DIV;
+
+    HAL_WRITE_UINT32( rcc + CYGHWR_HAL_STM32_RCC_PLLCFGR, cfgr );
+
+    cfgr  = CYGHWR_HAL_STM32_RCC_CFGR_HPRE;
+    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PPRE1;
+    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_PPRE2;
+
+    // RTCPRE divides down HSE, which is the input clock. Must be 1MHz.
+    cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_RTCPRE( CYGARC_HAL_CORTEXM_STM32_INPUT_CLOCK/1000000 );
+
+#endif // elif defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
 
     HAL_WRITE_UINT32( rcc+CYGHWR_HAL_STM32_RCC_CFGR, cfgr );
 
@@ -220,6 +267,7 @@ void hal_start_clocks( void )
     } while( !(cr & CYGHWR_HAL_STM32_RCC_CR_PLLRDY) );
 
     // Now switch to use PLL as SYSCLK
+    // TODO: make this configurable between HSI, HSE and PLL
     
     cfgr |= CYGHWR_HAL_STM32_RCC_CFGR_SW_PLL;
 
@@ -232,7 +280,6 @@ void hal_start_clocks( void )
 
     // Calculate clocks from configuration
 
-    hal_stm32_sysclk *= CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL;
     hal_stm32_hclk = hal_stm32_sysclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV;
     hal_stm32_pclk1 = hal_stm32_hclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK1_DIV;
     hal_stm32_pclk2 = hal_stm32_hclk / CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV;
@@ -281,6 +328,9 @@ cyg_uint32 hal_exti_isr( cyg_uint32 vector, CYG_ADDRWORD data )
 
 __externC void hal_stm32_gpio_set( cyg_uint32 pin )
 {
+  // FIXME: Power on GPIO ports selectively here, rather than
+  // platform having to power them all on for boot.
+#if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_F1)
     cyg_uint32 port = CYGHWR_HAL_STM32_GPIO_PORT(pin);
     int bit = CYGHWR_HAL_STM32_GPIO_BIT(pin);
     cyg_uint32 cm = CYGHWR_HAL_STM32_GPIO_CFG(pin);
@@ -291,8 +341,7 @@ __externC void hal_stm32_gpio_set( cyg_uint32 pin )
     
     if( bit > 7 ) port += 4, bit -= 8;
     HAL_READ_UINT32( port, cr );
-    cr &= ~(0xF<<(bit*4));
-    cr |= cm<<(bit*4);
+    CYGHWR_HAL_STM32_GPIO_CNFMODE_SET(bit,cm,cr);
     HAL_WRITE_UINT32( port, cr );
 
     // If this is a pullup/down input, set the ODR bit to switch on
@@ -309,26 +358,99 @@ __externC void hal_stm32_gpio_set( cyg_uint32 pin )
             odr &= ~(1<<bit);
         HAL_WRITE_UINT32( port+CYGHWR_HAL_STM32_GPIO_ODR, odr );
     }
+#elif defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
+    CYG_ADDRESS port = CYGHWR_HAL_STM32_GPIO_PORT(pin);
+    int bit = CYGHWR_HAL_STM32_GPIO_BIT(pin);
+    cyg_uint32 mode = CYGHWR_HAL_STM32_GPIO_MODE(pin);
+    cyg_uint32 af = CYGHWR_HAL_STM32_GPIO_AF(pin);
+    cyg_uint32 od = CYGHWR_HAL_STM32_GPIO_OPENDRAIN(pin);
+    cyg_uint32 pupd = CYGHWR_HAL_STM32_GPIO_PULLUPDOWN(pin);
+    cyg_uint32 speed = CYGHWR_HAL_STM32_GPIO_SPEED(pin);
+    cyg_uint32 reg;
+
+    if( pin == CYGHWR_HAL_STM32_GPIO_NONE )
+        return;
+
+    
+    HAL_READ_UINT32( port+CYGHWR_HAL_STM32_GPIO_OTYPER, reg );
+    CYGHWR_HAL_STM32_GPIO_OTYPE_SET( bit, od, reg );
+    HAL_WRITE_UINT32( port+CYGHWR_HAL_STM32_GPIO_OTYPER, reg );
+
+    HAL_READ_UINT32( port+CYGHWR_HAL_STM32_GPIO_OSPEEDR, reg );
+    CYGHWR_HAL_STM32_GPIO_OSPEED_SET( bit, speed, reg );
+    HAL_WRITE_UINT32( port+CYGHWR_HAL_STM32_GPIO_OSPEEDR, reg );
+
+    HAL_READ_UINT32( port+CYGHWR_HAL_STM32_GPIO_PUPDR, reg );
+    CYGHWR_HAL_STM32_GPIO_PUPD_SET( bit, pupd, reg );
+    HAL_WRITE_UINT32( port+CYGHWR_HAL_STM32_GPIO_PUPDR, reg );
+
+    if ( CYGHWR_HAL_STM32_GPIO_MODE_ALTFN == mode )
+    {
+        CYGHWR_HAL_STM32_GPIO_AFR_SET( port, bit, af );
+    }
+
+    HAL_READ_UINT32( port+CYGHWR_HAL_STM32_GPIO_MODER, reg );
+    CYGHWR_HAL_STM32_GPIO_MODE_SET( bit, mode, reg );
+    HAL_WRITE_UINT32( port+CYGHWR_HAL_STM32_GPIO_MODER, reg );
+#endif // if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
 }
     
 __externC void hal_stm32_gpio_out( cyg_uint32 pin, int val )
 {
+#if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_F1)
     cyg_uint32 port = CYGHWR_HAL_STM32_GPIO_PORT(pin);
     int bit = CYGHWR_HAL_STM32_GPIO_BIT(pin);
     
     port += CYGHWR_HAL_STM32_GPIO_BSRR;
     if( (val&1) == 0 ) port += 4;
     HAL_WRITE_UINT32( port, 1<<bit );
+#elif defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
+    CYG_ADDRESS port = CYGHWR_HAL_STM32_GPIO_PORT(pin);
+    int bit = CYGHWR_HAL_STM32_GPIO_BIT(pin);
+
+    CYGHWR_HAL_STM32_GPIO_BSRR_SET( port, bit, val );
+#endif // if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
 }
     
 __externC void hal_stm32_gpio_in ( cyg_uint32 pin, int *val )
 {
+#if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_F1)
     cyg_uint32 port = CYGHWR_HAL_STM32_GPIO_PORT(pin);
     int bit = CYGHWR_HAL_STM32_GPIO_BIT(pin);
     cyg_uint32 pd;
     
     HAL_READ_UINT32( port+CYGHWR_HAL_STM32_GPIO_IDR, pd );
     *val = (pd>>bit)&1;
+#elif defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
+    CYG_ADDRESS port = CYGHWR_HAL_STM32_GPIO_PORT(pin);
+    int bit = CYGHWR_HAL_STM32_GPIO_BIT(pin);
+
+    CYGHWR_HAL_STM32_GPIO_IDR_GET( port, bit, *val );
+#endif // if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
+}
+
+//==========================================================================
+// Clock support.
+//
+// These functions provide support for enabling and disabling clock
+// control bits.
+
+__externC void hal_stm32_clock_enable( cyg_uint32 desc )
+{
+    cyg_uint32 r;
+    cyg_uint32 reg = CYGHWR_HAL_STM32_RCC+CYGHWR_HAL_STM32_CLOCK_REG(desc);
+    HAL_READ_UINT32( reg, r );
+    r |= BIT_(CYGHWR_HAL_STM32_CLOCK_PIN(desc));
+    HAL_WRITE_UINT32( reg, r );
+}
+
+__externC void hal_stm32_clock_disable( cyg_uint32 desc )
+{
+    cyg_uint32 r;
+    cyg_uint32 reg = CYGHWR_HAL_STM32_RCC+CYGHWR_HAL_STM32_CLOCK_REG(desc);
+    HAL_READ_UINT32( reg, r );
+    r &= ~BIT_(CYGHWR_HAL_STM32_CLOCK_PIN(desc));
+    HAL_WRITE_UINT32( reg, r );
 }
 
 //==========================================================================
@@ -344,7 +466,6 @@ void hal_stm32_bd_protect( int protect )
         cr &= ~CYGHWR_HAL_STM32_PWR_CR_DBP;
     else
         cr |= CYGHWR_HAL_STM32_PWR_CR_DBP;        
-
     HAL_WRITE_UINT32( pwr+CYGHWR_HAL_STM32_PWR_CR, cr );
 }
 
@@ -360,8 +481,14 @@ void hal_stm32_uart_setbaud( cyg_uint32 base, cyg_uint32 baud )
     cyg_uint32 int_div, frac_div;
     cyg_uint32 brr;
     
-    if( base == CYGHWR_HAL_STM32_UART1 )
+    if( base == CYGHWR_HAL_STM32_UART1 ||
+#ifdef CYGHWR_HAL_STM32_UART6
+        base == CYGHWR_HAL_STM32_UART6 ||
+#endif
+        0)
+    {
         apbclk = hal_stm32_pclk2;
+    }
 
     int_div = (25 * apbclk ) / (4 * baud );
     brr = ( int_div / 100 ) << 4;

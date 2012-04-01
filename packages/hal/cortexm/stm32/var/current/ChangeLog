@@ -1,3 +1,194 @@
+2012-03-27  James Smith  <jsmith@ecoscentric.com>
+
+	* tests/timers.c (TIMER_PRI): Add macro and manifests to allow
+	easy manipulation of the base and delta between the timer
+	priorities being tested.
+
+2012-03-23  James Smith  <jsmith@ecoscentric.com>
+
+	* include/var_io_usart.h: Provide common/shared UART pin
+	definitions for F1, F2 and F4 devices using the new PIN wrapper
+	macros. The RTS pin definitions for all STM32F families now use
+	GPIO output since the driver uses software controlled
+	RTS. Previously the F2/F4 defined the RTS pins as ALTFN.
+
+	* include/var_io.h: Provide common/shared ADC pin definitions for
+	F1, F2 and F4 devices using the new PIN_ANALOG() wrapper macro.
+
+	* include/var_io_eth.h: Provide common MII pin definitions using
+	the new PIN wrapper macros. Also remove MII_REMAP which was
+	incorrectly using the wrong manifests (STM3210C-EVAL networking
+	would not work) since decision taken that "plf_io.h" should
+	contain board specific I/O pin mapping.
+
+	* cdl/hal_cortexm_stm32.cdl: Remove CYGPKG_HAL_STM32_ETH and
+	sub-option CYGHWR_HAL_STM32_ETH_MII_REMAP since ethernet pin
+	mapping now present in platform specific "plf_io.h" header.
+
+2012-03-22  James Smith  <jsmith@ecoscentric.com>
+
+	* include/var_io_pins.h: Provide "common" wrapper macros
+	CYGHWR_HAL_STM32_PIN_OUT, CYGHWR_HAL_STM32_PIN_ALTFN_OUT,
+	CYGHWR_HAL_STM32_PIN_IN, CYGHWR_HAL_STM32_PIN_ALTFN_IN and
+	CYGHWR_HAL_STM32_PIN_ANALOG for defining I/O pins to allow the
+	same (where applicable) source calls to be used regardless of
+	whether the target is F1 or HIPERFORMANCE (F2/F4).
+
+	* cdl/hal_cortexm_stm32.cdl: Remove CYGPKG_HAL_STM32_ETH and
+	sub-option CYGHWR_HAL_STM32_ETH_MII_REMAP since ethernet pin
+	mapping now present in platform specific "plf_io.h" header.
+
+2012-03-21  James Smith  <jsmith@ecoscentric.com>
+
+	* include/var_io_pins.h: Provide similar support for F1 family
+	devices as available for F2/F4 family devices by adding AT_LEAST
+	and AT_MOST macros for specifying OUTPUT pin speed limits, and
+	providing generic LOW, MED and FAST manifests to hide the actual
+	device speed.
+
+	* src/stm32_misc.c (hal_stm32_gpio_set): Use
+	CYGHWR_HAL_STM32_GPIO_CNFMODE_SET macro instead of explicit
+	bitmask manipulation for seeting F1 CRL/CRH.
+
+2012-03-15  James Smith  <jsmith@ecoscentric.com>
+
+	* src/stm32_misc.c:
+	* src/stm32_dma.c:
+	* src/hal_diag.c:
+	* include/var_io_usart.h:
+	* include/var_io_pins.h:
+	* include/var_io_eth.h:
+	* include/var_io.h:
+	* include/var_intr.h:
+	* include/var_dma.h: Use HIPERFORMANCE manifest to add support for
+	F4 devices.
+
+	* cdl/hal_cortexm_stm32.cdl: Many minor changes to support
+	Cortex-M4 and STM32F4 devices.
+
+	* tests/timers.c (timers): Add TIM8_UP_TIM13 to the set of timers
+	tested for those platforms where it is defined.
+
+2012-03-13  James Smith  <jsmith@ecoscentric.com>
+
+	* include/var_io.h (HAL_AARDVARK_CHECK_I2C): Macro for specific
+	STM32 F1 devices that suffer from an I2C/FSMC errata to allow the
+	Aardvark test cases to operate. Added STM32F4 RTC manifests.
+
+2012-02-28  James Smith  <jsmith@ecoscentric.com>
+
+	* src/stm32_dma.c (hal_stm32_dma_disable): Add new function to
+	allow temporary disable of DMA stream for circular mode
+	configurations.
+
+	* include/var_dma.h: Added prototype for newly added
+	hal_stm32_dma_disable() function.
+
+2012-02-28  James Smith  <jsmith@ecoscentric.com>
+
+	* src/stm32_dma.c (hal_stm32_dma_isr): Do not disable the stream
+	when configured for circular mode.
+
+2012-02-24  James Smith  <jsmith@ecoscentric.com>
+
+	* include/var_io.h: Provide manifests covering STM32F2 ADC
+	support.
+
+	* include/var_intr.h: Provide explicit DMA2 CH4 and CH5 manifests
+	for non-connectivity devices (e.g. STM3210E-EVAL target).
+
+	* include/var_dma.h:
+	* src/stm32_dma.c (hal_stm32_dma_configure_circular): Provide
+	function to enable/disable DMA circular mode, and provide
+	prototype in header and documentation.
+
+2012-02-17  James Smith  <jsmith@ecoscentric.com>
+
+	* include/var_io_pins.h: Fix F2 MODE_SET and OSPEED_SET macros to
+	correctly mask register field bits.
+
+2012-01-20  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_intr.h (CYGNUM_HAL_VSR_MAX): Reverse an earlier
+	change to this value.
+
+2012-01-13  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_io.h: Add shifts for RTC TR and DR register fields.
+
+2012-01-12  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_intr.h: Reorganize vectors 43-49 so they are defined
+	correctly for F2 devices.
+
+	* include/var_io.h: Tidy up DMA defines. Move I2C and SPI pin and
+	DMA channel definitions out to platform HALs.
+
+	* include/var_io_pins.h (CYGHWR_HAL_STM32_GPIO_PUPD_SET): Fix
+	buglet in register clear code.
+
+	* cdl/hal_cortexm_stm32.cdl:
+	* include/var_dma.h:
+	* src/stm32_dma.c: Add DMA API.
+
+2011-12-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_cortexm_stm32.cdl (CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY):
+	Rather than list every F2 part, just say all F2 since we don't yet know
+	of F2 parts that don't have connectivity.
+	(CYGHWR_HAL_STM32_ETH_MII_REMAP): Allow pin remapping to be configurable
+	as a standard setting, alternate mapping, or provided by the platform.
+	* include/var_io.h: Add MCO1_MASK/MCO2_MASK and
+	MCO1PRE_MASK/MCO2PRE_MASK defns. Add CYGHWR_HAL_STM32_FLASH_CR_PSIZE()
+	to make flash parallelism easier to set.
+	* include/var_io_eth.h: Fix MACMIIAR_CR_MASK define.
+	Allow specification (and checking) of MACMIIAR_CR to set MDC clock
+	according to defined MHz ranges - this allows it to vary between
+	processors.
+	Support above CYGHWR_HAL_STM32_ETH_MII_REMAP changes.
+	Add alternate mappings for F2 eth pins (although it's a different
+	subset to F1.
+
+2011-12-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/stm32_misc.c (hal_start_clocks): Remove unnecessary fiddling
+	after RCC reset. Avoid overflow from PLL multiplier. Handle PLLQ
+	and RTCPRE on F2.
+
+	* include/var_io.h (CYGHWR_HAL_STM32_RCC_CFGR_RTCPRE): Add set macro
+	separate from mask.
+
+	* cdl/hal_cortexm_stm32.cdl: Improve clock option descriptions. Add
+	CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV.
+
+2011-12-08  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_cortexm_stm32.cdl: Add selections for processors in F2
+	family, and allow discrimination between those and F1.
+	* include/var_intr.h: Modify and add to interrupt list for F2.
+	(HAL_VAR_INTERRUPT_{MASK,UNMASK,ACKNOWLEDGE,CONFIGURE ): Update
+	EXTI interrupts that need special mapping for F2.
+	* include/var_io.h: Many additions and changes for F2. To avoid
+	an unmanageable size, split out GPIO/pin config, USART and ETH
+	peripheral definitions into new files.
+	* include/var_io_pins.h: New file for GPIO and pin configuration.
+	* include/var_io_usart.h: New file for USART definitions.
+	* include/var_io_eth.h: New file for Ethernet peripheral definitions.
+	* src/hal_diag.c: Allow for new style pin remapping used by F2
+	while still allowing F1 to work.
+	Support USART6 (which we call UART5).
+	(hal_stm32_serial_init_channel): Only use AFIO on F1.
+	* src/stm32_misc.c (hal_stm32_gpio_{set,out,in}): Support new GPIO
+	pin setting.
+	(hal_stm32_uart_setbaud): Support UART6 (called UART5 in CDL).
+	(hal_enable_profile_timer): Ensure timer peripheral (defaulting to TIM6)
+	has its clock enabled.
+
+2011-10-07  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_io.h: Separate FSMC and ETH register definitions,
+	which seem to have got a little mixed together at some point.
+
 2011-02-03  Alan Bowman  <alan.bowman@datong.co.uk>
 
 	* include/var_io.h: Fix CYGHWR_HAL_STM32_RCC_CFGR_PPRE2_*
@@ -23,15 +214,56 @@
 
 	* include/var_io.h: Minor corrections to the FSMC register defs.
 
+2009-10-22  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/hal_cortexm_stm32.cdl:
+	* include/var_io.h: Add remap configuration for SPI busses.
+
 2009-08-10  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* include/var_io.h: Added more register definitions for FSMC
+
+2009-07-02  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/hal_cortexm_stm32.cdl: Add remap configuration for UARTS.
+
+	* include/var_io.h (CYGHWR_HAL_STM32_AFIO_CLOCK): Add AFIO clock control.
+	(CYGHWR_HAL_STM32_UART*_REMAP_CONFIG): Add remap support for UARTS.
+
+	* src/hal_diag.c (channel_data_t, hal_stm32_serial_init_channel):
+	Add support for UART remapping.
+
+2009-06-29  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_io.h (CYGHWR_HAL_STM32_ETH): Add support for
+	ethernet device on connectivity line devices.
+	Add device clock control support.
+
+	* include/var_intr.h:
+	* cdl/hal_cortexm_stm32.cdl: Add support for connectivity line
+	devices.
+
+	* src/stm32_misc.c (hal_variant_init): Remove default enable of
+	all device clocks.
+	(hal_stm32_clock_enable, hal_stm32_clock_disable): Add routines to
+	enable individual device clocks.
+
+	* src/hal_diag.c (stm32_ser_channels)
+	(hal_stm32_serial_init_channel): Add clock enable support.
 
 2009-04-17  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* src/hal_diag.c (hal_stm32_serial_getc_timeout): Fix for higher
 	baudrates. The original version lost bytes due to the long
 	timeout.
+
+2009-03-23  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/stm32_misc.c (hal_variant_init): Add write to AHBENR
+	register to enable all AHB based devices.
+
+	* include/var_io.h (CYGHWR_HAL_STM32_IWDG_*): Add defines for
+	independent watchdog.
 
 2009-02-27  Simon Kallweit  <simon.kallweit@intefo.ch>
 
