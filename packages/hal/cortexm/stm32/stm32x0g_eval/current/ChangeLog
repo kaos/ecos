@@ -1,0 +1,184 @@
+2012-03-29  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_sram.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_romint.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_rom.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_jtag.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_ram.ldi:
+	Correct number of VSR table entries.
+	* src/stm32x0g_eval_misc.c (hal_platform_init): Add assertion checks
+	that layout of vector tables at bottom of SRAM is what it should be.
+
+2012-03-29  James Smith  <jsmith@ecoscentric.com>
+
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_sram.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_romint.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_rom.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_jtag.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_ram.ldi:
+	Provide hal_virtual_vector_table_end symbol to allow the
+	SECTION_sram pre-allocation to be minimised to the actual platform
+	requirements.
+
+	* src/stm32x0g_eval_misc.c: Provide #error check on linker script
+	hardwired CYGNUM_CALL_IF_TABLE_SIZE assumption.
+
+2012-03-23  James Smith  <jsmith@ecoscentric.com>
+
+	* include/plf_io.h: Update GPIO pin definitions to use new PIN
+	wrapper macros. Update the I2C lines to specify PULLUP.
+
+2012-03-22  James Smith  <jsmith@ecoscentric.com>
+
+	* include/plf_io.h (CYGHWR_HAL_STM32_ETH_MII_*): Platform specific
+	ethernet pin manifests updated to use new GPIO PIN macros.
+
+2012-03-15  James Smith  <jsmith@ecoscentric.com>
+
+	* cdl/hal_cortexm_stm32_stm32x0g_eval.cdl:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_jtag.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_jtag.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_ram.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_ram.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_rom.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_rom.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_romint.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_romint.ldi:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_sram.h:
+	* include/pkgconf/mlt_cortexm_stm32x0g_eval_sram.ldi:
+	* src/stm32x0g_eval_flash.c:
+	* src/stm32x0g_eval_misc.c:
+	* src/stm32x0g_eval_spi.c:
+	Rename platform from the name "stm3220g_eval" to the generic name
+	"stm32x0g_eval". This is to make it clear that the platform
+	supports both the F2 (STM3220G-EVAL) and F4 (STM3240G-EVAL)
+	platforms. This rename includes renaming of the relevant support
+	source files.
+
+	* include/plf_io.h (HAL_I2C_EXPORTED_DEVICES): Declare I2C bus1
+	for on-board M24C64 device.
+
+2012-02-08  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3220g_eval.cdl
+	(CYGPKG_HAL_CORTEXM_STM32_STM3220G_EVAL_SPI): This should now be a component
+	since it has no children. Also make description match configuration (Aardvark
+	expected to be on bus 2).
+
+2012-02-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* misc/redboot_JTAG.ecm, misc/redboot_ROM.ecm: Build in inferences
+	so there's no output on import.
+	* misc/redboot_RAM.ecm: New file. For completeness and to make it
+	easier for RedBoot to update itself.
+	* cdl/hal_cortexm_stm32_stm3220g_eval.cdl: Make comment description of
+	UART selection and naming clearer.
+
+2012-01-31  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/plf_io.h: Prototype hal_stm3220_led() for setting board LEDs.
+	* src/stm3220g_eval_misc.c: Choose correct board SRAM memory timings.
+
+2012-01-13  Nick Garnett  <nickg@ecoscentric.com>
+
+	* misc/redboot_ROM.ecm:
+	* misc/redboot_JTAG.ecm: Add CYGPKG_IO_WALLCLOCK package to enable
+	date command for setting on-chip RTC.
+
+2012-01-12  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3220g_eval.cdl: Add SPI and I2C
+	configuration options.
+
+	* include/plf_io.h: Add SPI and I2C pin and DMA stream definitions.
+
+	* src/stm3220g_eval_spi.c: Add SPI device definition for aardvark
+	board.
+
+2011-12-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3220g_eval.cdl: Just set a requires on
+	RedBoot's number of memory segments to be 2 rather than using a
+	non-configurable option.
+
+2011-12-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3220g_eval.cdl
+	(CYGNUM_HAL_CORTEXM_STM32_FLASH_WAIT_STATES): New option. Configures
+	Flash wait states.
+	(CYGPKG_HAL_CORTEXM_STM32_STM3220G_EVAL_ETH0): New component. Holds
+	options and CDL to configure ethernet support.
+	Change default baud rate to 115200.
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_jtag.h: Add definitions for
+	sram and flash regions.
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_ram.h: Add definitions for
+	flash region.
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_sram.h: Ditto. Also fix
+	external SRAM address.
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_sram.ldi: Fix external SRAM
+	address.
+	* include/plf_io.h: Provide platform specific ethernet pin mappings.
+	(CYGHWR_HAL_STM32_ETH_CONFIGURE_MCO): New macro used to configure MCO1
+	as PHY clock.
+	* misc/redboot_JTAG.ecm, misc/redboot_ROM.ecm: Don't disable
+	CYGOPT_REDBOOT_FIS_REDBOOT nor CYGOPT_REDBOOT_FIS_REDBOOT_POST - there
+	is only one flash here and it does contain RedBoot.
+	* src/stm3220g_eval_flash.c: No longer define private flash structure
+	here. Internal flash support is no longer an option in this file if this
+	file is used at all.
+	* src/stm3220g_eval_misc.c (hal_system_init): Clear FSMC reset bit after
+	reset otherwise it stays there.
+	Configure USART4 TX/RX on PC10/11 otherwise RedBoot can get confused.
+	Set Flash wait states as per configuration.
+	(cyg_plf_memory_segment): Allow for renaming of external SRAM region to
+	xram.
+
+2011-12-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3220g_eval.cdl: Set PLLQ.
+
+2011-12-08  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_cortexm_stm32_stm3220g_eval.cdl:
+	* include/plf_arch.h:
+	* include/plf_intr.h:
+	* include/plf_io.h:
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_jtag.h:
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_jtag.ldi:
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_ram.h:
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_ram.ldi:
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_rom.h:
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_romint.h:
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_romint.ldi:
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_rom.ldi:
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_sram.h:
+	* include/pkgconf/mlt_cortexm_stm3220g_eval_sram.ldi:
+	* misc/redboot_JTAG.ecm:
+	* misc/redboot_ROM.ecm:
+	* src/stm3220g_eval_flash.c:
+	* src/stm3220g_eval_misc.c:
+	New package -- ST STM3220G EVAL board HAL. Derived from STM3210E HAL.
+
+//===========================================================================
+// ####GPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2011 Free Software Foundation, Inc.
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 or (at your option) any
+// later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the
+// Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA  02110-1301, USA.
+// -------------------------------------------
+// ####GPLCOPYRIGHTEND####
+//===========================================================================

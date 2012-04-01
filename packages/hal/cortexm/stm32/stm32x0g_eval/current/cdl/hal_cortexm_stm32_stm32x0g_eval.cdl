@@ -1,0 +1,471 @@
+##==========================================================================
+##
+##      hal_cortexm_stm32_stm32x0g_eval.cdl
+##
+##      Cortex-M STM32X0G EVAL platform HAL configuration data
+##
+##==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 2012 Free Software Foundation, Inc.                        
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+##==========================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):    jlarmour
+## Based on:     stm3210e CDL by nickg
+## Date:         2011-11-10
+##
+######DESCRIPTIONEND####
+##
+##==========================================================================
+
+cdl_package CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL {
+    display       "ST STM32x0G-EVAL (STM32 20-21-45-46 G-EVAL) Development Board HAL"
+    parent        CYGPKG_HAL_CORTEXM_STM32
+    requires      { ((CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") || (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4"))  }
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") ? (CYGHWR_HAL_CORTEXM_STM32_F2 == "F207IG") : (CYGHWR_HAL_CORTEXM_STM32_F4 == "F407IG") }
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") implies (CYGHWR_HAL_CORTEXM == "M3") }
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4") implies (CYGHWR_HAL_CORTEXM == "M4") }
+    # 25MHz crystal feeds HSE
+    # From STM32F4xx Rev A System Clock Configuration v1.0.1
+    #   SYSCLK          120MHz    168MHz
+    #   ------          ------    ------
+    #   HSE             25MHz     25MHz		fixed input crystal on board : CYGARC_HAL_CORTEXM_STM32_INPUT_CLOCK
+    #   PLL_M           25        25		(6bits) main divisor
+    #   PLL_N           240       336		(9bits) main multiplier
+    #   PLL_P           2         2		(2bits) derived from PLL_N : used for SYSCLK (must not exceed F2:120 or F4:168)
+    #   PLL_Q           5         7		(4bits) derived from PLL_N : used for USB OTG FS, SDIO and RNG (must be >= 2)
+    #   AHB Prescaler   1         1
+    #   SYSCLK		120MHz	  168MHz	(((HSE / PLL_M) * PLL_N) / PLL_P)
+    #   HCLK            120MHz    168MHz	(SYSCLK / AHB Prescaler)
+    #   APB1 Prescaler  4         4
+    #   PCLK1		30MHz	  42MHz		(HCLK / APB1 Prescaler)
+    #   APB2 Prescaler  2         2
+    #	PCLK2		60MHz	  84MHz		(HCLK / APB2 Prescaler)
+    #
+    # Must use HSE for the PLL settings below
+    requires      { CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_SOURCE == "HSE" }
+    # F2:
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV == 15) }
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 288) }
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_SYSCLK_DIV == 4) }
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV == 10) }
+    # F4:
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV == 25) }
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 336) }
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_SYSCLK_DIV == 2) }
+    requires      { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV == 7) }
+    # Common:
+    requires      { CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV == 1 }
+    requires      { CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK1_DIV == 4 }
+    requires      { CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV == 2 }
+
+#    define_header hal_cortexm_stm32_stm32x0g_eval.h
+    include_dir   cyg/hal
+    hardware
+    description   "
+        The STM32x0G EVAL HAL package provides the support needed to run
+        eCos on the ST STM32 20-21-45-46 G-EVAL board."
+
+    compile       stm32x0g_eval_misc.c
+
+    cdl_option CYGPKG_HAL_CORTEXM_STM32_STM3220G_EVAL {
+        display "Platform definitions for STM3220G-EVAL (F2) board."
+	active_if { CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2" }
+        no_define
+	calculated 1
+        define_proc {
+            puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_cortexm.h>"
+            puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_cortexm_stm32.h>"
+            puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_cortexm_stm32_stm32x0g_eval.h>"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"Cortex-M3\""
+            puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"ST STM3220G-EVAL\""
+            puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+        }
+    }
+
+    cdl_option CYGPKG_HAL_CORTEXM_STM32_STM3240G_EVAL {
+        display "Platform definitions for STM3240G-EVAL (F4) board."
+	active_if { CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4" }
+        no_define
+	calculated 1
+        define_proc {
+            puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_cortexm.h>"
+            puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_cortexm_stm32.h>"
+            puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_cortexm_stm32_stm32x0g_eval.h>"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"Cortex-M4\""
+            puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"ST STM3240G-EVAL\""
+            puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+        }
+    }
+
+    cdl_component CYG_HAL_STARTUP {
+        display       "Startup type"
+        flavor        data
+        default_value {"RAM"}
+        legal_values  {"RAM" "SRAM" "ROM" "ROMINT" "JTAG"}
+        no_define
+        define -file system.h CYG_HAL_STARTUP
+        description   "
+            When targetting the ST STM32X0G EVAL board it is possible to
+            build the system for either RAM bootstrap or ROM bootstrap.
+            Select 'RAM' when building programs to load into RAM using onboard
+            debug software such as RedBoot or eCos GDB stubs.  Select 'ROM'
+            when building a stand-alone application which will be put
+            into ROM. The 'JTAG' type allows programs to be downloaded using a
+            JTAG debugger such as a BDI3000 or PEEDI. The 'SRAM' type allows
+            programs to be downloaded via a JTAG debugger into on-chip SRAM.
+            The 'ROMINT' type supports applications with code in on-chip flash
+            and data/bss in on-chip SRAM, ignoring the external SRAM."
+    }
+    
+    cdl_component CYGHWR_MEMORY_LAYOUT {
+        display "Memory layout"
+        flavor data
+        no_define
+        calculated    { (CYG_HAL_STARTUP == "RAM"    ) ? "cortexm_stm32x0g_eval_ram"      :
+                        (CYG_HAL_STARTUP == "SRAM"   ) ? "cortexm_stm32x0g_eval_sram"     :
+                        (CYG_HAL_STARTUP == "ROM"    ) ? "cortexm_stm32x0g_eval_rom"      :
+                        (CYG_HAL_STARTUP == "ROMINT" ) ? "cortexm_stm32x0g_eval_romint"   :
+                        (CYG_HAL_STARTUP == "JTAG"   ) ? "cortexm_stm32x0g_eval_jtag"     :
+                                                         "undefined" }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
+                display "Memory layout linker script fragment"
+                flavor data
+                no_define
+                define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
+                calculated { "<pkgconf/mlt_" . CYGHWR_MEMORY_LAYOUT . ".ldi>" }
+        }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_H {
+                display "Memory layout header file"
+                flavor data
+                no_define
+                define -file system.h CYGHWR_MEMORY_LAYOUT_H
+                calculated { "<pkgconf/mlt_" . CYGHWR_MEMORY_LAYOUT . ".h>" }
+        }
+
+    }
+
+    cdl_option CYGARC_HAL_CORTEXM_STM32_INPUT_CLOCK {
+        display         "Input Clock frequency"
+        flavor          data
+        default_value   25000000
+        legal_values    0 to 1000000000
+        description     "Main clock input."
+    }
+
+    cdl_option CYGNUM_HAL_CORTEXM_STM32_FLASH_WAIT_STATES {
+        display         "Flash read wait states"
+        flavor          data
+        default_value   { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") ? 3 : 5 }
+        legal_values    0 to 7
+        description     "
+            This option gives the number of wait states to use for accessing
+            the flash for reads. The correct setting for this value depends
+            on both the CPU clock (HCLK) frequency and the voltage. Consult
+            the STM32 Flash programming manual (PM0059) for appropriate
+            values for different clock speeds or voltages. The default of
+            3 reflects a supply voltage of 3.3V and HCLK of 120MHz."
+    }
+
+    cdl_option CYGHWR_HAL_CORTEXM_STM32_FLASH {
+        display         "Flash driver support"
+        parent          CYGPKG_IO_FLASH
+        active_if       CYGPKG_IO_FLASH
+        compile         -library=libextras.a stm32x0g_eval_flash.c
+        default_value   1
+        description     "Control flash device support for STM32X0G-EVAL board."
+    }
+
+    cdl_component CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL_ETH0 {
+        display       "STM32 Ethernet support"
+        description   "
+            Hardware specifics for the ethernet interface provided on the
+            STM32X0G-EVAL board."
+        parent        CYGPKG_IO_ETH_DRIVERS
+        active_if     CYGPKG_IO_ETH_DRIVERS
+        default_value 1
+        requires      CYGPKG_DEVS_ETH_CORTEXM_STM32
+        requires      { is_active(CYGPKG_DEVS_ETH_PHY) implies
+                         (1 == CYGHWR_DEVS_ETH_PHY_DP83847) }
+        requires        { is_active(CYGHWR_HAL_CORTEXM_STM32X0G_ETH_PHY_CLOCK_MCO) implies \
+                            (CYGHWR_DEVS_ETH_CORTEXM_STM32_PHY_CLK_MCO == CYGHWR_HAL_CORTEXM_STM32X0G_ETH_PHY_CLOCK_MCO) }
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32X0G_ETH_PHY_CLOCK_MCO {
+            display         "Use MCO as PHY clock"
+            default_value   1
+            description     "
+                The STM32X0G can use the MCO clock signals as the 25MHz clock for
+                the PHY, or it can use the onboard 25MHz crystal at X1, depending
+                on the setting of jumper J5. This option should be set to reflect
+                the J5 setting."
+        }
+    }
+    
+    implements CYGINT_HAL_VIRTUAL_VECTOR_VPRINTF
+    
+    # The 9-pin D connector is connected to PC10 and PC11, which are connected to
+    # USART3 or UART4 depending on pin config. The main difference between these
+    # ports is that UART4 doesn't support hardware flow control. This board doesn't
+    # have the flow control lines hooked up anyway, so to save having to fiddle
+    # with ignoring the flow control lines on USART3, we choose to use UART4.
+    # Note that this is UART4 in STM32 speak (counting from 1), but the STM32 port
+    # uses the name UART3 for it (counting from 0). Hrm.
+    implements CYGINT_HAL_STM32_UART3
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+        display      "Number of communication channels on the board"
+        flavor       data
+        calculated   1
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+        display          "Debug serial port"
+        active_if        CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE
+        flavor data
+        calculated       0
+        description      "
+            The ST STM32X0G EVAL board has one serial port. This option
+            informs the rest of the system which port will be used to connect
+            to a host running GDB."
+     }
+
+     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+         display          "Diagnostic serial port"
+         active_if        CYGPRI_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_CONFIGURABLE
+         flavor data
+         calculated       0
+         description      "
+            The ST STM32X0G EVAL has one serial port. This option
+            informs the rest of the system which port will be used for
+            diagnostic output."
+     }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
+        display       "Console serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 115200
+        description   "
+            This option controls the default baud rate used for the
+            console connection.
+            RedBoot usess polling to transfer data over this port and
+            might not be able to keep up with baud rates above the
+            default, particularly when doing XYZmodem downloads. The
+            interrupt-driven device driver is able to handle these
+            baud rates, so any high speed application transfers should
+            use that instead.
+            Note: this should match the value chosen for the GDB port if the
+            diagnostic and GDB port are the same."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
+        display       "GDB serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 115200
+        # Only one channel on this board so:
+        requires      { CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD == CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD }
+        description   "
+            This option controls the default baud rate used for the
+            GDB connection.
+            RedBoot usess polling to transfer data over this port and
+            might not be able to keep up with baud rates above the
+            default, particularly when doing XYZmodem downloads. The
+            interrupt-driven device driver is able to handle these
+            baud rates, so any high speed application transfers should
+            use that instead.
+            Note: this should match the value chosen for the console port if the
+            console and GDB port are the same."
+    }
+
+    cdl_component CYGBLD_GLOBAL_OPTIONS {
+        display "Global build options"
+        flavor  none
+        parent  CYGPKG_NONE
+        description   "
+            Global build options including control over
+            compiler flags, linker flags and choice of toolchain."
+
+
+        cdl_option CYGBLD_GLOBAL_COMMAND_PREFIX {
+            display "Global command prefix"
+            flavor  data
+            no_define
+            default_value { "arm-eabi" }
+            description "
+                This option specifies the command prefix used when
+                invoking the build tools."
+        }
+
+        cdl_option CYGBLD_GLOBAL_CFLAGS {
+            display "Global compiler flags"
+            flavor  data
+            no_define
+            default_value { CYGBLD_GLOBAL_WARNFLAGS . "-mcpu=cortex-m3 -mthumb -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions" }
+            description   "
+                This option controls the global compiler flags which are used to
+                compile all packages by default. Individual packages may define
+                options which override these global flags."
+        }
+
+        cdl_option CYGBLD_GLOBAL_LDFLAGS {
+            display "Global linker flags"
+            flavor  data
+            no_define
+            default_value { "-mcpu=cortex-m3 -mthumb -Wl,--gc-sections -Wl,-static -Wl,-n -g -nostdlib" }
+            description   "
+                This option controls the global linker flags. Individual
+                packages may define options which override these global flags."
+        }
+    }
+
+    cdl_component CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL_OPTIONS {
+        display "STM32X0G HAL build options"
+                flavor  none
+                description   "
+                        Package specific build options including control over
+                        compiler flags used only in building this HAL."
+
+                cdl_option CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL_CFLAGS_ADD {
+                        display "Additional compiler flags"
+                        flavor  data
+                        no_define
+                        default_value { "-Werror" }
+                        description   "
+                                This option modifies the set of compiler flags
+                                for building this HAL. These flags are used
+                                in addition to the set of global flags."
+                        }
+                cdl_option CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL_CFLAGS_REMOVE {
+                        display "Suppressed compiler flags"
+                        flavor  data
+                        no_define
+                        default_value { "" }
+                        description   "
+                                This option modifies the set of compiler flags
+                                for building this HAL. These flags are
+                                removed from the set of global flags if
+                                present."
+                }
+        }
+
+    cdl_option CYGSEM_HAL_ROM_MONITOR {
+        display       "Behave as a ROM monitor"
+        flavor        bool
+        default_value 0
+        parent        CYGPKG_HAL_ROM_MONITOR
+        requires      { CYG_HAL_STARTUP == "ROM" || CYG_HAL_STARTUP == "ROMINT" || CYG_HAL_STARTUP == "JTAG" }
+        requires      { CYGDBG_HAL_CRCTABLE_LOCATION == "ROM" }
+        description   "
+            Enable this option if this program is to be used as a ROM monitor,
+            i.e. applications will be loaded into RAM on the board, and this
+            ROM monitor may process exceptions or interrupts generated from the
+            application. This enables features such as utilizing a separate
+            interrupt stack when exceptions are generated."
+    }
+
+    cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
+         display       "Work with a ROM monitor"
+         flavor        booldata
+         legal_values  { "Generic" "GDB_stubs" }
+         default_value { CYG_HAL_STARTUP == "RAM" ? "GDB_stubs" : 0 }
+         parent        CYGPKG_HAL_ROM_MONITOR
+         requires      { CYG_HAL_STARTUP == "RAM" }
+         description   "
+             Support can be enabled for different varieties of ROM monitor.
+             This support changes various eCos semantics such as the encoding
+             of diagnostic output, or the overriding of hardware interrupt
+             vectors.
+             Firstly there is \"Generic\" support which prevents the HAL
+             from overriding the hardware vectors that it does not use, to
+             instead allow an installed ROM monitor to handle them. This is
+             the most basic support which is likely to be common to most
+             implementations of ROM monitor.
+             \"GDB_stubs\" provides support when GDB stubs are included in
+             the ROM monitor or boot ROM."
+     }
+
+    cdl_component CYGPKG_REDBOOT_HAL_OPTIONS {
+        display       "Redboot HAL options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
+        description   "
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+
+        requires { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F2") implies (CYGBLD_REDBOOT_MAX_MEM_SEGMENTS == 2) }
+        requires { (CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F4") implies (CYGBLD_REDBOOT_MAX_MEM_SEGMENTS == 3) }
+
+        cdl_option CYGBLD_BUILD_REDBOOT_BIN {
+            display       "Build Redboot ROM binary images"
+            active_if     CYGBLD_BUILD_REDBOOT
+            default_value 1
+            no_define
+            description "This option enables the conversion of the Redboot ELF
+                         image to binary image formats suitable for ROM programming."
+
+            make -priority 325 {
+                <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
+                $(OBJCOPY) --strip-debug $< $(@:.bin=.img)
+                $(OBJCOPY) -O srec $< $(@:.bin=.srec)
+                $(OBJCOPY) -O binary $< $@
+            }
+        }
+    }
+
+    cdl_component CYGBLD_HAL_CORTEXM_STM32X0G_EVAL_GDB_STUBS {
+        display "Create StubROM SREC and binary files"
+        active_if CYGBLD_BUILD_COMMON_GDB_STUBS
+        no_define
+        calculated 1
+        requires { CYG_HAL_STARTUP == "ROM" || CYG_HAL_STARTUP == "ROMINT" }
+
+        make -priority 325 {
+                <PREFIX>/bin/stubrom.srec : <PREFIX>/bin/gdb_module.img
+                $(OBJCOPY) -O srec $< $@
+        }
+        make -priority 325 {
+                <PREFIX>/bin/stubrom.bin : <PREFIX>/bin/gdb_module.img
+                $(OBJCOPY) -O binary $< $@
+        }
+
+        description "This component causes the ELF image generated by the
+                     build process to be converted to S-Record and binary
+                     files."
+    }
+}
+
+# EOF hal_cortexm_stm32_stm32x0g_eval.cdl

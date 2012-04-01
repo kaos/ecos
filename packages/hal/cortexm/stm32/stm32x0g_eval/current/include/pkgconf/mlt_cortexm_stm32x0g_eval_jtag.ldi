@@ -1,0 +1,50 @@
+// eCos memory layout
+
+#include <pkgconf/hal.h>
+#include <cyg/infra/cyg_type.inc>
+
+MEMORY
+{
+    sram  : ORIGIN = 0x20000000, LENGTH = 0x00020000-CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+    flash : ORIGIN = 0x08000000, LENGTH = 0x00100000
+    ram   : ORIGIN = 0x64000000, LENGTH = 0x00200000
+#if defined(CYGHWR_HAL_CORTEXM_STM32_FAMILY_F4)
+    ccm   : ORIGIN = 0x10000000, LENGTH = 0x00010000
+#endif // CYGHWR_HAL_CORTEXM_STM32_FAMILY_F4
+}
+
+hal_vsr_table = 0x20000000;
+// 97 or 98 entries in this VSR table depending on the processor family
+#if defined(CYGHWR_HAL_CORTEXM_STM32_FAMILY_F2)
+hal_virtual_vector_table = hal_vsr_table + 97*4;
+#elif defined(CYGHWR_HAL_CORTEXM_STM32_FAMILY_F4)
+hal_virtual_vector_table = hal_vsr_table + 98*4;
+#endif
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
+hal_virtual_vector_table_end = hal_virtual_vector_table + 64*4;
+#else // zero size virtual vector table
+hal_virtual_vector_table_end = hal_virtual_vector_table;
+#endif
+
+// SRAM is 128k.
+hal_startup_stack = 0x20000000 + 1024*128;
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    SECTION_sram (sram, hal_virtual_vector_table_end, LMA_EQ_VMA)
+    SECTION_rom_vectors (ram, 0x64000000, LMA_EQ_VMA)
+    SECTION_RELOCS (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_text (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_fini (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_rodata (ram, ALIGN(0x8), LMA_EQ_VMA)
+    SECTION_rodata1 (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_fixup (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_gcc_except_table (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_eh_frame (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_got (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_data (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+    SECTIONS_END
+}
