@@ -7072,6 +7072,16 @@ package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
         eCos on the ST STM3210E EVAL board."
 }
 
+package CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL {
+	alias		{ "ST STM32x0G-EVAL HAL" hal_cortexm_stm32x0g_eval }
+	directory	hal/cortexm/stm32/stm32x0g_eval
+	script		hal_cortexm_stm32_stm32x0g_eval.cdl
+	hardware
+        description "
+        The stm32x0g_eval HAL package provides the support needed to run
+        eCos on the ST STM3220G-EVAL and STM3240G-EVAL boards."
+}
+
 package CYGPKG_IO_SERIAL_CORTEXM_STM32 {
         alias           { "ST STM32 serial device drivers"
                           devs_serial_cortexm_stm32 stm32_serial_driver }
@@ -7147,6 +7157,38 @@ target stm3210e_eval {
                  }
         description "The stm3210e_eval target provides the packages needed
         to run eCos on the STM3210E EVAL board."
+}
+
+target stm3220g_eval {
+        alias { "ST STM3220G EVAL board" stm3220g }
+        packages { CYGPKG_HAL_CORTEXM
+                   CYGPKG_HAL_CORTEXM_STM32
+                   CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL
+                   CYGPKG_DEVS_FLASH_STM32
+                   CYGPKG_IO_SERIAL_CORTEXM_STM32
+                   CYGPKG_IO_SPI
+                   CYGPKG_DEVS_SPI_CORTEXM_STM32
+                 }
+        set_value CYGHWR_HAL_CORTEXM_STM32_FAMILY "F2"
+        set_value CYGHWR_HAL_CORTEXM_STM32_F2 "F207IG"
+        description "The stm3220g_eval target provides the packages needed
+        to run eCos on the STM3220G EVAL board."
+}
+
+target stm3240g_eval {
+        alias { "ST STM3240G EVAL board" stm3240g }
+        packages { CYGPKG_HAL_CORTEXM
+                   CYGPKG_HAL_CORTEXM_STM32
+                   CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL
+                   CYGPKG_DEVS_FLASH_STM32
+                   CYGPKG_IO_SERIAL_CORTEXM_STM32
+                   CYGPKG_IO_SPI
+                   CYGPKG_DEVS_SPI_CORTEXM_STM32
+                 }
+        set_value CYGHWR_HAL_CORTEXM_STM32_FAMILY "F4"
+        set_value CYGHWR_HAL_CORTEXM_STM32_F4 "F407IG"
+        description "The stm3240g_eval target provides the packages needed
+        to run eCos on the STM3240G-EVAL board."
 }
 
 target ek-lm3s811 {

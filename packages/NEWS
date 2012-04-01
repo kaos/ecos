@@ -1,3 +1,6 @@
+* Cortex-M STM32 F2 processor support with board support for STM3220G-EVAL
+  and STM3240G-EVAL, along with many STM32 improvements. Contributed
+  by eCosCentric Limited.
 * Freescale KwikStik platform HAL by Tomas Frydrych.
 * Actel SmartFusion variant HAL and BSP by Christophe Coutand.
 * Freescale Kinetis variant HAL and BSP for TWR-K60N512 and TWR-K40X256
