@@ -1,7 +1,35 @@
+2011-12-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/ser_cortexm_stm32.cdl: Default baud rates to the HAL
+	diag console channel. Add support for serial port 5
+	(USART6 in STM32 speak). Select serial/tty test devices better
+	according to the configuration.
+	* src/stm32_serial.c: Support serial port 5. Make use of AFIO
+	remap specific to F1 processors.
+
 2010-12-31  John Dallaway  <john@dallaway.org.uk>
 
 	* src/stm32_serial.c, src/stm32_serial.h: Set the M bit when
 	configuring for 8 data bits + parity bit. [ Bugzilla 1001068 ]
+
+2009-12-03  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/ser_cortexm_stm32.cdl:
+	* src/stm32_serial.c (stm32_serial_info, stm32_serial_info0)
+	(stm32_serial_info1, stm32_serial_info2, stm32_serial_info3)
+	(stm32_serial_info4, stm32_serial_init):
+	Add configuration options to set serial ISR interrupt priorities.
+
+2009-07-02  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/stm32_serial.c (stm32_serial_info)
+	(stm32_serial_config_port): Add support for UART pin remap.
+
+2009-06-29  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/stm32_serial.c (stm32_serial_info)
+	(stm32_serial_config_port): Add support for individual clock
+	enable on each UART.
 
 2008-10-07  Nick Garnett  <nickg@ecoscentric.com>
 
@@ -15,7 +43,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008, 2010 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

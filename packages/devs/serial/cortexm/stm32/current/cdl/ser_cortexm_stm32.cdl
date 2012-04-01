@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2008 Free Software Foundation, Inc.                        
+## Copyright (C) 2008, 2011 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -91,7 +91,7 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL0 {
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
                       4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
-        default_value { 38400 }
+        default_value { CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD }
         description   "
             This option specifies the default baud rate (speed) for the 
             ST STM32 port 0."
@@ -105,6 +105,13 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL0 {
         description   "
             This option specifies the size of the internal buffers used 
             for the ST STM32 port 0."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_CORTEXM_STM32_SERIAL0_INT_PRI {
+        display       "Interrupt priority for STM32 serial port 0"
+        flavor        data
+        default_value 128
+        legal_values  0 to 255
     }
 }
 
@@ -131,7 +138,7 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL1 {
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
                       4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
-        default_value 38400
+        default_value CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
         description   "
             This option specifies the default baud rate (speed) for the
             ST STM32 port 1."
@@ -145,6 +152,13 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL1 {
         description   "
             This option specifies the size of the internal buffers used 
             for the ST STM32 port 1."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_CORTEXM_STM32_SERIAL1_INT_PRI {
+        display       "Interrupt priority for STM32 serial port 1"
+        flavor        data
+        default_value 128
+        legal_values  0 to 255
     }
 }
 
@@ -171,7 +185,7 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL2 {
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
                       4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
-        default_value 38400
+        default_value CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
         description   "
             This option specifies the default baud rate (speed) for the
             ST STM32 port 2."
@@ -185,6 +199,13 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL2 {
         description   "
             This option specifies the size of the internal buffers used 
             for the ST STM32 port 2."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_CORTEXM_STM32_SERIAL2_INT_PRI {
+        display       "Interrupt priority for STM32 serial port 2"
+        flavor        data
+        default_value 128
+        legal_values  0 to 255
     }
 }
 
@@ -211,7 +232,7 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL3 {
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
                       4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
-        default_value 38400
+        default_value CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
         description   "
             This option specifies the default baud rate (speed) for the
             ST STM32 port 3."
@@ -225,6 +246,13 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL3 {
         description   "
             This option specifies the size of the internal buffers used 
             for the ST STM32 port 3."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_CORTEXM_STM32_SERIAL3_INT_PRI {
+        display       "Interrupt priority for STM32 serial port 3"
+        flavor        data
+        default_value 128
+        legal_values  0 to 255
     }
 }
 
@@ -251,7 +279,7 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL4 {
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
                       4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
-        default_value 38400
+        default_value CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
         description   "
             This option specifies the default baud rate (speed) for the
             ST STM32 port 4."
@@ -265,6 +293,60 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL4 {
         description   "
             This option specifies the size of the internal buffers used 
             for the ST STM32 port 4."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_CORTEXM_STM32_SERIAL4_INT_PRI {
+        display       "Interrupt priority for STM32 serial port 4"
+        flavor        data
+        default_value 128
+        legal_values  0 to 255
+    }
+}
+
+cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL5 {
+    display       "ST STM32 serial port 5 driver"
+    flavor        bool
+    default_value CYGINT_HAL_STM32_UART5>0
+    description   "
+        This option includes the serial device driver for the ST STM32 
+        port 5."
+
+    cdl_option CYGDAT_IO_SERIAL_CORTEXM_STM32_SERIAL5_NAME {
+        display       "Device name for ST STM32 serial port 5 driver"
+        flavor        data
+        default_value {"\"/dev/ser5\""}
+        description   "
+            This option specifies the name of the serial device for the 
+            ST STM32 port 5."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_CORTEXM_STM32_SERIAL5_BAUD {
+        display       "Baud rate for the ST STM32 serial port 5 driver"
+        flavor        data
+        legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
+                      4800 7200 9600 14400 19200 38400 57600 115200 230400
+        }
+        default_value CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
+        description   "
+            This option specifies the default baud rate (speed) for the
+            ST STM32 port 5."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_CORTEXM_STM32_SERIAL5_BUFSIZE {
+        display       "Buffer size for the ST STM32 serial port 5 driver"
+        flavor        data
+        legal_values  0 to 8192
+        default_value 128
+        description   "
+            This option specifies the size of the internal buffers used 
+            for the ST STM32 port 5."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_CORTEXM_STM32_SERIAL5_INT_PRI {
+        display       "Interrupt priority for STM32 serial port 5"
+        flavor        data
+        default_value 128
+        legal_values  0 to 255
     }
 }
 
@@ -312,13 +394,23 @@ cdl_component CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL4 {
         cdl_option CYGPRI_SER_TEST_SER_DEV {
             display       "Serial device used for testing"
             flavor        data
-            default_value { "\"/dev/ser1\"" }
+            default_value { CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL0 ? CYGDAT_IO_SERIAL_CORTEXM_STM32_SERIAL0_NAME : \
+                            CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL1 ? CYGDAT_IO_SERIAL_CORTEXM_STM32_SERIAL1_NAME : \
+                            CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL2 ? CYGDAT_IO_SERIAL_CORTEXM_STM32_SERIAL2_NAME : \
+                            CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL3 ? CYGDAT_IO_SERIAL_CORTEXM_STM32_SERIAL3_NAME : \
+                            CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL4 ? CYGDAT_IO_SERIAL_CORTEXM_STM32_SERIAL4_NAME : \
+                            CYGDAT_IO_SERIAL_CORTEXM_STM32_SERIAL5_NAME }
         }
 
         cdl_option CYGPRI_SER_TEST_TTY_DEV {
             display       "TTY-mode serial device used for testing"
             flavor        data
-            default_value { "\"/dev/tty1\"" }
+            default_value { CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL0 ? "\"/dev/tty0\"" : \
+                            CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL1 ? "\"/dev/tty1\"" : \
+                            CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL2 ? "\"/dev/tty2\"" : \
+                            CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL3 ? "\"/dev/tty3\"" : \
+                            CYGPKG_IO_SERIAL_CORTEXM_STM32_SERIAL4 ? "\"/dev/tty4\"" : \
+                            "\"/dev/tty5\"" }
         }
 
         define_proc {

@@ -54,6 +54,16 @@
 #include <cyg/hal/hal_io.h>  // Register definitions
 
 // ====================================================================
+// Translate system word length selector into local values.
+
+static cyg_uint32 select_word_length[] = {
+    0,
+    0,
+    0,
+    CYGHWR_HAL_STM32_UART_CR1_M_8
+};
+
+// ====================================================================
 // Translate system stop bit selector into control register bits.
 
 static cyg_uint32 select_stop_bits[] = {
