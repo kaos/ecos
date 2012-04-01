@@ -129,6 +129,10 @@ Cyg_WallClock::init_hw_seconds(void)
     cyg_uint32 bdcr, csr;
     cyg_uint32 prescaler = CYGHWR_DEVS_WALLCLOCK_STM32_CLOCK - 1;
     
+    // Enable backup domain and power control
+    CYGHWR_HAL_STM32_CLOCK_ENABLE( CYGHWR_HAL_STM32_CLOCK_BKP );
+    CYGHWR_HAL_STM32_CLOCK_ENABLE( CYGHWR_HAL_STM32_CLOCK_PWR );
+    
     // Reset the backup domain if clock source does not match as
     // RTCSEL can only be written to backup domain once
     HAL_READ_UINT32( rcc+CYGHWR_HAL_STM32_RCC_BDCR, bdcr );

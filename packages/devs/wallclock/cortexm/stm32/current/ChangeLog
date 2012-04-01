@@ -1,3 +1,13 @@
+2012-01-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/wallclock_stm32.cdl: Ensure this driver is only active for F1
+	parts.
+
+2009-06-29  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/stm32_wallclock.cxx (Cyg_WallClock::init_hw_seconds): Add
+	enables for clocks of devices used by this device.
+
 2008-11-12  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* src/stm32_wallclock.cxx: Using new CYGHWR_HAL_STM32_BD_PROTECT

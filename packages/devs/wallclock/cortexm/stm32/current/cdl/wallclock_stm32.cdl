@@ -50,12 +50,12 @@
 cdl_package CYGPKG_DEVS_WALLCLOCK_STM32 {
     display       "STM32 RTC wallclock support"
     description   "
-        Wallclock support for on-chip RTC on STM32 devices.driver for the
-        STM32 controller and compatibles"
+        Wallclock support for on-chip RTC on STM32 devices."
 
     parent        CYGPKG_IO_WALLCLOCK
     active_if     CYGPKG_IO_WALLCLOCK
     active_if     CYGPKG_HAL_CORTEXM_STM32
+    active_if     { CYGHWR_HAL_CORTEXM_STM32_FAMILY == "F1" }
 
     compile       stm32_wallclock.cxx
 
@@ -77,3 +77,5 @@ cdl_package CYGPKG_DEVS_WALLCLOCK_STM32 {
         legal_values        { "LSE" "LSI" "HSE_128" }
     }
 }
+
+# End of wallclock_stm32.cdl
