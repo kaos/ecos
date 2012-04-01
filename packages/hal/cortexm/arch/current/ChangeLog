@@ -3,6 +3,11 @@
     * include/hal_intr.h: Fix compiler warning about unused variables.
     [Bugzilla 1001520]
 
+2012-02-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/hal_misc.c (hal_reset_vsr): Ensure we only init intr vectors
+	up to top of VSR table.
+
 2011-08-23  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/hal_cortexm.cdl: New CDL option CYGIMP_HAL_ARCH_ENDIAN

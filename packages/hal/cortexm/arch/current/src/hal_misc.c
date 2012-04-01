@@ -152,7 +152,7 @@ void hal_reset_vsr( void )
 
         // For all startup type, redirect interrupt vectors to our VSR.
         for( i = CYGNUM_HAL_VECTOR_SYS_TICK ;
-             i < CYGNUM_HAL_VECTOR_SYS_TICK + CYGNUM_HAL_VSR_MAX;
+             i < CYGNUM_HAL_VSR_MAX;
              i++ )
             hal_vsr_table[i] = (CYG_ADDRESS)hal_default_interrupt_vsr;
     }
