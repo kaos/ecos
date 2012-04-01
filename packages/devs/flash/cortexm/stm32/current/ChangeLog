@@ -1,3 +1,33 @@
+2012-03-15  James Smith  <jsmith@ecoscentric.com>
+
+	* src/stm32_flash.c: Add support for F4 family devices, and
+	explicit flash size support for specific F4xxx[EG] devices.
+
+	* include/stm32_flash.h:
+	* cdl/flash_stm32.cdl (CYGNUM_DEVS_FLASH_STM32_PARALLELISM):
+	Support for F4 devices.
+
+2012-02-29  James Smith  <jsmith@ecoscentric.com>
+
+	* src/stm32_flash.c (stm32_flash_hw_program): Compilation fixes to
+	use renamed WAIT_FOR_FLASH_NOT_BUSY macro and to add missing
+	semi-colon
+
+2011-12-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/flash_stm32.cdl (CYGNUM_DEVS_FLASH_STM32_PARALLELISM): New
+	option. Configures program/erase width on F2 processors.
+	* include/stm32_flash.h: Make private device driver data const - it
+	doesn't change so shouldn't be in RAM. Support multiple flash regions
+	for F2.
+	* src/stm32_flash.c: Substantial changes to support F2 processors.
+	Also improve error checking, timeout detection and general robustness.
+
+2009-07-03  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/stm32_flash.c (stm32_flash_init): Add tests for connectivity
+	line devices.
+
 2009-04-06  Simon Kallweit  <simon.kallweit@intefo.ch>
 
 	* src/stm32_flash.c:
@@ -27,7 +57,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
