@@ -310,6 +310,7 @@ static inline void a2fxxx_spi_set_ss
             ss = CYGHWR_HAL_A2FXXX_SPI0_SS3;
         } else {
             CYG_ASSERT (ss < 4, "SPI : SPI0 SS out of range.");
+            return;
         }
     }
     else {
@@ -331,6 +332,7 @@ static inline void a2fxxx_spi_set_ss
             ss = CYGHWR_HAL_A2FXXX_SPI1_SS7;
         } else {
             CYG_ASSERT (ss < 8, "SPI : SPI1 SS out of range.");
+            return;
         }
     }
 

@@ -1,10 +1,14 @@
+2012-01-04  Christophe Coutand  <ecos@hotmail.co.uk>
+	* src/spi_a2fxxx.c:
+	Fix compiler warning, used uninitialized variable in a2fxxx_spi_set_ss().
+
 2011-04-13  Christophe Coutand  <ecos@hotmail.co.uk>
 
-    * cdl/spi_a2fxxx.cdl:
-    * include/spi_a2fxxx.h:
-    * src/spi_a2fxxx.c:
-    New package -- Smartfusion Cortex-M3 SPI driver package.
-    [Bugzilla 1001291]
+	* cdl/spi_a2fxxx.cdl:
+	* include/spi_a2fxxx.h:
+	* src/spi_a2fxxx.c:
+	New package -- Smartfusion Cortex-M3 SPI driver package.
+	[Bugzilla 1001291]
 
 //===========================================================================
 // ####GPLCOPYRIGHTBEGIN####                                                
