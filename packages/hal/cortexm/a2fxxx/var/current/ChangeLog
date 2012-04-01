@@ -1,3 +1,7 @@
+2012-01-04  Christophe Coutand  <ecos@hotmail.co.uk>
+	* src/hal_dma.c:
+	Fix compiler warning, unused variable in a2fxxx_dma_isr().
+
 2011-06-26  Christophe Coutand  <ecos@hotmail.co.uk>
 
 	* cdl/hal_cortexm_a2fxxx.cdl:

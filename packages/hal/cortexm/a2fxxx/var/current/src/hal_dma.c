@@ -77,6 +77,7 @@
 typedef struct a2fxxx_dma_ch {
     cyg_ISR_t*      isr;
     cyg_DSR_t*      dsr;
+    cyg_uint32      isr_ret;
     cyg_addrword_t  data;
 } a2fxxx_dma_ch;
 
@@ -103,7 +104,7 @@ static cyg_uint32
 a2fxxx_dma_isr (cyg_vector_t vector, cyg_addrword_t data)
 {
     a2fxxx_dma_info *dma = (a2fxxx_dma_info *) data;
-    cyg_uint32 res = 0, sr = 0;
+    cyg_uint32 sr = 0;
     cyg_uint8 i = 0, j = 0;
 
     HAL_READ_UINT32(dma->base + CYGHWR_HAL_A2FXXX_DMA_BUFFER_STATUS, sr);
@@ -115,7 +116,7 @@ a2fxxx_dma_isr (cyg_vector_t vector, cyg_addrword_t data)
         if( sr & 0x1 ){
             j = i >> 1;
             if(dma->ch[j].isr != NULL){
-                res = dma->ch[j].isr(i, dma->ch[j].data);
+              dma->ch[j].isr_ret = dma->ch[j].isr(i, dma->ch[j].data);
             }
         }
         sr = sr >> 1; i++;
@@ -144,7 +145,8 @@ a2fxxx_dma_dsr (cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     while(i < 16){
         if( sr & 0x1 ){
             j = i >> 1;
-            if(dma->ch[j].dsr != NULL){
+            if( (dma->ch[j].dsr != NULL) &&
+                           (dma->ch[j].isr_ret & CYG_ISR_CALL_DSR) ){
                 dma->ch[j].dsr(i, 0, dma->ch[j].data);
             }
         }
