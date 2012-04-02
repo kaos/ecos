@@ -1,3 +1,9 @@
+2012-04-02  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/stm32_serial.h: Revert unnecessary change in previous
+	commit, reinstating previous code.
+	* src/stm32_serial.c (stm32_serial_config_port): Ditto.
+
 2011-12-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/ser_cortexm_stm32.cdl: Default baud rates to the HAL

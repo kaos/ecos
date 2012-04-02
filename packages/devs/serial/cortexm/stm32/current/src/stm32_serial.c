@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 1998-2002, 2004-2006, 2008-2012 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -507,7 +507,7 @@ stm32_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, bo
     cyg_uint32 parity = select_parity[new_config->parity];
     cyg_uint32 word_length = ((new_config->word_length == CYGNUM_SERIAL_WORD_LENGTH_8) &&
         (new_config->parity != CYGNUM_SERIAL_PARITY_NONE)) ?
-        CYGHWR_HAL_STM32_UART_CR1_M_9 : select_word_length[new_config->word_length-CYGNUM_SERIAL_WORD_LENGTH_5];
+        CYGHWR_HAL_STM32_UART_CR1_M_9 : CYGHWR_HAL_STM32_UART_CR1_M_8;
     cyg_uint32 stop_bits = select_stop_bits[new_config->stop];
     cyg_uint32 cr1 = 0;
     cyg_uint32 cr2 = 0;
