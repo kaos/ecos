@@ -1,3 +1,8 @@
+2012-02-07  Bernard Fouché <bernard.fouche@kuantic.com>
+
+	* src/ser_16x5x.c (serial_config_port): Clear potential Overrun Error
+	condition at init by always reading RHR.
+
 2009-02-17  Rene Schipp von Branitz Nielsen <rbn@vitesse.com>
 
 	* src/ser_16x5x.c:

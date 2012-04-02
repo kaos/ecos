@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2006, 2012 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -332,6 +332,8 @@ serial_config_port(serial_channel *chan,
               CYGNUM_IO_SERIAL_GENERIC_16X5X_FIFO_TX_SIZE;
             // Enable and clear FIFO
             HAL_WRITE_UINT8(base+REG_fcr, _fcr_thresh); 
+            // Read RHR to clear potential Overrun Error
+            HAL_READ_UINT8(base+REG_rhr, b);
         }
         else {
             ser_chan->tx_fifo_size = 1;
