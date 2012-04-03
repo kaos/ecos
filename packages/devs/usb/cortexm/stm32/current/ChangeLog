@@ -1,3 +1,9 @@
+2012-04-03  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/usb_stm32.c (cyg_usbs_cortexm_stm32_init):
+	CYGHWR_HAL_STM32_RCC_APB1ENR_CAN was renamed to
+	CYGHWR_HAL_STM32_RCC_APB1ENR_CAN1 in variant HAL.
+
 2010-10-27  Chris Holgate  <chris@zynaptic.com>
 
 	* src/usb_stm32.c, include/usb_stm32.h, cdl/usb_stm32.cdl: New

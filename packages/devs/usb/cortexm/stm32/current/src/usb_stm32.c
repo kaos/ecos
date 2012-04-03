@@ -2230,7 +2230,7 @@ static void CYGBLD_ATTRIB_C_INIT_PRI(CYG_INIT_DEV_CHAR) cyg_usbs_cortexm_stm32_i
   // TODO: If a CAN driver is to be added to the standard distribution, this
   // should check for USB/CAN configuration clashes.
   HAL_READ_UINT32 (CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_APB1ENR, reg_data);
-  reg_data &= ~((cyg_uint32) CYGHWR_HAL_STM32_RCC_APB1ENR_CAN);
+  reg_data &= ~((cyg_uint32) CYGHWR_HAL_STM32_RCC_APB1ENR_CAN1);
   HAL_WRITE_UINT32 (CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_APB1ENR, reg_data);
   
   // Configure the IO pins for USB operation.
