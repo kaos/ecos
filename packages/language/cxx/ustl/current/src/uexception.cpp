@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #include "uexception.h"
@@ -10,8 +10,9 @@
 #include "strmsize.h"
 #include "uspecial.h"
 #include <errno.h>
+
 #if HAVE_CXXABI_H && WANT_NAME_DEMANGLING
-    #include <cxxabi.h>
+extern "C" char* __cxa_demangle (const char* mangled_name, char* output_buffer, size_t* length, int* status);
 #endif
 
 namespace ustl {
@@ -212,7 +213,7 @@ const char* demangle_type_name (char* buf, size_t bufSize, size_t* pdmSize)
     char dmname [256];
     size_t sz = VectorSize(dmname);
     int bFailed;
-    abi::__cxa_demangle (buf, dmname, &sz, &bFailed);
+    __cxa_demangle (buf, dmname, &sz, &bFailed);
     if (!bFailed) {
 	bl = min (strlen (dmname), bufSize - 1);
 	memcpy (buf, dmname, bl);

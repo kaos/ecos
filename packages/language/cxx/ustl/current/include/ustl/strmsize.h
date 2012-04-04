@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 //
 /// \file strmsize.h
@@ -27,6 +27,20 @@ inline streamsize stream_size_of (const T& v) {
 	integral_object_stream_size<T>, object_stream_size<T> >::Result stream_sizer_t;
     return (stream_sizer_t()(v));
 }
+
+/// \brief Returns the recommended stream alignment for type \p T. Override with ALIGNOF.
+/// Because this is occasionally called with a null value, do not access the argument!
+template <typename T>
+inline size_t stream_align_of (const T&)
+{
+    if (numeric_limits<T>::is_integral)
+	return (__alignof__(T));
+    return (4);
+}
+
+#define ALIGNOF(type,grain)	\
+namespace ustl {		\
+    template <> inline size_t stream_align_of (const type&) { return (grain); } }
 
 } // namespace ustl
 

@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 //
 /// \file uiterator.h
@@ -125,7 +125,7 @@ public:
     				    { m_ip = m_rCtr.insert (m_ip, v); return (*this); }
     inline insert_iterator&	operator* (void)  { return (*this); }
     inline insert_iterator&	operator++ (void) { ++ m_ip; return (*this); }
-    inline insert_iterator	operator++ (int)  { insert_iterator prev (*this); ++ m_ip; return (*this); }
+    inline insert_iterator	operator++ (int)  { insert_iterator prev (*this); ++m_ip; return (prev); }
 protected:
     Container&			m_rCtr;
     iterator			m_ip;

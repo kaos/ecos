@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #include "stdtest.h"
@@ -45,10 +45,7 @@ void TestString (void)
     s2 = "World";
     s3 = s1 + s2;
     cout << s3 << endl;
-    s3 = "Concatenated ";
-    s3 += s1.c_str();
-    s3 += s2;
-    s3 += " string.";
+    s3 = "Concatenated " + s1 + s2 + " string.";
     cout << s3 << endl;
 
     if (s1 < s2)

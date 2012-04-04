@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #include "mistream.h"
@@ -19,17 +19,7 @@ void memlink::read (istream& is)
 	USTL_THROW(length_error ("memlink can not increase the size of the linked storage for reading"));
     resize (n);
     is.read (data(), n);
-    is.align (alignof (n));
-}
-
-/// Copies data from \p p, \p n to the linked block starting at \p start.
-void memlink::copy (iterator start, const void* p, size_type n)
-{
-    assert (data() || !n);
-    assert (p || !n);
-    assert (start >= begin() && start + n <= end());
-    if (p)
-	copy_n (const_iterator(p), n, start);
+    is.align (stream_align_of (n));
 }
 
 /// Fills the linked block with the given pattern.

@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef MISTREAM_H_103AEF1F266C04AA1A817D38705983DA
@@ -13,7 +13,7 @@
 #include "uios.h"
 #include "config.h"
 #if WANT_STREAM_BOUNDS_CHECKING
-    #include <typeinfo>
+    #include "typeinfo.h"
 #endif
 
 namespace ustl {
@@ -257,7 +257,7 @@ inline void istream::align (streamsize grain)
 template <typename T>
 inline void istream::iread (T& v)
 {
-    assert (aligned (alignof (v)));
+    assert (aligned (stream_align_of (v)));
 #if WANT_STREAM_BOUNDS_CHECKING
     if (!verify_remaining ("read", USTL_TYPENAME(v), sizeof(T)))
 	return;

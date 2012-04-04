@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #include "mistream.h"
@@ -73,7 +73,7 @@ void memblock::assign (const void* p, size_type n)
 {
     assert ((p != (const void*) cdata() || size() == n) && "Self-assignment can not resize");
     resize (n);
-    copy (p, n);
+    copy_n (pointer(p), n, begin());
 }
 
 /// \brief Reallocates internal block to hold at least \p newSize bytes.
@@ -132,7 +132,7 @@ void memblock::read (istream& is)
 	return;
     resize (n);
     is.read (data(), writable_size());
-    is.align (alignof (n));
+    is.align (stream_align_of (n));
 }
 
 #ifdef CYGCLS_USTL_FSTREAMS

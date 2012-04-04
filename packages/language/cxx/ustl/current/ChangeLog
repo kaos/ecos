@@ -1,3 +1,11 @@
+2012-03-24  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* include/*:
+	* src/*:
+	* tests/*:
+	* HISTORY:
+	* LICENSE: Updated to uSTL 1.6 sources.
+
 2011-11-21  John Dallaway  <john@dallaway.org.uk>
 
 	* include/ustl/ustring.h: Fix incorrect behaviour of iat when passed

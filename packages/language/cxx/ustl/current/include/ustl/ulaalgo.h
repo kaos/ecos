@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef ULAALGO_H_2E403D182E83FB596AFB800E68B255A1
@@ -204,8 +204,7 @@ static tuple<4,float> operator* (const tuple<4,float>& t, const matrix<4,4,float
 #else	// If no processor extensions, just unroll the multiplication
 
 /// Specialization for 4-component vector transform, the slow part of 3D graphics.
-template <>
-static tuple<4,float> operator* (const tuple<4,float>& t, const matrix<4,4,float>& m)
+template <> inline tuple<4,float> operator* (const tuple<4,float>& t, const matrix<4,4,float>& m)
 {
     tuple<4,float> tr;
     for (uoff_t i = 0; i < 4; ++ i)

@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef USTRING_H_1249CB7A098A9010763AAC6D37B133CF
@@ -142,7 +142,7 @@ public:
     inline void			insert (uoff_t ip, size_type n, value_type c)			{ insert (iat(ip), c, n); }
     inline void			insert (uoff_t ip, const string& s, uoff_t sp, size_type slen)	{ insert (iat(ip), s.iat(sp), s.iat(sp + slen)); }
     iterator			erase (iterator epo, size_type n = 1);
-    void			erase (uoff_t epo, size_type n = 1);
+    void			erase (uoff_t epo = 0, size_type n = 1);
     inline iterator		erase (iterator first, const_iterator last)	{ return (erase (first, size_type(distance(first,last)))); }
     inline void			eraser (uoff_t first, uoff_t last)		{ erase (iat(first), iat(last)); }
     inline void			push_back (const_reference c)	{ append (1, c); }
@@ -251,6 +251,8 @@ PTR_STRING_CMP (operator>,  (s2 <  s1))
 PTR_STRING_CMP (operator>=, (s2 <= s1))
 #undef PTR_STRING_CMP
 
+inline string operator+ (const char* cs, const string& ss) { string r; r.reserve (strlen(cs)+ss.size()); r += cs; r += ss; return (r); }
+
 //----------------------------------------------------------------------
 
 inline hashvalue_t hash_value (const char* first, const char* last)
@@ -261,8 +263,5 @@ inline hashvalue_t hash_value (const char* v)
 //----------------------------------------------------------------------
 
 } // namespace ustl
-
-// Specialization for stream alignment
-ALIGNOF (ustl::string, alignof (string::value_type()))
 
 #endif

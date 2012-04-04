@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2006-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2006 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef BKTRACE_H_63ABB1E4388CEDD975DBE58B57DE474F
@@ -46,7 +46,5 @@ private:
 };
 
 } // namespace ustl
-
-ALIGNOF(ustl::CBacktrace, sizeof(void*))
 
 #endif

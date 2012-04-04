@@ -1,3 +1,24 @@
+2012-02-18 Release 1.6
+	* Fixed compilation with c++0x
+	alignof is a keyword in c++0x, so the stream version usually not needed now.
+	On the other hand, alignof can not be overloaded, so stream_align_of is the
+	new name for the old alignof. Most code should not require changes due to this.
+	* Fix iat in string, which did not handle npos argument correctly, sometimes
+	resulting in failures of other functions using it, like substr.
+
+2011-03-16 Release 1.5
+	* Updated set, map, and multimap with full set of insert, erase, and search overloads
+	* Added public lower_bound, upper_bound, and equal_range to map, as per standard
+	* Added comparator parameter to set, multiset, map, and multimap.
+	* Implemented FirstBit, Rol, Ror, and a generic NextPow2
+	* Remove memlink copy because it conflicts with string copy
+	* Operators returning a new value should be const
+	* Added char* + string operator, and a noarg erase
+	* Added --force-inline configure option
+	* Removed all references to stdc++ headers when not using libstdc++
+	* Fixed minor glitches compiling with clang++
+	* Other small fixes
+
 2010-03-21 Release 1.4
 	* Fixed crash in destructor of empty vector, introduced by 1.3
 	* Fixed list merge, which previously did not compile

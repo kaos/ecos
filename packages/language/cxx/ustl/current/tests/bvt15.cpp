@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #include "stdtest.h"
@@ -27,10 +27,10 @@ void TestMultiMap (void)
     employees.insert (make_pair (47000, string("Barbara"))); 
     employees.insert (make_pair (47000, string("Mary"))); 
 
-    cout << "As-inserted listing:" << endl;
+    cout << "As-inserted listing:\n";
     PrintEntries (employees);
 
-    cout << "Alphabetical listing:" << endl;
+    cout << "Alphabetical listing:\n";
     sort (employees);
     PrintEntries (employees);
 
@@ -41,13 +41,15 @@ void TestMultiMap (void)
 	cout << " " << i->second;
     cout << endl;
 
-    cout << "There are " << employees.count (27000) << " low-paid employees" << endl;
+    cout << employees.find(27000)->second << " makes $27000\n";
 
-    cout << "Firing all low-paid employees:" << endl;
+    cout << "There are " << employees.count (27000) << " low-paid employees\n";
+
+    cout << "Firing all low-paid employees:\n";
     employees.erase (27000);
     PrintEntries (employees);
 
-    cout << "Firing dumb employees:" << endl;
+    cout << "Firing dumb employees:\n";
     employees.erase (employees.begin(), employees.begin() + 1);
     PrintEntries (employees);
 }

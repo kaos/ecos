@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef UIOSFUNC_H_730C16E316F7650E3A02E1C6611B789A
@@ -36,7 +36,7 @@ public:
     template <typename T>
     class talign : public align {
     public:
-	inline explicit		talign (void) : align (alignof (NullValue<T>())) {}
+	inline explicit		talign (void) : align (stream_align_of (NullValue<T>())) {}
     };
 
     /// \class skip uiosfunc.h ustl.h

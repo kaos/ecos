@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #include "cmemlink.h"
@@ -40,7 +40,7 @@ void cmemlink::write (ostream& os) const
     assert (sz == size() && "No support for writing memblocks larger than 4G");
     os << sz;
     os.write (cdata(), sz);
-    os.align (alignof (sz));
+    os.align (stream_align_of (sz));
 }
 
 /// Writes the object to stream \p os
@@ -53,7 +53,7 @@ void cmemlink::text_write (ostringstream& os) const
 cmemlink::size_type cmemlink::stream_size (void) const
 {
     const written_size_type sz (size());
-    return (Align (stream_size_of (sz) + sz, alignof(sz)));
+    return (Align (stream_size_of (sz) + sz, stream_align_of(sz)));
 }
 
 #ifdef CYGCLS_USTL_FSTREAMS

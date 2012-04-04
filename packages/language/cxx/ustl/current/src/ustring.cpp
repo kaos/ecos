@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #include "ustring.h"
@@ -68,7 +68,7 @@ void string::assign (const_pointer s, size_type len)
     while (len && s[len - 1] == 0)
 	-- len;
     resize (len);
-    copy (s, len);
+    copy_n (s, len, begin());
 }
 
 /// Appends to itself the value of string \p s of length \p len.
@@ -235,7 +235,7 @@ void string::replace (iterator first, iterator last, const_pointer i1, const_poi
 uoff_t string::find (const_reference c, uoff_t pos) const
 {
     const_iterator found = ::ustl::find (iat(pos), end(), c);
-    return (found < end() ? distance(begin(),found) : npos);
+    return (found < end() ? (uoff_t) distance(begin(),found) : npos);
 }
 
 /// Returns the offset of the first occurence of substring \p s of length \p n after \p pos.
@@ -274,7 +274,7 @@ uoff_t string::rfind (const string& s, uoff_t pos) const
 	for (i = 0; size_type(i) < s.size(); ++ i)
 	    if (m[-i] != d[-i])
 		break;
-    return (d > sp ? distance (begin(), d + 2 - s.size()) : npos);
+    return (d > sp ? (uoff_t) distance (begin(), d + 2 - s.size()) : npos);
 }
 
 /// Returns the offset of the first occurence of one of characters in \p s of size \p n after \p pos.

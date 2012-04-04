@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2007-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2007 by Mike Sharov <msharov@users.sourceforge.net>
 //
 // This implementation is adapted from the Loki library, distributed under
 // the MIT license with Copyright (c) 2001 by Andrei Alexandrescu.
@@ -38,7 +38,8 @@ struct IsSameType<T,T> { enum { value = true }; };
 /// Conversion<T,U>::exists2Way is true if U is also convertible to T
 /// Conversion<T,U>::sameType is true if U is T
 template <typename T, typename U>
-class Conversion {
+struct Conversion {
+private:
     typedef char UT;
     typedef short TT;
     static UT Test (U);

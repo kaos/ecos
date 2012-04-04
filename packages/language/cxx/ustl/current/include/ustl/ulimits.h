@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef ULIMITS_H_1C2192EA3821E0811BBAF86B0F048364
@@ -84,20 +84,6 @@ _NUMERIC_LIMITS (unsigned long long,	0,	ULLONG_MAX,	false,	true,	true);
 /// Macro for defining numeric_limits specializations
 #define NUMERIC_LIMITS(type, minVal, maxVal, bSigned, bInteger, bIntegral)	\
 namespace ustl { _NUMERIC_LIMITS (type, minVal, maxVal, bSigned, bInteger, bIntegral); }
-
-/// \brief Returns the recommended stream alignment for type \p T. Override with ALIGNOF.
-/// Because this is occasionally called with a null value, do not access the argument!
-template <typename T>
-inline size_t alignof (const T&)
-{
-    if (numeric_limits<T>::is_integral)
-	return (__alignof__(T));
-    return (4);
-}
-
-#define ALIGNOF(type,grain)	\
-namespace ustl {		\
-    template <> inline size_t alignof (const type&) { return (grain); } }
 
 } // namespace ustl
 

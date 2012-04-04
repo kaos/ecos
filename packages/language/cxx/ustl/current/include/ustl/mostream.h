@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef MOSTREAM_H_24A8C5397E0848216573E5670930FC9A
@@ -12,7 +12,7 @@
 #include "uios.h"
 #include "config.h"
 #if WANT_STREAM_BOUNDS_CHECKING
-    #include <typeinfo>
+    #include "typeinfo.h"
 #endif
 
 namespace ustl {
@@ -28,7 +28,7 @@ class string;
 /// This class contains a set of functions to write integral types into an
 /// unstructured memory block. Packing binary file data can be done this
 /// way, for instance. aligning the data is your responsibility, and can
-/// be accomplished by proper ordering of writes and by calling \ref ostream::align.
+/// be accomplished by proper ordering of writes and by calling align.
 /// Unaligned access is usually slower by orders of magnitude and,
 /// on some architectures, such as PowerPC, can cause your program to crash.
 /// Therefore, all write functions have asserts to check alignment.
@@ -253,7 +253,7 @@ inline void ostream::write (const cmemlink& buf)
 template <typename T>
 inline void ostream::iwrite (const T& v)
 {
-    assert (aligned (alignof (v)));
+    assert (aligned (stream_align_of (v)));
 #if WANT_STREAM_BOUNDS_CHECKING
     if (!verify_remaining ("write", USTL_TYPENAME(v), sizeof(T)))
 	return;

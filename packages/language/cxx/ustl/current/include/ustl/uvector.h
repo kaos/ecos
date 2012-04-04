@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef UVECTOR_H_00BB13AF082BEB7829C031B265518169
@@ -8,6 +8,7 @@
 
 #include "memblock.h"
 #include "umemory.h"
+#include "upredalgo.h"
 
 namespace ustl {
 

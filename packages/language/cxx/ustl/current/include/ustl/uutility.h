@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 //
 /// \file uutility.h
@@ -96,7 +96,7 @@ inline T* NullPointer (void)
     { return ((T*) NULL); }
 
 /// \brief Returns a non-dereferentiable value reference.
-/// This is useful for passing to alignof or the like which need a value but
+/// This is useful for passing to stream_align_of or the like which need a value but
 /// don't need to actually use it.
 template <typename T>
 inline T& NullValue (void)
@@ -310,9 +310,6 @@ inline T1 DivRU (T1 n1, T2 n2)
     return ((n1 + adj) / n2);
 }
 
-#if __GNUC__ >= 3
-inline bool TestAndSet (int* pm) INLINE;
-#endif
 /// Sets the contents of \p pm to 1 and returns true if the previous value was 0.
 inline bool TestAndSet (int* pm)
 {
@@ -341,24 +338,67 @@ inline bool TestAndSet (int* pm)
 #endif
 }
 
+/// Returns the index of the first set bit in \p v or \p nbv if none.
+inline uoff_t FirstBit (uint32_t v, uoff_t nbv)
+{
+    uoff_t n = nbv;
+#if __i386__ || __x86_64__
+    if (!__builtin_constant_p(v)) asm ("bsr\t%1, %k0":"+r,r"(n):"r,m"(v)); else
+#endif
+#if __GNUC__
+    if (v) n = 31 - __builtin_clz(v);
+#else
+    if (v) for (uint32_t m = uint32_t(1)<<(n=31); !(v & m); m >>= 1) --n;
+#endif
+    return (n);
+}
+/// Returns the index of the first set bit in \p v or \p nbv if none.
+inline uoff_t FirstBit (uint64_t v, uoff_t nbv)
+{
+    uoff_t n = nbv;
+#if __x86_64__
+    if (!__builtin_constant_p(v)) asm ("bsr\t%1, %0":"+r,r"(n):"r,m"(v)); else
+#endif
+#if __GNUC__
+    if (v) n = 63 - __builtin_clzl(v);
+#else
+    if (v) for (uint64_t m = uint64_t(1)<<(n=63); !(v & m); m >>= 1) --n;
+#endif
+    return (n);
+}
+
+/// Returns the next power of 2 >= \p v.
+/// Values larger than UINT32_MAX/2 will return 2^0
 inline uint32_t NextPow2 (uint32_t v)
 {
+    uint32_t r = v-1;
 #if __i386__ || __x86_64__
-	asm("dec\t%1\n\t"
-	"mov\t$1,%0\n\t"
-	"bsr\t%1,%1\n\t"
-	"inc\t%1\n\t"
-	"rol\t%b1,%0":"=&r"(v):"c"(v));
-    return (v);
-#else
-    // The following code is sub-optimal but mimics the x86 implementation
-    int i = 31;
-    v--;
-    while (!(v & (1 << i)) && i > 0) i--;
-    if (i == 31)
-    	return 1;
-    return (1 << (i + 1));
+    if (!__builtin_constant_p(r)) asm("bsr\t%0, %0":"+r"(r)); else
 #endif
+    { r = FirstBit(r,r); if (r >= BitsInType(r)-1) r = uint32_t(-1); }
+    return (1<<(1+r));
+}
+
+/// Bitwise rotate value left
+template <typename T>
+inline T Rol (T v, size_t n)
+{
+#if __i386__ || __x86_64__
+    if (!(__builtin_constant_p(v) && __builtin_constant_p(n))) asm("rol\t%b1, %0":"+r,r"(v):"i,c"(n)); else
+#endif
+    v = (v << n) | (v >> (BitsInType(T)-n));
+    return (v);
+}
+
+/// Bitwise rotate value right
+template <typename T>
+inline T Ror (T v, size_t n)
+{
+#if __i386__ || __x86_64__
+    if (!(__builtin_constant_p(v) && __builtin_constant_p(n))) asm("ror\t%b1, %0":"+r,r"(v):"i,c"(n)); else
+#endif
+    v = (v >> n) | (v << (BitsInType(T)-n));
+    return (v);
 }
 
 /// \brief This template is to be used for dereferencing a type-punned pointer without a warning.
@@ -390,7 +430,6 @@ inline DEST noalias_cast (SRC s)
 
 namespace simd {
     /// Call after you are done using SIMD algorithms for 64 bit tuples.
-    inline void reset_mmx (void) INLINE;
     #define ALL_MMX_REGS_CHANGELIST "mm0","mm1","mm2","mm3","mm4","mm5","mm6","mm7","st","st(1)","st(2)","st(3)","st(4)","st(5)","st(6)","st(7)"
 #if CPU_HAS_3DNOW
     inline void reset_mmx (void) { asm ("femms":::ALL_MMX_REGS_CHANGELIST); }

@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef UIOS_H_630C16E316F7650E3A02E1C6611B789A
@@ -85,7 +85,7 @@ public:
     inline bool		fail (void) const		{ return (rdstate() & (badbit | failbit)); }
     inline bool		eof (void) const		{ return (rdstate() & eofbit); }
     inline bool		operator! (void) const		{ return (fail()); }
-    inline		operator void* (void) const	{ return (reinterpret_cast<void*>(!fail())); }
+    inline		operator void* (void) const	{ return ((void*)(!fail())); }
     inline void		clear (iostate v = goodbit)	{ m_State = v; }
     inline void		setstate (iostate v)		{ m_State |= v; }
     inline iostate	exceptions (void) const		{ return (m_Exceptions); }

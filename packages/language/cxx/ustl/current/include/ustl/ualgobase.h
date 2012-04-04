@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef UALGOBASE_H_683A0BE77546133C4CE0E3622CFAA2EB
@@ -258,7 +258,7 @@ COPY_BACKWARD_ALIAS_FUNC(const void, void, uint8_t)
 #undef COPY_BACKWARD_ALIAS_FUNC
 #define FILL_ALIAS_FUNC(type, alias_type, v_type)				\
 template <> inline void fill (type* first, type* last, const v_type& value)	\
-{ fill ((alias_type*) first, (alias_type*) last, (const alias_type&) value); }
+{ fill ((alias_type*) first, (alias_type*) last, (const alias_type) value); }
 FILL_ALIAS_FUNC(void, uint8_t, char)
 FILL_ALIAS_FUNC(void, uint8_t, uint8_t)
 #if WANT_UNROLLED_COPY
@@ -298,7 +298,7 @@ COPY_N_ALIAS_FUNC(const int32_t, int32_t, uint32_t)
 #undef COPY_N_ALIAS_FUNC
 #define FILL_N_ALIAS_FUNC(type, alias_type, v_type)				\
 template <> inline type* fill_n (type* first, size_t n, const v_type& value)	\
-{ return ((type*) fill_n ((alias_type*) first, n, (const alias_type&) value)); }
+{ return ((type*) fill_n ((alias_type*) first, n, (const alias_type) value)); }
 FILL_N_ALIAS_FUNC(void, uint8_t, char)
 FILL_N_ALIAS_FUNC(void, uint8_t, uint8_t)
 #if WANT_UNROLLED_COPY

@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #include "stdtest.h"
@@ -49,8 +49,7 @@ void TestMB (void)
     if (a.begin() == b.begin())
 	cout << "Assignment does not copy a link\n";
     a.deallocate();
-    a.resize (strTestLen);
-    a.copy (strTest, strTestLen);
+    a.assign (strTest, strTestLen);
     WriteCML (a);
     a.insert (a.begin() + 5, 9);
     a.fill (a.begin() + 5, "-", 1, 9);

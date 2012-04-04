@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef MEMLINK_H_798D25827C8E322D2D7E734B169FF5FC
@@ -64,9 +64,6 @@ public:
     inline void		link (void* first, void* last)		{ link (first, distance (first, last)); }
     inline void		relink (const void* p, size_type n)	{ cmemlink::relink (p, n); }
     inline void		relink (void* p, size_type n)		{ cmemlink::relink (p, n); }
-    inline void		copy (const cmemlink& l)		{ copy (begin(), l.cdata(), l.size()); }
-    inline void		copy (const void* p, size_type n)	{ copy (begin(), p, n); }
-    void		copy (iterator offset, const void* p, size_type n);
     inline void		swap (memlink& l)			{ cmemlink::swap (l); }
     void		fill (iterator start, const void* p, size_type elsize, size_type elCount = 1);
     inline void		insert (iterator start, size_type size);

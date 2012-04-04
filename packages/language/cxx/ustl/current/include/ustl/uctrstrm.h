@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 //
 /// \file uctrstrm.h
@@ -16,7 +16,7 @@
 #include "mistream.h"
 #include "sostream.h"
 #include "uiosfunc.h"
-#include <typeinfo>
+#include "typeinfo.h"
 
 namespace ustl {
 
@@ -119,7 +119,7 @@ istream& container_read (istream& is, Container& v)
     const size_t expectedSize = n * stream_size_of(value_type());
     if (!is.verify_remaining ("read", USTL_TYPENAME(v), expectedSize))
 	return (is);
-    if (alignof(NullValue<value_type>()) > alignof(n))
+    if (stream_align_of(NullValue<value_type>()) > stream_align_of(n))
 	is >> ios::talign<value_type>();
     v.resize (n);
     nr_container_read (is, v);
@@ -135,7 +135,7 @@ ostream& container_write (ostream& os, const Container& v)
     typedef typename Container::written_size_type written_size_type;
     const written_size_type sz (v.size());
     os << sz;
-    if (alignof(NullValue<value_type>()) > alignof(sz))
+    if (stream_align_of(NullValue<value_type>()) > stream_align_of(sz))
 	os << ios::talign<value_type>();
     nr_container_write (os, v);
     os << ios::talign<written_size_type>();
@@ -150,9 +150,9 @@ size_t container_stream_size (const Container& v)
     typedef typename Container::written_size_type written_size_type;
     const written_size_type sz (v.size());
     size_t sizeSize = stream_size_of (sz);
-    if (alignof(NullValue<value_type>()) > alignof(sz))
-	sizeSize = Align (sizeSize, alignof(NullValue<value_type>()));
-    return (Align (sizeSize + nr_container_stream_size (v), alignof(sz)));
+    if (stream_align_of(NullValue<value_type>()) > stream_align_of(sz))
+	sizeSize = Align (sizeSize, stream_align_of(NullValue<value_type>()));
+    return (Align (sizeSize + nr_container_stream_size (v), stream_align_of(sz)));
 }
 
 /// \brief Writes element \p v into stream \p os as text.

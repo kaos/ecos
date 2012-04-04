@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef UEXCEPTION_H_18DE3EF55C4F00673268F0D66546AF5D
@@ -23,7 +23,7 @@ typedef void (*unexpected_handler) (void);
 terminate_handler set_terminate (terminate_handler pHandler) throw();
 /// The runtime will call this function if exception handling must be
 /// abandoned for any reason.  It can also be called by the user.
-void terminate (void) __attribute__ ((__noreturn__));
+void terminate (void) throw() __attribute__ ((__noreturn__));
 /// Takes a new handler function as an argument, returns the old function.
 unexpected_handler set_unexpected (unexpected_handler pHandler) throw();
 /// The runtime will call this function if an exception is thrown which
@@ -88,8 +88,14 @@ private:
 ///
 class bad_cast : public exception {
 public:
-    inline explicit		bad_cast (void) throw() : exception() {}
-    inline virtual const char*	what (void) const throw() { return ("bad cast"); }
+    inline 			bad_cast (void) throw()		: exception() {}
+    inline virtual const char*	what (void) const throw()	{ return ("bad cast"); }
+};
+
+class bad_typeid : public exception {
+public:
+    inline			bad_typeid (void) throw()	{ }
+    inline virtual const char*	what (void) const throw()	{ return ("bad typeid"); }
 };
 
 //----------------------------------------------------------------------

@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #ifndef UBITSET_H_7B6450EC1400CBA45DCE0127739F82EE
@@ -38,6 +38,7 @@ public:
     typedef const_pointer	const_iterator;
     typedef size_t		difference_type;
     typedef size_t		size_type;
+    typedef const bitset<Size>&	rcself_t;
 private:
     static const size_t s_WordBits	= BitsInType (value_type);
     static const size_t	s_nWords	= Size / s_WordBits + ((Size % s_WordBits) != 0);
@@ -102,19 +103,19 @@ public:
     inline bool		any (void) const	{ value_type sum = 0; foreach (const_iterator, i, *this) sum |= *i; return (sum); }
     inline bool		none (void) const	{ return (!any()); }
     inline size_t	count (void) const	{ size_t sum = 0; foreach (const_iterator, i, *this) sum += popcount(*i); return (sum); }
-    inline bool		operator== (const bitset<Size>& v) const
+    inline bool		operator== (rcself_t v) const
 			    { return (s_nWords == 1 ? (m_Bits[0] == v.m_Bits[0]) : equal (begin(), end(), v.begin())); }
-    inline const bitset	operator& (const bitset<Size>& v)
+    inline bitset	operator& (rcself_t v) const
 			    { bitset<Size> result; transform (begin(), end(), v.begin(), result.begin(), bitwise_and<value_type>()); return (result); }
-    inline const bitset	operator| (const bitset<Size>& v)
+    inline bitset	operator| (rcself_t v) const
 			    { bitset<Size> result; transform (begin(), end(), v.begin(), result.begin(), bitwise_or<value_type>()); return (result); }
-    inline const bitset	operator^ (const bitset<Size>& v)
+    inline bitset	operator^ (rcself_t v) const
 			    { bitset<Size> result; transform (begin(), end(), v.begin(), result.begin(), bitwise_xor<value_type>()); return (result); }
-   inline const bitset&	operator&= (const bitset<Size>& v)
+    inline rcself_t	operator&= (rcself_t v)
 			    { transform (begin(), end(), v.begin(), begin(), bitwise_and<value_type>()); return (*this); }
-   inline const bitset&	operator|= (const bitset<Size>& v)
+    inline rcself_t	operator|= (rcself_t v)
 			    { transform (begin(), end(), v.begin(), begin(), bitwise_or<value_type>()); return (*this); }
-   inline const bitset&	operator^= (const bitset<Size>& v)
+    inline rcself_t	operator^= (rcself_t v)
 			    { transform (begin(), end(), v.begin(), begin(), bitwise_xor<value_type>()); return (*this); }
     inline void		read (istream& is)			{ nr_container_read (is, *this); }
     inline void		write (ostream& os) const		{ nr_container_write (os, *this); }

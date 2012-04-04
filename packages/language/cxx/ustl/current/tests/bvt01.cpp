@@ -1,6 +1,6 @@
 // This file is part of the uSTL library, an STL implementation.
 //
-// Copyright (c) 2005-2009 by Mike Sharov <msharov@users.sourceforge.net>
+// Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
 #include "stdtest.h"
@@ -53,7 +53,7 @@ void TestML (void)
     WriteCML (a);
     a.fill (a.begin() + 5, "TEST", 4, 3); 
     WriteCML (a);
-    a.copy (cstr, VectorSize(str) - 1);
+    copy_n (cstr, VectorSize(str) - 1, a.begin());
     WriteCML (a);
 }
 
