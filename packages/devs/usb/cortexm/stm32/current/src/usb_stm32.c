@@ -2229,10 +2229,8 @@ static void CYGBLD_ATTRIB_C_INIT_PRI(CYG_INIT_DEV_CHAR) cyg_usbs_cortexm_stm32_i
   // Make sure that the CAN controller is disabled and held in reset.
   // TODO: If a CAN driver is to be added to the standard distribution, this
   // should check for USB/CAN configuration clashes.
-  HAL_READ_UINT32 (CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_APB1ENR, reg_data);
-  reg_data &= ~((cyg_uint32) CYGHWR_HAL_STM32_RCC_APB1ENR_CAN1);
-  HAL_WRITE_UINT32 (CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_APB1ENR, reg_data);
-  
+  CYGHWR_HAL_STM32_CLOCK_DISABLE( CYGHWR_HAL_STM32_CAN1_CLOCK );
+
   // Configure the IO pins for USB operation.
   CYGHWR_HAL_STM32_GPIO_SET (USB_DISC_PIN);
   CYGHWR_HAL_STM32_GPIO_SET (USB_DP_PIN);
@@ -2244,10 +2242,8 @@ static void CYGBLD_ATTRIB_C_INIT_PRI(CYG_INIT_DEV_CHAR) cyg_usbs_cortexm_stm32_i
 #endif
 
   // Ensure that the USB clock is disabled prior to setting prescaler. 
-  HAL_READ_UINT32 (CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_APB1ENR, reg_data);
-  reg_data &= ~((cyg_uint32) CYGHWR_HAL_STM32_RCC_APB1ENR_USB);
-  HAL_WRITE_UINT32 (CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_APB1ENR, reg_data);
-  
+  CYGHWR_HAL_STM32_CLOCK_DISABLE( CYGHWR_HAL_STM32_USB_CLOCK );
+
   // Set up the USB 48MHz serial clock.  There are only 2 valid prescaler
   // settings which correspond to 72MHz and 48MHz PLL clock outputs.
   HAL_READ_UINT32 (CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_CFGR, reg_data);
@@ -2261,9 +2257,7 @@ static void CYGBLD_ATTRIB_C_INIT_PRI(CYG_INIT_DEV_CHAR) cyg_usbs_cortexm_stm32_i
   HAL_WRITE_UINT32 (CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_CFGR, reg_data);
 
   // Activate the USB clock after setting prescaler. 
-  HAL_READ_UINT32 (CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_APB1ENR, reg_data);
-  reg_data |= CYGHWR_HAL_STM32_RCC_APB1ENR_USB;
-  HAL_WRITE_UINT32 (CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_APB1ENR, reg_data);
+  CYGHWR_HAL_STM32_CLOCK_ENABLE( CYGHWR_HAL_STM32_USB_CLOCK );
 
   // Take USB transceiver out of powerdown state, but leave it in reset until we
   // are ready to start.  Leave interrupts disabled at source.

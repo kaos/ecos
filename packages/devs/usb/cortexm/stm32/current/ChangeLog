@@ -1,3 +1,10 @@
+2012-04-13  Christophe Coutand  <ecos@hotmail.co.uk>
+
+	* src/usb_stm32.c (cyg_usbs_cortexm_stm32_init):
+	Peripheral clocks are enable / disable using new 
+	CYGHWR_HAL_STM32_CLOCK_DISABLE / CYGHWR_HAL_STM32_CLOCK_ENABLE
+	macro supplied from the variant HAL
+
 2012-04-03  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/usb_stm32.c (cyg_usbs_cortexm_stm32_init):
