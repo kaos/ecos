@@ -1,3 +1,13 @@
+2012-04-13  Christophe Coutand  <ecos@hotmail.co.uk>
+
+	* src/adc_stm32.c:
+	* src/adc1.inl:
+	* src/adc3.inl:
+	Peripheral clocks are enable / disable using new 
+	CYGHWR_HAL_STM32_CLOCK_DISABLE / CYGHWR_HAL_STM32_CLOCK_ENABLE
+	macro supplied from the variant HAL. In addition, make sure timer
+	clock is enable.
+
 2011-05-02  Christophe Coutand  <ecos@hotmail.co.uk>
 
 	* cdl/adc_stm32.cdl:

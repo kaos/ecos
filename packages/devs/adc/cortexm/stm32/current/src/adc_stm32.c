@@ -85,6 +85,8 @@ typedef struct stm32_adc_setup {
     const cyg_uint32    *pins;          // ADC associated GPIO pins
     cyg_uint8           extsel;         // ADC EXTSEL value (timer event)
     cyg_uint32          sample_time;    // ADC sampling time in us
+    cyg_uint32          adc_clkena;     // ADC clock enable
+    cyg_uint32          tim_clkena;     // Timer clock enable
 } stm32_adc_setup;
 
 //-----------------------------------------------------------------------------
@@ -361,7 +363,7 @@ stm32_dma_isr(cyg_vector_t vector, cyg_addrword_t data)
     cyg_adc_channel **chan = info->chan;
     cyg_uint32 isr;
     cyg_uint32 res = CYG_ISR_HANDLED;
-    
+
     HAL_READ_UINT32(info->setup->dma_base + CYGHWR_HAL_STM32_DMA_ISR, isr);
     if (!(isr & CYGHWR_HAL_STM32_DMA_ISR_MASK(info->setup->dma_channel)))
         return 0;
@@ -446,13 +448,14 @@ stm32_adc_init_device(cyg_adc_device *device)
     cyg_uint64 tmp;
     cyg_uint32 cycles;
     cyg_uint32 smpr;
-    cyg_uint32 rcc_base = CYGHWR_HAL_STM32_RCC;
-    cyg_uint32 reg_data;
     int i;
-    
+
     static const cyg_uint32 cycles_table[] = 
         { 15, 75, 135, 285, 415, 555, 715, 2395 };
-    
+
+    CYGHWR_HAL_STM32_CLOCK_ENABLE( info->setup->adc_clkena );
+    CYGHWR_HAL_STM32_CLOCK_ENABLE( info->setup->tim_clkena );
+
     // Make sure ADC is powered on
     cr = CYGHWR_HAL_STM32_ADC_CR2_ADON;
     HAL_WRITE_UINT32(info->setup->adc_base + CYGHWR_HAL_STM32_ADC_CR2, cr);
@@ -493,16 +496,14 @@ stm32_adc_init_device(cyg_adc_device *device)
     // Enable generation of TRGO event
     cr = CYGHWR_HAL_STM32_TIM_CR2_MMS_UPDATE;
     HAL_WRITE_UINT32(info->setup->tim_base + CYGHWR_HAL_STM32_TIM_CR2, cr);
-    
+
 
     // Setup DMA channel
     // Ensure that the DMA clocks are enabled.
-    HAL_READ_UINT32 (rcc_base + CYGHWR_HAL_STM32_RCC_AHBENR, reg_data);
     if (info->setup->dma_base == CYGHWR_HAL_STM32_DMA1)
-      reg_data |= CYGHWR_HAL_STM32_RCC_AHBENR_DMA1;
+      CYGHWR_HAL_STM32_CLOCK_ENABLE( CYGHWR_HAL_STM32_DMA1_CLOCK );
     else
-      reg_data |= CYGHWR_HAL_STM32_RCC_AHBENR_DMA2;
-    HAL_WRITE_UINT32 (rcc_base + CYGHWR_HAL_STM32_RCC_AHBENR, reg_data);
+      CYGHWR_HAL_STM32_CLOCK_ENABLE( CYGHWR_HAL_STM32_DMA2_CLOCK );
 
     HAL_WRITE_UINT32(info->setup->dma_base + 
                      CYGHWR_HAL_STM32_DMA_CPAR(info->setup->dma_channel),

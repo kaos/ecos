@@ -82,6 +82,8 @@ static const stm32_adc_setup stm32_adc_setup1 = {
     .pins           = stm32_adc_pins1,
     .extsel         = 4,
     .sample_time    = CYGNUM_DEVS_ADC_CORTEXM_STM32_ADC1_SAMPLE_TIME,
+    .adc_clkena     = CYGHWR_HAL_STM32_ADC1_CLOCK,
+    .tim_clkena     = CYGHWR_HAL_STM32_TIM3_CLOCK,
 };
 
 // ADC DMA buffer
