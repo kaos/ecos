@@ -1521,6 +1521,8 @@ __externC void hal_stm32_clock_disable( cyg_uint32 desc );
 #define CYGHWR_HAL_STM32_USB_DADDR_ADD(__x)     VALUE_(0,(__x))
 #define CYGHWR_HAL_STM32_USB_DADDR_EF           BIT_(7)
 
+#define CYGHWR_HAL_STM32_USB_CLOCK              CYGHWR_HAL_STM32_CLOCK( APB1, USB )
+
 #endif // if defined(CYGHWR_HAL_CORTEXM_STM32_FAMILY_F1)
 
 // USB in F2/F4 parts is completely different. Definitions will be provided when implemented.
@@ -1827,7 +1829,7 @@ __externC void hal_stm32_bd_protect( int protect );
 
 #define CYGHWR_HAL_STM32_FSMC_PIO4              0xB0
 
-
+#define CYGHWR_HAL_STM32_FSMC_BANK1_BASE        0x60000000
 #define CYGHWR_HAL_STM32_FSMC_BANK2_BASE        0x70000000
 #define CYGHWR_HAL_STM32_FSMC_BANK3_BASE        0x80000000
 #define CYGHWR_HAL_STM32_FSMC_BANK4_BASE        0x90000000
@@ -1863,6 +1865,14 @@ __externC void hal_stm32_bd_protect( int protect );
 #define CYGHWR_HAL_STM32_FSMC_SR_ILEN           BIT_(4)
 #define CYGHWR_HAL_STM32_FSMC_SR_IFEN           BIT_(5)
 #define CYGHWR_HAL_STM32_FSMC_SR_FEMPT          BIT_(6)
+
+//=============================================================================
+// CAN
+//
+
+#define CYGHWR_HAL_STM32_CAN1_CLOCK             CYGHWR_HAL_STM32_CLOCK( APB1, CAN1 )
+#define CYGHWR_HAL_STM32_CAN2_CLOCK             CYGHWR_HAL_STM32_CLOCK( APB1, CAN2 )
+
 
 //=============================================================================
 // Ethernet MAC

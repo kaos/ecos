@@ -1,3 +1,9 @@
+2012-04-13  Christophe Coutand  <ecos@hotmail.co.uk>
+
+	* include/var_io.h:
+	Added definitions, CYGHWR_HAL_STM32_USB_CLOCK, 
+	CYGHWR_HAL_STM32_CAN1_CLOCK and CYGHWR_HAL_STM32_CAN2_CLOCK 
+
 2012-03-27  James Smith  <jsmith@ecoscentric.com>
 
 	* tests/timers.c (TIMER_PRI): Add macro and manifests to allow
