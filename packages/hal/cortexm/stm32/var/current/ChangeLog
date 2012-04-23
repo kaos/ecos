@@ -1,3 +1,12 @@
+2012-04-23  James Smith  <jsmith@ecoscentric.com>
+
+	* include/var_io_pins.h (CYGHWR_HAL_STM32_PIN_IN): Removed
+	spurious parameter since the API for this macro should match the
+	F2/F4 (HIPERFORMANCE) definition.
+
+	* include/var_io_eth.h: Update F1 ETH_MII
+	CYGHWR_HAL_STM32_PIN_IN() usage to reflect correct API.
+
 2012-04-13  Christophe Coutand  <ecos@hotmail.co.uk>
 
 	* include/var_io.h:

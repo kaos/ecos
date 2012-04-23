@@ -465,7 +465,7 @@ __externC void hal_stm32_gpio_in ( cyg_uint32 pin, int *val );
 #define CYGHWR_HAL_STM32_PIN_ALTFN_OUT(__port,__pin,__af,__ppod,__pupd,__speed) \
   CYGHWR_HAL_STM32_GPIO(__port,__pin,OUT_##__speed,ALT_##__ppod)
 
-#define CYGHWR_HAL_STM32_PIN_IN(__port,__pin,__ppod,__pupd)     \
+#define CYGHWR_HAL_STM32_PIN_IN(__port,__pin,__pupd)     \
   CYGHWR_HAL_STM32_GPIO(__port,__pin,IN,__pupd)
 
 #define CYGHWR_HAL_STM32_PIN_ALTFN_IN(__port,__pin,__af,__ppod,__pupd)  \
