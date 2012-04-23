@@ -46,7 +46,8 @@
 //
 //####DESCRIPTIONEND####
 //
-//========================================================================*/
+//========================================================================
+*/
 
 
 #ifdef __cplusplus
@@ -74,9 +75,9 @@ typedef unsigned long target_register_t;
 #endif
 
 enum regnames {
-    R0, R1, R2, R3, R4, R5, R6, R7, 
+    R0, R1, R2, R3, R4, R5, R6, R7,
     R8, R9, R10, FP, IP, SP, LR, PC,
-    F0, F1, F2, F3, F4, F5, F6, F7, 
+    F0, F1, F2, F3, F4, F5, F6, F7,
     FPS, PS
 };
 
@@ -91,7 +92,7 @@ enum regnames {
 typedef enum regnames regnames_t;
 
 //------------------------------------------------------------------------
-    
+
 /* Given a trap value TRAP, return the corresponding signal. */
 extern int __computeSignal (unsigned int trap_number);
 

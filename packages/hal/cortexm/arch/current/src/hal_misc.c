@@ -44,7 +44,8 @@
 //
 //####DESCRIPTIONEND####
 //
-//========================================================================*/
+//========================================================================
+*/
 
 #include <pkgconf/hal.h>
 #include <pkgconf/hal_cortexm.h>
@@ -128,9 +129,9 @@ void hal_reset_vsr( void )
     // usually supplied by the platform HAL. Calls to
     // hal_variant_init() and hal_platform_init() later will perform
     // the main initialization.
-    
+
     hal_system_init();
-    
+
     // Initialize vector table in base of SRAM.
     {
         register int i;
@@ -140,13 +141,13 @@ void hal_reset_vsr( void )
         // Only install the exception vectors for non-RAM startup. For
         // RAM startup we want these to continue to point to the original
         // VSRs, which will belong to RedBoot or GDB stubs.
-        
+
         for( i = 2; i < 15; i++ )
             hal_vsr_table[i] = (CYG_ADDRESS)hal_default_exception_vsr;
 
 #endif
         // Always point SVC and PENDSVC vectors to our local versions
-        
+
         hal_vsr_table[CYGNUM_HAL_VECTOR_SERVICE] = (CYG_ADDRESS)hal_default_svc_vsr;
         hal_vsr_table[CYGNUM_HAL_VECTOR_PENDSV] = (CYG_ADDRESS)hal_pendable_svc_vsr;
 
@@ -167,11 +168,11 @@ void hal_reset_vsr( void )
 
     // On M3 and M4 parts, the NVIC contains a vector table base register.
     // We program this to relocate the vector table base to the base of SRAM.
-    
+
     HAL_WRITE_UINT32( CYGARC_REG_NVIC_BASE+CYGARC_REG_NVIC_VTOR,
                       CYGARC_REG_NVIC_VTOR_TBLOFF(0)|
                       CYGARC_REG_NVIC_VTOR_TBLBASE_SRAM );
-    
+
 # else
 
 #  error Unknown SRAM/VECTAB remap mechanism
@@ -182,14 +183,14 @@ void hal_reset_vsr( void )
     // We don't need to do this for RAM startup since the ROM code
     // will have already done it.
 
-    hal_vsr_table[CYGNUM_HAL_VECTOR_SERVICE] = (CYG_ADDRESS)hal_switch_state_vsr;    
+    hal_vsr_table[CYGNUM_HAL_VECTOR_SERVICE] = (CYG_ADDRESS)hal_switch_state_vsr;
 
     __asm__ volatile( "swi 0" );
 
     hal_vsr_table[CYGNUM_HAL_VECTOR_SERVICE] = (CYG_ADDRESS)hal_default_svc_vsr;
-    
+
 #endif // !defined(CYG_HAL_STARTUP_RAM)
-    
+
 #if defined(CYG_HAL_STARTUP_ROM)
     // Relocate data from ROM to RAM
     {
@@ -223,13 +224,13 @@ void hal_reset_vsr( void )
     // PendSVC which are lowest priority.
     {
         register int i;
-        
+
         HAL_WRITE_UINT32( CYGARC_REG_NVIC_BASE+CYGARC_REG_NVIC_SHPR0, 0x00000000 );
         HAL_WRITE_UINT32( CYGARC_REG_NVIC_BASE+CYGARC_REG_NVIC_SHPR1, 0xFF000000 );
         HAL_WRITE_UINT32( CYGARC_REG_NVIC_BASE+CYGARC_REG_NVIC_SHPR2, 0x00FF0000 );
-        
+
         hal_interrupt_handlers[CYGNUM_HAL_INTERRUPT_SYS_TICK] = (CYG_ADDRESS)hal_default_isr;
-        
+
         for( i = 1; i < CYGNUM_HAL_ISR_COUNT; i++ )
         {
             hal_interrupt_handlers[i] = (CYG_ADDRESS)hal_default_isr;
@@ -251,7 +252,7 @@ void hal_reset_vsr( void )
     }
 #endif
 
-#if !defined(CYG_HAL_STARTUP_RAM)    
+#if !defined(CYG_HAL_STARTUP_RAM)
     // Enable Usage, Bus and Mem fault handlers. Do this for ROM and
     // JTAG startups. For RAM startups, this will have already been
     // done by the ROM monitor.
@@ -266,25 +267,25 @@ void hal_reset_vsr( void )
         HAL_WRITE_UINT32( base+CYGARC_REG_NVIC_SHCSR, shcsr );
     }
 #endif
-    
+
     // Call variant and platform init routines
     hal_variant_init();
     hal_platform_init();
 
     // Start up the system clock
     HAL_CLOCK_INITIALIZE( CYGNUM_HAL_RTC_PERIOD );
-            
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-    
+
     initialize_stub();
-    
+
 #endif
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || \
     defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
-    
+
     hal_ctrlc_isr_init();
-    
+
 #endif
 
     // Run through static constructors
@@ -319,7 +320,7 @@ void hal_deliver_exception( HAL_SavedRegisters *regs )
     if (__mem_fault_handler )
     {
         regs->u.exception.pc = (unsigned long)__mem_fault_handler;
-        return; // Caught an exception inside stubs        
+        return; // Caught an exception inside stubs
     }
 #endif
 
@@ -335,8 +336,8 @@ void hal_deliver_exception( HAL_SavedRegisters *regs )
 #else
 
     CYG_FAIL("Exception!!!");
-    
-#endif    
+
+#endif
 }
 
 //==========================================================================
@@ -356,14 +357,14 @@ void hal_deliver_interrupt( cyg_uint32 vector )
     register cyg_uint32 isr_result;
     register cyg_isr *isr;
     cyg_bool pendsvc = false;
-    
+
 #if defined(CYGPKG_KERNEL_INSTRUMENT) && \
     defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
     CYG_INSTRUMENT_INTR(RAISE, vector, 0);
 #endif
 
     isr = (cyg_isr *)hal_interrupt_handlers[vector];
-    
+
     // Call the ISR
     isr_result = isr( vector, hal_interrupt_data[vector] );
 
@@ -413,10 +414,10 @@ void hal_deliver_interrupt( cyg_uint32 vector )
 
 __externC void hal_interrupt_end( void )
 {
-#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT    
+#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
     cyg_scheduler_sched_lock++;
 #endif
-    
+
    interrupt_end(0,0,0);
 }
 
@@ -521,7 +522,7 @@ __externC void hal_delay_us( cyg_int32 us )
         if( t1 < t0 )
             us -= (t1 + CYGNUM_HAL_RTC_PERIOD - t0);
         else
-        	us -= t1 - t0;
+            us -= t1 - t0;
         t0 = t1;
     }
 }
@@ -546,7 +547,7 @@ cyg_hal_invoke_constructors (void)
 {
 #ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
     static pfunc *p = &CONSTRUCTORS_START;
-    
+
     cyg_hal_stop_constructors = 0;
     for (; p != CONSTRUCTORS_END; NEXT_CONSTRUCTOR(p)) {
         (*p)();
@@ -586,7 +587,7 @@ __externC void hal_get_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
 {
     int i;
     cyg_uint32 *p = gdbreg->f0;
-    
+
     switch( regs->u.type )
     {
     case HAL_SAVEDREGISTERS_THREAD:
@@ -597,7 +598,7 @@ __externC void hal_get_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
         gdbreg->gpr[15] = regs->u.thread.pc;
         gdbreg->ps = 0x01000000;
         break;
-            
+
     case HAL_SAVEDREGISTERS_EXCEPTION:
         gdbreg->gpr[0] = regs->u.exception.r0;
         gdbreg->gpr[1] = regs->u.exception.r1;
@@ -611,7 +612,7 @@ __externC void hal_get_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
         gdbreg->gpr[15] = regs->u.exception.pc;
         gdbreg->ps = regs->u.exception.psr;
         break;
-                
+
     case HAL_SAVEDREGISTERS_INTERRUPT:
         gdbreg->gpr[0] = regs->u.interrupt.r0;
         gdbreg->gpr[1] = regs->u.interrupt.r1;
@@ -628,13 +629,13 @@ __externC void hal_get_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
     // Clear FP state, which we don't use
     for( i = 0; i < (8*3+1); i++ )
         p[i] = 0;
-    
+
 }
 
 __externC void hal_set_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_SavedRegisters *regs )
 {
     int i;
-    
+
     switch( regs->u.type )
     {
     case HAL_SAVEDREGISTERS_THREAD:
@@ -644,7 +645,7 @@ __externC void hal_set_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
         regs->u.thread.pc = gdbreg->gpr[14];
         regs->u.thread.pc = gdbreg->gpr[15];
         break;
-            
+
     case HAL_SAVEDREGISTERS_EXCEPTION:
         regs->u.exception.r0 = gdbreg->gpr[0];
         regs->u.exception.r1 = gdbreg->gpr[1];
@@ -657,7 +658,7 @@ __externC void hal_set_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
         regs->u.exception.pc = gdbreg->gpr[15];
         regs->u.exception.psr = gdbreg->ps;
         break;
-                
+
     case HAL_SAVEDREGISTERS_INTERRUPT:
         regs->u.interrupt.r0 = gdbreg->gpr[0];
         regs->u.interrupt.r1 = gdbreg->gpr[1];

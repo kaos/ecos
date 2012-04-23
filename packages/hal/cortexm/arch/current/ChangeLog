@@ -1,3 +1,17 @@
+2012-04-23  Ilija Kocho  <ilijak@siva.com.mk>
+
+    * cdl/hal_cortexm.cdl:
+    * include/basetype.h:
+    * include/cortexm_stub.h:
+    * include/hal_arch.h:
+    * include/hal_intr.h:
+    * include/hal_io.h:
+    * src/context.S:
+    * src/cortexm_stub.c:
+    * src/hal_misc.c:
+    * src/vectors.S:
+    Whitespace cleanup [Bugzilla 1001569]
+
 2012-03-06  Ilija Kocho  <ilijak@siva.com.mk>
 
     * include/hal_intr.h: Fix compiler warning about unused variables.

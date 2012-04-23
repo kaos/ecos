@@ -47,7 +47,8 @@
 //
 //####DESCRIPTIONEND####
 //
-//========================================================================*/
+//========================================================================
+*/
 
 #include <pkgconf/system.h>
 #include <pkgconf/hal.h>
@@ -71,7 +72,7 @@
 #define CYGNUM_HAL_VECTOR_MEMORY_MAN     4      // Memory management (M3)
 #define CYGNUM_HAL_VECTOR_BUS_FAULT      5      // Bus Fault
 #define CYGNUM_HAL_VECTOR_USAGE_FAULT    6      // Usage Fault
-#define CYGNUM_HAL_VECTOR_RESERVED_07    7      
+#define CYGNUM_HAL_VECTOR_RESERVED_07    7
 #define CYGNUM_HAL_VECTOR_RESERVED_08    8
 #define CYGNUM_HAL_VECTOR_RESERVED_09    9
 #define CYGNUM_HAL_VECTOR_RESERVED_10   10
@@ -168,7 +169,7 @@ CYG_MACRO_END
 //
 // Interrupt handler/data/object tables plus functions and macros to
 // manipulate them.
- 
+
 __externC volatile CYG_ADDRESS   hal_interrupt_handlers[CYGNUM_HAL_ISR_COUNT];
 __externC volatile CYG_ADDRWORD  hal_interrupt_data    [CYGNUM_HAL_ISR_COUNT];
 __externC volatile CYG_ADDRESS   hal_interrupt_objects [CYGNUM_HAL_ISR_COUNT];
@@ -396,4 +397,3 @@ __externC void hal_reset_vsr( void );
 
 //==========================================================================
 #endif //CYGONCE_HAL_INTR_H
-

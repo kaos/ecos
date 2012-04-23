@@ -45,7 +45,8 @@
 //
 //####DESCRIPTIONEND####
 //
-//========================================================================*/
+//========================================================================
+*/
 
 #include <pkgconf/system.h>
 #include <pkgconf/hal.h>
@@ -59,13 +60,13 @@
         .syntax unified
         .thumb
         .text
-        
+
 //==========================================================================
 // Context switch
 //
 // R0 contains a pointer to the SP of the thread to load, R1 contains
-// a pointer to the SP of the current thread.        
-        
+// a pointer to the SP of the current thread.
+
         .globl  hal_thread_switch_context
         .thumb
         .thumb_func
@@ -77,11 +78,11 @@ hal_thread_switch_context:
         mrs     r3,basepri              // Get priority base register
         mov     r4,sp                   // Get SP (for info only)
         push    {r2-r4}                 // Push them
-        
+
         str     sp,[r1]                 // Save SP
 
         // Fall through
-        
+
 //--------------------------------------------------------------------------
 // Load context
 //
@@ -99,16 +100,16 @@ hal_thread_load_context:
         msr     basepri,r3              // Set BASEPRI
         pop     {r0-r12,pc}             // Pop all register and return
 
-//==========================================================================        
+//==========================================================================
 //  HAL longjmp, setjmp implementations
-//        
+//
 //  hal_setjmp saves only to callee save registers R4-14
 //  and LR into buffer supplied in r0[arg0].
 
         .globl  hal_setjmp
         .thumb
         .thumb_func
-        .type   hal_setjmp, %function        
+        .type   hal_setjmp, %function
 hal_setjmp:
         mov     r3,sp
         stmea   r0,{r3-r12,r14}
@@ -116,7 +117,7 @@ hal_setjmp:
         bx      lr
 
 //  hal_longjmp loads state from r0[arg0] and returns
-        
+
         .globl  hal_longjmp
         .thumb
         .thumb_func

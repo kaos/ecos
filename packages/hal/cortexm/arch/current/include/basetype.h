@@ -47,7 +47,8 @@
 //
 //####DESCRIPTIONEND####
 //
-//========================================================================*/
+//========================================================================
+*/
 
 #define CYG_BYTEORDER           CYG_LSBFIRST    // Little endian
 #define CYG_DOUBLE_BYTEORDER    CYG_LSBFIRST
@@ -68,4 +69,3 @@
 //==========================================================================
 #endif // CYGONCE_HAL_BASETYPE_H
 // End of basetype.h
-

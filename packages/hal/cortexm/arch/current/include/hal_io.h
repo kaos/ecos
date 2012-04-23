@@ -47,7 +47,8 @@
 //
 //####DESCRIPTIONEND####
 //
-//========================================================================*/
+//========================================================================
+*/
 
 #include <pkgconf/system.h>
 #include <pkgconf/hal.h>
@@ -318,7 +319,7 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 //-----------------------------------------------------------------------------
 // 16 bit access.
 // Individual and vectorized access to 16 bit registers.
-    
+
 
 #define HAL_READ_UINT16( _register_, _value_ ) \
         ((_value_) = *((volatile CYG_WORD16 *)(_register_)))
@@ -397,7 +398,7 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 
 #endif // !HAL_IO_MACROS_DEFINED
 
-// Enforce a flow "barrier" to prevent optimizing compiler from reordering 
+// Enforce a flow "barrier" to prevent optimizing compiler from reordering
 // operations.
 #define HAL_IO_BARRIER()
 

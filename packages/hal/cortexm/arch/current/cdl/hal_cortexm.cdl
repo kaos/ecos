@@ -151,11 +151,11 @@ cdl_package CYGPKG_HAL_CORTEXM {
              Calculate the maximum exception priority that can be set by interrupts.
              Higher priorities are reserved for the DEBUG and SVC traps."
     }
-    
+
     cdl_option CYGBLD_LINKER_SCRIPT {
         display "Linker script"
         flavor data
-	no_define
+        no_define
         calculated  { "src/cortexm.ld" }
     }
 
@@ -165,7 +165,7 @@ cdl_package CYGPKG_HAL_CORTEXM {
             default_value 8
             description   "
                 This option determines the number of breakpoints supported by the HAL."
-    }    
+    }
 }
 
 # EOF hal_cortexm.cdl

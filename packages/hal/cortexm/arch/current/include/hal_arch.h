@@ -47,7 +47,8 @@
 //
 //####DESCRIPTIONEND####
 //
-//========================================================================*/
+//========================================================================
+*/
 
 #include <pkgconf/system.h>
 #include <pkgconf/hal.h>
@@ -63,7 +64,7 @@
 // for each context. This makes the GDB state get/put slightly more
 // complex, but that is a suitable compromise.
 
-typedef struct 
+typedef struct
 {
     union
     {
@@ -83,10 +84,10 @@ typedef struct
             cyg_uint32          type;           // State type
             cyg_uint32          vector;         // Exception vector number
             cyg_uint32          basepri;        // BASEPRI
-            
+
             cyg_uint32          r4_11[8];       // Remaining CPU registers
             cyg_uint32          xlr;            // Exception return LR
-            
+
             // The following are saved and restored automatically by the CPU
             // for exceptions or interrupts.
 
@@ -103,7 +104,7 @@ typedef struct
         struct
         {
             cyg_uint32          type;           // State type
-            
+
             // The following are saved and restored automatically by the CPU
             // for exceptions or interrupts.
 
@@ -115,7 +116,7 @@ typedef struct
             cyg_uint32          lr;
             cyg_uint32          pc;
             cyg_uint32          psr;
-            
+
         } interrupt;
     } u;
 
@@ -220,7 +221,7 @@ externC void cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
 // Breakpoint support
 // HAL_BREAKPOINT() is a code sequence that will cause a breakpoint to happen
 // if executed.
-// HAL_BREAKINST is the value of the breakpoint instruction and 
+// HAL_BREAKINST is the value of the breakpoint instruction and
 // HAL_BREAKINST_SIZE is its size in bytes.
 
 #define HAL_BREAKINST           0xbebe         // BKPT
@@ -342,4 +343,3 @@ __externC void hal_longjmp(hal_jmp_buf env, int val);
 
 //==========================================================================
 #endif //CYGONCE_HAL_ARCH_H
-
