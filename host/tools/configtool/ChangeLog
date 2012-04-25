@@ -1,3 +1,10 @@
+2012-04-23  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/makefile.gnu: Update build flags for recent
+	versions of Cygwin.
+	* standalone/wxwin/configtool.cpp, standalone/wxwin/mainwin.cpp:
+	Update copyright strings.
+
 2011-02-07  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/configitem.cpp: Escape newline chars in CDL

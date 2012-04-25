@@ -1,7 +1,7 @@
 # ####ECOSHOSTGPLCOPYRIGHTBEGIN####
 # -------------------------------------------                              
 # This file is part of the eCos host tools.                                
-# Copyright (C) 2003, 2005, 2006 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2005, 2006, 2012 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify     
 # it under the terms of the GNU General Public License as published by     
@@ -59,7 +59,7 @@ EXTRALDFLAGS=-L$(TCLDIR)/lib -L$(INSTALLDIR)/lib -lcdl -lcyginfra -ltcl
 
 ifneq (,$(findstring CYGWIN, $(shell uname)))
   PROGRAM=configtool.exe
-  CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags` -D_WIN32 -D__WIN32__ -DSTRICT -D__USE_W32_SOCKETS
+  CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags` -DSTRICT -D__USE_W32_SOCKETS
   LDFLAGS=`$(WXDIR)/bin/wx-config --libs std,gizmos` -lshlwapi -Wl,--subsystem,windows
   EXTRAOBJECTS=$(CTBUILDDIR)/configtoolres.o
   RCFLAGS=`$(WXDIR)/bin/wx-config --cppflags`

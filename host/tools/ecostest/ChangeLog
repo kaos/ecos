@@ -1,3 +1,8 @@
+2012-04-23  John Dallaway  <john@dallaway.org.uk>
+
+	* common/eCosTestPlatform.cpp: Include limits.h for PATH_MAX
+	definition.
+
 2009-09-25  John Dallaway  <john@dallaway.org.uk>
 
 	* common/eCosTestPlatform.cpp (CeCosTestPlatform::LoadFromDir): Use
