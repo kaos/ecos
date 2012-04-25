@@ -83,14 +83,6 @@
 //-----------------------------------------------------------------------------
 // Extra eCos data.
 
-// Some architectures use registers of different sizes, so NUMREGS
-// alone is not suffucient to size the register save area. For those
-// architectures, HAL_STUB_REGISTERS_SIZE is defined as the number
-// of target_register_t sized elements in the register save area.
-#ifndef HAL_STUB_REGISTERS_SIZE
-#define HAL_STUB_REGISTERS_SIZE NUMREGS
-#endif
-
 // Saved registers.
 HAL_SavedRegisters *_hal_registers;
 target_register_t registers[HAL_STUB_REGISTERS_SIZE];

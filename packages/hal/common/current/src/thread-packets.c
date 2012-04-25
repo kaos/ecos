@@ -134,7 +134,7 @@ static void stub_copy_registers(
                            )
 {
   target_register_t * limit ;
-  limit = dest + NUMREGS ;
+  limit = dest + HAL_STUB_REGISTERS_SIZE ;
 
   while (dest < limit)  *dest++ = *src++ ;
 }
@@ -480,9 +480,10 @@ void stub_pkt_currthread(
                                 int bufmax)
 {
   threadref thread ;
+#if PKT_DEBUG
   char * base_out ;
   base_out = outbuf ;
-  
+#endif
   if (dbg_currthread(&thread))
     {
       *outbuf++ = 'Q' ;

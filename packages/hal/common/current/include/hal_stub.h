@@ -82,6 +82,15 @@ typedef cyg_int32  int32;
 #endif
 #include <cyg/hal/generic-stub.h>
 
+// Some architectures use registers of different sizes, so NUMREGS
+// alone is not sufficient to size the register save area. For those
+// architectures, HAL_STUB_REGISTERS_SIZE is defined as the number
+// of target_register_t sized elements in the register save area.
+#ifndef HAL_STUB_REGISTERS_SIZE
+#define HAL_STUB_REGISTERS_SIZE NUMREGS
+#endif
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

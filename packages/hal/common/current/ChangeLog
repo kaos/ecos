@@ -1,3 +1,9 @@
+2012-04-25  Ilija Kocho <ilijak@siva.com.mk>
+
+    * include/hal_stub.h, src/hal_stub.c, src/thread-packets.c:
+    NUMREGS replaced by HAL_STUB_REGISTERS_SIZE in thread-packets.c
+    [Bugzilla 1001558]
+
 2012-03-14  Grant Edwards <grant.b.edwards@gmail.com>
 
 	* src/generic-stub.c (process_query): Fix compiler warning about
