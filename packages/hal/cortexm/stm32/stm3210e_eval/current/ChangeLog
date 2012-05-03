@@ -1,3 +1,14 @@
+2012-04-20  Ilija Stanislevik  <ilijas@siva.mk>
+
+	* src/stm3210e_eval_eth_enc424j600.c: New file, initialization
+	of optional enc424j600 ethernet over SPI.
+
+	* include/plf_io.h: Add macro for initialization of optional
+	enc424j600 ethernet over SPI.
+
+	* cdl/hal_cortexm_stm32_stm3210e_eval.cdl: Add component
+	enc424j600 ethernet over SPI.
+
 2012-03-23  James Smith  <jsmith@ecoscentric.com>
 
 	* include/plf_io.h: Update GPIO pin definitions to use new PIN

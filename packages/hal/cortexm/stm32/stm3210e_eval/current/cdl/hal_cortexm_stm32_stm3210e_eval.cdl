@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2008 Free Software Foundation, Inc.
+## Copyright (C) 2008, 2012 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -86,16 +86,34 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
             JTAG debugger such as a BDI3000 or PEEDI. The 'SRAM' type allows
             programs to be downloaded via a JTAG debugger into on-chip SRAM."
     }
-    
+
     cdl_component CYGHWR_MEMORY_LAYOUT {
         display "Memory layout"
         flavor data
         no_define
-        calculated    { (CYG_HAL_STARTUP == "RAM"    ) ? "cortexm_stm3210e_eval_ram"      :
-                        (CYG_HAL_STARTUP == "SRAM"   ) ? "cortexm_stm3210e_eval_sram"     :
-                        (CYG_HAL_STARTUP == "ROM"    ) ? "cortexm_stm3210e_eval_rom"      :
-                        (CYG_HAL_STARTUP == "JTAG"   ) ? "cortexm_stm3210e_eval_jtag"     :
-                                                         "undefined" }
+        calculated    { (CYG_HAL_STARTUP == "RAM" ) ? 
+                        (CYGMEM_HAL_CORTEXM_STM32_STM3210E_EXTRA_BASE_RAM ?
+                        "cortexm_stm3210e_eval_extrabaseram" : "cortexm_stm3210e_eval_ram")      :
+                        (CYG_HAL_STARTUP == "SRAM") ? "cortexm_stm3210e_eval_sram"     :
+                        (CYG_HAL_STARTUP == "ROM" ) ? "cortexm_stm3210e_eval_rom"      :
+                        (CYG_HAL_STARTUP == "JTAG") ? "cortexm_stm3210e_eval_jtag"     :
+                                                      "undefined" }
+
+        cdl_option CYGMEM_HAL_CORTEXM_STM32_STM3210E_EXTRA_BASE_RAM {
+            display       "Additional reserved space at base of RAM"
+            flavor        booldata
+            default_value 0
+            active_if     {CYG_HAL_STARTUP == "RAM"}
+            legal_values  0 to 0x80000
+            description   "
+                If you are using a RedBoot with additional components enabled,
+                such as networking, RedBoot may be occupying additional RAM.
+                In such cases, an eCos application loaded by RedBoot must
+                reserve additional space at the base of RAM to accommodate
+                RedBoot's extra RAM requirements. This option, specified in
+                bytes, allows the amount of extra reserved space to be
+                increased beyond the default."
+        }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
                 display "Memory layout linker script fragment"
@@ -216,6 +234,95 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
             use that instead.
             Note: this should match the value chosen for the console port if the
             console and GDB port are the same."
+    }
+
+    cdl_component CYGHWR_HAL_CORTEXM_STM32_SPIETH_CONTROLLER {
+        display       "STM3210E HAL resources"
+        parent        CYGPKG_DEVS_ETH_ENC424J600
+        active_if     CYGPKG_DEVS_ETH_ENC424J600
+        compile       stm3210e_eval_eth_enc424j600.c
+        flavor        none
+        no_define
+
+        description   "
+            Support for ENC424J600 with STM3210E EVAL board."
+            
+        cdl_option CYGNUM_ETH_SPIETH_HAL_INTERRUPT_VECTOR { 
+            display       "Interrupt vector calculated from pin"
+            parent        CYGNUM_DEVS_ETH_ENC424J600_INTERRUPT_VECTOR
+            flavor        data
+            no_define
+            calculated    { "CYGNUM_HAL_INTERRUPT_EXTI" . CYGHWR_HAL_SPIETH_INTERRUPT_PIN } 
+            active_if     CYGINT_IO_ETH_INT_SUPPORT_REQUIRED 
+            description   "
+                Interrupt vector corresponding with external interrupt line used for
+                enc424j600.
+                This value is automatically calculated from CYGHWR_HAL_SPIETH_INTERRUPT_PIN.
+                "
+        } 
+
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_SPIETH_SPI_BUS {
+            display       "SPI bus"
+            flavor        data
+            requires      { (CYGHWR_HAL_CORTEXM_STM32_SPIETH_SPI_BUS == 1) implies CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS1 }
+            requires      { (CYGHWR_HAL_CORTEXM_STM32_SPIETH_SPI_BUS == 2) implies CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS2 }
+            requires      { (CYGHWR_HAL_CORTEXM_STM32_SPIETH_SPI_BUS == 3) implies CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS3 }
+            requires      (CYGNUM_DEVS_SPI_CORTEXM_STM32_PIN_TOGGLE_RATE==50)
+            legal_values  { 1 2 3 } 
+            default_value 1
+            description   "
+                Select which SPI bus of the STM32 the SPI Ethernet controller
+                is connected to."
+        }
+        
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_SPIETH_SPI_CS {
+            display       "Chip select index"
+            flavor        data
+            default_value 0
+            legal_values  0 to 99
+            description   "
+                Enter the index into the array of chip selects to be used as
+                the chip select for the external Ethernet
+                controller connected to the SPI bus. The list of possible chip
+                selects for the selected SPI bus is defined in the STM32 SPI
+                driver's configuration, for example for SPI bus 1:
+                CYGHWR_DEVS_SPI_CORTEXM_STM32_BUS1_CS_GPIOS."
+        }
+        
+        cdl_option CYGHWR_HAL_CORTEXM_STM32_SPIETH_INTERRUPT_PORT {
+            display       "Interrupt pin port"
+            active_if     CYGINT_IO_ETH_INT_SUPPORT_REQUIRED 
+            flavor        data
+            legal_values  { "\'A\'" "\'B\'" "\'C\'" "\'D\'" "\'E\'" "\'F\'" "\'G\'" }
+            default_value {"\'G\'"}
+            description   "
+               This selects the GPIO port associated with the interrupt pin
+               connected to the external Ethernet controller."
+        }
+        
+        cdl_option CYGHWR_HAL_SPIETH_INTERRUPT_PIN {
+            display       "Interrupt pin number"
+            active_if     CYGINT_IO_ETH_INT_SUPPORT_REQUIRED 
+            flavor        data
+            legal_values  0 to 15
+            default_value 15
+            description   "
+               This selects the pin number within the GPIO port associated with
+               the interrupt pin connected to the external Ethernet controller."
+        }
+
+        cdl_option CYGNUM_HAL_SPIETH_INTERRUPT_PRIORITY {
+            display       "Interrupt priority"
+            active_if     CYGINT_IO_ETH_INT_SUPPORT_REQUIRED 
+            flavor        data
+            legal_values  { 0xe0 0xd0 0xc0 0xb0 0xa0 0x90 0x80
+                            0x70 0x60 0x50 0x40 0x30 0x20 0x10 0x00}
+            default_value 0xe0
+            description   "
+               Enter the interrupt priority used for the interrupt
+               connected to the external Ethernet controller. A
+               lower number means a higher priority."
+        }
     }
 
     cdl_component CYGBLD_GLOBAL_OPTIONS {

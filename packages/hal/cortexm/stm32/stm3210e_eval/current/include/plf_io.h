@@ -149,6 +149,17 @@ __externC int cyg_hal_stub_permit_data_access( CYG_ADDRESS addr, cyg_uint32 coun
 #define CYGHWR_HAL_STM32_SPI3_DMA_RX            CYGHWR_HAL_STM32_DMA( 2, 1, 0, P2M )
 
 
+//=============================================================================
+// Optional enc424j600 Ethernet over SPI
+
+#ifdef CYGPKG_DEVS_ETH_ENC424J600
+struct cyg_netdevtab_entry;
+__externC void cyg_devs_cortexm_stm3210e_enc424j600_init( struct cyg_netdevtab_entry * );
+#define CYG_DEVS_ETH_ENC424J600_PLF_INIT( _tab_ ) \
+			cyg_devs_cortexm_stm3210e_enc424j600_init( _tab_ )
+
+#endif
+
 //-----------------------------------------------------------------------------
 // end of plf_io.h
 #endif // CYGONCE_HAL_PLF_IO_H
