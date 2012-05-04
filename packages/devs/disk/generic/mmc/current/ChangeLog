@@ -1,3 +1,8 @@
+2012-05-04  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mmc_spi.c (mmc_spi_send_init): Silence unused var warning.
+	Spotted by Ilija Kocho.
+
 2008-08-19  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/devs_disk_mmc.cdl: Renamed the device to /dev/mmcdiskX so

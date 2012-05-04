@@ -196,12 +196,12 @@ typedef struct cyg_mmc_spi_disk_info_t {
 static void
 mmc_spi_send_init(cyg_mmc_spi_disk_info_t* disk)
 {
-    cyg_spi_bus     *bus;
-    cyg_spi_device  *dev;
+#if DEBUG > 1
+    cyg_spi_device  *dev = disk->mmc_spi_dev;
+    cyg_spi_bus     *bus = dev->spi_bus;
+#endif
 
     DEBUG2("mmc_spi_send_init(): dev pointer 0x%p, %d\n", disk->mmc_spi_dev, cyg_mmc_spi_polled );
-    dev = disk->mmc_spi_dev;
-    bus = dev->spi_bus;
     DEBUG2("                   : begin pointer %p\n", bus->spi_transaction_begin );
     cyg_spi_tick(disk->mmc_spi_dev, cyg_mmc_spi_polled, 10);
 }
