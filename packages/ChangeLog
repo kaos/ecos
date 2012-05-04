@@ -1,3 +1,8 @@
+2012-05-04  Ilija Stanislevik  <ilijas@siva.mk>
+
+	* ecos.db: Add Microchip ENC424J600 / ENC624J600 ethernet controller
+	driver package.
+
 2012-03-30  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* NEWS, ecos.db: Add STM3220G-eval and STM3240G-eval board port and

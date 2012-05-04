@@ -2187,6 +2187,13 @@ package CYGPKG_DEVS_ETH_ECOSYNTH {
         description     "Ethernet driver for the synthetic target"
 }
 
+package CYGPKG_DEVS_ETH_ENC424J600 {
+	alias 		{ "Microchip ENC424J600 / ENC624J600 ethernet controller driver" enc424j600_eth_driver }
+	directory	devs/eth/microchip/enc424j600
+	script		enc424j600_eth_drivers.cdl
+        description     "Driver for Microchip ENC424J600 and ENC624J600 Ethernet controllers."
+}
+
 package CYGPKG_IO_PCI	{
 	alias		{ "PCI configuration library" io_pci }
 	directory	io/pci
