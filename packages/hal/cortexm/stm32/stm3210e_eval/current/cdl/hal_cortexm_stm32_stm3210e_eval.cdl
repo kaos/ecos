@@ -237,7 +237,7 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM3210E_EVAL {
     }
 
     cdl_component CYGHWR_HAL_CORTEXM_STM32_SPIETH_CONTROLLER {
-        display       "STM3210E HAL resources"
+        display       "STM3210E support for ENC424J600 SPI ethernet"
         parent        CYGPKG_DEVS_ETH_ENC424J600
         active_if     CYGPKG_DEVS_ETH_ENC424J600
         compile       stm3210e_eval_eth_enc424j600.c
