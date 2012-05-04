@@ -1,0 +1,271 @@
+# ====================================================================
+#
+#      enc424j600_eth_drivers.cdl
+#
+#      Ethernet driver for Microchip ENC424J600 controller
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later
+## version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with eCos; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+##
+## As a special exception, if other files instantiate templates or use
+## macros or inline functions from this file, or you compile this file
+## and link it with other works to produce a work based on this file,
+## this file does not by itself cause the resulting work to be covered by
+## the GNU General Public License. However the source code for this file
+## must still be made available in accordance with section (3) of the GNU
+## General Public License v2.
+##
+## This exception does not invalidate any other reasons why a work based
+## on this file might be covered by the GNU General Public License.
+## -------------------------------------------
+## ####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Ilija Stanislevik
+# Contributors:
+# Date:           2010-11-23
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_ETH_ENC424J600 {
+    display       "Microchip ENC424J600 / ENC624J600 ethernet controller"
+
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if     CYGPKG_IO_ETH_DRIVERS
+
+    implements    CYGHWR_NET_DRIVERS
+    implements    CYGHWR_NET_DRIVER_ETH0
+    implements    CYGINT_IO_ETH_MULTICAST
+
+    active_if     CYGPKG_IO_SPI
+
+    requires { CYGINT_IO_ETH_INT_SUPPORT_REQUIRED implies
+               (CYGNUM_DEVS_ETH_ENC424J600_INTERRUPT_VECTOR != "")
+             }
+
+    requires { CYGINT_IO_ETH_INT_SUPPORT_REQUIRED implies
+               (CYGNUM_DEVS_ETH_ENC424J600_INTERRUPT_PRIORITY != "")
+             }
+
+    include_dir   cyg/io/eth
+    description   "
+        Driver for Microchip ENC424J600 and ENC624J600 Ethernet controllers,
+        connected to the platform with an SPI interface."
+
+    compile       -library=libextras.a enc424j600_spi.c
+
+    define_proc {
+        puts $::cdl_header "#include <pkgconf/system.h>"
+    }
+
+    cdl_component CYGPKG_DEVS_ETH_ENC424J600_OPTIONS {
+        display     "Microchip ENC424J600 driver build options"
+        flavor      none
+        no_define
+
+        cdl_option CYGPKG_DEVS_ETH_ENC424J600_CFLAGS_ADD {
+            display       "Additional compiler flags"
+            flavor        data
+            no_define
+            default_value { "-D_KERNEL -D__ECOS" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the ENC424J600 ethernet driver package.
+                These flags are used in addition
+                to the set of global flags."
+        }
+
+    }
+
+    cdl_option CYGDAT_IO_ETH_ENC424J600_NAME {
+        display       "Ethernet device name"
+        flavor        data
+        default_value { "\"eth0\"" }
+    }
+
+    cdl_component CYGSEM_DEVS_ETH_ENC424J600_NO_AUTO_NEGOTIATION {
+        display       "No auto negotiation of speed and duplex"
+        default_value 0
+        description   "
+            Enable this component in order to manually configure the link speed
+            and duplex configuration. Otherwise the chip will automatically
+            negotiate them with the peer."
+
+        cdl_option CYGNUM_DEVS_ETH_ENC424J600_SPEED {
+            display       "Ethernet speed in megabit per second"
+            flavor        data
+            legal_values  { 100 10 }
+            default_value 100
+        }
+
+        cdl_option CYGSEM_DEVS_ETH_ENC424J600_FULL_DUPLEX {
+            display       "Full duplex"
+            default_value 1
+        }
+    }
+
+    cdl_component CYGSEM_DEVS_ETH_ENC424J600_SET_ESA {
+        display       "Set the Ethernet station address"
+        flavor        bool
+        default_value 0
+        description   "
+            Enabling this option will override the ENC424J600
+            factory set ethernet station address (MAC address)."
+
+        cdl_option CYGDAT_DEVS_ETH_ENC424J600_ESA {
+            display       "Ethernet station address"
+            flavor        data
+            default_value { " { 0x00, 0x04, 0xa3, 0x10, 0x08, 0x3e } "}
+            description   "The ethernet station address"
+        }
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_ENC424J600_ACCEPTABLE_PACKET_SIZE {
+        display       "Largest acceptable packet size"
+        flavor        data
+        legal_values  60 to 9600
+        default_value 1518
+        description "
+            This option configures the size in bytes of the largest
+            packet expected to be sent or received. The chip will
+            truncate any received or transmitted packet to this
+            size. This size excludes any space required for the
+            Preamble, Start of Frame Delimiter and the Frame Check
+            Sequence (CRC)."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_ENC424J600_TXBUF_SIZE {
+        display       "Size of transmit buffer"
+        flavor        data
+        legal_values  CYGNUM_DEVS_ETH_ENC424J600_ACCEPTABLE_PACKET_SIZE to (0x6000 - CYGNUM_DEVS_ETH_ENC424J600_ACCEPTABLE_PACKET_SIZE -2)
+        default_value CYGNUM_DEVS_ETH_ENC424J600_ACCEPTABLE_PACKET_SIZE
+        description "
+            The 0x6000 bytes of on-chip RAM are divided between transmit
+            buffer and receive buffer. This parameter impacts the sizes of
+            both. The transmit buffer must be large enough to hold one
+            transmit packet."
+    }
+
+    cdl_option CYGSEM_DEVS_ETH_ENC424J600_FLOWC {
+        display       "Flow control"
+        flavor        data
+        default_value { "None" }
+        legal_values  { "None" "OnChip" }
+        description   "
+            Enabling flow control prevents overflow of the input buffer if
+            received packets are not processed fast enough."
+    }
+
+    cdl_component CYGNUM_DEVS_ETH_ENC424J600_FLOW_CONTROL_PARAMETERS {
+        display       "Flow control parameters"
+        active_if     { CYGSEM_DEVS_ETH_ENC424J600_FLOWC != "None" }
+        flavor        none
+
+        cdl_option CYGNUM_DEVS_ETH_ENC424J600_FLOWC_UPPER_WATERMARK {
+            display       "Upper threshold for flow control"
+            flavor        data
+            default_value 16
+            legal_values  2 to 255
+            description   "
+                This threshold is measured in multiples of blocks of
+                96 bytes. When this number of blocks have been used
+                in the on-chip receive buffer, the device considers its
+                receive buffer full and initiates flow control."
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_ENC424J600_FLOWC_LOWER_WATERMARK {
+            display       "Lower threshold for flow control"
+            flavor        data
+            default_value 15
+            legal_values  1 to (CYGNUM_DEVS_ETH_ENC424J600_FLOWC_UPPER_WATERMARK - 1)
+            description   "
+                This threshold is measured in multiples of blocks of
+                96 bytes. If flow control has been activated, then
+                when the number of occupied blocks in the on-chip
+                receive buffer falls below this level, the device
+                considers the buffer to be empty enough to receive
+                more data and therefore disengages flow control."
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_ENC424J600_FLOWC_PAUSE {
+            display       "Duration of flow control pause"
+            flavor        data
+            default_value { 0x1000 }
+            legal_values  0 to 0xffff
+            description   "
+                Duration of flow control pause in units of 512 bit times. Valid for full-duplex
+                operation only."
+        }
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_ENC424J600_CLOCKOUT_FREQUENCY {
+        display       "Frequency of clock output at the CLKOUT pin"
+        flavor        data
+        default_value { "0" }
+        legal_values  {
+            "0" "33M33" "25M00"
+            "20M00" "16M67" "12M50" "10M00"
+            "8M333" "8M000" "6M250" "5M000"
+            "4M000" "3M125"
+            "0M0" "100K" "50K"
+        }
+        description   "
+            The ENC424J600 has a clock output which can be used by
+            other parts of the system.  M stands for megahertz, K for
+            kilohertz, and where these letters are used stands for the
+            position of a decimal point.  Values 0 and 0M0 both mean
+            DC output, or, in other words, no clock output.  This
+            driver does not make use of the clock output facility
+            itself. Control of the clock output frequency is provided
+            here as a convenience."
+    }
+
+    cdl_component CYGPKG_DEVS_ETH_ENC424J600_INTERRUPT {
+        display       "Interrupt configuration"
+        flavor        none
+        no_define
+        active_if     CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
+        description   "
+            Configuration options related to interrupt handling."
+
+        cdl_option CYGNUM_DEVS_ETH_ENC424J600_INTERRUPT_PRIORITY {
+            display       "Interrupt priority"
+            flavor        data
+            default_value { is_active(CYGNUM_HAL_SPIETH_INTERRUPT_PRIORITY) ? CYGNUM_HAL_SPIETH_INTERRUPT_PRIORITY : "\"\"" }
+            description   "
+                Interrupt priority for the ENC424J600. The default value
+                is typically set by the platform HAL."
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_ENC424J600_INTERRUPT_VECTOR {
+            display       "Interrupt vector"
+            flavor data
+            default_value { is_active(CYGNUM_ETH_SPIETH_HAL_INTERRUPT_VECTOR) ? CYGNUM_ETH_SPIETH_HAL_INTERRUPT_VECTOR : "\"\"" }
+            description   "
+                Interrupt vector for the ENC424J600. The default value is
+                typically set by the platform HAL."
+        }
+    }
+}
+
+# End of enc424j600_eth_drivers.cdl
