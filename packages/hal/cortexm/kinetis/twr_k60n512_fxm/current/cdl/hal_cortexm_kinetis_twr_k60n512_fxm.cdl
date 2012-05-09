@@ -54,10 +54,6 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512_FXM {
     hardware
     requires      { CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE == "INTERNAL" }
 
-    implements    CYGINT_IO_SERIAL_FREESCALE_UART4
-    implements    CYGINT_HAL_FREESCALE_UART4
-#    implements    CYGINT_IO_SERIAL_FREESCALE_UART3
-#    implements    CYGINT_HAL_FREESCALE_UART3
     implements    CYGINT_HAL_CORTEXM_KINETIS_RTC
 
     description   "
@@ -68,6 +64,8 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512_FXM {
     families."
 
     compile       twr_k60n512_fxm_misc.c
+
+    implements    CYGINT_HAL_CORTEXM4_CODE
 
     requires      { is_active(CYGPKG_DEVS_ETH_PHY) implies
         (1 == CYGHWR_DEVS_ETH_PHY_KSZ8041) }
@@ -154,6 +152,34 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512_FXM {
         default_value 1
         parent CYGHWR_HAL_CORTEXM_KINETIS_RTC
         requires { CYGHWR_HAL_CORTEXM_KINETIS_RTC_OSC_CAP == 20 }
+    }
+
+    cdl_option CYGOPT_HAL_KINETIS_UART3_IMPLEMENT {
+        display "Use UART3"
+        flavor bool
+        default_value { CYGHWR_HAL_KINETIS_FB_CS0_SIZE <= 0x00040000 }
+        active_if   { CYGHWR_HAL_KINETIS_FB_CS0_SIZE <= 0x00040000 }
+        implements    CYGINT_IO_SERIAL_FREESCALE_UART3
+        implements    CYGINT_HAL_FREESCALE_UART3
+        description "
+            FlexBus lines AD19 and AD18 are multiplxed with UART Rx and Tx
+            so we can't use UART3 if external RAM is larger than 1MiB.
+            If external RAM is less than 1MiB we use UART3 which
+            is compatible with single chip configuration."
+    }
+
+    cdl_option CYGOPT_HAL_KINETIS_UART4_IMPLEMENT {
+        display "Use UART4"
+        flavor bool
+#        calculated !CYGOPT_HAL_KINETIS_UART3_IMPLEMENT
+        default_value { CYGHWR_HAL_KINETIS_FB_CS0_SIZE > 0x00040000 }
+#        active_if   { CYGHWR_HAL_KINETIS_FB_CS0_SIZE > 0x00040000 }
+        implements    CYGINT_IO_SERIAL_FREESCALE_UART4
+        implements    CYGINT_HAL_FREESCALE_UART4
+        description "
+            FlexBus lines AD19 and AD18 are multiplxed with UART Rx and Tx
+            so we can't use UART3 if external RAM is larger than 1MiB.
+            Instead we use UART4"
     }
 
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
@@ -288,22 +314,16 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512_FXM {
     cdl_option CYGHWR_HAL_KINETIS_FB_CS0_SIZE {
         display "Size \[Bytes\]"
         flavor data
-        legal_values { CYGHWR_RAM0_MICRON_CELLULAR_SIZE 0x00100000 }
+        legal_values { 0x00040000  0x00400000 CYGHWR_RAM0_MICRON_CELLULAR_SIZE }
         parent CYGHWR_HAL_KINETIS_FB_CS0
-        default_value CYGHWR_RAM0_MICRON_CELLULAR_SIZE
+        default_value 0x00040000
     }
 
     cdl_option CYGHWR_HAL_KINETIS_FB_CS0_BASE {
         display "Memory base address"
         flavor data
         parent CYGHWR_HAL_KINETIS_FB_CS0
-        calculated { (CYGHWR_HAL_KINETIS_FB_CS0_SIZE ==
-                      CYGHWR_RAM0_MICRON_CELLULAR_SIZE) ?
-                      CYGHWR_HAL_KINETIS_FB_CS0_AR :
-                      CYGHWR_HAL_KINETIS_FB_CS0_AR +
-                      CYGHWR_RAM0_MICRON_CELLULAR_SIZE -
-                      CYGHWR_HAL_KINETIS_FB_CS0_SIZE
-                   }
+        calculated CYGHWR_HAL_KINETIS_FB_CS0_AR
     }
 
     cdl_component CYGHWR_HAL_KINETIS_FB_CS0_MR {
@@ -503,6 +523,18 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512_FXM {
     }
 # CS0 Implementation End
 # FlexBus  Implementation End
+
+    cdl_option CYGHWR_HAL_KINETIS_FB_EXTRAM_SIZE {
+        display "External RAM size"
+        flavor data
+        calculated CYGHWR_HAL_KINETIS_FB_CS0_SIZE
+    }
+
+    cdl_option CYGHWR_HAL_KINETIS_FB_EXTRAM_BASE {
+        display "External RAM base address"
+        flavor data
+        calculated CYGHWR_HAL_KINETIS_FB_CS0_BASE
+    }
 
     cdl_option CYGHWR_FREESCALE_ENET_MII_MDC_HAL_CLOCK {
         display "ENET MII MDC clock provided by HAL"
