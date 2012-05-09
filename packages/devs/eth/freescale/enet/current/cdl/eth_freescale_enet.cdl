@@ -190,7 +190,6 @@ cdl_package CYGPKG_DEVS_ETH_FREESCALE_ENET {
                 CYGNUM_DEVS_ETH_FREESCALE_ENET_TXBUF_ALIGN
             }
         }
-
     }
 
     # END of ENET0 specific configuration options. ---------------------------
@@ -426,7 +425,7 @@ cdl_package CYGPKG_DEVS_ETH_FREESCALE_ENET {
             }
         }
     }
-    
+
     cdl_option CYGPKG_DEVS_ETH_FREESCALE_ENET_DEBUG_LEVEL {
          display "Driver debug output level"
          flavor  data

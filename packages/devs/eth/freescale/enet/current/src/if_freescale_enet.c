@@ -84,6 +84,9 @@
 #include <cyg/io/eth/if_freescale_enet_bd.h>
 #include <cyg/io/eth/if_freescale_enet_io.h>
 
+#if defined CYGHWR_HAL_ENET_TCD_SECTION || defined CYGHWR_HAL_ENET_BUF_SECTION
+# include <cyg/infra/cyg_type.h>
+#endif
 // Some debugging helpers ---------------------------------------------------
 
 #define DEBUG_ENET CYGPKG_DEVS_ETH_FREESCALE_ENET_DEBUG_LEVEL
@@ -142,13 +145,19 @@
 // Resources provided by HAL ==============================================
 // Ethernet RAM and DMA configuration --------------------------------------
 
-#ifdef CYGHWR_HAL_ENET_MEM_SECTION
-# include <cyg/infra/cyg_type.h>
-# define ENET_RAM_MEM_SECTION CYGBLD_ATTRIB_SECTION(CYGHWR_HAL_ENET_MEM_SECTION)
+// Buffer descriptor memory section
+#ifdef CYGHWR_HAL_ENET_TCD_SECTION
+# define ENET_RAM_TCD_SECTION CYGBLD_ATTRIB_SECTION(CYGHWR_HAL_ENET_TCD_SECTION)
 #else
-# define ENET_RAM_MEM_SECTION
-#endif // CYGHWR_HAL_ENET_MEM_SECTION
+# define ENET_RAM_TCD_SECTION
+#endif // CYGHWR_HAL_ENET_TCD_SECTION
 
+// Buffer memory section
+#ifdef CYGHWR_HAL_ENET_BUF_SECTION
+# define ENET_RAM_BUF_SECTION CYGBLD_ATTRIB_SECTION(CYGHWR_HAL_ENET_BUF_SECTION)
+#else
+# define ENET_RAM_BUF_SECTION
+#endif // CYGHWR_HAL_ENET_BUF_SECTION
 
 // IRQ masking --------------------------------------------------------------
 //
@@ -396,24 +405,24 @@ static const cyg_uint32 const enet0_pins[] = {
 
 // Buffer descriptors
 enet_bd_t enet0_rxbd_pool[CYGNUM_DEVS_ETH_FREESCALE_ENET0_RX_BUFS]
-ENET_RAM_MEM_SECTION ENET_RXBD_ALIGN;
+ENET_RAM_TCD_SECTION ENET_RXBD_ALIGN;
 enet_bd_t enet0_txbd_pool[CYGNUM_DEVS_ETH_FREESCALE_ENET0_TX_BUFS]
-                         ENET_RAM_MEM_SECTION ENET_TXBD_ALIGN;
+                         ENET_RAM_TCD_SECTION ENET_TXBD_ALIGN;
 
 #ifdef CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY
 // Tx key queue
 cyg_uint32 enet0_txkey_pool[CYGNUM_DEVS_ETH_FREESCALE_ENET0_TX_BUFS]
-                         ENET_RAM_MEM_SECTION;
+                         ENET_RAM_TCD_SECTION;
 #endif // CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY
 
 // Buffers
 cyg_uint8 enet0_rxbuf[CYGNUM_DEVS_ETH_FREESCALE_ENET0_RX_BUFS *
                       CYGNUM_DEVS_ETH_FREESCALE_ENET0_RXBUF_SIZE]
-                      ENET_RAM_MEM_SECTION ENET_RXBUF_ALIGN;
+                      ENET_RXBUF_ALIGN ENET_RAM_BUF_SECTION;
 #ifndef CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY
 cyg_uint8 enet0_txbuf[CYGNUM_DEVS_ETH_FREESCALE_ENET0_TX_BUFS *
                       CYGNUM_DEVS_ETH_FREESCALE_ENET0_TXBUF_SIZE]
-                      ENET_RAM_MEM_SECTION ENET_TXBUF_ALIGN;
+                      ENET_TXBUF_ALIGN ENET_RAM_BUF_SECTION;
 #endif //  CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY
 
 #ifdef  CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY
