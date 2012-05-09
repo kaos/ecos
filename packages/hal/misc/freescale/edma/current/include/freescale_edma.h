@@ -51,16 +51,23 @@
 //
 //===========================================================================
 
+#include <pkgconf/hal.h>
+#if defined CYGHWR_HAL_EDMA_TCD_SECTION || defined CYGHWR_HAL_EDMA_MEM_SECTION
+# include <cyg/infra/cyg_type.h>
+#endif
+
 // ----------------------------------------------------------------------------
 // DMAMUX DMA Multiplexer
 
 // DMAMUX - Peripheral register structure
 typedef volatile struct cyghwr_hal_freescale_dmamux_s {
-    cyg_uint8 chcfg[CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM];   // Channel Configuration Register
+    cyg_uint8 chcfg[CYGNUM_HAL_FREESCALE_DMAMUX_CHAN_NUM];   // Channel Configuration Register
 } cyghwr_hal_freescale_dmamux_t;
 
-// DMAMUX - Peripheral instance base addresses
-#define CYGHWR_HAL_FREESCALE_DMAMUX0_P ((cyghwr_hal_freescale_dmamux_t *) 0x40021000)
+// DMAMUX - Peripheral instance base addresses - defined in HAL (typically var_io_devs.h)
+// CYGHWR_IO_FREESCALE_DMAMUX0_P defined in HAL
+// CYGHWR_IO_FREESCALE_DMAMUX1_P defined in HAL
+
 
 // ----------------------------------------------------------------------------
 // DMAMUX Register Masks
@@ -76,7 +83,7 @@ typedef volatile struct cyghwr_hal_freescale_dmamux_s {
 #define FREESCALE_DMAMUX_CHCFG_ASIS          FREESCALE_DMAMUX_CHCFG_ENBL_M
 
 // DMAMUX DMA request sources
-// Provided by HAL (var_io_devs.h)
+// Provided by HAL (typically var_io_devs.h)
 #define FREESCALE_DMAMUX_SRC(__src) (_src)
 
 //---------------------------------------------------------------------------
@@ -92,6 +99,17 @@ enum {
     FREESCALE_DMA_PRI_CH9,  FREESCALE_DMA_PRI_CH8,
     FREESCALE_DMA_PRI_CH15, FREESCALE_DMA_PRI_CH14,
     FREESCALE_DMA_PRI_CH13, FREESCALE_DMA_PRI_CH12
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > 16
+    ,
+    FREESCALE_DMA_PRI_CH19, FREESCALE_DMA_PRI_CH18,
+    FREESCALE_DMA_PRI_CH17, FREESCALE_DMA_PRI_CH16,
+    FREESCALE_DMA_PRI_CH23, FREESCALE_DMA_PRI_CH22,
+    FREESCALE_DMA_PRI_CH21, FREESCALE_DMA_PRI_CH20,
+    FREESCALE_DMA_PRI_CH27, FREESCALE_DMA_PRI_CH26,
+    FREESCALE_DMA_PRI_CH25, FREESCALE_DMA_PRI_CH24,
+    FREESCALE_DMA_PRI_CH31, FREESCALE_DMA_PRI_CH30,
+    FREESCALE_DMA_PRI_CH29, FREESCALE_DMA_PRI_CH28
+#endif
 };
 
 // Transfer control descriptor
@@ -155,7 +173,8 @@ typedef volatile struct cyghwr_hal_freescale_edma_s {
           tcd[CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM]; // Transfer control descriptors
 } cyghwr_hal_freescale_edma_t;
 
-#define CYGHWR_HAL_FREESCALE_EDMA0_P  ((cyghwr_hal_freescale_edma_t *)0x40008000)
+// CYGHWR_IO_FREESCALE_EDMA0_P is defined by HAL
+// #define CYGHWR_IO_FREESCALE_EDMA0_P
 
 // ----------------------------------------------------------------------------
 //  DMA Register Bits
@@ -165,6 +184,8 @@ typedef volatile struct cyghwr_hal_freescale_edma_s {
 #define FREESCALE_EDMA_CR_EDBG_S                        1
 #define FREESCALE_EDMA_CR_ERCA_M                        0x4
 #define FREESCALE_EDMA_CR_ERCA_S                        2
+#define FREESCALE_EDMA_CR_ERGA_M                        0x8
+#define FREESCALE_EDMA_CR_ERGA_S                        3
 #define FREESCALE_EDMA_CR_HOE_M                         0x10
 #define FREESCALE_EDMA_CR_HOE_S                         4
 #define FREESCALE_EDMA_CR_HALT_M                        0x20
@@ -177,6 +198,9 @@ typedef volatile struct cyghwr_hal_freescale_edma_s {
 #define FREESCALE_EDMA_CR_ECX_S                         16
 #define FREESCALE_EDMA_CR_CX_M                          0x20000
 #define FREESCALE_EDMA_CR_CX_S                          17
+
+#define FREESCALE_EDMA_GR_PRI(_gr_, _pr_) VALUE_((8 + 2 * _gr_), (_pr_ & 0x3))
+
 // ES Bit Fields
 #define FREESCALE_EDMA_ES_DBE_M                         0x1
 #define FREESCALE_EDMA_ES_DBE_S                         0
@@ -200,6 +224,8 @@ typedef volatile struct cyghwr_hal_freescale_edma_s {
             VALUE_(FREESCALE_EDMA_ES_ERRCHN_S, __val)
 #define FREESCALE_EDMA_ES_CPE_M                         0x4000
 #define FREESCALE_EDMA_ES_CPE_S                         14
+#define FREESCALE_EDMA_ES_GPE_M                         0x8000
+#define FREESCALE_EDMA_ES_GPE_S                         15
 #define FREESCALE_EDMA_ES_ECX_M                         0x10000
 #define FREESCALE_EDMA_ES_ECX_S                         16
 #define FREESCALE_EDMA_ES_VLD_M                         0x80000000
@@ -208,7 +234,7 @@ typedef volatile struct cyghwr_hal_freescale_edma_s {
 #define FREESCALE_EDMA_ERQ(__rq)                        BIT(__rq)
 // EEI Bit Fields
 #define FREESCALE_EDMA_EEI(__rq)                        BIT(__rq)
-#define FREESCALE_EDMA_CHAN_M                           0x0F
+#define FREESCALE_EDMA_CHAN_M                           0x1F
 // CEEI Bit Fields
 #define FREESCALE_EDMA_CEEI_CEEI(__val) (__val & FREESCALE_EDMA_CHAN_M)
 #define FREESCALE_EDMA_CEEI_CAEE_M                      0x40
@@ -216,7 +242,6 @@ typedef volatile struct cyghwr_hal_freescale_edma_s {
 #define FREESCALE_EDMA_CEEI_NOP_M                       0x80
 #define FREESCALE_EDMA_CEEI_NOP_S                       7
 // SEEI Bit Fields
-#define FREESCALE_EDMA_SEEI_SEEI_M                      0xF
 #define FREESCALE_EDMA_SEEI_SEEI(__val) (__val & FREESCALE_EDMA_CHAN_M)
 #define FREESCALE_EDMA_SEEI_SAEE_M                      0x40
 #define FREESCALE_EDMA_SEEI_SAEE_S                      6
@@ -265,7 +290,9 @@ typedef volatile struct cyghwr_hal_freescale_edma_s {
 // HRS Bit Fields
 #define FREESCALE_EDMA_HRS(__ch)                        BIT(__ch)
 // DCHPRI Bit Fields
+
 #define FREESCALE_EDMA_DCHPRI_CHPRI_M                   0xF
+
 #define FREESCALE_EDMA_DCHPRI_CHPRI(__val)              \
         (__val & FREESCALE_EDMA_DCHPRI_CHPRI_M)
 #define FREESCALE_EDMA_DCHPRI_DPA_M                     0x40
@@ -382,6 +409,20 @@ typedef volatile struct cyghwr_hal_freescale_edma_s {
 #define FREESCALE_EDMA_BITER_ELINKYES_ELINK_M           0x8000
 #define FREESCALE_EDMA_BITER_ELINKYES_ELINK_S           15
 
+// EDMA buffer descriptor memory section
+#ifdef CYGHWR_HAL_EDMA_TCD_SECTION
+# define EDMA_RAM_TCD_SECTION CYGBLD_ATTRIB_SECTION(CYGHWR_HAL_EDMA_TCD_SECTION)
+#else
+# define EDMA_RAM_MEM_SECTION
+#endif // CYGHWR_HAL_EDMA_MEM_SECTION
+
+// EDMA buffer memory section
+#ifdef CYGHWR_HAL_EDMA_BUF_SECTION
+# define EDMA_RAM_BUF_SECTION CYGBLD_ATTRIB_SECTION(CYGHWR_HAL_EDMA_BUF_SECTION)
+#else
+# define EDMA_RAM_BUF_SECTION
+#endif // CYGHWR_HAL_EDMA_BUF_SECTION
+
 //-----------------------------------------------------------------------------
 
 // DMA Channel data
@@ -396,8 +437,7 @@ typedef struct cyghwr_hal_freescale_dma_chan_set_s {
 
 // DMA Channel set
 typedef struct cyghwr_hal_freescale_dma_set_s {
-    cyghwr_hal_freescale_edma_t *edma_p;
-    cyghwr_hal_freescale_dmamux_t *dmamux_p;
+    cyghwr_hal_freescale_edma_t* edma_p;
     const cyghwr_hal_freescale_dma_chan_set_t *chan_p;
     cyg_uint8 chan_n;
 } cyghwr_hal_freescale_dma_set_t;
@@ -407,7 +447,7 @@ __externC void
 hal_freescale_edma_init_chanset(cyghwr_hal_freescale_dma_set_t *inidat_p);
 
 __externC void
-hal_freescale_edma_diag(cyghwr_hal_freescale_dma_set_t *inidat_p, cyg_uint32 mask);
+hal_freescale_edma_diag(const cyghwr_hal_freescale_dma_set_t *inidat_p, cyg_uint32 mask);
 
 __externC void
 hal_freescale_edma_transfer_init(cyghwr_hal_freescale_edma_t *edma_p,

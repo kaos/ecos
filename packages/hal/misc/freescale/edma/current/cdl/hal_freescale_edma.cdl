@@ -55,6 +55,8 @@ cdl_package CYGPKG_HAL_FREESCALE_EDMA {
 
     active_if CYGINT_HAL_DMA
 
+    requires { CYGSEM_HAL_DCACHE_STARTUP_MODE == "WRITETHRU" }
+
     cdl_option CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM {
         display "Number of DMA channels"
         flavor data
@@ -79,6 +81,67 @@ cdl_package CYGPKG_HAL_FREESCALE_EDMA {
         flavor bool
         active_if CYGOPT_HAL_FREESCALE_EDMA_EMLM
         default_value 0
+    }
+
+    cdl_option CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE {
+        display "Number of channels in DMA group"
+        flavor data
+        calculated  16
+    }
+
+    cdl_component CYGHWR_HAL_FREESCALE_EDMA_GROPS {
+        display "Groups"
+        flavor none
+        no_define
+        active_if { CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM >
+            CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE }
+
+        cdl_option CYGNUM_HAL_FREESCALE_EDMA_GROUP_NUM {
+            display "Number of DMA groups"
+            flavor data
+            calculated  { CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE ?
+                CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM /
+                CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE : 0}
+        }
+
+        cdl_option CYGNUM_HAL_FREESCALE_EDMA_GR0_PRIO {
+            display "Group 0 priority"
+            flavor data
+            legal_values 0 1
+            default_value 0
+        }
+
+        cdl_option CYGNUM_HAL_FREESCALE_EDMA_GR1_PRIO {
+            display "Group 1 priority"
+            flavor data
+            legal_values 0 1
+            calculated { CYGNUM_HAL_FREESCALE_EDMA_GR0_PRIO ? 0 : 1 }
+        }
+
+        cdl_option CYGOPT_HAL_FREESCALE_EDMA_ERGA {
+            display "Round robin group arbitration"
+            active_if { CYGNUM_HAL_FREESCALE_EDMA_GROUP_NUM > 1 }
+            flavor bool
+            default_value 0
+        }
+    }
+
+    cdl_option CYGNUM_HAL_FREESCALE_DMAMUX_CHAN_NUM {
+        display "Channels per DMAMUX"
+        flavor data
+        calculated 16
+    }
+
+    cdl_component CYGNUM_HAL_FREESCALE_DMAMUX_NUM {
+        display "Number of DMAMUX units"
+        flavor data
+        active_if { CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM >
+            CYGNUM_HAL_FREESCALE_DMAMUX_CHAN_NUM
+        }
+        calculated { CYGNUM_HAL_FREESCALE_DMAMUX_CHAN_NUM ?
+           ( CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM /
+            CYGNUM_HAL_FREESCALE_DMAMUX_CHAN_NUM ) : 0
+        }
     }
 }
 

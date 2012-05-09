@@ -1,10 +1,16 @@
+2012-05-04  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_freescale_edma.cdl
+	* include/freescale_edma.h
+	* src/hal/freescale_edma.c
+	Add support for 32 channel eDMA [Bugzilla 1001579]
+
 2012-01-06  Ilija Kocho  <ilijak@siva.com.mk>
 
     * cdl/hal_freescale_edma.cdl
 	* include/freescale_edma.h
 	* src/hal/freescale_edma.c
 	New package -- Freescale eDMA DMA controller support [Bugzilla 1001450]
-
 
 //===========================================================================
 // ####GPLCOPYRIGHTBEGIN####

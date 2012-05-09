@@ -75,23 +75,42 @@ const cyg_uint8 const PRICHAN_I[CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM] =
     FREESCALE_DMA_PRI_CH10, FREESCALE_DMA_PRI_CH11,
     FREESCALE_DMA_PRI_CH12, FREESCALE_DMA_PRI_CH13,
     FREESCALE_DMA_PRI_CH14, FREESCALE_DMA_PRI_CH15
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE
+    ,
+    FREESCALE_DMA_PRI_CH16, FREESCALE_DMA_PRI_CH17,
+    FREESCALE_DMA_PRI_CH18, FREESCALE_DMA_PRI_CH19,
+    FREESCALE_DMA_PRI_CH20, FREESCALE_DMA_PRI_CH21,
+    FREESCALE_DMA_PRI_CH22, FREESCALE_DMA_PRI_CH23,
+    FREESCALE_DMA_PRI_CH24, FREESCALE_DMA_PRI_CH25,
+    FREESCALE_DMA_PRI_CH26, FREESCALE_DMA_PRI_CH27,
+    FREESCALE_DMA_PRI_CH28, FREESCALE_DMA_PRI_CH29,
+    FREESCALE_DMA_PRI_CH30, FREESCALE_DMA_PRI_CH31
+#endif
 };
 
 // Find an eDMA channel with given priority
-volatile cyg_uint8*
+static volatile cyg_uint8*
 hal_freescale_edma_find_chan_with_pri(cyghwr_hal_freescale_edma_t *edma_p,
-                                 cyg_uint8 pri)
+                                 cyg_uint32 pri, cyg_uint32 group_i)
 {
     volatile cyg_uint8 *chan_p;
 
-    for(chan_p = &edma_p->dchpri[0];
-        chan_p < &edma_p->dchpri[CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM];
+    for(chan_p = &edma_p->dchpri[group_i * CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE];
+        chan_p < &edma_p->dchpri[group_i * CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE +
+                                 CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE];
         chan_p++)
     {
-        if(*chan_p == pri) break;
+        if((*chan_p & FREESCALE_EDMA_DCHPRI_CHPRI_M) == pri) break;
     }
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE
+    if(0 == group_i){
+        if(chan_p >= &edma_p->dchpri[CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE])
+            chan_p = NULL;
+    }
+#endif
     if(chan_p >= &edma_p->dchpri[CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM])
         chan_p = NULL;
+
     return chan_p;
 }
 
@@ -101,13 +120,22 @@ hal_freescale_edma_find_chan_with_pri(cyghwr_hal_freescale_edma_t *edma_p,
 void
 hal_freescale_edma_init_1chan(
                            cyghwr_hal_freescale_edma_t *edma_p,
-                           cyghwr_hal_freescale_dmamux_t *dmamux_p,
                            const cyghwr_hal_freescale_dma_chan_set_t *chan_p)
 {
     cyg_uint8 oldprio;
+    cyghwr_hal_freescale_dmamux_t *dmamux_p;
     volatile cyg_uint8 *prev_ch_reqprio_p; // Previous chan with req. prio.
-    volatile cyg_uint8 *chcfg_p = &dmamux_p->chcfg[chan_p->dma_chan_i];
+    volatile cyg_uint8 *chcfg_p;
+    cyg_uint32         group_i;
 
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE
+    dmamux_p = chan_p->dma_chan_i < CYGNUM_HAL_FREESCALE_DMAMUX_CHAN_NUM ?
+                                         CYGHWR_IO_FREESCALE_DMAMUX0_P :
+                                         CYGHWR_IO_FREESCALE_DMAMUX1_P;
+#else
+    dmamux_p = CYGHWR_IO_FREESCALE_DMAMUX0_P;
+#endif
+    chcfg_p = &dmamux_p->chcfg[chan_p->dma_chan_i % CYGNUM_HAL_FREESCALE_DMAMUX_CHAN_NUM];
     edma_p->cerq = chan_p->dma_chan_i;
 
     if(chan_p->dma_src & FREESCALE_DMAMUX_CHCFG_SOURCE_M) {
@@ -119,8 +147,9 @@ hal_freescale_edma_init_1chan(
     if((chan_p->dma_prio != FREESCALE_EDMA_DCHPRI_ASIS) &&
        (edma_p->dchpri[PRICHAN_I[chan_p->dma_chan_i]] != chan_p->dma_prio))
     {
+        group_i = chan_p->dma_chan_i >= CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE ? 1 : 0;
         if((prev_ch_reqprio_p =
-            hal_freescale_edma_find_chan_with_pri(edma_p, chan_p->dma_prio)))
+            hal_freescale_edma_find_chan_with_pri(edma_p, chan_p->dma_prio, group_i)))
         {
             oldprio = edma_p->dchpri[PRICHAN_I[chan_p->dma_chan_i]];
             edma_p->dchpri[PRICHAN_I[chan_p->dma_chan_i]] = chan_p->dma_prio;
@@ -128,7 +157,6 @@ hal_freescale_edma_init_1chan(
         }
     }
 }
-
 
 // Init DMA controller
 
@@ -142,12 +170,26 @@ const cyg_uint32 FREESCALE_EDMA_CR_INI = 0
 #ifdef CYGOPT_HAL_FREESCALE_EDMA_ERCA
        | FREESCALE_EDMA_CR_ERCA_M
 #endif
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > 16
+#ifdef CYGOPT_HAL_FREESCALE_EDMA_ERGA
+       | FREESCALE_EDMA_CR_ERGA_M
+#endif
+       | FREESCALE_EDMA_GR_PRI(0, CYGNUM_HAL_FREESCALE_EDMA_GR0_PRIO)
+       | FREESCALE_EDMA_GR_PRI(1, CYGNUM_HAL_FREESCALE_EDMA_GR1_PRIO)
+#endif
       ;
 
 void
 hal_freescale_edma_init(cyghwr_hal_freescale_edma_t *edma_p)
 {
-    edma_p->cr |= FREESCALE_EDMA_CR_INI;
+    cyg_uint32 regval;
+
+    regval = edma_p->cr;
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > 16
+    regval &= ~(FREESCALE_EDMA_GR_PRI(0, 3) | FREESCALE_EDMA_GR_PRI(1, 3));
+#endif
+    regval |= FREESCALE_EDMA_CR_INI;
+    edma_p->cr = regval;
 }
 
 // Initialize a set of DMA channels
@@ -155,27 +197,25 @@ void
 hal_freescale_edma_init_chanset(cyghwr_hal_freescale_dma_set_t *inidat_p)
 {
     cyghwr_hal_freescale_edma_t *edma_p;
-    cyghwr_hal_freescale_dmamux_t *dmamux_p;
     const cyghwr_hal_freescale_dma_chan_set_t *chan_p;
 
-    edma_p = inidat_p->edma_p;
+    edma_p = inidat_p->edma_p = CYGHWR_HAL_FREESCALE_EDMA0_P;
 
     hal_freescale_edma_init(edma_p);
 
-    dmamux_p = inidat_p->dmamux_p;
     for(chan_p = inidat_p->chan_p;
         chan_p < inidat_p->chan_p + inidat_p->chan_n;
         chan_p++)
     {
-        hal_freescale_edma_init_1chan(edma_p, dmamux_p, chan_p);
+        hal_freescale_edma_init_1chan(edma_p, chan_p);
     }
     edma_p->es = 0;
 }
 
-#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > 16
-#define DMA_CHANMASK_FORMAT "0x%08x"
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM == 32
+# define DMA_CHANMASK_FORMAT "0x%08x"
 #else
-#define DMA_CHANMASK_FORMAT "0x%04x"
+# define DMA_CHANMASK_FORMAT "0x%04x"
 #endif
 
 #define EDMA_DIAG_PRINTF_FORMAT(__mf) "CR=0x%08x ES=0x%08x ERQ=" __mf \
@@ -183,7 +223,7 @@ hal_freescale_edma_init_chanset(cyghwr_hal_freescale_dma_set_t *inidat_p)
 
 // Display DMA configuration
 void
-hal_freescale_edma_diag(cyghwr_hal_freescale_dma_set_t *inidat_p, cyg_uint32 mask)
+hal_freescale_edma_diag(const cyghwr_hal_freescale_dma_set_t *inidat_p, cyg_uint32 mask)
 {
     cyghwr_hal_freescale_edma_t *edma_p;
     cyghwr_hal_freescale_dmamux_t *dmamux_p;
@@ -192,19 +232,29 @@ hal_freescale_edma_diag(cyghwr_hal_freescale_dma_set_t *inidat_p, cyg_uint32 mas
     cyg_uint32 chan_p_i;
 
     edma_p = inidat_p->edma_p;
-    dmamux_p = inidat_p->dmamux_p;
-    diag_printf("DMAMUX: %p DMA: %p\n", dmamux_p, edma_p);
     diag_printf(EDMA_DIAG_PRINTF_FORMAT(DMA_CHANMASK_FORMAT),
                 edma_p->cr, edma_p->es,
                 edma_p->erq, edma_p->irq, edma_p->err, edma_p->hrs);
 
     for(chan_i = 0; chan_i < CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM; chan_i++){
         if(mask & 0x1){
-            diag_printf("Chan %2d: CHCFG=0x%02x (%2d) DCHPRI=0x%02x", chan_i,
-                        dmamux_p->chcfg[chan_i],
-                        FREESCALE_DMAMUX_CHCFG_SOURCE(dmamux_p->chcfg[chan_i]),
-                        edma_p->dchpri[PRICHAN_I[chan_i]]);
             chan_p = inidat_p->chan_p;
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE
+            dmamux_p = chan_i < CYGNUM_HAL_FREESCALE_DMAMUX_CHAN_NUM ?
+                                    CYGHWR_IO_FREESCALE_DMAMUX0_P :
+                                    CYGHWR_IO_FREESCALE_DMAMUX1_P;
+#else
+            dmamux_p = CYGHWR_IO_FREESCALE_DMAMUX0_P;
+#endif
+            diag_printf("Chan %2d: CHCFG=0x%02x (%2d) DCHPRI=0x%02x dmamux[%c]=%p", chan_i,
+                        dmamux_p->chcfg[chan_i % 16],
+                        FREESCALE_DMAMUX_CHCFG_SOURCE(dmamux_p->chcfg[chan_i % 16]),
+                        edma_p->dchpri[PRICHAN_I[chan_i]],
+                        CYGHWR_IO_FREESCALE_DMAMUX0_P == dmamux_p ? '0' : (
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > CYGNUM_HAL_FREESCALE_EDMA_GROUP_SIZE
+                        CYGHWR_IO_FREESCALE_DMAMUX1_P == dmamux_p ? '1' :
+#endif
+                        '?'), dmamux_p);
             for(chan_p_i = 0; chan_p_i < inidat_p->chan_n; chan_p_i++){
                 if(chan_p->dma_chan_i == chan_i){
                     diag_printf(" ISR_NUM=%2d[0x%02x] ISR_PRI=%3d[0x%02x]",
