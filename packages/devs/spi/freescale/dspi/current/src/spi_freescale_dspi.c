@@ -47,11 +47,13 @@
 //
 //=============================================================================
 
+#include <pkgconf/hal.h>
 #include <string.h>
 #include <cyg/hal/hal_io.h>
 #include <cyg/hal/hal_if.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/drv_api.h>
+#include <cyg/hal/hal_cache.h>
 
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
@@ -855,6 +857,12 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
                 tx_data += pushque_n;
         }
     }
+    if(dma_set_p && rx_data) {
+        // Rx buffer may be out of sync with cache.
+        DEBUG2_PRINTF("DSPI DMA: Invalidate cache\n");
+        HAL_DCACHE_INVALIDATE(rx_data, count);
+        DEBUG2_PRINTF("DSPI DMA: Cache invalidated\n");
+    }
     if(!polled)
         cyg_drv_interrupt_mask(dspi_bus->setup_p->intr_num);
 
@@ -965,7 +973,7 @@ static void dspi_transaction_end(cyg_spi_device* device)
     cyg_spi_freescale_dspi_device_t* dspi_device =
           (cyg_spi_freescale_dspi_device_t*) device;
 
-    cyghwr_hal_freescale_dma_set_t *dma_set_p = dspi_bus->setup_p->dma_set_p;
+    const cyghwr_hal_freescale_dma_set_t *dma_set_p = dspi_bus->setup_p->dma_set_p;
     cyghwr_hal_freescale_edma_t *edma_p;
     cyghwr_devs_freescale_dspi_t* dspi_p = dspi_bus->setup_p->dspi_p;
 

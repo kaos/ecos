@@ -49,7 +49,6 @@
 //
 //=============================================================================
 
-
 #define PUSHQUE_ALIGN CYGBLD_ATTRIB_ALIGN(4)
 
 #define DSPI_DMA_BANDWIDTH FREESCALE_EDMA_CSR_BWC_0
@@ -64,7 +63,7 @@
 #define  CYGBLD_DSPI0_TCD_SECTION \
     CYGBLD_ATTRIB_SECTION(CYGOPT_DEVS_SPI_FREESCALE_DSPI0_TCD_SECTION)
 
-extern cyg_spi_freescale_dspi_bus_t cyg_spi_dspi_bus1;
+extern cyg_spi_freescale_dspi_bus_t cyg_spi_dspi_bus0;
 
 // Pinonomy -------------------------------------------------------------------
 
@@ -106,7 +105,8 @@ static const cyg_uint32 spi0_cs_pins[] = {
 static volatile
 cyg_uint32 dspi0_pushque[CYGNUM_DEVS_SPI_FREESCALE_DSPI0_PUSHQUE_SIZE+4] PUSHQUE_ALIGN;
 
-static const cyghwr_hal_freescale_dma_chan_set_t dspi0_dma_chan[] = {
+static cyghwr_hal_freescale_dma_chan_set_t dspi0_dma_chan[] =
+{
     {
         .dma_src = FREESCALE_DMAMUX_SRC_SPI0_TX
         | FREESCALE_DMAMUX_CHCFG_ENBL_M,
@@ -122,8 +122,6 @@ static const cyghwr_hal_freescale_dma_chan_set_t dspi0_dma_chan[] = {
 };
 
 static cyghwr_hal_freescale_dma_set_t dspi0_dma_set = {
-    .edma_p = CYGHWR_IO_FREESCALE_EDMA0_P,
-    .dmamux_p = CYGHWR_IO_FREESCALE_DMAMUX0_P,
     .chan_p = dspi0_dma_chan,
     .chan_n = 2
 };
@@ -183,7 +181,7 @@ static const cyg_spi_freescale_dspi_bus_setup_t dspi0_setup = {
                        FREESCALE_DSPI_MCR_PCSIS(CYGHWR_DEVS_SPI_FREESCALE_DSPI0_PCSIS)
 };
 
-cyg_spi_freescale_dspi_bus_t cyg_spi_dspi_bus1 = {
+cyg_spi_freescale_dspi_bus_t cyg_spi_dspi_bus0 = {
     .spi_bus.spi_transaction_begin    = dspi_transaction_begin,
     .spi_bus.spi_transaction_transfer = dspi_transaction_transfer,
     .spi_bus.spi_transaction_tick     = dspi_transaction_tick,
@@ -258,9 +256,11 @@ static const cyg_uint32 spi1_cs_pins[] = {
 
 #ifdef CYGINT_DEVS_SPI_DSPI1_USES_DMA
 static volatile
-cyg_uint32 dspi1_pushque[CYGNUM_DEVS_SPI_FREESCALE_DSPI1_PUSHQUE_SIZE+4] PUSHQUE_ALIGN;
+cyg_uint32 dspi1_pushque[CYGNUM_DEVS_SPI_FREESCALE_DSPI1_PUSHQUE_SIZE+4]
+           PUSHQUE_ALIGN EDMA_RAM_BUF_SECTION;
 
-static const cyghwr_hal_freescale_dma_chan_set_t dspi1_dma_chan[] = {
+static const cyghwr_hal_freescale_dma_chan_set_t dspi1_dma_chan[2] =
+{
     {
         .dma_src = FREESCALE_DMAMUX_SRC_SPI1_TX
         | FREESCALE_DMAMUX_CHCFG_ENBL_M,
@@ -276,8 +276,6 @@ static const cyghwr_hal_freescale_dma_chan_set_t dspi1_dma_chan[] = {
 };
 
 static cyghwr_hal_freescale_dma_set_t dspi1_dma_set = {
-    .edma_p = CYGHWR_IO_FREESCALE_EDMA0_P,
-    .dmamux_p = CYGHWR_IO_FREESCALE_DMAMUX0_P,
     .chan_p = dspi1_dma_chan,
     .chan_n = 2
 };
@@ -372,7 +370,7 @@ cyg_spi_freescale_dspi_bus_t cyg_spi_dspi_bus1 = {
 #define  CYGBLD_DSPI2_TCD_SECTION \
     CYGBLD_ATTRIB_SECTION(CYGOPT_DEVS_SPI_FREESCALE_DSPI2_TCD_SECTION)
 
-extern cyg_spi_freescale_dspi_bus_t cyg_spi_dspi_bus1;
+extern cyg_spi_freescale_dspi_bus_t cyg_spi_dspi_bus2;
 
 // Pinonomy -------------------------------------------------------------------
 
@@ -414,7 +412,8 @@ static const cyg_uint32 spi2_cs_pins[] = {
 static volatile
 cyg_uint32 dspi2_pushque[CYGNUM_DEVS_SPI_FREESCALE_DSPI2_PUSHQUE_SIZE+4] PUSHQUE_ALIGN;
 
-static const cyghwr_hal_freescale_dma_chan_set_t dspi2_dma_chan[] = {
+static const cyghwr_hal_freescale_dma_chan_set_t dspi2_dma_chan[] =
+{
     {
         .dma_src = FREESCALE_DMAMUX_SRC_SPI2_TX
         | FREESCALE_DMAMUX_CHCFG_ENBL_M,
@@ -430,8 +429,6 @@ static const cyghwr_hal_freescale_dma_chan_set_t dspi2_dma_chan[] = {
 };
 
 static cyghwr_hal_freescale_dma_set_t dspi2_dma_set = {
-    .edma_p = CYGHWR_IO_FREESCALE_EDMA0_P,
-    .dmamux_p = CYGHWR_IO_FREESCALE_DMAMUX0_P,
     .chan_p = dspi2_dma_chan,
     .chan_n = 2
 };
@@ -491,7 +488,7 @@ static const cyg_spi_freescale_dspi_bus_setup_t dspi2_setup = {
                        FREESCALE_DSPI_MCR_PCSIS(CYGHWR_DEVS_SPI_FREESCALE_DSPI2_PCSIS)
 };
 
-cyg_spi_freescale_dspi_bus_t cyg_spi_dspi_bus1 = {
+cyg_spi_freescale_dspi_bus_t cyg_spi_dspi_bus2 = {
     .spi_bus.spi_transaction_begin    = dspi_transaction_begin,
     .spi_bus.spi_transaction_transfer = dspi_transaction_transfer,
     .spi_bus.spi_transaction_tick     = dspi_transaction_tick,

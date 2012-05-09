@@ -117,7 +117,7 @@ enum { SPI_DMA_CHAN_TX_I, SPI_DMA_CHAN_RX_I };
 typedef struct cyg_spi_freescale_dspi_bus_setup_s
 {
     cyghwr_devs_freescale_dspi_t*   dspi_p;    // Base address of SPI register block.
-    cyghwr_hal_freescale_dma_set_t* dma_set_p;       // DMA configuration block.
+    cyghwr_hal_freescale_dma_set_t* dma_set_p; // DMA configuration block.
     cyg_vector_t                    intr_num;        // DSPI interrupt vector
     cyg_priority_t                  intr_prio;       // Interrupt priority
     cyg_uint32                      mcr_opt ;        // Module Configuratyon Register options

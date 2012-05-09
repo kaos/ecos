@@ -333,7 +333,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
                 cdl_component CYGNUM_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_TX_DMA_PRI {
                     display "Transmit DMA channel priority"
                     flavor data
-                    legal_values  { 0 to (CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM-1) 255 }
+                    legal_values  { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 255 }
                     default_value 255
                     description "
                     DMA can work in either round robin or preeptve arbitration
@@ -360,9 +360,8 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
                 cdl_option CYGOPT_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_TCD_SECTION {
                     display "DMA TCD section"
                     flavor data
-                    default_value { "\".sram\"" }
-                    legal_values { "\".sram\"" "\".ram\"" }
-
+                    default_value CYGHWR_HAL_EDMA_TCD_SECTION
+ 
                     description "
                     Section in which will be DMA Transfer Control
                     Descriptors shall reside"
@@ -383,7 +382,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
                 cdl_component CYGNUM_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_RX_DMA_PRI {
                     display "Receive DMA channel priority"
                     flavor data
-                    legal_values { 0 to (CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM-1) 255 }
+                    legal_values { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 255 }
                     default_value 255
                     description "
                     DMA can work in either round robin or preeptve arbitration
