@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011, 2012 Free Software Foundation, Inc.                        
+// Copyright (C) 2011 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -109,6 +109,9 @@ __externC const cyghwr_hal_kinetis_flash_conf_t *hal_kinetis_flash_conf_p( void 
 #define CYGHWR_HAL_KINETIS_OSC_CR          (0x40065000)
 #define CYGHWR_HAL_KINETIS_OSC_CR_P        ((volatile cyg_uint8*) 0x40065000)
 
+#define CYGHWR_HAL_KINETIS_OSC1_CR         (0x400E5000)
+#define CYGHWR_HAL_KINETIS_OSC1_CR_P       ((volatile cyg_uint8*) 0x400E5000)
+
 #define CYGHWR_HAL_KINETIS_OSC_CR_SC16P_M      0x01
 #define CYGHWR_HAL_KINETIS_OSC_CR_SC16P_S         0
 #define CYGHWR_HAL_KINETIS_OSC_CR_SC8P_M       0x02
@@ -134,10 +137,25 @@ typedef volatile struct cyghwr_hal_kinetis_mcg_s {
     cyg_uint8 c6;      // MCG Control 6 Register
     cyg_uint8 status;  // MCG Status Register
     cyg_uint8 mcg_res0;
+#if CYGHWR_HAL_CORTEXM_KINETIS_REV == 1
     cyg_uint8 atc;     // MCG Auto Trim Control Register
+#elif CYGHWR_HAL_CORTEXM_KINETIS_REV == 2
+    cyg_uint8 sc;     // MCG Status and Control Register
+#endif
     cyg_uint8 mcg_res1;
     cyg_uint8 atcvh;   // MCG Auto Trim Compare Value High Register
     cyg_uint8 atcvl;   // MCG Auto Trim Compare Value Low Register
+#if CYGHWR_HAL_CORTEXM_KINETIS_REV == 2
+    cyg_uint8 c7;      // MCG Control 7 Register
+    cyg_uint8 c8;      // MCG Control 8 Register    
+#endif
+#if CYGINT_HAL_CORTEXM_KINETIS_150
+    cyg_uint8 c10;     // MCG Control 10 Register
+    cyg_uint8 mcg_res2;
+    cyg_uint8 c11;     // MCG Control 11 Register
+    cyg_uint8 c12;     // MCG Control 12 Register
+    cyg_uint8 s2;      // MCG Status 2 Register
+#endif //CYGINT_HAL_CORTEXM_KINETIS_150    
 } cyghwr_hal_kinetis_mcg_t;
 
 #define CYGHWR_HAL_KINETIS_MCG_P  ((cyghwr_hal_kinetis_mcg_t *)0x40064000)
@@ -176,6 +194,11 @@ enum {
 #define CYGHWR_HAL_KINETIS_MCG_C2_RANGE_S       4
 #define CYGHWR_HAL_KINETIS_MCG_C2_RANGE(__v)    \
         VALUE_(CYGHWR_HAL_KINETIS_MCG_C2_RANGE_S, __v)
+
+#if CYGHWR_HAL_CORTEXM_KINETIS_REV == 2
+#define CYGHWR_HAL_KINETIS_MCG_C2_LOCRE0_M      0x80
+#define CYGHWR_HAL_KINETIS_MCG_C2_LOCRE0_S      7
+#endif
 // C3 Bit Fields
 #define CYGHWR_HAL_KINETIS_MCG_C3_SCTRIM_M      0xFF
 #define CYGHWR_HAL_KINETIS_MCG_C3_SCTRIM_S      0
@@ -203,6 +226,10 @@ enum {
 #define CYGHWR_HAL_KINETIS_MCG_C5_PLLSTEN_S     5
 #define CYGHWR_HAL_KINETIS_MCG_C5_PLLCLKEN_M    0x40
 #define CYGHWR_HAL_KINETIS_MCG_C5_PLLCLKEN_S    6
+#if CYGINT_HAL_CORTEXM_KINETIS_HAS_OSC1
+# define CYGHWR_HAL_KINETIS_MCG_C5_PLLREFSEL0_M  0x80
+# define CYGHWR_HAL_KINETIS_MCG_C5_PLLREFSEL0_S  7
+#endif
 // C6 Bit Fields
 #define CYGHWR_HAL_KINETIS_MCG_C6_VDIV_M        0x1F
 #define CYGHWR_HAL_KINETIS_MCG_C6_VDIV_S        0
@@ -235,6 +262,8 @@ enum {
 #define CYGHWR_HAL_KINETIS_MCG_S_LOCK_S         6
 #define CYGHWR_HAL_KINETIS_MCG_S_LOLS_M         0x80
 #define CYGHWR_HAL_KINETIS_MCG_S_LOLS_S         7
+
+#if CYGHWR_HAL_CORTEXM_KINETIS_REV == 1
 // ATC Bit Fields
 #define CYGHWR_HAL_KINETIS_MCG_ATC_ATMF_M       0x20
 #define CYGHWR_HAL_KINETIS_MCG_ATC_ATMF_S       5
@@ -242,6 +271,23 @@ enum {
 #define CYGHWR_HAL_KINETIS_MCG_ATC_ATMS_S       6
 #define CYGHWR_HAL_KINETIS_MCG_ATC_ATME_M       0x80
 #define CYGHWR_HAL_KINETIS_MCG_ATC_ATME_S       7
+#elif CYGHWR_HAL_CORTEXM_KINETIS_REV == 2
+// SC Bit Fields
+#define CYGHWR_HAL_KINETIS_MCG_SC_LOCS0_M       0x01
+#define CYGHWR_HAL_KINETIS_MCG_SC_LOCS0_S       0
+#define CYGHWR_HAL_KINETIS_MCG_SC_FCRDIV_M      0x0E
+#define CYGHWR_HAL_KINETIS_MCG_SC_FCRDIV_S      1
+#define CYGHWR_HAL_KINETIS_MCG_SC_FCRDIV(__v) \
+        VALUE_(CYGHWR_HAL_KINETIS_MCG_SC_FCRDIV_S, __v)
+#define CYGHWR_HAL_KINETIS_MCG_SC_FLTPRSRV_M    0x10
+#define CYGHWR_HAL_KINETIS_MCG_SC_FLTPRSRV_S    4
+#define CYGHWR_HAL_KINETIS_MCG_SC_ATMF_M        0x20
+#define CYGHWR_HAL_KINETIS_MCG_SC_ATMF_S        5
+#define CYGHWR_HAL_KINETIS_MCG_SC_ATMS_M        0x40
+#define CYGHWR_HAL_KINETIS_MCG_SC_ATMS_S        6
+#define CYGHWR_HAL_KINETIS_MCG_SC_ATME_M        0x80
+#define CYGHWR_HAL_KINETIS_MCG_SC_ATME_S        7
+#endif //  CYGHWR_HAL_CORTEXM_KINETIS_REV
 // ATCVH Bit Fields
 #define CYGHWR_HAL_KINETIS_MCG_ATCVH_ATCVH_M    0xFF
 #define CYGHWR_HAL_KINETIS_MCG_ATCVH_ATCVH_S    0
@@ -251,7 +297,72 @@ enum {
 #define CYGHWR_HAL_KINETIS_MCG_ATCVL_ATCVL_M    0xFF
 #define CYGHWR_HAL_KINETIS_MCG_ATCVL_ATCVL_S    0
 #define CYGHWR_HAL_KINETIS_MCG_ATCVL_ATCVL(__v) \
-        VALUE_(CYGHWR_HAL_KINETIS_MCG_ATCVL_ATCVL_S, __v)
+VALUE_(CYGHWR_HAL_KINETIS_MCG_ATCVL_ATCVL_S, __v)
+
+#if CYGHWR_HAL_CORTEXM_KINETIS_REV == 2
+// C7 Bit Fields
+#define CYGHWR_HAL_KINETIS_MCG_C7_OSCSEL_M      0x1
+#define CYGHWR_HAL_KINETIS_MCG_C7_OSCSEL_S      0
+// C8 Bit Fields
+#define CYGHWR_HAL_KINETIS_MCG_C8_LOCS1_M       0x1
+#define CYGHWR_HAL_KINETIS_MCG_C8_LOCS1_S       0
+#define CYGHWR_HAL_KINETIS_MCG_C8_CME1_M        0x20
+#define CYGHWR_HAL_KINETIS_MCG_C8_CME1_S        5
+#define CYGHWR_HAL_KINETIS_MCG_C8_LOLRE_M       0x40
+#define CYGHWR_HAL_KINETIS_MCG_C8_LOLRE_S       6
+#define CYGHWR_HAL_KINETIS_MCG_C8_LOCRE1_M      0x80
+#define CYGHWR_HAL_KINETIS_MCG_C8_LOCRE1_S      7
+#endif // CYGHWR_HAL_CORTEXM_KINETIS_REV == 2
+
+#if CYGINT_HAL_CORTEXM_KINETIS_150
+
+// C10 Bit Fields
+#define CYGHWR_HAL_KINETIS_MCG_C10_EREFS1_M      0x04
+#define CYGHWR_HAL_KINETIS_MCG_C10_EREFS1_S      2
+#define CYGHWR_HAL_KINETIS_MCG_C10_HGO1_M        0x08
+#define CYGHWR_HAL_KINETIS_MCG_C10_HGO1_S        3
+#define CYGHWR_HAL_KINETIS_MCG_C10_RANGE1_M      0x30
+#define CYGHWR_HAL_KINETIS_MCG_C10_RANGE1_S      4
+#define CYGHWR_HAL_KINETIS_MCG_C10_RANGE1(__v)    \
+        VALUE_(CYGHWR_HAL_KINETIS_MCG_C10_RANGE1_S, __v)
+#define CYGHWR_HAL_KINETIS_MCG_C10_LOCRE0_M      0x80
+#define CYGHWR_HAL_KINETIS_MCG_C10_LOCRE0_S      7
+// C11 Bit Fields
+#define CYGHWR_HAL_KINETIS_MCG_C11_PRDIV1_M       0x7
+#define CYGHWR_HAL_KINETIS_MCG_C11_PRDIV1_S       0
+#define CYGHWR_HAL_KINETIS_MCG_C11_PRDIV1(__v)    \
+        VALUE_(CYGHWR_HAL_KINETIS_MCG_C11_PRDIV1_S, __v)
+#define CYGHWR_HAL_KINETIS_MCG_C11_PLLCS_M        0x10
+#define CYGHWR_HAL_KINETIS_MCG_C11_PLLCS_S        4
+#define CYGHWR_HAL_KINETIS_MCG_C11_PLLSTEN1_M     0x20
+#define CYGHWR_HAL_KINETIS_MCG_C11_PLLSTEN1_S     5
+#define CYGHWR_HAL_KINETIS_MCG_C11_PLLCLKEN1_M    0x40
+#define CYGHWR_HAL_KINETIS_MCG_C11_PLLCLKEN1_S    6
+# define CYGHWR_HAL_KINETIS_MCG_C11_PLLREFSEL1_M  0x80
+# define CYGHWR_HAL_KINETIS_MCG_C11_PLLREFSEL1_S  7
+// C12 Bit Fields
+#define CYGHWR_HAL_KINETIS_MCG_C12_VDIV1_M        0x1F
+#define CYGHWR_HAL_KINETIS_MCG_C12_VDIV1_S        0
+#define CYGHWR_HAL_KINETIS_MCG_C12_VDIV1(__v)     \
+        VALUE_(CYGHWR_HAL_KINETIS_MCG_C12_VDIV1_S, __v)
+#define CYGHWR_HAL_KINETIS_MCG_C12_CME2_M         0x20
+#define CYGHWR_HAL_KINETIS_MCG_C12_CME2_S         5
+#define CYGHWR_HAL_KINETIS_MCG_C12_LOLIE1_M       0x80
+#define CYGHWR_HAL_KINETIS_MCG_C12_LOLIE1_S       7
+// S2 Bit Fields
+#define CYGHWR_HAL_KINETIS_MCG_S2_LOCS2_M        0x01
+#define CYGHWR_HAL_KINETIS_MCG_S2_LOCS2_S        0
+#define CYGHWR_HAL_KINETIS_MCG_S2_OSCINIT1_M     0x02
+#define CYGHWR_HAL_KINETIS_MCG_S2_OSCINIT1_S     1
+#define CYGHWR_HAL_KINETIS_MCG_S2_PLLCST_M       0x10
+#define CYGHWR_HAL_KINETIS_MCG_S2_PLLCST_S       4
+#define CYGHWR_HAL_KINETIS_MCG_S2_LOCK1_M        0x40
+#define CYGHWR_HAL_KINETIS_MCG_S2_LOCK1_S        6
+#define CYGHWR_HAL_KINETIS_MCG_S2_LOLS1_M        0x80
+#define CYGHWR_HAL_KINETIS_MCG_S2_LOLS1_S        7
+
+#endif //CYGINT_HAL_CORTEXM_KINETIS_150
+
 
 //---------------------------------------------------------------------------
 // Real Time Clock
@@ -434,6 +545,10 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
     cyg_uint32 uidmh;           // Unique Identification Register Mid-High
     cyg_uint32 uidml;           // Unique Identification Register Mid Low
     cyg_uint32 uidl;            // Unique Identification Register Low
+    
+    cyg_uint32 clkdiv3;         // System Clock Divider Register 3
+    cyg_uint32 clkdiv4;         // System Clock Divider Register 4
+    cyg_uint32 mcr;             // Misc control register
 } cyghwr_hal_kinetis_sim_t;
 
 #define CYGHWR_HAL_KINETIS_SIM_P ((cyghwr_hal_kinetis_sim_t *) 0x40047000)
@@ -560,15 +675,15 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SDID_REVID(__val)       \
         VALUE_(CYGHWR_HAL_KINETIS_SIM_SDID_REVID_S, __val)
 // SCGC1 Bit Fields
+#define CYGHWR_HAL_KINETIS_SIM_SCGC1_OSC1_M            0x20
+#define CYGHWR_HAL_KINETIS_SIM_SCGC1_OSC1_S            5
 #define CYGHWR_HAL_KINETIS_SIM_SCGC1_UART4_M           0x400
 #define CYGHWR_HAL_KINETIS_SIM_SCGC1_UART4_S           10
 #define CYGHWR_HAL_KINETIS_SIM_SCGC1_UART5_M           0x800
 #define CYGHWR_HAL_KINETIS_SIM_SCGC1_UART5_S           11
 
-#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC1_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC1_ALL_M \
  (CYGHWR_HAL_KINETIS_SIM_SCGC1_UART4_M | CYGHWR_HAL_KINETIS_SIM_SCGC1_UART5_M)
-#endif
 
 // SCGC2 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC2_ENET_M            0x1
@@ -578,12 +693,10 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC1_M            0x2000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC1_S            13
 
-#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC2_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC2_ALL_M         \
             (CYGHWR_HAL_KINETIS_SIM_SCGC2_ENET_M | \
              CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC0_M | \
              CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC1_M)
-#endif
 
 // SCGC3 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_RNGB_M            0x1
@@ -592,22 +705,31 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_FLEXCAN1_S        4
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_SPI2_M            0x1000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_SPI2_S            12
+#ifdef CYGPKG_HAL_CORTEXM_KINETIS_DDRMC
+# define CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_M             0x4000
+# define CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_S             14
+#else
+# define CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_M             0
+# define CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_S             0
+#endif
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_SDHC_M            0x20000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_SDHC_S            17
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_FTM2_M            0x1000000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_FTM2_S            24
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC1_M            0x8000000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC1_S            27
+#define CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC3_M            0x10000000
+#define CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC3_S            28
 
-#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC3_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC3_ALL_M             \
             (CYGHWR_HAL_KINETIS_SIM_SCGC3_RNGB_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC3_FLEXCAN1_M | \
              CYGHWR_HAL_KINETIS_SIM_SCGC3_SPI2_M |     \
+             CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_M  |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC3_SDHC_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC3_FTM2_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC1_M)
-#endif
+             CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC1_M |     \
+             CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC3_M )
 
 // SCGC4 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC4_EWM_M             0x2
@@ -635,7 +757,6 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC4_LLWU_M            0x10000000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC4_LLWU_S            28
 
-#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC4_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC4_ALL_M \
  (CYGHWR_HAL_KINETIS_SIM_SCGC4_EWM_M |CYGHWR_HAL_KINETIS_SIM_SCGC4_CMT_M |    \
  CYGHWR_HAL_KINETIS_SIM_SCGC4_I2C0_M |CYGHWR_HAL_KINETIS_SIM_SCGC4_I2C1_M |   \
@@ -643,7 +764,6 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
  CYGHWR_HAL_KINETIS_SIM_SCGC4_UART2_M | CYGHWR_HAL_KINETIS_SIM_SCGC4_UART3_M |\
  CYGHWR_HAL_KINETIS_SIM_SCGC4_USBOTG_M | CYGHWR_HAL_KINETIS_SIM_SCGC4_CMP_M | \
  CYGHWR_HAL_KINETIS_SIM_SCGC4_VREF_M | CYGHWR_HAL_KINETIS_SIM_SCGC4_LLWU_M)
-#endif
 
 // SCGC5 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC5_LPTIMER_M         0x1
@@ -662,7 +782,8 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTD_S           12
 #define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_M           0x2000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_S           13
-
+#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTF_M           0x4000
+#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTF_S           14
 #ifndef CYGHWR_HAL_KINETIS_SIM_SCGC5_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC5_ALL_M            \
             (CYGHWR_HAL_KINETIS_SIM_SCGC5_LPTIMER_M | \
@@ -680,6 +801,10 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_FTFL_S            0
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX_M          0x2
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX_S          1
+#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX0_M         0x2
+#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX0_S         1
+#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX1_M         0x4
+#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX1_S         2
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_FLEXCAN0_M        0x10
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_FLEXCAN0_S        4
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_DSPI0_M           0x1000
@@ -705,7 +830,6 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_RTC_M             0x20000000
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_RTC_S             29
 
-#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC6_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC6_ALL_M             \
             (CYGHWR_HAL_KINETIS_SIM_SCGC6_FTFL_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX_M |   \
@@ -721,7 +845,6 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
              CYGHWR_HAL_KINETIS_SIM_SCGC6_FTM1_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC6_ADC0_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC6_RTC_M)
-#endif
 
 // SCGC7 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_SCGC7_FLEXBUS_M         0x1
@@ -731,12 +854,10 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SCGC7_MPU_M             0x4
 #define CYGHWR_HAL_KINETIS_SIM_SCGC7_MPU_S             2
 
-#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC7_ALL_M
 #define CYGHWR_HAL_KINETIS_SIM_SCGC7_ALL_M            \
             (CYGHWR_HAL_KINETIS_SIM_SCGC7_FLEXBUS_M | \
              CYGHWR_HAL_KINETIS_SIM_SCGC7_DMA_M |     \
              CYGHWR_HAL_KINETIS_SIM_SCGC7_MPU_M)
-#endif
 
 // CLKDIV1 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_CLKDIV1_OUTDIV4_M       0xF0000
@@ -816,6 +937,20 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_UIDL_UID_S              0
 #define CYGHWR_HAL_KINETIS_SIM_UIDL_UID(__val)         \
         VALUE_(CYGHWR_HAL_KINETIS_SIM_UIDL_UID_S, __val)
+// MCR Bit Fields
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRCFG_M           0xE000
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRCFG_S           5
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRCFG(__val)      \
+        VALUE_(CYGHWR_HAL_KINETIS_SIM_MCR_DDRCFG_S, __val)
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRDQSDIS_M        0x8
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRDQSDIS_S        3
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRPEN_M           0x4
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRPEN_S           2
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRS_M             0x2
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRS_S             1
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRSREN_M          0x1
+#define CYGHWR_HAL_KINETIS_SIM_MCR_DDRSREN_S          0
+
 
 //---------------------------------------------------------------------------
 // PORT - Peripheral register structure
@@ -939,6 +1074,50 @@ CYG_MACRO_START \
 CYG_MACRO_END
 
 //---------------------------------------------------------------------------
+// PMC Power Management Controller
+
+typedef volatile struct cyghwr_hal_kinetis_pmc_s {
+    cyg_uint8 lvdsc1;   // Low Voltage Detect Status and Control 1 Register
+    cyg_uint8 lvdsc2;   // Low Voltage Detect Status and Control 2 Register
+    cyg_uint8 regsc;    // Regulator Status and Control Register
+} cyghwr_hal_kinetis_pmc_t;
+
+// PMC base address
+#define CYGHWR_HAL_KINETIS_PMC_P  ((cyghwr_hal_kinetis_pmc_t *)0x4007D000)
+
+// LVDSC1 Bit Fields
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDV_M      0x3
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDV(__val) \
+        (__val & CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDV_M)
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDRE_M     0x10
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDRE_S     4
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDIE_M     0x20
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDIE_S     5
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDACK_M    0x40
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDACK_S    6
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDF_M      0x80
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDF_S      7
+// LVDSC2 Bit Fields
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWV_M      0x3
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWV(__val) \
+        (__val & CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWV_M)
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWIE_M     0x20
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWIE_S     5
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWACK_M    0x40
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWACK_S    6
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWF_M      0x80
+#define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWF_S      7
+// REGSC Bit Fields
+#define CYGHWR_HAL_KINETIS_PMC_REGSC_BGBE_M       0x1
+#define CYGHWR_HAL_KINETIS_PMC_REGSC_BGBE_S       0
+#define CYGHWR_HAL_KINETIS_PMC_REGSC_REGONS_M     0x4
+#define CYGHWR_HAL_KINETIS_PMC_REGSC_REGONS_S     2
+#define CYGHWR_HAL_KINETIS_PMC_REGSC_ACKISO_M     0x8
+#define CYGHWR_HAL_KINETIS_PMC_REGSC_ACKISO_S     3
+#define CYGHWR_HAL_KINETIS_PMC_REGSC_BGEN_M       0x10
+#define CYGHWR_HAL_KINETIS_PMC_REGSC_BGEN_S       4
+
+//---------------------------------------------------------------------------
 // FMC Flash Memory Controller
 
 #define CYGHWR_HAL_KINETIS_FMC_BASE     (0x4001F000)
@@ -1042,11 +1221,12 @@ typedef volatile struct cyghwr_hal_kinetis_mpu_s {
 #ifdef CYGPKG_HAL_CORTEXM_KINETIS_FLEXBUS
 # include <cyg/hal/var_io_flexbus.h>
 #endif
+
 //----------------------------------------------------------------------------
-// DMA
-//#ifdef CYGPKG_HAL_CORTEXM_KINETIS_DMA
-//# include <cyg/hal/var_io_dma.h>
-//#endif
+// DDRMC - SDRAM controller
+#ifdef CYGPKG_HAL_CORTEXM_KINETIS_DDRMC
+# include <cyg/hal/var_io_ddrmc.h>
+#endif
 
 //---------------------------------------------------------------------------
 // GPIO

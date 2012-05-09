@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2012 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -41,18 +41,17 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    jlarmour
-// Contributors: 
-// Date:         2004-07-23
+// Author(s):    jlarmour, ilijak
+// Contributors:
+// Date:         2012-05-02
 // Purpose:      Cache control API
 // Description:  The macros defined here provide the HAL APIs for handling
 //               cache control operations.
 //
-//               For Kinetis, for the time being these are empty macros.
 // Usage:
 //               #include <cyg/hal/hal_cache.h>
 //               ...
-//              
+//
 //
 //####DESCRIPTIONEND####
 //
@@ -62,22 +61,74 @@
 
 //-----------------------------------------------------------------------------
 // Cache dimensions
+#ifdef CYGINT_HAL_CACHE
 
 // Data cache
-//#define HAL_DCACHE_SIZE                 0    // Size of data cache in bytes
-//#define HAL_DCACHE_LINE_SIZE            0    // Size of a data cache line
-//#define HAL_DCACHE_WAYS                 0    // Associativity of the cache
+#define HAL_DCACHE_SIZE                 (8192*2) // Size of data cache in bytes
+#define HAL_DCACHE_LINE_SIZE            16       // Size of a data cache line
+#define HAL_DCACHE_WAYS                 2*2      // Associativity of the cache
 
 // Instruction cache
-//#define HAL_ICACHE_SIZE                 0    // Size of cache in bytes
-//#define HAL_ICACHE_LINE_SIZE            0    // Size of a cache line
-//#define HAL_ICACHE_WAYS                 0    // Associativity of the cache
+#define HAL_ICACHE_SIZE                 8192*2   // Size of cache in bytes
+#define HAL_ICACHE_LINE_SIZE            16       // Size of a cache line
+#define HAL_ICACHE_WAYS                 2*2      // Associativity of the cache
 
-//#define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
-//#define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
+#define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
+#define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
+
+#include <cyg/hal/var_io_lmem.h>
 
 //-----------------------------------------------------------------------------
 // Global control of data cache
+
+// Enable the data cache
+#define HAL_DCACHE_ENABLE() \
+    HAL_CORTEXM_KINETIS_CACHE_PS_ENABLE(); \
+    HAL_CORTEXM_KINETIS_CACHE_PC_ENABLE()
+
+// Disable the data cache
+#define HAL_DCACHE_DISABLE() \
+    HAL_CORTEXM_KINETIS_CACHE_PS_DISABLE(); \
+    HAL_CORTEXM_KINETIS_CACHE_PC_DISABLE()
+
+// Invalidate the entire cache
+#define HAL_DCACHE_INVALIDATE_ALL() \
+    HAL_CORTEXM_KINETIS_CACHE_PS_INVALL(); \
+    HAL_CORTEXM_KINETIS_CACHE_PC_INVALL()
+
+// Synchronize the contents of the cache with memory.
+#define HAL_DCACHE_SYNC() \
+    HAL_CORTEXM_KINETIS_CACHE_PS_SYNC(); \
+    HAL_CORTEXM_KINETIS_CACHE_PC_SYNC()
+
+// Purge contents of data cache
+#define HAL_DCACHE_PURGE_ALL() \
+    HAL_CORTEXM_KINETIS_CACHE_PS_CLEAR(); \
+    HAL_CORTEXM_KINETIS_CACHE_PC_CLEAR()
+
+// Query the state of the data cache (does not affect the caching)
+#define HAL_DCACHE_IS_ENABLED(_state_)          \
+    CYG_MACRO_START                             \
+    (_state_) = HAL_CORTEXM_KINETIS_CACHE_PS_IS_ENABLED() && \
+                HAL_CORTEXM_KINETIS_CACHE_PC_IS_ENABLED(); \
+    CYG_MACRO_END
+
+// Invalidate cache lines in the given range without writing to memory.
+#define HAL_DCACHE_INVALIDATE( _base_ , _size_ ) \
+            HAL_CORTEXM_KINETIS_CACHE_PS_INVALIDATE(_base_, _size_); \
+            HAL_CORTEXM_KINETIS_CACHE_PC_INVALIDATE(_base_, _size_)
+
+#else // CYGINT_HAL_CACHE
+
+// Data cache
+//#define HAL_DCACHE_SIZE                 0     // Size of data cache in bytes
+//#define HAL_DCACHE_LINE_SIZE            0     // Size of a data cache line
+//#define HAL_DCACHE_WAYS                 0      // Associativity of the cache
+
+// Instruction cache
+//#define HAL_ICACHE_SIZE                 0     // Size of cache in bytes
+//#define HAL_ICACHE_LINE_SIZE            0      // Size of a cache line
+//#define HAL_ICACHE_WAYS                 0      // Associativity of the cache
 
 // Enable the data cache
 #define HAL_DCACHE_ENABLE()
@@ -97,7 +148,7 @@
 // Query the state of the data cache (does not affect the caching)
 #define HAL_DCACHE_IS_ENABLED(_state_)          \
     CYG_MACRO_START                             \
-    (_state_) = 0;                              \
+    (_state_) = 0; \
     CYG_MACRO_END
 
 // Set the data cache refill burst size
@@ -131,7 +182,7 @@
 //#define HAL_DCACHE_FLUSH( _base_ , _size_ )
 
 // Invalidate cache lines in the given range without writing to memory.
-//#define HAL_DCACHE_INVALIDATE( _base_ , _size_ )
+#define HAL_DCACHE_INVALIDATE( _base_ , _size_ )
 
 // Write dirty cache lines to memory for the given address range.
 //#define HAL_DCACHE_STORE( _base_ , _size_ )
@@ -147,26 +198,25 @@
 // Allocate and zero the cache lines associated with the given range.
 //#define HAL_DCACHE_ZERO( _base_ , _size_ )
 
+#endif // CYGINT_HAL_CACHE
+
 //-----------------------------------------------------------------------------
 // Global control of Instruction cache
 
 // Enable the instruction cache
-#define HAL_ICACHE_ENABLE()
+#define HAL_ICACHE_ENABLE() HAL_DCACHE_ENABLE()
 
 // Disable the instruction cache
-#define HAL_ICACHE_DISABLE()
+#define HAL_ICACHE_DISABLE() HAL_DCACHE_DISABLE()
 
 // Invalidate the entire cache
-#define HAL_ICACHE_INVALIDATE_ALL()
+#define HAL_ICACHE_INVALIDATE_ALL() HAL_DCACHE_INVALIDATE_ALL()
 
 // Synchronize the contents of the cache with memory.
-#define HAL_ICACHE_SYNC()
+#define HAL_ICACHE_SYNC() HAL_DCACHE_SYNC()
 
 // Query the state of the instruction cache (does not affect the caching)
-#define HAL_ICACHE_IS_ENABLED(_state_)          \
-    CYG_MACRO_START                             \
-    (_state_) = 0;                              \
-    CYG_MACRO_END
+#define HAL_ICACHE_IS_ENABLED(_state_) HAL_DCACHE_IS_ENABLED(_state_)
 
 // Set the instruction cache refill burst size
 //#define HAL_ICACHE_BURST_SIZE(_size_)
@@ -185,8 +235,46 @@
 // Instruction cache line control
 
 // Invalidate cache lines in the given range without writing to memory.
-//#define HAL_ICACHE_INVALIDATE( _base_ , _size_ )
+#define HAL_ICACHE_INVALIDATE( _base_ , _size_ ) HAL_DCACHE_INVALIDATE( _base_ , _size_ )
 
 //-----------------------------------------------------------------------------
-#endif // ifndef CYGONCE_HAL_CACHE_H
+// Global control of Instruction cache
+
+// Enable the instruction cache
+#define HAL_UCACHE_ENABLE() HAL_DCACHE_ENABLE()
+
+// Disable the instruction cache
+#define HAL_UCACHE_DISABLE() HAL_DCACHE_DISABLE()
+
+// Invalidate the entire cache
+#define HAL_UCACHE_INVALIDATE_ALL() HAL_DCACHE_INVALIDATE_ALL()
+
+// Synchronize the contents of the cache with memory.
+#define HAL_UCACHE_SYNC() HAL_DCACHE_SYNC()
+
+// Query the state of the instruction cache (does not affect the caching)
+#define HAL_UCACHE_IS_ENABLED(_state_) HAL_DCACHE_IS_ENABLED(_state_)
+
+// Set the instruction cache refill burst size
+//#define HAL_UCACHE_BURST_SIZE(_size_)
+
+// Load the contents of the given address range into the instruction cache
+// and then lock the cache so that it stays there.
+//#define HAL_UCACHE_LOCK(_base_, _size_)
+
+// Undo a previous lock operation
+//#define HAL_UCACHE_UNLOCK(_base_, _size_)
+
+// Unlock entire cache
+//#define HAL_UCACHE_UNLOCK_ALL()
+
+//-----------------------------------------------------------------------------
+// Instruction cache line control
+
+// Invalidate cache lines in the given range without writing to memory.
+#define HAL_UCACHE_INVALIDATE( _base_ , _size_ ) HAL_DCACHE_INVALIDATE( _base_ , _size_ )
+
+#endif // CYGONCE_HAL_CACHE_H
+
+//-----------------------------------------------------------------------------
 // End of hal_cache.h

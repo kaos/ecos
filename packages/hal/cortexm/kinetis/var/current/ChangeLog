@@ -1,3 +1,18 @@
+2012-05-04  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_kinetis.cdl:
+	* src/kinetis_clocking.cdl:
+	* src/kinetis_clocking.c:
+	* include/hal_cache.h
+	* include/var_io_lmem.h:
+	* include/var_io_ddrmc.h:
+	* include/var_io_devs.h:
+	* include/var_io.h:
+	* src/kinetis_ddram.c:
+	* src/kinetis_misc.c:
+    Add: Clocking support for PLL1 (K70), DDRAM controller
+    Cache, eDMA - 32 chan. [Bugzilla 1001579]
+
 2012-01-11  Tomas Frydrych <tomas@sleepfive.com>
 
 	* include/var_io.h:
@@ -9,7 +24,7 @@
 
 2012-01-05  Ilija Kocho  <ilijak@siva.com.mk>
 
-    * cdl/kinetis_irq_scheme.cdl
+	* cdl/kinetis_irq_scheme.cdl
     Centralized IRQ priority scheme.
 
 	* cdl/hal_cortexm_kinetis.cdl:
@@ -65,7 +80,7 @@
 // ####GPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

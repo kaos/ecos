@@ -66,7 +66,18 @@
 #include <cyg/hal/hal_intr.h>           // HAL header
 #include <cyg/hal/hal_if.h>             // HAL header
 
+#include <cyg/hal/hal_cache.h>
+
 void sst25xx_freescale_dspi_reg(void);
+
+#ifdef CYGPKG_HAL_KINETIS_CACHE
+# if defined CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP || \
+     defined CYGSEM_HAL_ENABLE_ICACHE_ON_STARTUP
+
+#  define ENABLE_CACHE_ON_STARTUP
+
+# endif
+#endif // defined CYGPKG_HAL_KINETIS_CACHE
 
 #ifdef CYG_HAL_STARTUP_ROM
 
@@ -100,7 +111,46 @@ hal_kinetis_flash_conf_p( void )
 
 //=== KINETIS FLASH security configuration END. ============================
 
-//volatile cyg_uint32 *poin;
+#if defined CYG_HAL_STARTUP_ROM && defined CYGPKG_HAL_KINETIS_CACHE
+
+// Function for demotion of caching memory regions
+
+static void
+hal_cortexm_kinetis_conf_cache_regions(cyghwr_hal_kinetis_lmem_t* lmem_p,
+                                      cyg_uint32 reg_n, const cyg_uint32 *reg_mode_p)
+{
+    cyg_uint32 region;
+    cyg_uint32 mode;
+    cyg_uint32 regval;
+    cyg_uint32 reg_mode;
+
+    regval = lmem_p->rmr;
+    for(; reg_n; reg_n--){
+        reg_mode = *reg_mode_p++;
+        region = reg_mode >> 16;
+        mode = reg_mode & 0x0000ffff;
+        regval &= ~(0x3 << (15-region)*2);
+        regval |= mode << (15-region)*2;
+    }
+    lmem_p->rmr = regval;
+}
+
+const cyg_uint32 cache_reg_modes[] = {
+    (CYGHWR_HAL_KINETIS_LMEM_DRAM_7000 << 16) |
+#if defined CYGSEM_HAL_DCACHE_STARTUP_MODE_WRITETHRU
+    CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_WT_M,
+#elif defined CYGSEM_HAL_DCACHE_STARTUP_MODE_COPYBACK
+    CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_WB_M,
+#else
+    CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_NC_M,
+#endif
+
+    (CYGHWR_HAL_KINETIS_LMEM_DRAM_8000 << 16) |
+    CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_NC_M
+};
+
+#endif // defined CYG_HAL_STARTUP_ROM && defined CYGPKG_HAL_KINETIS_CACHE
+
 //==========================================================================
 // Setup variant specific hardware
 //=========================================================================
@@ -108,11 +158,22 @@ hal_kinetis_flash_conf_p( void )
 void hal_variant_init( void )
 {
     hal_update_clock_var();
+#if defined CYG_HAL_STARTUP_ROM && defined CYGPKG_HAL_KINETIS_CACHE
+    hal_cortexm_kinetis_conf_cache_regions(CYGHWR_HAL_KINETIS_LMEM_PS_P,
+        sizeof(cache_reg_modes)/sizeof(cache_reg_modes[0]),
+        cache_reg_modes);
+    hal_cortexm_kinetis_conf_cache_regions(CYGHWR_HAL_KINETIS_LMEM_PC_P,
+        sizeof(cache_reg_modes)/sizeof(cache_reg_modes[0]),
+        cache_reg_modes);
+# ifdef ENABLE_CACHE_ON_STARTUP
+    HAL_DCACHE_ENABLE();
+    HAL_ICACHE_ENABLE();
+# endif
+#endif // defined CYG_HAL_STARTUP_ROM && defined CYGPKG_HAL_KINETIS_CACHE
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     hal_if_init();
 #endif
 }
-
 
 //===========================================================================
 // The  WDOG at Freescale Kinetis is enabled after reset. hal_wdog_disable
@@ -190,7 +251,6 @@ hal_dump_pin_setting(cyg_uint32 pin)
             CYGHWR_HAL_KINETIS_PIN_FUNC(pin));
     }
 }
-
 
 //==========================================================================
 // EOF kinetis_misc.c

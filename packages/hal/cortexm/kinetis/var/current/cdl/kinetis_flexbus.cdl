@@ -50,7 +50,7 @@
 #        display       "FlexBus"
 
 for { set ::chipsel 0 } { $::chipsel < 6 } { incr ::chipsel } {
-    
+
     cdl_interface CYGINT_HAL_KINETIS_FB_CS[set ::chipsel] {
         display     "Platform uses Chip select [set ::chipsel]"
         flavor      bool
@@ -59,7 +59,7 @@ for { set ::chipsel 0 } { $::chipsel < 6 } { incr ::chipsel } {
             controller being used provides chip select [set ::chipsel], and if
             that chip select is used on target hardware."
     }
-    
+
     cdl_component CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel] {
         display       "Chip select [set ::chipsel]"
         flavor        bool
@@ -68,7 +68,7 @@ for { set ::chipsel 0 } { $::chipsel < 6 } { incr ::chipsel } {
         description   "
             This option includes initialization data for
             chip select [set ::chipsel]."
-        
+
         cdl_option CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PS {
             display "Port size (encoded)"
             flavor data
