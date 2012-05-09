@@ -1,3 +1,7 @@
+2012-02-22  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* ecos.db: Add TWR-K70F120M bsp and target.
+
 2012-05-04  Ilija Stanislevik  <ilijas@siva.mk>
 
 	* ecos.db: Add Microchip ENC424J600 / ENC624J600 ethernet controller

@@ -7290,6 +7290,16 @@ package CYGPKG_HAL_CORTEXM_KINETIS_KWIKSTIK {
         eCos on the Freescale KwikStik development board."
 }
 
+package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
+	alias		{ "Freescale TWR-K70F120M HAL" hal_cortexm_twr_k70f120m }
+	directory	hal/cortexm/kinetis/twr_k70f120m
+	script		hal_cortexm_kinetis_twr_k70f120m.cdl
+	hardware
+        description "
+        The TWR-K70F120M HAL package provides the support needed to run
+        eCos on the Freescale Tower development system."
+}
+
 target freescale_twr_k60n512 {
         alias { "Freescale Kinetis TWR-K60N512" twr_k60n512 }
         packages { CYGPKG_HAL_CORTEXM
@@ -7364,6 +7374,26 @@ target freescale_twr_k60n512_fxm {
             The freescale_twr_k60n512_fxm target provides the packages needed
             to run eCos on the Freescale TWR-K60N512 development system
             equipped with TWR-FXM external memory module."
+}
+
+target freescale_twr_k70f120m {
+        alias { "Freescale Kinetis TWR-K70F120M" twr_k70f120m }
+        packages { CYGPKG_HAL_CORTEXM
+                   CYGPKG_HAL_CORTEXM_KINETIS
+                   CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M
+                   CYGPKG_HAL_FREESCALE_EDMA
+                   CYGPKG_IO_SERIAL_FREESCALE_UART_HDR
+                   CYGPKG_IO_SERIAL_FREESCALE_UART
+                   CYGPKG_DEVICES_WALLCLOCK_KINETIS_RTC
+                   CYGPKG_DEVS_ETH_PHY
+                   CYGPKG_DEVS_ETH_FREESCALE_ENET
+                   CYGPKG_IO_SPI
+                   CYGPKG_DEVS_SPI_FREESCALE_DSPI
+                   CYGPKG_DEVS_DISK_MMC
+                   CYGPKG_DEVS_DISK_MMC_FREESCALE_DSPI
+                 }
+        description "The freescale_twr_k70f120m target provides the packages needed
+        to run eCos on the Freescale TWR-k70f120m development system."
 }
 
 package CYGPKG_HAL_CORTEXM_A2FXXX {
