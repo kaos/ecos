@@ -292,6 +292,33 @@ cdl_package CYGPKG_HAL_ARM {
             handlers."
     }
 
+    cdl_option CYGOPT_HAL_ARM_FIQ_DISABLE {
+        display          "Disable FIQs"
+        default_value    1
+        description      "This option causes the HAL to disable both IRQ and FIQ
+                          interrupts during critical sections. Disabling this option
+                          causes eCos to only disable IRQs and puts FIQ
+                          interrupts outside the eCos world where they cannot interact
+                          with eCos in any way. Disabling this option also enables
+                          a set of macros, HAL_DISABLE|ENABLE|RESTORE|QUERY_FIQ,
+                          that provide control over the delivery of FIQs.
+                          The default is for this option to be enabled, which provides
+                          backward compatibility with previous versions of the ARM HAL."
+    }
+
+    cdl_option CYGNUM_HAL_ARM_FIQ_STACK_SIZE {
+        display          "FIQ stack size"
+        active_if        !CYGOPT_HAL_ARM_FIQ_DISABLE
+        flavor           data
+        legal_values     32 to 0x80000000
+        default_value    512
+        description      "This option set the size of the stack used to handle FIQ
+                          interrupts. It is only used if the HAL is not disabling
+                          FIQs during critical sections. Otherwise FIQs are translated
+                          into IRQs and delivered on the standard interrupt stack."
+    }
+    
+    
     cdl_component CYGPKG_REDBOOT_ARM_OPTIONS {
         display       "Redboot for ARM options"
         flavor        none

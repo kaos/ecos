@@ -1,3 +1,19 @@
+2011-11-23  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/hal_arm.cdl: Add CDL to control whether both IRQs and FIQs
+	are disabled in critical sections, or only IRQs. The default is to
+	disable both and translate any FIQs into IRQs for delivery. The
+	alternative is for FIQs to essentially exist outside eCos.
+
+	* include/hal_arch.h (CPSR_THREAD_INITIAL):
+	* include/hal_intr.h (CPSR_INTR_MASK, HAL_*_INTERRUPTS)
+	(HAL_*_FIQ): Add definitions for separating FIQ from IRQ.
+
+	* src/hal_mk_defs.c (main):
+	* src/vectors.S (start, FIQ, IRQ, spurious_IRQ):
+	(hal_*_interrupts, hal_*_FIQ, __fiq_stack_base): Add support for
+	separating FIQ from IRQ in critical section processing.
+
 2009-03-06  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/hal_arm.cdl: Merge goals for CYGHWR_THUMB and
@@ -152,6 +168,13 @@
 
 	* src/context.S (hal_thread_switch_context): Close race condition
 	that could cause corruption of the sp or lr registers.
+
+2005-12-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/hal_intr.h (HAL_QUERY_INTERRUPTS): Long-standing
+	bug: this is meant to return an old state acceptable to
+	HAL_RESTORE_INTERRUPTS.
+	(HAL_DISABLE_INTERRUPTS): Small but simple optimisation.
 
 2005-04-21  Ian Campbell  <icampbell@arcom.com>
 

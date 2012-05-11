@@ -428,7 +428,12 @@ start:
         mov     r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_UNDEF_MODE)
         msr     cpsr,r0
         ldr     sp,.__exception_stack
-
+#ifndef CYGOPT_HAL_ARM_FIQ_DISABLE
+        mov     r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_FIQ_MODE)
+        msr     cpsr,r0
+        ldr     sp,.__fiq_stack
+#endif
+        
         // initialize CPSR (machine state register)
         mov     r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_SUPERVISOR_MODE)
         msr     cpsr,r0
@@ -770,6 +775,18 @@ __dump_procs:
 
         .code   32
 FIQ:
+#ifndef CYGOPT_HAL_ARM_FIQ_DISABLE
+        // If we are not disabling FIQs as part of eCos, these will be under
+        // user control. In theory the user should have installed their own
+        // FIQ VSR before enabling them and we should never come here. If
+        // we do there is nothing eCos itself can do because we are outside
+        // the scope of the system. The default action here, then, is to simply
+        // mask FIQs and return.
+        mrs     r8,spsr                 // CPSR at time of interrupt
+        orr	r8,r8,#CPSR_FIQ_DISABLE
+        msr	spsr,r8
+        subs	pc,lr,#4
+#else        
         // We can get here from any non-user mode.
         mrs     r8,spsr                 // CPSR at time of interrupt
         and     r9,r8,#CPSR_MODE_BITS   // isolate pre-interrupt mode
@@ -793,6 +810,7 @@ FIQ:
 
         // now it looks like we got an IRQ instead of an FIQ except that
         // FIQ is disabled so we don't recurse.
+#endif        
 IRQ:
         // Note: I use this exception stack while saving the context because
         // the current SP does not seem to be always valid in this CPU mode.
@@ -804,6 +822,17 @@ IRQ:
         mov     r3,sp
 	
         mrs     r4,cpsr                 // switch to Supervisor Mode
+
+#ifdef CYGOPT_HAL_ARM_FIQ_DISABLE        
+        // Due to a small chance of contention with FIQ,
+        // we should disable FIQ while still in IRQ mode and then
+        // change to SVC mode. This only applies when eCos is masking
+        // FIQ alongside IRQ, otherwise FIQs are outside eCos' control
+        // and the FIQ to IRQ translation doesn't happen.
+        orr     r4,r4,#CPSR_FIQ_DISABLE        
+        msr     cpsr,r4
+#endif        
+        
         bic     r4,r4,#CPSR_MODE_BITS
         // When handling an IRQ we must disable FIQ unless the current 
         // mode in CPSR is IRQ. If we were to get a FIQ while in another 
@@ -812,7 +841,10 @@ IRQ:
         // for example, the stack pointer would be set to the beginning 
         // of the exception_stack clobbering the registers we have just 
         // saved.
-        orr     r4,r4,#CPSR_SUPERVISOR_MODE|CPSR_FIQ_DISABLE
+        // However, if we are allowing the user to handle their own
+        // FIQs, we don't need to do that, since FIQ will not be
+        // translated to IRQ.
+        orr     r4,r4,#CPSR_SUPERVISOR_MODE|CPSR_INTR_MASK
         msr     cpsr,r4
 
         mov     r5,sp                   // save original svc sp
@@ -990,8 +1022,8 @@ FUNC_START_ARM(hal_interrupt_stack_call_pending_DSRs, r1)
         stmfd   sp!,{r4,r5,lr}
         // Disable interrupts
         mrs     r4,cpsr                 // disable IRQ's
-        orr     r2,r4,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
-        bic     r5,r4,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
+        orr     r2,r4,#CPSR_INTR_MASK
+        bic     r5,r4,#CPSR_INTR_MASK
         msr     cpsr,r2
         // Switch to interrupt stack
         mov     r3,sp                   // save old stack pointer
@@ -1012,7 +1044,7 @@ FUNC_START_ARM(hal_interrupt_stack_call_pending_DSRs, r1)
 
         // Disable interrupts
         mrs     r1,cpsr                 // disable IRQ's
-        orr     r2,r1,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
+        orr     r2,r1,#CPSR_INTR_MASK
         msr     cpsr,r2
 
         // Move back to the thread stack.
@@ -1036,21 +1068,21 @@ FUNC_START_ARM(hal_interrupt_stack_call_pending_DSRs, r1)
 
 FUNC_START_ARM(hal_disable_interrupts, r1)
         mrs     r0,cpsr                 // current state
-        orr     r1,r0,#0xC0             // mask both FIQ and IRQ
+        orr     r1,r0,#CPSR_INTR_MASK   // mask interrupts
         msr     cpsr,r1
         bx      lr                      // exit, _old_ in r0        
 
 FUNC_START_ARM(hal_enable_interrupts, r1)
         mrs     r0,cpsr                 // current state
-        bic     r1,r0,#0xC0             // mask both FIQ and IRQ
+        bic     r1,r0,#CPSR_INTR_MASK   // mask interrupts
         msr     cpsr,r1
         bx      lr                      // exit
         
 FUNC_START_ARM(hal_restore_interrupts, r1)
         mrs     r1,cpsr                 // current state
-        bic     r1,r1,#0xC0             // mask out FIQ/IRQ bits
-        and     r0,r0,#0xC0             // keep only FIQ/IRQ
-        orr     r1,r1,r0                // mask both FIQ and IRQ
+        bic     r1,r1,#CPSR_INTR_MASK   // mask out interrupts
+        and     r0,r0,#CPSR_INTR_MASK   // keep only interrupts
+        orr     r1,r1,r0                // mask interrupts
         msr     cpsr,r1
         bx      lr                      // exit        
 
@@ -1060,6 +1092,38 @@ FUNC_START_ARM(hal_query_interrupts, r1)
 
 #endif // __thumb__
 
+#ifndef CYGOPT_HAL_ARM_FIQ_DISABLE
+
+// Functions for controlling FIQ independently of IRQ.
+// These are only present if we are not manipulating FIQs
+// alongside IRQs in the standard interrupt control macros.
+        
+FUNC_START_ARM(hal_disable_FIQ, r1)
+        mrs     r0,cpsr                 // current state
+        orr     r1,r0,#CPSR_FIQ_DISABLE // mask FIQs
+        msr     cpsr,r1
+        bx      lr                      // exit, _old_ in r0        
+
+FUNC_START_ARM(hal_enable_FIQ, r1)
+        mrs     r0,cpsr                 // current state
+        bic     r1,r0,#CPSR_FIQ_DISABLE // mask FIQs
+        msr     cpsr,r1
+        bx      lr                      // exit
+        
+FUNC_START_ARM(hal_restore_FIQ, r1)
+        mrs     r1,cpsr                 // current state
+        bic     r1,r1,#CPSR_FIQ_DISABLE // mask out FIQs
+        and     r0,r0,#CPSR_FIQ_DISABLE // keep only FIQs
+        orr     r1,r1,r0                // mask FIQs
+        msr     cpsr,r1
+        bx      lr                      // exit        
+
+FUNC_START_ARM(hal_query_FIQ, r1)
+        mrs     r0,cpsr                 // current state
+        bx      lr                      // exit, state in r0
+
+#endif
+        
 // Dummy/support functions
 
         .global __gccmain
@@ -1129,7 +1193,9 @@ PTR(__interrupt_stack)
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 PTR(__dump_procs)
 #endif
-
+#ifndef CYGOPT_HAL_ARM_FIQ_DISABLE        
+PTR(__fiq_stack)
+#endif        
 //
 // Identification - useful to find out when a system was configured
 _eCos_id:
@@ -1187,6 +1253,16 @@ __exception_stack:
         .endr
 __undef_exception_stack:
 
+#ifndef CYGOPT_HAL_ARM_FIQ_DISABLE
+        .balign 16
+__fiq_stack_base: 
+        .rept   CYGNUM_HAL_ARM_FIQ_STACK_SIZE
+        .byte   0
+        .endr
+        .balign 16        
+__fiq_stack:
+#endif
+        
 // Runtime stack used during all interrupt processing
 #ifndef CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
 #define CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE 4096
