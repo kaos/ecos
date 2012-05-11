@@ -1,3 +1,18 @@
+2012-04-23  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/pkgconf/mlt_arm_lpc24xx_ea2468_rom.ldi:
+	* include/pkgconf/mlt_arm_lpc24xx_ea2468_ram.ldi: Relocate fixed
+	vectors to 0x40000020. Previously, the HAL_VSR_GET/SET macros
+	accessed the wrong locations and didn't have any effect; now both
+	hardware and software have the same idea of where the VSR table
+	is.
+	NOTE: that this renders RAM applications built with this layout
+	incompatible with RedBoot built with the old layout. A new RedBoot
+	needs to be installed.
+
+	* cdl/hal_arm_lpc24xx_ea2468.cdl:
+	* tests/fiq.c: Add FIQ test program.
+
 2009-01-31  Bart Veer <bartv@ecoscentric.com>
 
 	* cdl/hal_arm_lpc24xx_ea2468.cdl: update compiler flags for gcc 4.x

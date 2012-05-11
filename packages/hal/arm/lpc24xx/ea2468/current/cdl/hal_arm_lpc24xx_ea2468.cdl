@@ -321,12 +321,18 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX_EA2468 {
                              "<pkgconf/mlt_arm_lpc24xx_ea2468_rom.h>" }
         }
     }
+
+   cdl_option CYGPKG_HAL_ARM_LPC24XX_EA2468_TESTS_EXTRAS {    
+        display       "EA2468 extra tests"
+        default_value 0
+        description   "Enable hand-run tests for EA2468 board."
+    }
     
    cdl_option CYGPKG_HAL_ARM_LPC24XX_EA2468_TESTS {
         display "Tests for LPC2468 OEM board HAL"
         flavor  data
         no_define
-        calculated { "tests/i2c_eeprom" }
+        calculated { "tests/i2c_eeprom" . (CYGPKG_HAL_ARM_LPC24XX_EA2468_TESTS_EXTRAS ? " tests/fiq" : "") }
         description   "
             This option specifies the set of tests for the EA2468 
             OEM board HAL."

@@ -10,7 +10,7 @@ MEMORY
 SECTIONS
 {
     SECTIONS_BEGIN
-    SECTION_fixed_vectors (sram, 0x40000400, LMA_EQ_VMA)
+    SECTION_fixed_vectors (sram, 0x40000020, LMA_EQ_VMA)
     SECTION_rom_vectors (ram, 0xA0100000, LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
