@@ -47,6 +47,12 @@ hal/m68k/arch/current/doc/m68k.sgml
 hal/m68k/mcf52xx/var/current/doc/mcf52xx.sgml
 hal/m68k/mcf52xx/mcf5272/proc/current/doc/mcf5272.sgml
 hal/m68k/mcf52xx/mcf5272/m5272c3/current/doc/m5272c3.sgml
+hal/cortexm/kinetis/var/current/doc/kinetis_begin.sgml
+hal/cortexm/kinetis/var/current/doc/kinetis.sgml
+hal/cortexm/kinetis/twr_k70f120m/current/doc/twr_k70f120m.sgml
+hal/cortexm/kinetis/twr_k60n512/current/doc/twr_k60n512.sgml
+hal/cortexm/kinetis/twr_k40x256/current/doc/twr_k40x256.sgml
+hal/cortexm/kinetis/var/current/doc/kinetis_end.sgml
 hal/cortexm/a2fxxx/a2f200_eval/current/doc/a2f200e.sgml
 hal/cortexm/lm3s/ek_lm3s811/current/doc/ek_lm3s811.sgml
 hal/sh/sh4_202_md/current/doc/sh4_202_md.sgml
