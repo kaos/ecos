@@ -1,3 +1,8 @@
+2012-05-18  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* doc/twr_k70f120m.sgml:
+	New file -- TWR-K70F120M platform documentation. [Bug 1001580]
+
 2012-05-17  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/hal_cortexm_kinetis_twr_k70f120m.cdl:

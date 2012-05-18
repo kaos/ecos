@@ -1,3 +1,10 @@
+2012-05-18  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* doc/kinetis_begin.sgml:
+	* doc/kinetis_end.sgml:
+	* doc/kinetis.sgml:
+	New files -- Kinetis variant documentation. [Bug 1001580]
+
 2012-05-17  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/hal_cortexm_kinetis.cdl:
@@ -16,8 +23,8 @@
 	* include/var_io.h:
 	* src/kinetis_ddram.c:
 	* src/kinetis_misc.c:
-    Add: Clocking support for PLL1 (K70), DDRAM controller
-    Cache, eDMA - 32 chan. [Bugzilla 1001579]
+	Add: Clocking support for PLL1 (K70), DDRAM controller
+	Cache, eDMA - 32 chan. [Bugzilla 1001579]
 
 2012-01-11  Tomas Frydrych <tomas@sleepfive.com>
 
@@ -31,7 +38,7 @@
 2012-01-05  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/kinetis_irq_scheme.cdl
-    Centralized IRQ priority scheme.
+	Centralized IRQ priority scheme.
 
 	* cdl/hal_cortexm_kinetis.cdl:
 	* cdl/kinetis_flexbus.cdl

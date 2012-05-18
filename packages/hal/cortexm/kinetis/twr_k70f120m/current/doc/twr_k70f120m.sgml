@@ -1,0 +1,165 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                                                     -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     twr_k70f120m.sgml                                        -->
+<!--                                                                 -->
+<!--     TWR-K70F120M board documentation.                        -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2012 Free Software Foundation, Inc. -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTEND####                                     -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   Ilija Kocho                                        -->
+<!-- Contact(s):  ilijak@siva.com.mk                                 -->
+<!-- Date:        2012/01/10                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<!--<part id="hal-cortexm-kinetis"><title>Freescale Kinetis Family Support</title>-->
+
+<refentry id="kinetis-twr-k70f120m">
+  <refmeta>
+    <refentrytitle>TWR-K70F120M Development kit</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M</refname>
+    <refpurpose>eCos Support for Freescale TWR-K70F120M development kit</refpurpose>
+  </refnamediv>
+  
+  <refsect1 id="kinetis-twr-k70f120m-description"><title>Description</title>
+    <para>
+    The Freescale TWR-K70F120M is a development kit for <link linkend="hal-cortexm-kinetis-var">
+    Freescale Kinetis</link> Cortex-M4 based micro-controllers. It covers K70, K60, K10 and K20
+    microcontroller subfamilies. K70FN1M0 is a high end member comprising on-chip 1 MiB FLASH
+    and 128 KiB SRAM memory as well as a 16 KiB unified cache.
+    K70 parts are equipped with a rich set of communication interfaces including Ethernet USB, UARTs
+    CAN, SPI and I2C. They also have a Graphics controller and a DMA controller, as well as FlexBus and SDRAM
+    external memory interfaces. They are mixed signal devices featuring a 16 bit ADC and a 12 bit DAC. 
+    </para>
+  </refsect1>
+  <refsect1 id="kinetis-twr-k70f120m-config"><title>Configuration</title>
+    <refsect2 id="kinetis-twr-k70f120m-config-hardware"><title>Hardware Setup</title>
+      <refsect3 id="kinetis-twr-k70f120m-config-hardware-cpu"><title>TWR-K70F120M setup</title>
+      <para>
+      Factory jumper settings on TWR-K70F120M are fitted for standalone operation of the board.
+      In order to use it with the Ethernet PHY from TWR-SER, some jumpers have to be changed
+      on both TWR-K70F120M and TWR-SER. Jumper settings for TWR-SER are given in
+      <link linkend="kinetis-twr-k60n512-config">TWR-K60N512 Configuration</link> and here are the TWR-K70F120M
+      settings.
+      </para>
+      <table frame="all"><title>TWR-K70F120M Jumper setting</title>
+        <tgroup cols="3" align="center">
+          <colspec colnum="1" colname="jumper" colwidth="1*" >
+          <colspec colnum="2" colname="jumpset" colwidth="1*" >
+          <colspec colnum="3" colname="desc" colwidth="3*" >
+          <thead>
+            <row>
+              <entry>Jumper</entry>
+              <entry>Setting</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>J19</entry>
+              <entry>OFF</entry>
+              <entry>On board 50MHz oscillator is not powered</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      </refsect3>
+    </refsect2>
+    <refsect2 id="kinetis-twr-k70f120m-config-ecos"><title>eCos Configuration</title>
+      <refsect3 id="twr-k70f120m-clocking"><title>Clocking</title>
+      <para>
+      The TWR-K70F120M package defines requirements for the platform clocking.
+      </para>
+      </refsect3>  
+      <refsect3 id="twr-k70f120m-memory"><title>Memory</title>
+      <para>
+      The K70 has two 64 KiB SRAM banks giving a total of 128KiB on chip SRAM. In addition, on-board there is
+      128 MiB of external RAM (SDRAM) and 256 MiB of NAND Flash.
+      External RAM is divided in two regions: 
+      </para>
+      <variablelist>
+        <varlistentry>
+          <term>ram</term>
+          <listitem><para> Regular RAM.</para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>ramnc</term>
+          <listitem><para>Non cached RAM. This region contains <literal>.noncache</literal> section.</para></listitem>
+        </varlistentry>
+      </variablelist>
+      </refsect3>
+    </refsect2>
+    <refsect2 id="kinetis-twr-k70f120m-memory"><title>Memory layouts</title>
+      <para>
+      Additional platform memory layouts follow the <link linkend="kinetis-var-memory">variant</link>
+      ones only by putting all RAM sections except <literal>.sram</literal> in the <literal>ram</literal> region.
+      The linker file names incorporate the segment <filename>_extram_</filename>.
+      </para>
+      <refsect3 id="kinetis-twr-k70f120m-memory-ldscript-location"><title>Linker 
+      Script Location</title>
+      <para>
+      Linker scripts are found at:
+      <filename class="directory">hal/kinetis/twr-k70f120m/&lt;version&gt;/include/pkgconf</filename>
+      </para>
+      </refsect3>
+      <refsect3 id="kinetis-twr-k70f120m-memory-ldscript-naming"><title>Linker Script Naming</title>
+      <para>
+      Linker script file names have following form:
+      <filename>mlt_kinetis_&lt;NVM&gt;_&lt;SRAM&gt;_&lt;STARTUP_extram.ldi</filename>
+      where <filename>PLF</filename> is an optional extension for platform specific scripts and
+      other segments have meaning as described <link linkend="kinetis-var-table-ldscript-naming">here</link>.
+      </para>
+      </refsect3>
+    </refsect2>
+    <refsect2 id="kinetis-twr-k70f120m-startup"><title>Startup types</title>
+      <para>
+      The platform startup <literal>CYG_HAL_STARTUP_PLF</literal> offers the following startups:
+      </para>
+      <variablelist>
+        <varlistentry>
+          <term><literal>ROM (Platform)</literal></term>
+          <listitem><para>Normal startup for stand-alone operation. The eCos image has to be flashed
+            in internal flash. External RAM is used as main memory.
+            </para>
+            <para>
+            Note: This startup has a name like the one in the variant but generates different images 
+            by invoking a different set of linker scripts.
+            </para></listitem></varlistentry>
+        <varlistentry>
+          <term><literal>RAM (Platform)</literal></term>
+          <listitem><para>The image is loaded in external RAM by means of RedBoot.
+            </para></listitem></varlistentry>
+        <varlistentry>
+          <term><literal>ByVariant</literal></term>
+          <listitem><para>Activates the <link linkend="kinetis-var-startup">variant startup types</link>.
+            </para></listitem></varlistentry>
+      </variablelist>
+    </refsect2>
+  </refsect1>
+</refentry>
+
+<!--</part>-->

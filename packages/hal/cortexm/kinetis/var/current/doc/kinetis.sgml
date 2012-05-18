@@ -1,0 +1,303 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                                                     -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     kinetis.sgml                                                -->
+<!--                                                                 -->
+<!--     KINETIS          documentation.                             -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2012 Free Software Foundation, Inc. -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTEND####                                     -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   Ilija Kocho                                        -->
+<!-- Contact(s):  ilijak@siva.com.mk                                 -->
+<!-- Date:        2012/01/10                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<!-- <part id="hal-cortexm-kinetis"><title>Freescale Kinetis Family Support</title> -->
+
+<refentry id="hal-cortexm-kinetis-var">
+  <refmeta>
+    <refentrytitle>Freescale Kinetis Variant</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname><literal>CYGPKG_HAL_CORTEXM_KINETIS</literal></refname>
+    <refpurpose>eCos Support for Freescale Kinetis Micro-controllers</refpurpose>
+  </refnamediv>
+  
+  <refsect1 id="hal-cortexm-kinetis-var-description"><title>Description</title>
+    <para>
+    Kinetis is a Freescale microcontroller family based on the ARM Cortex-M4 core. The
+    family consists of subfamilies: K10, K20, K30, K40, K50, K60 and K70
+    that gradually add-on performance and features.
+    </para>
+    <para>
+    The Kinetis variant HAL provides generic support for hardware found on some
+    or all Kinetis members. The variant package <literal>CYGPKG_HAL_CORTEXM_KINETIS</literal>
+    provides configurable components that aim to support the complete set of options
+    found in the Kinetis family.
+    </para>
+  </refsect1>
+  <refsect1 id="kinetis-var-sup"><title>What's supported</title>
+    <para>
+    The current Kinetis software includes a Kinetis variant HAL, some Platform BSPs,
+    as well as DMA, UART, Wallclock, Ethernet and SPI support.
+    </para>
+  </refsect1>
+  <refsect1 id="kinetis-var-config"><title>Configuration</title>
+    <para>    Kinetis is a set of families of micro-controllers packed with highly configurable components.
+    In order to facilitate system configuration for the user, the CDL configuration items are organized as a set of
+    expert components. Typically, for a given peripheral, the user chooses the required hardware
+    options and desirable parameters, and the respective CDL configuration options and settings are calculated from these.
+    If it is not possible to achieve exact values, the configurator attempts to provide 
+    approximate settings, then the user can manually do the fine tuning.
+    <refsect2 id="kinetis-var-cpu-select"><title>Kinetis Part Selection</title>
+      <para>
+      Within a family and/or across families the chips are further differentiated by their features
+      such as: optional FPU, amount of memory, etc. The family member options are reflected in the
+      controller naming scheme (see respective Freescale Kinetis product brief(s) and reference manual(s)). 
+      The Kinetis part builder <literal>CYGHWR_HAL_CORTEXM_KINETIS</literal>, respects this naming scheme and
+      enables the user to interactively configure eCos for the desired part by selecting
+      the requested part's name segments.
+      Based on user input, the CDL computes the part-specific eCos configuration. This includes calculation
+      of on-chip FLASH and SRAM layout as well as the activation/deactivation of options such as FPU and
+      Ethernet.
+      </para>
+    </refsect2>
+    <refsect2 id="kinetis-var-clocking"><title>Clocking</title>
+      <para>
+      Kinetis is packed with a rich set of clocking options provided by the Multipurpose Clock Generator - MCG.
+      Dependent on the part, MCG can have outlets for one or two external frequency reference sources 
+      <emphasis>OSC</emphasis> and <emphasis>OSC1</emphasis> and one
+      or two PLL oscillators <emphasis>PLL</emphasis> and <emphasis>PLL1</emphasis>.
+      Each of the external frequency reference sources can be either a crystal or external
+      oscillator and associated with either or both PLL oscillators. <emphasis>OSC</emphasis> can also be a
+      reference source for the FLL oscillator.
+      Besides <emphasis>OSC</emphasis> and <emphasis>OSC1</emphasis>, there are additional clock sources
+      including two RC oscillators and a (battery backed) RTC clock with it's own 32768 Hz crystal oscillator.
+      MCG gives the user a wide choice of system and peripheral clock source(s) that can be
+      external clock(s), internal clocks, a PLL or the FLL. An external or on-chip
+      oscillator can be used as a system clock or as a reference for PLL/FLL oscillator(s).
+      </para>
+      <note><para> In the documentation of Kinetis parts with two oscillators, <emphasis>OSC</emphasis>
+      and <emphasis>PLL</emphasis> are described as <emphasis>OSC0</emphasis> and <emphasis>PLL0</emphasis> respectively.
+      </para></note>
+      <para>
+      Clocking component <literal>CYGHWR_HAL_CORTEXM_KINETIS_CLOCKING</literal> provides some expert
+      functionality in order to facilitate clock system configuration. Normally, the user sets requirements:
+      clock source, clock reference, desired core frequency and upper limits for peripheral
+      clock frequencies. The component automatically calculates MCG and other peripheral register
+      settings in order to achieve the required clock frequencies. This setting is not always perfect but
+      fits (exactly or close) for commonly used frequencies. If necessary, the user can fine tune the
+      clock settings interactively using the eCos Configuration Tool.
+      The two clock sources are named:
+      </para>
+      <variablelist>
+        <varlistentry>
+          <term>System clock</term>
+          <listitem><para>The clock source that provides the clock for the Cortex-M core.
+            It may also provide the clock for some peripherals.
+            </para></listitem></varlistentry>
+        <varlistentry>
+          <term>Auxiliary clock</term>
+          <listitem><para>This is optional and may provide a clock for peripherals but not for the Cortex-M core.
+            </para></listitem></varlistentry>
+      </variablelist>
+      <para>
+      The user can select which source is the system clock. The choices for system clock are: <emphasis>PLL</emphasis>,
+      <emphasis>FLL</emphasis>, <emphasis>External reference clock</emphasis> and, when available, <emphasis>PLL1</emphasis>.
+      The auxiliary clock, when available is: <emphasis>PLL</emphasis> if <emphasis>PLL1</emphasis> is selected 
+      for system the clock or <emphasis>PLL1</emphasis> if any other source is selected for the system clock.
+      </para>
+    </refsect2>
+    <refsect2 id="kinetis-var-memory"><title>Memory layouts</title>
+      <para>
+      The memory layouts and startup types which don't employ external memory should be applicable to all
+      Kinetis platforms so they are defined and maintained at the variant level.
+      This is somewhat different than common eCos practice but has some advantages brought by universal,
+      single copy linker scripts for single chip configurations. The linker scripts are further enhanced/generalized
+      by utilization of macros provided by CDL and calculated on the basis of the
+      <link linkend="kinetis-var-cpu-select">selected Kinetis part</link>.
+      </para>
+      <refsect3 id="kinetis-var-memory-ldscript-location"><title>Variant Linker 
+      Script Location</title>
+      <para>
+      Variant linker scripts are found at:
+      <filename class="directory">hal/kinetis/var/&lt;version&gt;/include/pkgconf</filename>
+      </para>
+      </refsect3>
+      <refsect3 id="kinetis-var-memory-ldscript-naming"><title>Linker Script Naming</title>
+      <para>
+      Linker script file names are composed of segments
+      <filename>mlt_kinetis_&lt;NVM&gt;_&lt;SRAM&gt;_&lt;STARTUP&gt;[_&lt;PLF&gt;].ldi</filename>
+      where <filename>PLF</filename> is an optional extension for platform specific scripts and
+      other segments have meanings as described in the following table.
+      </para>
+      <table frame="all" id="kinetis-var-table-ldscript-naming"><title>Linker script name segments</title>
+        <tgroup cols="3" align="center">
+          <colspec colnum="1" colname="segment" colwidth="1*" >
+          <colspec colnum="2" colname="desc" colwidth="2*" >
+          <colspec colnum="3" colname="values" colwidth="1*" >
+          <thead>
+            <row>
+              <entry>Segment</entry>
+              <entry>Description</entry>
+              <entry>Values</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><filename>NVM</filename></entry>
+              <entry>Kinetis non-volatile memory configuration</entry>
+              <entry>
+              <filename>flash</filename>,
+              <filename>flexnvm</filename>
+              </entry>
+            </row>
+            <row>
+              <entry><filename>SRAM</filename></entry>
+              <entry>SRAM memory sectioning</entry>
+              <entry>
+              <filename>unisram</filename>,
+              <filename>sram2s</filename>
+              </entry>
+            </row>
+            <row>
+              <entry><filename>STARTUP</filename></entry>
+              <entry>Startup type</entry>
+              <entry>
+              <filename>rom</filename>,
+              <filename>sram</filename>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <para>
+      <note><para>Never attempt to flash Kinetis with an image for SRAM startup. SRAM startup images
+      do not contain a <literal>.flash_conf</literal> section so random contents may be written in 
+      flash protection area and lock your Kinetis device. This lock-out can be permanent.
+      </para></note>
+      </refsect3>
+      <refsect3 id="kinetis-var-memory-plf-spec"><title>Platform Specific Memory Layouts</title>
+      <para>
+      Platforms, if needed, can provide their own layouts in addition to the variant ones. Typically
+      they will cover systems with external memory. The <link linkend="kinetis-var-startup">
+      startup type</link> implicitly determines whether variant and platform defined
+      layout shall be used.
+      </para>
+      </refsect3>
+      <refsect3 id="kinetis-var-memory-sram"><title>On-chip SRAM</title>
+      <para>
+      Kinetis on chip SRAM memory consists of two equal banks that occupy consecutive locations anchored
+      below and above <literal>0x20000000</literal>. This fact is reflected in memory layout scripts.
+      There are linker scripts that treat SRAM as a single section (<filename>unisram</filename>) or as
+      2 separate sections (<filename>sram2s</filename>).
+      </para>
+      </refsect3>
+      <refsect3 id="kinetis-var-memory-flash"><title>On-chip FLASH</title>
+      <para>
+      Kinetis on-chip flash contains a special area <literal>[0x400-0x40F]</literal> 
+      that holds the flash security configuration. In order to preserve this area from 
+      accidental writing and at the same time provide regular access,
+      a custom linker section <literal>.flash_conf</literal> is created. In addition, in order
+      to utilize the FLASH pool below <literal>0x400</literal> the <emphasis>USER_SECTION</emphasis> 
+      <literal>.kinetis_misc</literal> is defined. This section typically contains 
+      code parts from <filename>kinetis_misc.c</filename>.
+      </para>
+      </refsect3>
+      <refsect3 id="kinetis-var-memory-cache"><title>Cache</title>
+      <para>
+      Kinetis members with operating frequencies of 120 MHz and 150 MHz are equipped with cache memory.
+      Due to the Harvard architecture, there are two unified cache memories connected to code 
+      - <emphasis>PC</emphasis> and system - <emphasis>PS</emphasis> buses respectively. One of the
+      issues with caching is operation with bus masters such as DMA, Ethernet controller, etc.
+      In order to keep shared data such
+      as buffers and transfer descriptors synchronous, a part of cached data may have to be flushed
+      and/or invalidated. In some cases, an alternative can be the usage of non-cacheable memory
+      regions. <literal>CYGHWR_HAL_NON_CACHABLE</literal> provides for the configuration of non-cacheable
+      memory. If some bus masters have provision for non-cacheable memory, such configuration options
+      can be parented by <literal>CYGHWR_HAL_NON_CACHABLE</literal>.
+      </para>
+      </refsect3>
+      <refsect2 id="kinetis-var-startup"><title>Startup types</title>
+        <para>
+        There are <emphasis>two levels</emphasis> of startup type:
+        </para>
+        <variablelist>
+          <varlistentry>
+            <term>Variant <literal>CYG_HAL_STARTUP_VAR</literal></term>
+            <listitem><para>This is always present and provides startup
+              types for systems without external memory.
+              </para></listitem></varlistentry>
+          <varlistentry>
+            <term>Platform <literal>CYG_HAL_STARTUP_PLF</literal></term>
+            <listitem><para>This is optional and is 
+              provided by a platform package. Typically it provides startup types for systems
+              that employ external memory.
+              </para></listitem></varlistentry>
+        </variablelist>
+        <para>
+        </para>
+        <para>
+        When present, the platform startup overloads the variant startup and has precedence over it.
+        User can activate the variant startup by setting platform startup to
+        <literal>ByVariant</literal>.
+        </para>
+        <refsect3 id="kinetis-var-startup-byvariant"><title>Startup types provided variant</title>
+        <para>
+        The following startup types are provided for Kinetis at the variant level:
+        </para>
+        <variablelist>
+          <varlistentry>
+            <term><literal>ROM</literal></term>
+            <listitem><para>Normal startup for stand-alone operation. eCos image has to be flashed
+              in internal flash;
+              </para></listitem></varlistentry>
+          <varlistentry>
+            <term><literal>SRAM</literal></term>
+            <listitem><para>Image is loaded in internal SRAM by means of JTAG/SWD and executed
+              under debugger control.
+              </para></listitem></varlistentry>
+        </variablelist>      
+        <note><para>(IMPORTANT) Never, ever attempt to flash Kinetis with an image for SRAM startup.
+        SRAM startup images do not contain a <literal>.flash_conf</literal> section so random contents
+        may be written to the flash protection area and lock your Kinetis device. This lock-out can be permanent.
+        </para></note>
+        </refsect3>
+      </refsect2>
+      <refsect2 id="kinetis-interrupt-priority-scheme"><title>Interrupt priority scheme</title>
+        <para>
+        In case of multiple simultaneous interrupts, interrupt service request resolution is based
+        on a relative comparison of interrupt priorities, rather than on individual interrupt priority values.
+        <emphasis>Interrupt priority scheme</emphasis> gives a consolidated overview and control
+        of priorities of all interrupt sources. Interrupt priorities can be provided by either variant
+        <literal>CYGHWR_HAL_DEVS_IRQ_PRIO_SCHEME_VAR</literal>
+        or platform <literal>CYGHWR_HAL_DEVS_IRQ_PRIO_SCHEME</literal>.
+        </para>
+      </refsect2>
+    </refsect1>
+    
+  </refentry>
+  
+  <!--</part>-->
