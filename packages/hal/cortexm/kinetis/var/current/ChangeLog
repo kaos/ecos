@@ -1,3 +1,9 @@
+2012-05-17  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_kinetis.cdl:
+	Bug fix: Do not refer external memory if Platform startup is
+	not selected.  [ Bugzilla 1001590 ]
+
 2012-05-04  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/hal_cortexm_kinetis.cdl:

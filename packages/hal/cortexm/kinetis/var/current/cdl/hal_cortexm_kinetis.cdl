@@ -100,8 +100,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FPU {
             display          "Floating Point Unit option"
             flavor           bool
-            implements       CYGINT_HAL_CORTEXM_FPV4_SP_D16
-            default_value    { CYGINT_HAL_CORTEXM_FPV4_SP_D16 }
+            default_value 0
             description "Select whether the chip has Floating Point Unit."
         }
 
@@ -505,11 +504,14 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
             active_if (CYGINT_HAL_CACHE)
 
             cdl_component CYGHWR_HAL_NON_CACHABLE {
-                display "Non cacheable memory regions"
+                display "Non cacheable RAM memory regions"
                 flavor data
-                active_if CYGINT_HAL_HAS_NONCACHEABLE
+                active_if  CYGINT_HAL_HAS_NONCACHEABLE
                 legal_values { "\".sram\"" "\".noncache\"" }
                 default_value { "\".noncache\"" }
+                description "
+                    Non cacheable memory sections may be used as shared memory
+                    between CPU and other bus masters such as DMA, ENET, etc."
 
                 cdl_option CYGHWR_HAL_ENET_TCD_SECTION {
                     display "Ethernet buffer descriptor memory section"
