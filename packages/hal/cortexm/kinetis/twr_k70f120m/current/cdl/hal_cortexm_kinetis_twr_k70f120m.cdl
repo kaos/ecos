@@ -56,9 +56,6 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
     requires      { is_active(CYGPKG_DEVS_ETH_FREESCALE_ENET)
                   implies CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS == "OSC" }
 
-#    implements    CYGINT_HAL_CORTEXM4_CODE
-#    implements    CYGINT_HAL_CORTEXM_FPV4_SP_D16
-#    implements    CYGINT_HAL_CORTEXM_FPU_CODE
     implements    CYGINT_HAL_CACHE
 
     requires      { CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM == 70 }
@@ -66,7 +63,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
     requires      { CYGHWR_HAL_CORTEXM_KINETIS_REV == 2 }
 
     implements    CYGINT_IO_SERIAL_FREESCALE_UART2
-    implements    CYGINT_HAL_CORTEXM_KINETIS_DDRAM
+
     implements    CYGINT_HAL_FREESCALE_UART2
     implements    CYGINT_HAL_CORTEXM_KINETIS_RTC
     implements    CYGINT_HAL_CORTEXM_KINETIS_HAS_PLL1
@@ -138,15 +135,18 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
     cdl_option CYGHWR_MEMORY_LAYOUT_PLF {
         display "Memory layout by platform"
         flavor data
+        active_if { CYG_HAL_STARTUP_PLF != "ByVariant" }
+        implements CYGINT_HAL_CORTEXM_KINETIS_DDRAM
         no_define
         parent  CYGHWR_MEMORY_LAYOUT
         calculated {
-            (CYG_HAL_STARTUP_PLF == "ByVariant" ) ? 0 :
+            (CYG_HAL_STARTUP_PLF == "ByVariant" ) ? "by variant" :
             (CYG_HAL_STARTUP == "RAM") ? "kinetis_"
             . CYGHWR_HAL_CORTEXM_KINETIS_OC_MEM_LAYOUT  . "_extram_ram" :
             (CYG_HAL_STARTUP == "ROM") ? "kinetis_"
             . CYGHWR_HAL_CORTEXM_KINETIS_OC_MEM_LAYOUT  . "_extram_rom" :
-            "undefined_by_PLF" }
+            "Error!"
+        }
         description "
             Combination of 'Startup type' and 'Kinetis member in use'
             produces the memory layout."
