@@ -1,0 +1,75 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                                                     -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     twr_k40x256.sgml                                             -->
+<!--                                                                 -->
+<!--     TWR-K40X256 board documentation.                             -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2012 Free Software Foundation, Inc. -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTEND####                                     -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   Ilija Kocho                                        -->
+<!-- Contact(s):  ilijak@siva.com.mk                                 -->
+<!-- Date:        2012/01/10                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<!--<part id="hal-cortexm-kinetis"><title>Freescale Kinetis Family Support</title>-->
+
+<refentry id="kinetis-twr-k40x256">
+  <refmeta>
+    <refentrytitle>TWR-K40X256-KIT Development kit</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>CYGPKG_HAL_CORTEXM_KINETIS_TWR_K40X256</refname>
+    <refpurpose>eCos Support for the Freescale TWR-K40X256 development kit</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="kinetis-twr-k40x256-description"><title>Description</title>
+    <para>
+    The Freescale TWR-K40X256-KIT is a development kit for <link linkend="hal-cortexm-kinetis-var">
+    Freescale Kinetis</link>  Cortex-M4 based micro-controllers. It covers K40 and K30 microcontroller
+    subfamilies. K40X256 is a high end member comprising 256 KiB FLASH, 256 KiB FlexMemory and  64 KiB SRAM,
+    as well as rich set of communication interfaces including USB, UARTs CAN, SPI and I2C.
+    K40 controllers also feature a Segment LCD controller, a DMA controller and a FlexBus
+    external memory interface. They are mixed signal devices featuring 16 bit ADC and 12 bit DAC. 
+    </para>
+  </refsect1>
+  <refsect1 id="kinetis-twr-k40x256-config"><title>Configuration</title>
+    <refsect2 id="kinetis-twr-k40x256-config-hardware"><title>Hardware Setup</title>
+      <para>
+      No changes to the factory default setup are necessary.
+    </para>
+  <refsect3 id="twr-k40x256-clocking"><title>Clocking</title>
+    <para>
+    The TWR-K40X256 uses an 8MHz crystal as a clock reference which is stated as a requirement in the platform package.
+    </para>
+  </refsect3>  
+  <refsect3 id="twr-k40x256-memory"><title>Memory</title>
+    <para> K40X245 has two 32KiB SRAM banks giving a total of 64KiB on chip SRAM. </para>
+  </refsect3>
+ </refsect2>
+  </refsect1>
+</refentry>
+
+<!-- </part> -->

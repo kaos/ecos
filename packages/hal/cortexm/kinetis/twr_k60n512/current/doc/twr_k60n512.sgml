@@ -1,0 +1,134 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                                                     -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     twr_k60n512.sgml                                             -->
+<!--                                                                 -->
+<!--     TWR-K60N512 board documentation.                             -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTBEGIN####                                   -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2012 Free Software Foundation, Inc. -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!-- ####ECOSDOCCOPYRIGHTEND####                                     -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   Ilija Kocho                                        -->
+<!-- Contact(s):  ilijak@siva.com.mk                                 -->
+<!-- Date:        2012/01/10                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<!--<part id="hal-cortexm-kinetis"><title>Freescale Kinetis Family Support</title>-->
+
+<refentry id="kinetis-twr-k60n512">
+  <refmeta>
+    <refentrytitle>TWR-K60N512-KIT Development kit</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512</refname>
+    <refpurpose>eCos Support for the Freescale TWR-K60N512 development kit</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="kinetis-twr-k60n512-description"><title>Description</title>
+    <para>
+    The Freescale TWR-K60N512-KIT is a development kit for <link linkend="hal-cortexm-kinetis-var">
+    Freescale Kinetis</link> Cortex-M4 based microcontrollers.
+    It covers K60, K10 and K20 microcontroller families.
+    K60N512 is a high end member comprising 512 KiB FLASH and 128 KiB SRAM,
+    as well as rich set of communication interfaces inclduing Ethernet USB, UARTs CAN, SPI and I2C.
+    K60 micro-controllres also have a DMA controller and a FlexBus external memory interface.
+    They are mixed signal devices featuring a 16 bit ADC and a 12 bit DAC. 
+    </para>
+  </refsect1>
+
+  <refsect1 id="kinetis-twr-k60n512-config"><title>Configuration</title>
+    <refsect2 id="kinetis-twr-k60n512-config-hardware"><title>Hardware Setup</title>
+      <para>
+      Factory jumper settings on the TWR-K60N512 are fitted for standalone operation of the TWR-K60N512.
+      In order to use it with the Ethernet PHY on TWR-SER, some jumpers have to be changed from their factory
+      settings on both TWR-K60N512 and TWR-SER:
+      </para>
+      <table frame="all"><title>TWR-K60N512 Jumper setting differences from factory settings</title>
+        <tgroup cols="3" align="center">
+          <colspec colnum="1" colname="jumper" colwidth="1*" >
+          <colspec colnum="2" colname="jumpset" colwidth="1*" >
+          <colspec colnum="3" colname="desc" colwidth="3*" >
+        <thead>
+          <row>
+            <entry>Jumper</entry>
+            <entry>Setting</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>J6</entry>
+            <entry>2-3</entry>
+            <entry>Select TWR-SER oscillator as clock source.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+      </table>
+      
+      <table frame="all"><title>TWR-SER Jumper settings differences from factory settings</title>
+      <tgroup cols="3" align="center">
+          <colspec colnum="1" colname="jumper" colwidth="1*" >
+          <colspec colnum="2" colname="jumpset" colwidth="1*" >
+          <colspec colnum="3" colname="desc" colwidth="3*" >
+        <thead>
+          <row>
+            <entry>Jumper</entry>
+            <entry>Setting</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>J2</entry>
+            <entry>3-4</entry>
+            <entry>Ethernet PHY clock select: 50MHz</entry>
+          </row>
+          <row>
+            <entry>J3</entry>
+            <entry>2-3</entry>
+            <entry>Route 50MHz to CLOCKIN0</entry>
+          </row>
+          <row>
+            <entry>J12</entry>
+            <entry>9-10</entry>
+            <entry>Ethernet PHY config: select RMII mode</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+     </refsect2>
+    <refsect2 id="kinetis-twr-k60n512-config-ecos"><title>eCos Configuration</title>
+  <refsect3 id="twr-k60n512-clocking"><title>Clocking</title>
+    <para>
+    TWR-K60N512 uses default Kinetis variant clocking.
+    </para>
+  </refsect3>  
+  <refsect3 id="twr-k60n512-memory"><title>Memory</title>
+    <para> K60 has two 64KiB SRAM banks giving a total of 128KiB on chip SRAM. </para>
+  </refsect3>
+ </refsect2>
+  </refsect1>
+</refentry>
+
+<!--</part>-->
