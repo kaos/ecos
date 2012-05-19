@@ -1,3 +1,8 @@
+2012-05-19  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/hal_cortexm_kinetis_twr_k70f120m.cdl: Reference per-package
+	documentation.
+
 2012-05-18  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* doc/twr_k70f120m.sgml:

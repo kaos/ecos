@@ -70,7 +70,7 @@
     expert components. Typically, for a given peripheral, the user chooses the required hardware
     options and desirable parameters, and the respective CDL configuration options and settings are calculated from these.
     If it is not possible to achieve exact values, the configurator attempts to provide 
-    approximate settings, then the user can manually do the fine tuning.
+    approximate settings, then the user can manually do the fine tuning.</para>
     <refsect2 id="kinetis-var-cpu-select"><title>Kinetis Part Selection</title>
       <para>
       Within a family and/or across families the chips are further differentiated by their features
@@ -198,6 +198,7 @@
       do not contain a <literal>.flash_conf</literal> section so random contents may be written in 
       flash protection area and lock your Kinetis device. This lock-out can be permanent.
       </para></note>
+      </para>
       </refsect3>
       <refsect3 id="kinetis-var-memory-plf-spec"><title>Platform Specific Memory Layouts</title>
       <para>
@@ -240,6 +241,7 @@
       can be parented by <literal>CYGHWR_HAL_NON_CACHABLE</literal>.
       </para>
       </refsect3>
+      </refsect2>
       <refsect2 id="kinetis-var-startup"><title>Startup types</title>
         <para>
         There are <emphasis>two levels</emphasis> of startup type:

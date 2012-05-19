@@ -1,3 +1,8 @@
+2012-05-19  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/hal_cortexm_kinetis_twr_k40x256.cdl: Reference per-package
+	documentation.
+
 2012-05-18  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* doc/twr_k40x512.sgml:
@@ -24,7 +29,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

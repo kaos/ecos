@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2011 Free Software Foundation, Inc.                        
+## Copyright (C) 2011, 2012 Free Software Foundation, Inc.                        
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -51,6 +51,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512 {
     parent        CYGPKG_HAL_CORTEXM_KINETIS
     define_header hal_cortexm_kinetis_twr_k60n512.h
     include_dir   cyg/hal
+    doc           ref/kinetis-twr-k60n512.html
     hardware
     requires      { CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE == "INTERNAL" }
     requires      { is_active(CYGPKG_DEVS_ETH_FREESCALE_ENET)

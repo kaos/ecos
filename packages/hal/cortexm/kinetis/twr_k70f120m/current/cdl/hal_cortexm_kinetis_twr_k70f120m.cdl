@@ -51,6 +51,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
     parent        CYGPKG_HAL_CORTEXM_KINETIS
     define_header hal_cortexm_kinetis_twr_k70f120m.h
     include_dir   cyg/hal
+    doc           ref/kinetis-twr-k70f120m.html
     hardware
     requires      { CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE == "INTERNAL" }
     requires      { is_active(CYGPKG_DEVS_ETH_FREESCALE_ENET)
