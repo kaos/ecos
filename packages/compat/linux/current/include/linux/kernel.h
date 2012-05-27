@@ -1,8 +1,10 @@
 #ifndef __LINUX_KERNEL_H__
 #define __LINUX_KERNEL_H__
-#include <cyg/infra/diag.h>
+#include <cyg/infra/diag.h>       // For diag_printf
+#include <cyg/fileio/fileio.h>    // For cyg_timestamp
+#include <cyg/kernel/kapi.h>      // For cyg_current_time
 
-#define jiffies 100
+#define jiffies ((unsigned long)cyg_current_time())
 
 #define ERR_PTR(err) ((void*)(err))
 #define PTR_ERR(err) ((unsigned long)(err))

@@ -1,3 +1,9 @@
+2012-05-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/linux/kernel.h (jiffies): Use cyg_current_time(), not
+	a constant. JFFS2 at least uses it to occasionally vary behaviour.
+	Fixes bug #1001591.
+
 2005-09-21  Steven_cheng <05071@alphanetworks.com>
 
 	* include/linux/types.h: Added unsigned types.
