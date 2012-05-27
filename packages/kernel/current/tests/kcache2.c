@@ -83,7 +83,11 @@ static cyg_handle_t thread[NTHREADS];
 static cyg_thread thread_obj[NTHREADS];
 static char stack[NTHREADS][STACKSIZE];
 
-#define MAXSIZE 1<<18
+#if (CYGMEM_REGION_ram_SIZE <= (128*1024))
+# define MAXSIZE (1<<16)
+#else
+# define MAXSIZE (1<<18)
+#endif
 
 volatile char m[MAXSIZE];
 

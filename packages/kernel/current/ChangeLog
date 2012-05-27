@@ -1,3 +1,9 @@
+2012-05-27  Ilija Kocho <ilijak@siva.com.mk>
+
+	* tests/kcache2.c: Allow comilation for targets with less then
+	128KiB RAM by conditionally reducing of MAXSIZE to (1<<16)
+
+
 2012-03-19  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
             Jonathan Larmour  <jifl@eCosCentric.com>
 
