@@ -66,12 +66,12 @@
 // Data cache
 #define HAL_DCACHE_SIZE                 (8192*2) // Size of data cache in bytes
 #define HAL_DCACHE_LINE_SIZE            16       // Size of a data cache line
-#define HAL_DCACHE_WAYS                 2*2      // Associativity of the cache
+#define HAL_DCACHE_WAYS                 (2*2)      // Associativity of the cache
 
 // Instruction cache
-#define HAL_ICACHE_SIZE                 8192*2   // Size of cache in bytes
+#define HAL_ICACHE_SIZE                 (8192*2)   // Size of cache in bytes
 #define HAL_ICACHE_LINE_SIZE            16       // Size of a cache line
-#define HAL_ICACHE_WAYS                 2*2      // Associativity of the cache
+#define HAL_ICACHE_WAYS                 (2*2)      // Associativity of the cache
 
 #define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
 #define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
@@ -109,8 +109,8 @@
 // Query the state of the data cache (does not affect the caching)
 #define HAL_DCACHE_IS_ENABLED(_state_)          \
     CYG_MACRO_START                             \
-    (_state_) = HAL_CORTEXM_KINETIS_CACHE_PS_IS_ENABLED() && \
-                HAL_CORTEXM_KINETIS_CACHE_PC_IS_ENABLED(); \
+    (_state_) = (HAL_CORTEXM_KINETIS_CACHE_PS_IS_ENABLED() && \
+                HAL_CORTEXM_KINETIS_CACHE_PC_IS_ENABLED()); \
     CYG_MACRO_END
 
 // Invalidate cache lines in the given range without writing to memory.

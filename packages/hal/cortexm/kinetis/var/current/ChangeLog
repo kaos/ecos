@@ -1,3 +1,8 @@
+2012-05-18  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* include/hal_cache.h, src/kinetis_misc.c: Provide for cache
+	enablement in RAM startup mode            [Bugzilla 1001606]
+
 2012-05-19  John Dallaway  <john@dallaway.org.uk>
 
 	* doc/kinetis.sgml: Close <para> and <refsect2> blocks.
