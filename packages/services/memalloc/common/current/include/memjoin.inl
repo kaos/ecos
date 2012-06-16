@@ -149,7 +149,7 @@ Cyg_Mempool_Joined<T>::~Cyg_Mempool_Joined()
     CYG_REPORT_FUNCTION();
     CYG_REPORT_FUNCARGVOID();
 
-    cyg_bool freestat;
+    cyg_bool freestat CYGBLD_ATTRIB_UNUSED;
     
     freestat = free( (cyg_uint8 *)pools, poolcount * sizeof(struct pooldesc) );
     CYG_ASSERT( freestat, "free failed!");

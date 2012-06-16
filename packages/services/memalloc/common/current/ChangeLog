@@ -1,3 +1,8 @@
+2012-06-07  Bernard Fouché <bernard.fouche@kuantic.com>
+
+	* include/memjoin.inl: Fix compiler warning about variable that
+	is set but never referenced when CYG_ASSERT isn't used.
+
 2012-03-06  Grant Edwards <grant.b.edwards@gmail.com>
 
 	* src/malloc.cxx (free):
