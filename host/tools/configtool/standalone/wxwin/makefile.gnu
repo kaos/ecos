@@ -66,7 +66,7 @@ ifneq (,$(findstring CYGWIN, $(shell uname)))
 else
   PROGRAM=configtool
   CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags`
-  LDFLAGS=`$(WXDIR)/bin/wx-config --libs std,gizmos`
+  LDFLAGS=-lX11 `$(WXDIR)/bin/wx-config --libs std,gizmos`
   EXTRAOBJECTS=
   RCFLAGS=`$(WXDIR)/bin/wx-config --cppflags`
 endif

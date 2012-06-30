@@ -1,3 +1,9 @@
+2012-06-22  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/makefile.gnu: Update linker flags for recent
+	versions of Fedora with modified DSO-linking semantics. Issue
+	reported by David Fernandez. [ Bugzilla 1001613 ]
+
 2012-04-23  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/makefile.gnu: Update build flags for recent
