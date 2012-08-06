@@ -952,6 +952,23 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_MCR_DDRSREN_S          0
 
 
+// The following encodes the control register and clock bit number
+// into 16 bit descriptor.
+#define CYGHWR_HAL_CLOCK( __reg, __bit ) (((__reg-1)&0xF) + ((__bit<<8)&0x1F00))
+
+// Macros to extract encoded values.
+#define CYGHWR_HAL_CLOCK_REG( __desc ) ((__desc)&0xF)
+#define CYGHWR_HAL_CLOCK_BIT( __desc ) (((__desc)>>8)&0x1F)
+
+// Functions and macros to enable/disable clocks.
+#define CYGHWR_HAL_KINETIS_CLOCK_NONE (0xFFFF)
+__externC void hal_clock_enable( cyg_uint32 desc );
+__externC void hal_clock_disable( cyg_uint32 desc );
+
+#define CYGHWR_HAL_CLOCK_ENABLE( __desc ) hal_clock_enable( __desc )
+#define CYGHWR_HAL_CLOCK_DISABLE( __desc ) hal_clock_disable( __desc )
+
+
 //---------------------------------------------------------------------------
 // PORT - Peripheral register structure
 

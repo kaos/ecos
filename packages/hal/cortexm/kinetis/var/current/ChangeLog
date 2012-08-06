@@ -1,3 +1,8 @@
+2012-08-01  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* include/var_io.h, src/kinetis_misc.c: Add functions and macros
+	for clock gating control to Kinetis.       [Bugzilla 1001642]
+
 2012-05-18  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* include/hal_cache.h, src/kinetis_misc.c: Provide for cache
