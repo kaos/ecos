@@ -57,6 +57,7 @@
 
 #include <cyg/infra/diag.h>
 #include <cyg/hal/hal_cache.h>
+#include CYGHWR_MEMORY_LAYOUT_H
 
 // -------------------------------------------------------------------------
 

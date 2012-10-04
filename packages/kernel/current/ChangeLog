@@ -1,3 +1,9 @@
+2012-10-04  Ilija Kocho <ilijak@siva.com.mk>
+
+	* tests/kcache2.c: Include CYGHWR_MEMORY_LAYOUT_H in order to
+	effectively test memory size. Bug reported and fix suggested by
+	Bernd Edlinger.                              [Bugzilla 1001650]
+
 2012-05-27  Ilija Kocho <ilijak@siva.com.mk>
 
 	* tests/kcache2.c: Allow comilation for targets with less then
